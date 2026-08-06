@@ -426,6 +426,20 @@ function Index() {
             </div>
           </section>
 
+          <TrafficPanel />
+
+          <section className="glass-panel rise border-l-4 border-l-signal p-5">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="size-5 shrink-0 text-signal" />
+              <div>
+                <h3 className="font-display font-semibold text-foreground">AI-generated content disclaimer</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  This outlook is assembled and summarized by AI from live web sources. It may contain errors, omissions, or outdated information. Always cross-verify against official government announcements and primary legislation before making compliance or investment decisions.
+                </p>
+              </div>
+            </div>
+          </section>
+
           <footer className="border-t border-border pt-6 pb-10">
             <p className="text-xs text-muted-foreground">
               Updates are aggregated from live web sources and auto-classified by jurisdiction and
