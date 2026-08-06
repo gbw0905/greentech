@@ -44,8 +44,8 @@ export const Route = createFileRoute("/countries/$slug")({
 function CountryPage() {
   const { slug } = Route.useParams();
   const country = countryBySlug(slug)!;
-  const { data } = useQuery(feedQuery);
-  const updates = data.updates.filter((u) => u.countrySlug === slug);
+  const { data, isFetching } = useQuery(feedQuery);
+  const updates = (data?.updates ?? []).filter((u) => u.countrySlug === slug);
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-10">
@@ -87,6 +87,7 @@ function CountryPage() {
         <div className="mt-4 space-y-3">
           {updates.length === 0 && (
             <p className="text-sm text-muted-foreground">
+              {isFetching ? "Scanning sources…" : null}
               No recent items matched this jurisdiction in the current scan window.
             </p>
           )}

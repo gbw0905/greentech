@@ -72,7 +72,8 @@ function Chip({
 }
 
 function Index() {
-  const { data, isFetching, refetch } = useQuery(feedQuery);
+  const { data: feed, isFetching, refetch } = useQuery(feedQuery);
+  const data = feed ?? { updates: [], fetchedAt: null as string | null, error: null as string | null };
   const [regions, setRegions] = useState<Region[]>([]);
   const [fuels, setFuels] = useState<FuelType[]>([]);
   const [country, setCountry] = useState<string | null>(null);
@@ -120,7 +121,9 @@ function Index() {
           <div className="flex items-center gap-4">
             <div className="text-right">
               <div className="label-mono text-muted-foreground">Last scan</div>
-              <div className="font-mono text-sm">{formatDate(data.fetchedAt)}</div>
+              <div className="font-mono text-sm">
+                {isFetching && !feed ? "scanning…" : formatDate(data.fetchedAt)}
+              </div>
             </div>
             <button
               type="button"
@@ -251,7 +254,9 @@ function Index() {
           <div className="mt-4 space-y-3 border-l border-border pl-0">
             {filtered.length === 0 && (
               <p className="p-6 text-sm text-muted-foreground">
-                No updates match the current filters.
+                {isFetching && !feed
+                  ? "Scanning global sources for the latest policy moves…"
+                  : "No updates match the current filters."}
               </p>
             )}
             {filtered.map((u) => (
