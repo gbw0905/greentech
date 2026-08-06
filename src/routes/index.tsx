@@ -16,6 +16,7 @@ import {
 import { UpdateCard, formatDate } from "@/components/UpdateCard";
 import { WorldPolicyMap } from "@/components/WorldPolicyMap";
 import { TrafficPanel } from "@/components/TrafficPanel";
+import { OilPricePanel } from "@/components/OilPricePanel";
 import { VideoLibrary } from "@/components/VideoLibrary";
 import { Counter } from "@/components/Counter";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
@@ -393,12 +394,13 @@ function Dashboard() {
         {/* Main */}
         <main className="min-w-0 space-y-6">
           <section className="glass-panel rise overflow-hidden">
-            <div className="hero-glow surface-gradient-aurora px-6 py-10 text-primary-foreground sm:px-8 sm:py-12">
+            <div style={{ containerType: "inline-size" }} className="hero-glow surface-gradient-aurora px-6 py-10 text-primary-foreground sm:px-8 sm:py-12">
               <div className="label-mono inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-1 backdrop-blur-sm">
                 <span className="pulse-dot size-1.5 rounded-full bg-current" />
                 Global biofuel intelligence
               </div>
-              <h1 className="mt-5 max-w-3xl font-display text-4xl leading-[1.05] font-bold sm:text-5xl lg:text-6xl [text-shadow:0_2px_24px_rgba(255,255,255,0.35)]">
+              <h1 style={{ fontSize: "clamp(0.8rem, 4.5cqi, 3rem)" }}
+                className="mt-5 font-display leading-[1.1] font-bold whitespace-nowrap [text-shadow:0_2px_24px_rgba(255,255,255,0.35)]">
                 AI powered global bioenergy outlook
               </h1>
               <p className="mt-4 max-w-xl text-sm/relaxed opacity-90">
@@ -450,14 +452,16 @@ function Dashboard() {
               step={1}
               icon={Map}
               title="Policy activity by jurisdiction"
-              subtitle="Click a country on the map or in the ranking to filter everything below."
+              subtitle="Click a country on the map or in the ranking to filter everything below — with live crude oil prices alongside."
             />
-            <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_15rem]">
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_17rem]">
             <div className="glass-panel rise min-w-0 p-5">
               <div className="mt-3">
                 <WorldPolicyMap counts={counts} activeCountry={country} onSelect={setCountry} />
               </div>
             </div>
+            <div className="space-y-4">
+            <OilPricePanel />
             <div className="glass-panel rise space-y-4 p-5">
               <h2 className="label-mono text-muted-foreground">Most active markets</h2>
               <ul className="space-y-2.5">
@@ -507,6 +511,7 @@ function Dashboard() {
                   );
                 })}
               </ul>
+            </div>
             </div>
             </div>
           </section>
@@ -622,10 +627,13 @@ function Dashboard() {
             </div>
           </section>
 
-          <footer className="border-t border-border pt-6 pb-10">
+          <footer className="space-y-3 border-t border-border pt-6 pb-10">
             <p className="text-xs text-muted-foreground">
               Updates are aggregated from live web sources and auto-classified by jurisdiction and
               fuel type. Verify against primary legislation before use in compliance decisions.
+            </p>
+            <p className="text-xs font-semibold text-foreground">
+              © {new Date().getFullYear()} All rights reserved — Syed Asiful Alam, PhD
             </p>
           </footer>
         </main>
