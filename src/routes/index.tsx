@@ -16,7 +16,6 @@ import {
 import { UpdateCard, formatDate } from "@/components/UpdateCard";
 import { WorldPolicyMap } from "@/components/WorldPolicyMap";
 import { TrafficPanel } from "@/components/TrafficPanel";
-import { WatchAgent } from "@/components/WatchAgent";
 import { Counter } from "@/components/Counter";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
 
@@ -58,25 +57,31 @@ function Chip({
   onClick,
   children,
   color,
+  count,
 }: {
   active: boolean;
   onClick: () => void;
   children: React.ReactNode;
   color?: string;
+  count?: number;
 }) {
   const tint = color ?? "var(--primary)";
+  const empty = count === 0;
   return (
     <button
       type="button"
       onClick={onClick}
-      className="label-mono inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
+      aria-pressed={active}
+      className={`label-mono inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-all duration-200 hover:-translate-y-0.5 hover:brightness-125 active:scale-95 ${
+        empty && !active ? "opacity-45" : ""
+      }`}
       style={
         active
           ? {
               backgroundColor: tint,
               borderColor: tint,
               color: "var(--primary-foreground)",
-              boxShadow: "var(--shadow-frost)",
+              boxShadow: `0 0 0 3px color-mix(in oklab, ${tint} 28%, transparent), var(--shadow-frost)`,
             }
           : {
               backgroundColor: `color-mix(in oklab, ${tint} 12%, var(--surface))`,
@@ -86,10 +91,22 @@ function Chip({
       }
     >
       <span
-        className="size-1.5 rounded-full"
+        className={`size-1.5 rounded-full ${active ? "pulse-dot" : ""}`}
         style={{ backgroundColor: active ? "var(--primary-foreground)" : tint }}
       />
       {children}
+      {typeof count === "number" && (
+        <span
+          className="ml-0.5 rounded-full px-1.5 text-[0.65rem] tabular-nums"
+          style={{
+            backgroundColor: active
+              ? "color-mix(in oklab, var(--primary-foreground) 22%, transparent)"
+              : `color-mix(in oklab, ${tint} 20%, transparent)`,
+          }}
+        >
+          {count}
+        </span>
+      )}
     </button>
   );
 }
@@ -137,6 +154,18 @@ function Index() {
         .slice(0, 6),
     [counts],
   );
+
+  const regionCounts = useMemo(() => {
+    const m = {} as Record<Region, number>;
+    for (const r of REGIONS) m[r] = data.updates.filter((u) => u.region === r).length;
+    return m;
+  }, [data.updates]);
+
+  const fuelCounts = useMemo(() => {
+    const m = {} as Record<FuelType, number>;
+    for (const f of FUEL_TYPES) m[f] = data.updates.filter((u) => u.fuels.includes(f)).length;
+    return m;
+  }, [data.updates]);
 
   const hasFilters = Boolean(country) || regions.length > 0 || fuels.length > 0;
   const clearFilters = () => {
@@ -187,30 +216,98 @@ function Index() {
       <div className="mx-auto grid max-w-[110rem] gap-6 px-5 py-6 lg:grid-cols-[17rem_minmax(0,1fr)] lg:px-8 lg:py-8">
         {/* Sidebar */}
         <aside className="lg:sticky lg:top-24 lg:self-start">
-          <div className="glass-panel rise space-y-6 p-5">
+          <div className="glass-panel rise space-y-5 p-5 transition-shadow duration-300 hover:shadow-[var(--shadow-frost)]">
             <div className="flex items-center justify-between">
               <h2 className="label-mono flex items-center gap-2 text-muted-foreground">
                 <Filter className="size-3.5" /> Filters
+                {hasFilters && (
+                  <span className="rounded-full bg-primary/20 px-1.5 text-[0.65rem] text-primary tabular-nums">
+                    {regions.length + fuels.length + (country ? 1 : 0)}
+                  </span>
+                )}
               </h2>
               {hasFilters && (
                 <button
                   type="button"
                   onClick={clearFilters}
-                  className="label-mono inline-flex items-center gap-1 text-primary hover:underline"
+                  className="label-mono inline-flex items-center gap-1 text-primary transition-transform hover:underline active:scale-95"
                 >
                   <X className="size-3" /> Clear
                 </button>
               )}
             </div>
 
+            {/* Live match meter */}
+            <div className="rounded-[var(--radius)] border border-border bg-surface-2/50 p-3">
+              <div className="flex items-baseline justify-between">
+                <span className="label-mono text-muted-foreground">Matching now</span>
+                <span className="font-display text-lg font-bold text-primary tabular-nums">
+                  {filtered.length}
+                </span>
+              </div>
+              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-2">
+                <div
+                  className="h-full rounded-full bg-primary transition-[width] duration-500 ease-out"
+                  style={{
+                    width: `${data.updates.length ? (filtered.length / data.updates.length) * 100 : 0}%`,
+                  }}
+                />
+              </div>
+            </div>
+
+            {hasFilters && (
+              <div className="flex flex-wrap gap-1.5">
+                {country && (
+                  <button
+                    type="button"
+                    onClick={() => setCountry(null)}
+                    className="label-mono inline-flex items-center gap-1 rounded-full border border-border bg-surface-2 px-2 py-1 transition-colors hover:border-destructive hover:text-destructive"
+                  >
+                    {flagFor(country)} {COUNTRIES.find((c) => c.slug === country)?.name}
+                    <X className="size-3" />
+                  </button>
+                )}
+                {regions.map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => toggle(regions, setRegions, r)}
+                    className="label-mono inline-flex items-center gap-1 rounded-full border border-border bg-surface-2 px-2 py-1 transition-colors hover:border-destructive hover:text-destructive"
+                  >
+                    {r} <X className="size-3" />
+                  </button>
+                ))}
+                {fuels.map((f) => (
+                  <button
+                    key={f}
+                    type="button"
+                    onClick={() => toggle(fuels, setFuels, f)}
+                    className="label-mono inline-flex items-center gap-1 rounded-full border border-border bg-surface-2 px-2 py-1 transition-colors hover:border-destructive hover:text-destructive"
+                  >
+                    {f} <X className="size-3" />
+                  </button>
+                ))}
+              </div>
+            )}
+
             <div>
-              <h3 className="label-mono mb-2.5 text-muted-foreground">Region</h3>
+              <div className="mb-2.5 flex items-center justify-between">
+                <h3 className="label-mono text-muted-foreground">Region</h3>
+                <button
+                  type="button"
+                  onClick={() => setRegions(regions.length === REGIONS.length ? [] : [...REGIONS])}
+                  className="label-mono text-muted-foreground transition-colors hover:text-primary"
+                >
+                  {regions.length === REGIONS.length ? "None" : "All"}
+                </button>
+              </div>
               <div className="flex flex-wrap gap-1.5">
                 {REGIONS.map((r) => (
                   <Chip
                     key={r}
                     active={regions.includes(r)}
                     color={REGION_ACCENT[r]}
+                    count={regionCounts[r]}
                     onClick={() => toggle(regions, setRegions, r)}
                   >
                     {r}
@@ -220,13 +317,23 @@ function Index() {
             </div>
 
             <div>
-              <h3 className="label-mono mb-2.5 text-muted-foreground">Fuel type</h3>
+              <div className="mb-2.5 flex items-center justify-between">
+                <h3 className="label-mono text-muted-foreground">Fuel type</h3>
+                <button
+                  type="button"
+                  onClick={() => setFuels(fuels.length === FUEL_TYPES.length ? [] : [...FUEL_TYPES])}
+                  className="label-mono text-muted-foreground transition-colors hover:text-primary"
+                >
+                  {fuels.length === FUEL_TYPES.length ? "None" : "All"}
+                </button>
+              </div>
               <div className="flex flex-wrap gap-1.5">
                 {FUEL_TYPES.map((f) => (
                   <Chip
                     key={f}
                     active={fuels.includes(f)}
                     color={FUEL_ACCENT[f]}
+                    count={fuelCounts[f]}
                     onClick={() => toggle(fuels, setFuels, f)}
                   >
                     {f}
@@ -244,16 +351,23 @@ function Index() {
                 {topCountries.map(([slug, n]) => {
                   const c = COUNTRIES.find((x) => x.slug === slug)!;
                   return (
-                    <li key={slug} className="space-y-1">
+                    <li
+                      key={slug}
+                      className={`space-y-1 rounded-md px-1.5 py-1 transition-colors ${
+                        country === slug ? "bg-primary/10" : "hover:bg-surface-2/70"
+                      }`}
+                    >
                       <div className="flex items-baseline justify-between gap-2">
-                        <Link
-                          to="/countries/$slug"
-                          params={{ slug }}
-                          className="flex min-w-0 items-center gap-1.5 truncate text-sm transition-colors hover:text-primary"
+                        <button
+                          type="button"
+                          onClick={() => setCountry(country === slug ? null : slug)}
+                          className={`flex min-w-0 items-center gap-1.5 truncate text-sm transition-colors hover:text-primary ${
+                            country === slug ? "text-primary" : ""
+                          }`}
                         >
                           <span aria-hidden>{flagFor(slug)}</span>
                           <span className="truncate">{c.name}</span>
-                        </Link>
+                        </button>
                         <span className="font-mono text-xs text-muted-foreground">{n}</span>
                       </div>
                       <div className="h-1.5 overflow-hidden rounded-full bg-surface-2">
@@ -262,9 +376,17 @@ function Index() {
                           style={{
                             width: `${(n / topCountries[0]![1]) * 100}%`,
                             backgroundColor: REGION_ACCENT[c.region],
+                            opacity: country && country !== slug ? 0.4 : 1,
                           }}
                         />
                       </div>
+                      <Link
+                        to="/countries/$slug"
+                        params={{ slug }}
+                        className="label-mono text-[0.65rem] text-muted-foreground transition-colors hover:text-primary"
+                      >
+                        View profile →
+                      </Link>
                     </li>
                   );
                 })}
@@ -306,8 +428,6 @@ function Index() {
               Live scan issue: {data.error}
             </p>
           )}
-
-          <WatchAgent updates={data.updates} fetchedAt={data.fetchedAt} busy={busy} />
 
           <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_15rem]">
             <div className="glass-panel rise min-w-0 p-5">
