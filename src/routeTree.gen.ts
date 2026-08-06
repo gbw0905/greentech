@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CountriesSlugRouteImport } from './routes/countries.$slug'
+import { Route as ApiPublicDailyTrafficEmailRouteImport } from './routes/api/public/daily-traffic-email'
 import { Route as ApiPublicIngestPolicyRouteImport } from './routes/api/public/ingest-policy'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 
@@ -24,6 +25,12 @@ const CountriesSlugRoute = CountriesSlugRouteImport.update({
   path: '/countries/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicDailyTrafficEmailRoute =
+  ApiPublicDailyTrafficEmailRouteImport.update({
+    id: '/api/public/daily-traffic-email',
+    path: '/api/public/daily-traffic-email',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicIngestPolicyRoute = ApiPublicIngestPolicyRouteImport.update({
   id: '/api/public/ingest-policy',
   path: '/api/public/ingest-policy',
@@ -39,12 +46,14 @@ const LovableEmailTransactionalPreviewRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/countries/$slug': typeof CountriesSlugRoute
+  '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
   '/api/public/ingest-policy': typeof ApiPublicIngestPolicyRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/countries/$slug': typeof CountriesSlugRoute
+  '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
   '/api/public/ingest-policy': typeof ApiPublicIngestPolicyRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
@@ -52,6 +61,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/countries/$slug': typeof CountriesSlugRoute
+  '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
   '/api/public/ingest-policy': typeof ApiPublicIngestPolicyRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
@@ -60,18 +70,21 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/countries/$slug'
+    | '/api/public/daily-traffic-email'
     | '/api/public/ingest-policy'
     | '/lovable/email/transactional/preview'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/countries/$slug'
+    | '/api/public/daily-traffic-email'
     | '/api/public/ingest-policy'
     | '/lovable/email/transactional/preview'
   id:
     | '__root__'
     | '/'
     | '/countries/$slug'
+    | '/api/public/daily-traffic-email'
     | '/api/public/ingest-policy'
     | '/lovable/email/transactional/preview'
   fileRoutesById: FileRoutesById
@@ -79,6 +92,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CountriesSlugRoute: typeof CountriesSlugRoute
+  ApiPublicDailyTrafficEmailRoute: typeof ApiPublicDailyTrafficEmailRoute
   ApiPublicIngestPolicyRoute: typeof ApiPublicIngestPolicyRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
 }
@@ -97,6 +111,13 @@ declare module '@tanstack/react-router' {
       path: '/countries/$slug'
       fullPath: '/countries/$slug'
       preLoaderRoute: typeof CountriesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/daily-traffic-email': {
+      id: '/api/public/daily-traffic-email'
+      path: '/api/public/daily-traffic-email'
+      fullPath: '/api/public/daily-traffic-email'
+      preLoaderRoute: typeof ApiPublicDailyTrafficEmailRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/ingest-policy': {
@@ -119,6 +140,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CountriesSlugRoute: CountriesSlugRoute,
+  ApiPublicDailyTrafficEmailRoute: ApiPublicDailyTrafficEmailRoute,
   ApiPublicIngestPolicyRoute: ApiPublicIngestPolicyRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
 }
