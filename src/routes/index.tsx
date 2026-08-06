@@ -394,12 +394,13 @@ function Dashboard() {
         {/* Main */}
         <main className="min-w-0 space-y-6">
           <section className="glass-panel rise overflow-hidden">
-            <div className="@container hero-glow surface-gradient-aurora px-6 py-10 text-primary-foreground sm:px-8 sm:py-12">
+            <div style={{ containerType: "inline-size" }} className="hero-glow surface-gradient-aurora px-6 py-10 text-primary-foreground sm:px-8 sm:py-12">
               <div className="label-mono inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-1 backdrop-blur-sm">
                 <span className="pulse-dot size-1.5 rounded-full bg-current" />
                 Global biofuel intelligence
               </div>
-              <h1 className="mt-5 font-display text-[clamp(0.85rem,4.55cqw,2.9rem)] leading-[1.1] font-bold whitespace-nowrap [text-shadow:0_2px_24px_rgba(255,255,255,0.35)]">
+              <h1 style={{ fontSize: "clamp(0.8rem, 4.5cqi, 3rem)" }}
+                className="mt-5 font-display leading-[1.1] font-bold whitespace-nowrap [text-shadow:0_2px_24px_rgba(255,255,255,0.35)]">
                 AI powered global bioenergy outlook
               </h1>
               <p className="mt-4 max-w-xl text-sm/relaxed opacity-90">
