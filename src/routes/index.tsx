@@ -307,6 +307,8 @@ function Index() {
             </p>
           )}
 
+          <WatchAgent updates={data.updates} fetchedAt={data.fetchedAt} busy={busy} />
+
           <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_15rem]">
             <div className="glass-panel rise min-w-0 p-5">
               <h2 className="label-mono text-muted-foreground">Policy activity by jurisdiction</h2>
