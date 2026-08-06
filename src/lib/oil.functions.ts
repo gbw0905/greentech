@@ -31,7 +31,7 @@ async function loadSymbol(symbol: string, label: string): Promise<OilQuote | nul
     }
     const price = r.meta?.regularMarketPrice ?? series[series.length - 1]?.c;
     const prevClose =
-      r.meta?.chartPreviousClose ?? series[series.length - 2]?.c ?? price;
+      series[series.length - 2]?.c ?? r.meta?.chartPreviousClose ?? price;
     if (typeof price !== "number") return null;
     return {
       symbol,
