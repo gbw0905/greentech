@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { getPolicyFeed } from "@/lib/policy.functions";
 import { countryBySlug, REGION_ACCENT } from "@/lib/policy-taxonomy";
 import { UpdateCard } from "@/components/UpdateCard";
+import { useVisitTracker } from "@/hooks/useVisitTracker";
 
 const feedQuery = queryOptions({
   queryKey: ["policy-feed"],
@@ -42,6 +43,7 @@ export const Route = createFileRoute("/countries/$slug")({
 });
 
 function CountryPage() {
+  useVisitTracker();
   const { slug } = Route.useParams();
   const country = countryBySlug(slug)!;
   const { data, isFetching } = useQuery(feedQuery);

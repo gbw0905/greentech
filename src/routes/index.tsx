@@ -14,6 +14,9 @@ import {
 } from "@/lib/policy-taxonomy";
 import { UpdateCard, formatDate } from "@/components/UpdateCard";
 import { WorldPolicyMap } from "@/components/WorldPolicyMap";
+import { TrafficPanel } from "@/components/TrafficPanel";
+import { Counter } from "@/components/Counter";
+import { useVisitTracker } from "@/hooks/useVisitTracker";
 
 const feedQuery = queryOptions({
   queryKey: ["policy-feed"],
@@ -87,6 +90,7 @@ function Chip({
 }
 
 function Index() {
+  useVisitTracker();
   const { data: feed, isFetching, refetch } = useQuery(feedQuery);
   const data = feed ?? { updates: [], fetchedAt: null as string | null, error: null as string | null };
   const [regions, setRegions] = useState<Region[]>([]);
@@ -260,28 +264,33 @@ function Index() {
         {/* Main */}
         <main className="min-w-0 space-y-6">
           <section className="glass-panel rise overflow-hidden">
-            <div className="surface-gradient-frost px-6 py-7">
-              <div className="label-mono text-primary">Global biofuel intelligence</div>
-              <h1 className="mt-2 max-w-2xl font-display text-3xl leading-tight font-bold sm:text-4xl">
-                Every biofuel <span className="text-gradient">policy move</span>, tracked as it
-                lands.
+            <div className="hero-glow surface-gradient-aurora px-6 py-10 text-primary-foreground sm:px-8 sm:py-12">
+              <div className="label-mono inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-1 backdrop-blur-sm">
+                <span className="pulse-dot size-1.5 rounded-full bg-current" />
+                Global biofuel intelligence
+              </div>
+              <h1 className="mt-4 max-w-3xl font-display text-4xl leading-[1.05] font-bold sm:text-5xl">
+                Every biofuel policy move, tracked as it lands.
               </h1>
-              <p className="mt-3 max-w-xl text-sm text-muted-foreground">
+              <p className="mt-4 max-w-xl text-sm/relaxed opacity-90">
                 Continuously scanned mandates, blending obligations and regulatory decisions across{" "}
-                {COUNTRIES.length} jurisdictions.
+                {COUNTRIES.length} jurisdictions — with live readership of the desk.
               </p>
             </div>
             <div className="grid grid-cols-3 divide-x divide-border border-t border-border">
               {stats.map(([label, value]) => (
                 <div key={label} className="px-6 py-4">
                   <div className="label-mono text-muted-foreground">{label}</div>
-                  <div className="mt-1 font-display text-2xl font-bold text-primary tabular-nums">
-                    {value}
-                  </div>
+                  <Counter
+                    value={value}
+                    className="mt-1 block font-display text-2xl font-bold text-primary tabular-nums"
+                  />
                 </div>
               ))}
             </div>
           </section>
+
+          <TrafficPanel />
 
           {data.error && (
             <p className="glass-panel border-l-4 border-l-destructive p-4 text-sm text-muted-foreground">
