@@ -64,6 +64,16 @@ const CONSUMERS = [
   { name: "India", flag: "🇮🇳", annualBnL: 5, color: "var(--primary)" },
 ];
 
+/** Largest corporate biofuel producers/offtakers — billion litres per year (all liquid biofuels). */
+const COMPANIES = [
+  { name: "POET", flag: "🇺🇸", annualBnL: 12, color: "var(--primary)" },
+  { name: "ADM", flag: "🇺🇸", annualBnL: 9, color: "var(--accent)" },
+  { name: "Valero / Diamond Green", flag: "🇺🇸", annualBnL: 8, color: "var(--signal)" },
+  { name: "Raízen", flag: "🇧🇷", annualBnL: 6, color: "var(--primary-glow)" },
+  { name: "Neste", flag: "🇫🇮", annualBnL: 5.5, color: "var(--muted-foreground)" },
+  { name: "Green Plains", flag: "🇺🇸", annualBnL: 4, color: "var(--primary)" },
+];
+
 function ColumnChart({
   items,
   unitLabel,
@@ -112,6 +122,7 @@ function ColumnChart({
 
 export function BiofuelProductionPanel() {
   const [unit, setUnit] = useState<"litres" | "barrels">("litres");
+  const [userView, setUserView] = useState<"countries" | "companies">("countries");
 
   const rows = STREAMS.map((s) => ({
     ...s,
@@ -120,7 +131,8 @@ export function BiofuelProductionPanel() {
   const total = rows.reduce((a, r) => a + r.daily, 0);
   const unitLabel = unit === "litres" ? "million litres / day" : "thousand barrels / day";
   const scale = (v: number) => (unit === "litres" ? v / 1e6 : v / 1e3);
-  const consumerTotal = CONSUMERS.reduce((a, c) => a + c.annualBnL, 0);
+  const users = userView === "countries" ? CONSUMERS : COMPANIES;
+  const usersTotal = users.reduce((a, c) => a + c.annualBnL, 0);
 
   return (
     <div className="glass-panel rise p-5">
@@ -173,16 +185,38 @@ export function BiofuelProductionPanel() {
         </section>
 
         <section>
-          <h3 className="label-mono mb-2 flex items-center gap-2 text-muted-foreground">
-            <Users className="size-3.5" />
-            Global top biofuel users
-          </h3>
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <h3 className="label-mono flex items-center gap-2 text-muted-foreground">
+              <Users className="size-3.5" />
+              Global top biofuel users
+            </h3>
+            <div className="flex rounded-full border border-border bg-surface-2 p-0.5">
+              {(["countries", "companies"] as const).map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setUserView(v)}
+                  className={`label-mono rounded-full px-2.5 py-1 transition-colors ${
+                    userView === v
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {v === "countries" ? "Countries" : "Companies"}
+                </button>
+              ))}
+            </div>
+          </div>
           <ColumnChart
-            unitLabel="billion litres / year consumed"
-            items={CONSUMERS.map((c) => ({
+            unitLabel={
+              userView === "countries"
+                ? "billion litres / year consumed"
+                : "billion litres / year (corporate capacity)"
+            }
+            items={users.map((c) => ({
               key: c.name,
               label: `${c.flag} ${c.name}`,
-              sub: `${((c.annualBnL / consumerTotal) * 100).toFixed(0)}% of top-6`,
+              sub: `${((c.annualBnL / usersTotal) * 100).toFixed(0)}% of top-6`,
               value: c.annualBnL,
               color: c.color,
             }))}
