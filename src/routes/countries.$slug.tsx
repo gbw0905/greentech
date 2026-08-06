@@ -87,8 +87,9 @@ function CountryPage() {
         <div className="mt-4 space-y-3">
           {updates.length === 0 && (
             <p className="text-sm text-muted-foreground">
-              {isFetching ? "Scanning sources…" : null}
-              No recent items matched this jurisdiction in the current scan window.
+              {isFetching
+                ? "Scanning global sources…"
+                : "No recent items matched this jurisdiction in the current scan window."}
             </p>
           )}
           {updates.map((u) => (
