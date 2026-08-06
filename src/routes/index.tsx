@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { RefreshCw, Globe2, Layers, Filter, X, Radio, Sparkles, AlertTriangle } from "lucide-react";
+import { RefreshCw, Globe2, Layers, Filter, X, AlertTriangle } from "lucide-react";
 import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
 import {
   COUNTRIES,
@@ -9,15 +9,16 @@ import {
   REGIONS,
   REGION_ACCENT,
   FUEL_ACCENT,
+  flagFor,
   type FuelType,
   type Region,
 } from "@/lib/policy-taxonomy";
 import { UpdateCard, formatDate } from "@/components/UpdateCard";
 import { WorldPolicyMap } from "@/components/WorldPolicyMap";
 import { TrafficPanel } from "@/components/TrafficPanel";
+import { WatchAgent } from "@/components/WatchAgent";
 import { Counter } from "@/components/Counter";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
-import { fetchTrafficStats } from "@/lib/traffic";
 
 const feedQuery = queryOptions({
   queryKey: ["policy-feed"],
@@ -103,11 +104,6 @@ function Index() {
       queryClient.setQueryData(["policy-feed"], fresh);
     },
   });
-  const { data: traffic } = useQuery({
-    queryKey: ["traffic-stats"],
-    queryFn: fetchTrafficStats,
-    refetchInterval: 30_000,
-  });
   const busy = isFetching || rescan.isPending;
   const data = feed ?? { updates: [], fetchedAt: null as string | null, error: null as string | null };
   const [regions, setRegions] = useState<Region[]>([]);
@@ -169,15 +165,6 @@ function Index() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="hidden items-center gap-2 rounded-full border border-border bg-surface-2/70 px-3 py-1.5 md:flex">
-              <span className="pulse-dot size-1.5 rounded-full bg-primary" />
-              <Radio className="size-3.5 text-primary" />
-              <span className="label-mono text-muted-foreground">
-                <span className="font-mono text-foreground">{traffic?.live_now ?? 0}</span> reading now
-                {" · "}
-                <span className="font-mono text-foreground">{traffic?.views_today ?? 0}</span> views today
-              </span>
-            </div>
             <div className="hidden text-right sm:block">
               <div className="label-mono text-muted-foreground">Last scan</div>
               <div className="font-mono text-xs">
@@ -262,9 +249,10 @@ function Index() {
                         <Link
                           to="/countries/$slug"
                           params={{ slug }}
-                          className="truncate text-sm transition-colors hover:text-primary"
+                          className="flex min-w-0 items-center gap-1.5 truncate text-sm transition-colors hover:text-primary"
                         >
-                          {c.name}
+                          <span aria-hidden>{flagFor(slug)}</span>
+                          <span className="truncate">{c.name}</span>
                         </Link>
                         <span className="font-mono text-xs text-muted-foreground">{n}</span>
                       </div>
@@ -293,11 +281,7 @@ function Index() {
                 <span className="pulse-dot size-1.5 rounded-full bg-current" />
                 Global biofuel intelligence
               </div>
-              <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/20 px-3 py-1 backdrop-blur-sm shadow-[0_0_18px_rgba(255,255,255,0.25)]">
-                <Sparkles className="size-3.5" />
-                <span className="label-mono">AI Powered</span>
-              </div>
-              <h1 className="mt-3 max-w-3xl font-display text-4xl leading-[1.05] font-bold sm:text-5xl lg:text-6xl [text-shadow:0_2px_24px_rgba(255,255,255,0.35)]">
+              <h1 className="mt-5 max-w-3xl font-display text-4xl leading-[1.05] font-bold sm:text-5xl lg:text-6xl [text-shadow:0_2px_24px_rgba(255,255,255,0.35)]">
                 AI powered global bioenergy outlook
               </h1>
               <p className="mt-4 max-w-xl text-sm/relaxed opacity-90">
@@ -322,6 +306,8 @@ function Index() {
               Live scan issue: {data.error}
             </p>
           )}
+
+          <WatchAgent updates={data.updates} fetchedAt={data.fetchedAt} busy={busy} />
 
           <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_15rem]">
             <div className="glass-panel rise min-w-0 p-5">
@@ -415,6 +401,9 @@ function Index() {
                     {c.region}
                   </div>
                   <div className="mt-1 font-display font-semibold transition-colors group-hover:text-primary">
+                    <span className="mr-1.5" aria-hidden>
+                      {flagFor(c.slug)}
+                    </span>
                     {c.name}
                   </div>
                   <div className="mt-1 font-mono text-xs text-muted-foreground">

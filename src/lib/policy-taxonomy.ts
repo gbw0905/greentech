@@ -436,6 +436,41 @@ export function countryBySlug(slug: string) {
   return COUNTRIES.find((c) => c.slug === slug);
 }
 
+/** Emoji flag per tracked jurisdiction. */
+export const COUNTRY_FLAG: Record<string, string> = {
+  "united-states": "🇺🇸",
+  canada: "🇨🇦",
+  brazil: "🇧🇷",
+  argentina: "🇦🇷",
+  colombia: "🇨🇴",
+  "european-union": "🇪🇺",
+  germany: "🇩🇪",
+  france: "🇫🇷",
+  netherlands: "🇳🇱",
+  "united-kingdom": "🇬🇧",
+  sweden: "🇸🇪",
+  india: "🇮🇳",
+  indonesia: "🇮🇩",
+  china: "🇨🇳",
+  japan: "🇯🇵",
+  "south-korea": "🇰🇷",
+  australia: "🇦🇺",
+  thailand: "🇹🇭",
+  malaysia: "🇲🇾",
+  philippines: "🇵🇭",
+  "south-africa": "🇿🇦",
+  nigeria: "🇳🇬",
+  kenya: "🇰🇪",
+  "united-arab-emirates": "🇦🇪",
+  "saudi-arabia": "🇸🇦",
+};
+
+/** Flag emoji for a country slug, falling back to a globe for unmapped jurisdictions. */
+export function flagFor(slug: string | null | undefined) {
+  if (!slug) return "🌐";
+  return COUNTRY_FLAG[slug] ?? "🌐";
+}
+
 export const REGION_ACCENT: Record<Region, string> = {
   "North America": "var(--region-na)",
   "Latin America": "var(--region-latam)",
