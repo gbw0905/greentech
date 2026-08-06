@@ -322,7 +322,7 @@
     height: 140%;
     background: radial-gradient(
       55% 60% at 20% 0%,
-      oklch(1 0 0 / 0.45),
+      oklch(0.95 0.05 200 / 0.5),
       transparent 70%
     );
     pointer-events: none;
