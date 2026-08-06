@@ -403,6 +403,27 @@ function Dashboard() {
                 </div>
               ))}
             </div>
+            <nav
+              aria-label="Page sections"
+              className="flex flex-wrap gap-2 border-t border-border px-6 py-3"
+            >
+              {[
+                ["#map", "1 · Map"],
+                ["#timeline", "2 · Timeline"],
+                ["#profiles", "3 · Country profiles"],
+                ["#videos", "4 · Videos"],
+                ["#audience", "5 · Live audience"],
+                ["#disclaimer", "6 · AI disclaimer"],
+              ].map(([href, label]) => (
+                <a
+                  key={href}
+                  href={href}
+                  className="label-mono rounded-full border border-border bg-surface-2 px-3 py-1.5 text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary hover:text-primary"
+                >
+                  {label}
+                </a>
+              ))}
+            </nav>
           </section>
 
           {data.error && (
@@ -571,7 +592,7 @@ function Dashboard() {
             <TrafficPanel />
           </section>
 
-          <section className="glass-panel rise border-l-4 border-l-signal bg-signal/[0.03] p-5">
+          <section id="disclaimer" className="glass-panel rise border-l-4 border-l-signal bg-signal/[0.03] p-5">
             <div className="flex items-start gap-3">
               <div className="grid size-10 place-items-center rounded-full bg-signal/15 shrink-0">
                 <AlertTriangle className="size-5 text-signal" />
