@@ -399,6 +399,9 @@ function Index() {
                     {c.region}
                   </div>
                   <div className="mt-1 font-display font-semibold transition-colors group-hover:text-primary">
+                    <span className="mr-1.5" aria-hidden>
+                      {flagFor(c.slug)}
+                    </span>
                     {c.name}
                   </div>
                   <div className="mt-1 font-mono text-xs text-muted-foreground">
