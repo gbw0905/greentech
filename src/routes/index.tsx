@@ -85,15 +85,15 @@ function Chip({
               boxShadow: `0 0 0 3px color-mix(in oklab, ${tint} 28%, transparent), var(--shadow-frost)`,
             }
           : {
-              backgroundColor: `color-mix(in oklab, ${tint} 80%, var(--surface))`,
-              borderColor: tint,
-              color: "var(--primary-foreground)",
+              backgroundColor: `color-mix(in oklab, ${tint} 12%, var(--surface))`,
+              borderColor: `color-mix(in oklab, ${tint} 35%, transparent)`,
+              color: tint,
             }
       }
     >
       <span
         className={`size-1.5 rounded-full ${active ? "pulse-dot" : ""}`}
-        style={{ backgroundColor: "var(--primary-foreground)" }}
+        style={{ backgroundColor: active ? "var(--primary-foreground)" : tint }}
       />
       {children}
       {typeof count === "number" && (
@@ -102,7 +102,7 @@ function Chip({
           style={{
             backgroundColor: active
               ? "color-mix(in oklab, var(--primary-foreground) 22%, transparent)"
-              : "color-mix(in oklab, var(--primary-foreground) 20%, transparent)",
+              : `color-mix(in oklab, ${tint} 20%, transparent)`,
           }}
         >
           {count}
