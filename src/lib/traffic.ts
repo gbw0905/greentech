@@ -28,7 +28,8 @@ export async function recordVisit(path: string): Promise<void> {
   await supabase.rpc("record_visit", {
     _path: path,
     _visitor_id: visitorId,
-    _referrer: typeof document !== "undefined" && document.referrer ? document.referrer : null,
+    _referrer:
+      typeof document !== "undefined" && document.referrer ? document.referrer : undefined,
   });
 }
 
