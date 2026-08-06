@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { recordVisitFn, getTrafficStatsFn } from "@/lib/traffic.functions";
 
 export type TrafficStats = {
   total_views: number;
@@ -27,11 +27,17 @@ export async function recordVisit(path: string): Promise<void> {
   if (!visitorId) return;
   const referrer =
     typeof document !== "undefined" && document.referrer ? document.referrer : "";
-  await supabase.rpc("record_visit", {
-    _path: path,
-    _visitor_id: visitorId,
-    ...(referrer ? { _referrer: referrer } : {}),
-  });
+  try {
+    await recordVisitFn({
+      data: {
+        path: path.slice(0, 200),
+        visitorId,
+        ...(referrer ? { referrer: referrer.slice(0, 200) } : {}),
+      },
+    });
+  } catch {
+    // analytics is best-effort
+  }
 }
 
 const EMPTY: TrafficStats = {
@@ -45,7 +51,11 @@ const EMPTY: TrafficStats = {
 };
 
 export async function fetchTrafficStats(): Promise<TrafficStats> {
-  const { data, error } = await supabase.rpc("get_traffic_stats");
-  if (error || !data) return EMPTY;
-  return { ...EMPTY, ...(data as unknown as TrafficStats) };
+  try {
+    const data = await getTrafficStatsFn();
+    if (!data) return EMPTY;
+    return { ...EMPTY, ...(data as unknown as TrafficStats) };
+  } catch {
+    return EMPTY;
+  }
 }
