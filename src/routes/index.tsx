@@ -318,8 +318,6 @@ function Index() {
             </div>
           </section>
 
-          <TrafficPanel />
-
           {data.error && (
             <p className="glass-panel border-l-4 border-l-destructive p-4 text-sm text-muted-foreground">
               Live scan issue: {data.error}
