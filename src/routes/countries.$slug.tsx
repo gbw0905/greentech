@@ -17,8 +17,8 @@ export const Route = createFileRoute("/countries/$slug")({
   },
   head: ({ params }) => {
     const country = countryBySlug(params.slug);
-    const title = `${country?.name ?? "Country"} Biofuel Policy Profile | Biofuel Policy Radar`;
-    const description = `Mandates, blending targets and the latest biofuel policy updates for ${country?.name ?? "this market"}.`;
+    const title = `${country?.name ?? "Country"} Bioenergy Policy Profile | Global Bioenergy Watch`;
+    const description = `Mandates, blending targets and the latest bioenergy policy updates for ${country?.name ?? "this market"}.`;
     return {
       meta: [
         { title },
