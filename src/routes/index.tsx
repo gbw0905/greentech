@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { queryOptions, useQuery } from "@tanstack/react-query";
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { RefreshCw, Globe2, Layers, Filter, X } from "lucide-react";
-import { getPolicyFeed } from "@/lib/policy.functions";
+import { RefreshCw, Globe2, Layers, Filter, X, Radio } from "lucide-react";
+import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
 import {
   COUNTRIES,
   FUEL_TYPES,
@@ -17,11 +17,15 @@ import { WorldPolicyMap } from "@/components/WorldPolicyMap";
 import { TrafficPanel } from "@/components/TrafficPanel";
 import { Counter } from "@/components/Counter";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
+import { fetchTrafficStats } from "@/lib/traffic";
 
 const feedQuery = queryOptions({
   queryKey: ["policy-feed"],
   queryFn: () => getPolicyFeed(),
-  staleTime: 10 * 60 * 1000,
+  staleTime: 5 * 60 * 1000,
+  // Keeps the desk current without a page reload.
+  refetchInterval: 5 * 60 * 1000,
+  refetchOnWindowFocus: true,
 });
 
 const TITLE = "Global Bioenergy Watch | Worldwide Biofuel Policy Tracker";
@@ -91,7 +95,20 @@ function Chip({
 
 function Index() {
   useVisitTracker();
-  const { data: feed, isFetching, refetch } = useQuery(feedQuery);
+  const queryClient = useQueryClient();
+  const { data: feed, isFetching } = useQuery(feedQuery);
+  const rescan = useMutation({
+    mutationFn: () => refreshPolicyFeed(),
+    onSuccess: (fresh) => {
+      queryClient.setQueryData(["policy-feed"], fresh);
+    },
+  });
+  const { data: traffic } = useQuery({
+    queryKey: ["traffic-stats"],
+    queryFn: fetchTrafficStats,
+    refetchInterval: 30_000,
+  });
+  const busy = isFetching || rescan.isPending;
   const data = feed ?? { updates: [], fetchedAt: null as string | null, error: null as string | null };
   const [regions, setRegions] = useState<Region[]>([]);
   const [fuels, setFuels] = useState<FuelType[]>([]);
