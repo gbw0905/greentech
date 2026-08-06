@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Globe2, Layers, Filter, X } from "lucide-react";
 import { getPolicyFeed } from "@/lib/policy.functions";
 import {
   COUNTRIES,
