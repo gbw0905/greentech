@@ -53,26 +53,31 @@ function CountryPage() {
         <ArrowLeft className="size-3.5" /> Back to tracker
       </Link>
 
-      <header className="mt-6 border-b border-border pb-8">
-        <div className="label-mono" style={{ color: REGION_ACCENT[country.region] }}>
-          {country.region}
-        </div>
-        <h1 className="mt-2 text-4xl font-bold">{country.name}</h1>
-        <p className="mt-4 max-w-2xl text-muted-foreground">{country.blurb}</p>
-        <div className="mt-5 flex flex-wrap gap-2">
-          {country.frameworks.map((f) => (
-            <span key={f} className="label-mono rounded-full border border-border px-3 py-1">
-              {f}
-            </span>
-          ))}
+      <header className="glass-panel rise mt-6 overflow-hidden">
+        <div className="bg-[var(--gradient-frost)] p-7">
+          <div className="label-mono" style={{ color: REGION_ACCENT[country.region] }}>
+            {country.region}
+          </div>
+          <h1 className="mt-2 font-display text-4xl font-bold">{country.name}</h1>
+          <p className="mt-4 max-w-2xl text-muted-foreground">{country.blurb}</p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {country.frameworks.map((f) => (
+              <span
+                key={f}
+                className="label-mono rounded-full bg-surface/80 px-3 py-1 shadow-[var(--shadow-frost)]"
+              >
+                {f}
+              </span>
+            ))}
+          </div>
         </div>
       </header>
 
       <section className="mt-8">
         <h2 className="label-mono text-muted-foreground">Mandates &amp; targets</h2>
-        <dl className="mt-4 grid gap-px overflow-hidden rounded-md border border-border bg-border sm:grid-cols-2">
+        <dl className="mt-4 grid gap-3 sm:grid-cols-2">
           {country.mandates.map((m) => (
-            <div key={m.label} className="bg-surface p-4">
+            <div key={m.label} className="glass-panel lift p-4">
               <dt className="label-mono text-muted-foreground">{m.label}</dt>
               <dd className="mt-1 font-mono text-sm text-foreground">{m.value}</dd>
             </div>

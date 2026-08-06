@@ -83,9 +83,7 @@ export function WorldPolicyMap({
               stroke={isActive ? "var(--primary)" : "var(--surface)"}
               strokeWidth={isActive ? 1.6 : 0.6}
               className={
-                country
-                  ? "cursor-pointer transition-[fill-opacity,stroke-width] duration-200 hover:fill-opacity-100"
-                  : ""
+                country ? "cursor-pointer transition-[fill-opacity,stroke-width] duration-200" : ""
               }
               onMouseEnter={() => country && setHover(f.properties.name)}
               onMouseLeave={() => setHover(null)}
