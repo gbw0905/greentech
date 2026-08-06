@@ -73,16 +73,20 @@ export function WorldPolicyMap({
             ? count > 0
               ? REGION_ACCENT[country.region]
               : "var(--surface-2)"
-            : "var(--surface)";
+            : "var(--muted)";
           return (
             <path
               key={i}
               d={path(f as never) ?? ""}
               fill={fill}
-              fillOpacity={country ? (count > 0 ? Math.min(0.35 + count * 0.12, 0.95) : 0.9) : 0.7}
-              stroke={isActive ? "var(--primary)" : "var(--background)"}
-              strokeWidth={isActive ? 1.4 : 0.5}
-              className={country ? "cursor-pointer transition-[fill-opacity]" : ""}
+              fillOpacity={country ? (count > 0 ? Math.min(0.4 + count * 0.1, 0.95) : 1) : 1}
+              stroke={isActive ? "var(--primary)" : "var(--surface)"}
+              strokeWidth={isActive ? 1.6 : 0.6}
+              className={
+                country
+                  ? "cursor-pointer transition-[fill-opacity,stroke-width] duration-200 hover:fill-opacity-100"
+                  : ""
+              }
               onMouseEnter={() => country && setHover(f.properties.name)}
               onMouseLeave={() => setHover(null)}
               onClick={() =>
