@@ -155,6 +155,18 @@ function Index() {
     [counts],
   );
 
+  const regionCounts = useMemo(() => {
+    const m = {} as Record<Region, number>;
+    for (const r of REGIONS) m[r] = data.updates.filter((u) => u.region === r).length;
+    return m;
+  }, [data.updates]);
+
+  const fuelCounts = useMemo(() => {
+    const m = {} as Record<FuelType, number>;
+    for (const f of FUEL_TYPES) m[f] = data.updates.filter((u) => u.fuels.includes(f)).length;
+    return m;
+  }, [data.updates]);
+
   const hasFilters = Boolean(country) || regions.length > 0 || fuels.length > 0;
   const clearFilters = () => {
     setCountry(null);
