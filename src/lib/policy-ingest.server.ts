@@ -149,10 +149,15 @@ export async function ingestPolicyUpdates(): Promise<IngestResult> {
     seenTitle.add(titleKey);
 
     const { country, fuels } = classify(text);
+    let summary = item.summary;
+    if (summary.toLowerCase().startsWith(item.title.toLowerCase())) {
+      summary = summary.slice(item.title.length).trim();
+    }
+    summary = summary.replace(/^[-–—·|\s]+/, "").slice(0, 320);
     rows.push({
       url: item.link,
       title: item.title.slice(0, 400),
-      summary: item.summary,
+      summary,
       source: item.source.includes(".") ? hostOf(`https://${item.source}`) : item.source,
       published_at: item.publishedAt,
       region: country?.region ?? "Global",
