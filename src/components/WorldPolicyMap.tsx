@@ -158,7 +158,7 @@ export function WorldPolicyMap({
                       : 1
                   }
                   stroke={
-                    isActive ? "var(--primary)" : isHover ? "var(--foreground)" : "var(--surface)"
+                    isActive ? "var(--primary)" : isHover ? "var(--foreground)" : "var(--muted-foreground)"
                   }
                   strokeWidth={(isActive ? 1.6 : isHover ? 1 : 0.6) / view.z}
                   className={
