@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { getPolicyFeed } from "@/lib/policy.functions";
 import { countryBySlug, REGION_ACCENT } from "@/lib/policy-taxonomy";
@@ -14,9 +14,6 @@ const feedQuery = queryOptions({
 export const Route = createFileRoute("/countries/$slug")({
   beforeLoad: ({ params }) => {
     if (!countryBySlug(params.slug)) throw notFound();
-  },
-  loader: ({ context }) => {
-    context.queryClient.ensureQueryData(feedQuery);
   },
   head: ({ params }) => {
     const country = countryBySlug(params.slug);
@@ -47,7 +44,7 @@ export const Route = createFileRoute("/countries/$slug")({
 function CountryPage() {
   const { slug } = Route.useParams();
   const country = countryBySlug(slug)!;
-  const { data } = useSuspenseQuery(feedQuery);
+  const { data } = useQuery(feedQuery);
   const updates = data.updates.filter((u) => u.countrySlug === slug);
 
   return (

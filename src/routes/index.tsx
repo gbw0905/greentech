@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { getPolicyFeed } from "@/lib/policy.functions";
@@ -25,9 +25,6 @@ const DESCRIPTION =
   "Live tracker of global biofuel policy: ethanol, biodiesel, renewable diesel and SAF mandates by region, country and fuel type.";
 
 export const Route = createFileRoute("/")({
-  loader: ({ context }) => {
-    context.queryClient.ensureQueryData(feedQuery);
-  },
   head: () => ({
     meta: [
       { title: TITLE },
@@ -75,7 +72,7 @@ function Chip({
 }
 
 function Index() {
-  const { data, isFetching, refetch } = useSuspenseQuery(feedQuery);
+  const { data, isFetching, refetch } = useQuery(feedQuery);
   const [regions, setRegions] = useState<Region[]>([]);
   const [fuels, setFuels] = useState<FuelType[]>([]);
   const [country, setCountry] = useState<string | null>(null);
