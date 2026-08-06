@@ -454,65 +454,13 @@ function Dashboard() {
               title="Policy activity by jurisdiction"
               subtitle="Click a country on the map or in the ranking to filter everything below — with live crude oil prices alongside."
             />
-            <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_17rem]">
+            <div className="grid items-start gap-4 xl:grid-cols-2">
             <div className="glass-panel rise min-w-0 p-5">
               <div className="mt-3">
                 <WorldPolicyMap counts={counts} activeCountry={country} onSelect={setCountry} />
               </div>
             </div>
-            <div className="space-y-4">
             <OilPricePanel />
-            <div className="glass-panel rise space-y-4 p-5">
-              <h2 className="label-mono text-muted-foreground">Most active markets</h2>
-              <ul className="space-y-2.5">
-                {topCountries.length === 0 && (
-                  <li className="text-sm text-muted-foreground">No matches in this scan.</li>
-                )}
-                {topCountries.map(([slug, n]) => {
-                  const c = COUNTRIES.find((x) => x.slug === slug)!;
-                  return (
-                    <li
-                      key={slug}
-                      className={`space-y-1 rounded-md px-1.5 py-1 transition-colors ${
-                        country === slug ? "bg-primary/10" : "hover:bg-surface-2/70"
-                      }`}
-                    >
-                      <div className="flex items-baseline justify-between gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setCountry(country === slug ? null : slug)}
-                          className={`flex min-w-0 items-center gap-1.5 truncate text-sm transition-colors hover:text-primary ${
-                            country === slug ? "text-primary" : ""
-                          }`}
-                        >
-                          <span aria-hidden>{flagFor(slug)}</span>
-                          <span className="truncate">{c.name}</span>
-                        </button>
-                        <span className="font-mono text-xs text-muted-foreground">{n}</span>
-                      </div>
-                      <div className="h-1.5 overflow-hidden rounded-full bg-surface-2">
-                        <div
-                          className="h-full rounded-full transition-[width] duration-700 ease-out"
-                          style={{
-                            width: `${(n / topCountries[0]![1]) * 100}%`,
-                            backgroundColor: REGION_ACCENT[c.region],
-                            opacity: country && country !== slug ? 0.4 : 1,
-                          }}
-                        />
-                      </div>
-                      <Link
-                        to="/countries/$slug"
-                        params={{ slug }}
-                        className="label-mono text-[0.65rem] text-muted-foreground transition-colors hover:text-primary"
-                      >
-                        View profile →
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-            </div>
             </div>
           </section>
 
