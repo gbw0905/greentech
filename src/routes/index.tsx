@@ -233,7 +233,7 @@ function Dashboard() {
               <Globe2 className="size-5" />
             </span>
             <div>
-              <div className="font-display text-xl leading-tight font-bold text-gradient drop-shadow-[0_0_12px_rgba(0,240,255,0.35)]">
+              <div className="font-display text-3xl leading-tight font-black text-gradient drop-shadow-[0_0_16px_rgba(0,240,255,0.45)]">
                 Global Bioenergy Watch
               </div>
             </div>
