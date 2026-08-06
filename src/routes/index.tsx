@@ -632,7 +632,15 @@ function Dashboard() {
               fuel type. Verify against primary legislation before use in compliance decisions.
             </p>
             <p className="text-xs font-semibold text-foreground">
-              © {new Date().getFullYear()} All rights reserved — Syed Asiful Alam, PhD
+              © {new Date().getFullYear()} All rights reserved —{" "}
+              <a
+                href="https://www.linkedin.com/in/asifulalam0905024/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary underline-offset-2 transition-colors hover:text-primary-glow hover:underline"
+              >
+                Syed Asiful Alam, PhD
+              </a>
             </p>
           </footer>
         </main>
