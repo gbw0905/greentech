@@ -21,9 +21,9 @@ const feedQuery = queryOptions({
   staleTime: 10 * 60 * 1000,
 });
 
-const TITLE = "Biofuel Policy Radar | Global Mandate & Regulation Tracker";
+const TITLE = "Global Bioenergy Watch | Worldwide Biofuel Policy Tracker";
 const DESCRIPTION =
-  "Live tracker of global biofuel policy: ethanol, biodiesel, renewable diesel and SAF mandates by region, country and fuel type.";
+  "Live tracker of global bioenergy and biofuel policy: ethanol, biodiesel, renewable diesel and SAF mandates by region, country and fuel type.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -143,7 +143,7 @@ function Index() {
             </span>
             <div>
               <div className="font-display text-base leading-tight font-bold">
-                Biofuel Policy Radar
+                Global Bioenergy Watch
               </div>
               <div className="label-mono text-muted-foreground">
                 {COUNTRIES.length} jurisdictions tracked
