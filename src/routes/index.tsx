@@ -411,9 +411,15 @@ function Dashboard() {
             </p>
           )}
 
-          <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_15rem]">
+          <section id="map">
+            <SectionHeading
+              step={1}
+              icon={Map}
+              title="Policy activity by jurisdiction"
+              subtitle="Click a country on the map or in the ranking to filter everything below."
+            />
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_15rem]">
             <div className="glass-panel rise min-w-0 p-5">
-              <h2 className="label-mono text-muted-foreground">Policy activity by jurisdiction</h2>
               <div className="mt-3">
                 <WorldPolicyMap counts={counts} activeCountry={country} onSelect={setCountry} />
               </div>
@@ -468,13 +474,18 @@ function Dashboard() {
                 })}
               </ul>
             </div>
+            </div>
           </section>
 
-          <section>
-            <h2 className="label-mono flex items-center gap-2 text-muted-foreground">
-              <Layers className="size-3.5" /> Timeline · {filtered.length} updates
-              {country && ` · ${COUNTRIES.find((c) => c.slug === country)?.name}`}
-            </h2>
+          <section id="timeline">
+            <SectionHeading
+              step={2}
+              icon={Layers}
+              title={`Policy update timeline · ${filtered.length} updates${
+                country ? ` · ${COUNTRIES.find((c) => c.slug === country)?.name}` : ""
+              }`}
+              subtitle="Newest mandates, obligations and regulatory decisions from the live scan."
+            />
             <div className="mt-3 space-y-3">
               {filtered.length === 0 &&
                 (busy && !feed ? (
@@ -503,8 +514,13 @@ function Dashboard() {
             </div>
           </section>
 
-          <section className="pt-4">
-            <h2 className="label-mono text-muted-foreground">Country profiles</h2>
+          <section id="profiles" className="pt-4">
+            <SectionHeading
+              step={3}
+              icon={Flag}
+              title="Country policy profiles"
+              subtitle="Headline mandate for each tracked jurisdiction — open a profile for full detail."
+            />
             <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {COUNTRIES.map((c) => (
                 <Link
@@ -530,9 +546,30 @@ function Dashboard() {
             </div>
           </section>
 
-          <VideoLibrary />
+          <section id="videos" className="pt-4">
+            <SectionHeading
+              step={4}
+              icon={Video}
+              title="Video briefing room"
+              subtitle="YouTube channels and official video hubs, linked to the countries and policies they cover."
+            />
+            <VideoLibrary
+              regions={regions}
+              fuels={fuels}
+              country={country}
+              onSelectCountry={setCountry}
+            />
+          </section>
 
-          <TrafficPanel />
+          <section id="audience" className="pt-4">
+            <SectionHeading
+              step={5}
+              icon={Activity}
+              title="Live audience"
+              subtitle="Real-time readership of this desk."
+            />
+            <TrafficPanel />
+          </section>
 
           <section className="glass-panel rise border-l-4 border-l-signal bg-signal/[0.03] p-5">
             <div className="flex items-start gap-3">
