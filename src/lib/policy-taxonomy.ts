@@ -445,3 +445,12 @@ export const REGION_ACCENT: Record<Region, string> = {
   "Middle East": "var(--region-me)",
   Global: "var(--region-global)",
 };
+
+export const FUEL_ACCENT: Record<FuelType, string> = {
+  Ethanol: "var(--fuel-ethanol)",
+  Biodiesel: "var(--fuel-biodiesel)",
+  "Renewable Diesel": "var(--fuel-renewable-diesel)",
+  SAF: "var(--fuel-saf)",
+  Biogas: "var(--fuel-biogas)",
+  Feedstock: "var(--fuel-feedstock)",
+};
