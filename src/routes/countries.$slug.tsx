@@ -54,7 +54,7 @@ function CountryPage() {
       </Link>
 
       <header className="glass-panel rise mt-6 overflow-hidden">
-        <div className="bg-[var(--gradient-frost)] p-7">
+        <div className="surface-gradient-frost p-7">
           <div className="label-mono" style={{ color: REGION_ACCENT[country.region] }}>
             {country.region}
           </div>

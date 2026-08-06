@@ -123,7 +123,7 @@ function Index() {
       <header className="sticky top-0 z-30 border-b border-border/80 bg-surface/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[110rem] flex-wrap items-center justify-between gap-4 px-5 py-3.5 lg:px-8">
           <div className="flex items-center gap-3">
-            <span className="grid size-9 place-items-center rounded-xl bg-[var(--gradient-primary)] text-primary-foreground shadow-[var(--shadow-frost)]">
+            <span className="grid size-9 place-items-center rounded-xl surface-gradient-primary text-primary-foreground shadow-[var(--shadow-frost)]">
               <Globe2 className="size-4.5" />
             </span>
             <div>
@@ -145,7 +145,7 @@ function Index() {
             <button
               type="button"
               onClick={() => refetch()}
-              className="label-mono inline-flex items-center gap-2 rounded-full bg-[var(--gradient-primary)] px-4 py-2 text-primary-foreground shadow-[var(--shadow-frost)] transition-transform duration-200 hover:-translate-y-0.5 active:scale-95"
+              className="label-mono inline-flex items-center gap-2 rounded-full surface-gradient-primary px-4 py-2 text-primary-foreground shadow-[var(--shadow-frost)] transition-transform duration-200 hover:-translate-y-0.5 active:scale-95"
             >
               <RefreshCw className={`size-3.5 ${isFetching ? "animate-spin" : ""}`} />
               Rescan
@@ -244,7 +244,7 @@ function Index() {
         {/* Main */}
         <main className="min-w-0 space-y-6">
           <section className="glass-panel rise overflow-hidden">
-            <div className="bg-[var(--gradient-frost)] px-6 py-7">
+            <div className="surface-gradient-frost px-6 py-7">
               <div className="label-mono text-primary">Global biofuel intelligence</div>
               <h1 className="mt-2 max-w-2xl font-display text-3xl leading-tight font-bold sm:text-4xl">
                 Every biofuel <span className="text-gradient">policy move</span>, tracked as it
