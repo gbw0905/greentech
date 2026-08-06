@@ -25,11 +25,12 @@ export function getVisitorId(): string {
 export async function recordVisit(path: string): Promise<void> {
   const visitorId = getVisitorId();
   if (!visitorId) return;
+  const referrer =
+    typeof document !== "undefined" && document.referrer ? document.referrer : "";
   await supabase.rpc("record_visit", {
     _path: path,
     _visitor_id: visitorId,
-    _referrer:
-      typeof document !== "undefined" && document.referrer ? document.referrer : undefined,
+    ...(referrer ? { _referrer: referrer } : {}),
   });
 }
 
