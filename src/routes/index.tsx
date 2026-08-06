@@ -297,7 +297,7 @@ function Index() {
                 Global biofuel intelligence
               </div>
               <h1 className="mt-4 max-w-3xl font-display text-4xl leading-[1.05] font-bold sm:text-5xl">
-                Every biofuel policy move, tracked as it lands.
+                AI powered global bioenergy outlook
               </h1>
               <p className="mt-4 max-w-xl text-sm/relaxed opacity-90">
                 Continuously scanned mandates, blending obligations and regulatory decisions across{" "}
