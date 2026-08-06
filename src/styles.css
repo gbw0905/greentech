@@ -113,6 +113,12 @@
   --region-africa: oklch(0.53 0.16 320);
   --region-me: oklch(0.5 0.14 278);
   --region-global: oklch(0.56 0.025 240);
+  --fuel-ethanol: oklch(0.58 0.14 145);
+  --fuel-biodiesel: oklch(0.6 0.14 85);
+  --fuel-renewable-diesel: oklch(0.55 0.13 200);
+  --fuel-saf: oklch(0.55 0.16 290);
+  --fuel-biogas: oklch(0.56 0.13 180);
+  --fuel-feedstock: oklch(0.58 0.15 40);
   --gradient-frost: linear-gradient(135deg, oklch(0.96 0.03 235), oklch(0.93 0.045 250) 45%, oklch(0.97 0.02 200));
   --gradient-primary: linear-gradient(120deg, var(--primary), var(--primary-glow));
   --shadow-frost: 0 1px 2px oklch(0.5 0.05 240 / 0.06), 0 10px 30px -14px oklch(0.5 0.08 240 / 0.28);
