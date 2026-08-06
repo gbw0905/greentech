@@ -85,8 +85,8 @@ function Chip({
               boxShadow: `0 0 0 3px color-mix(in oklab, ${tint} 28%, transparent), var(--shadow-frost)`,
             }
           : {
-              backgroundColor: `color-mix(in oklab, ${tint} 12%, var(--surface))`,
-              borderColor: `color-mix(in oklab, ${tint} 35%, transparent)`,
+              backgroundColor: `color-mix(in oklab, ${tint} 22%, var(--surface))`,
+              borderColor: `color-mix(in oklab, ${tint} 55%, transparent)`,
               color: tint,
             }
       }
