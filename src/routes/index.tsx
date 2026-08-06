@@ -399,7 +399,7 @@ function Dashboard() {
                 <span className="pulse-dot size-1.5 rounded-full bg-current" />
                 Global biofuel intelligence
               </div>
-              <h1 className="mt-5 font-display text-[clamp(0.95rem,5.4cqw,3.4rem)] leading-[1.1] font-bold whitespace-nowrap [text-shadow:0_2px_24px_rgba(255,255,255,0.35)]">
+              <h1 className="mt-5 font-display text-[clamp(0.85rem,4.55cqw,2.9rem)] leading-[1.1] font-bold whitespace-nowrap [text-shadow:0_2px_24px_rgba(255,255,255,0.35)]">
                 AI powered global bioenergy outlook
               </h1>
               <p className="mt-4 max-w-xl text-sm/relaxed opacity-90">
