@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { RefreshCw, Globe2, Layers, Filter, X, AlertTriangle } from "lucide-react";
+import { RefreshCw, Globe2, Layers, Filter, X, AlertTriangle, Map, Video, Activity, Flag } from "lucide-react";
 import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
 import {
   COUNTRIES,
@@ -113,6 +113,37 @@ function Chip({
 }
 
 function Index() {
+  return <Dashboard />;
+}
+
+function SectionHeading({
+  step,
+  icon: Icon,
+  title,
+  subtitle,
+}: {
+  step: number;
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  subtitle: string;
+}) {
+  return (
+    <div className="mb-3 flex items-start gap-3 border-l-4 border-l-primary pl-3">
+      <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-lg surface-gradient-primary font-mono text-xs font-bold text-primary-foreground">
+        {step}
+      </span>
+      <div>
+        <h2 className="flex items-center gap-2 font-display text-lg font-bold text-foreground">
+          <Icon className="size-4 text-primary" />
+          {title}
+        </h2>
+        <p className="text-xs text-muted-foreground">{subtitle}</p>
+      </div>
+    </div>
+  );
+}
+
+function Dashboard() {
   useVisitTracker();
   const queryClient = useQueryClient();
   const { data: feed, isFetching } = useQuery(feedQuery);
