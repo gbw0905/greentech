@@ -263,6 +263,72 @@
   }
 }
 
+@keyframes aurora-drift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary) 55%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 7px color-mix(in oklab, var(--primary) 0%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary) 0%, transparent);
+  }
+}
+
+@keyframes spark-in {
+  from {
+    stroke-dashoffset: 300;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@utility surface-gradient-aurora {
+  background-image: var(--gradient-aurora);
+  background-size: 220% 220%;
+  animation: aurora-drift 18s ease-in-out infinite;
+}
+
+@utility pulse-dot {
+  animation: pulse-ring 1.8s ease-out infinite;
+}
+
+@utility spark-draw {
+  stroke-dasharray: 300;
+  animation: spark-in 1.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@utility hero-glow {
+  position: relative;
+  isolation: isolate;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -40% -10% auto -10%;
+    height: 140%;
+    background: radial-gradient(
+      55% 60% at 20% 0%,
+      oklch(1 0 0 / 0.45),
+      transparent 70%
+    );
+    pointer-events: none;
+    z-index: -1;
+  }
+}
+
 @utility rise {
   animation: rise-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
