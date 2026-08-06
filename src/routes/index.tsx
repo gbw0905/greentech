@@ -106,6 +106,18 @@ function Index() {
     [counts],
   );
 
+  const hasFilters = Boolean(country) || regions.length > 0 || fuels.length > 0;
+  const clearFilters = () => {
+    setCountry(null);
+    setRegions([]);
+    setFuels([]);
+  };
+  const stats: Array<[string, number]> = [
+    ["Updates", data.updates.length],
+    ["Jurisdictions", Object.keys(counts).length],
+    ["In view", filtered.length],
+  ];
+
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-30 border-b border-border/80 bg-surface/70 backdrop-blur-xl">
