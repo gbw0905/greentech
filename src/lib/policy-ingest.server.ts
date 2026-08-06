@@ -14,17 +14,21 @@ interface FeedItem {
   source: string;
 }
 
-const decode = (s: string): string =>
+const entities = (s: string): string =>
   s
-    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
-    .replace(/<[^>]+>/g, " ")
     .replace(/&#(\d+);/g, (_, d: string) => String.fromCharCode(Number(d)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, h: string) => String.fromCharCode(parseInt(h, 16)))
     .replace(/&quot;/g, '"')
     .replace(/&#39;|&apos;/g, "'")
-    .replace(/&amp;/g, "&")
+    .replace(/&nbsp;/g, " ")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
-    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&");
+
+/** Feeds nest escaped markup inside CDATA, so decode entities first, then strip tags. */
+const decode = (s: string): string =>
+  entities(entities(s.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")).replace(/<[^>]+>/g, " "))
+    .replace(/<[^>]+>/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 
