@@ -30,11 +30,14 @@ const GATEWAY = "https://connector-gateway.lovable.dev/firecrawl/v2";
 const QUERIES = [
   "biofuel policy mandate update government",
   "ethanol blending mandate policy announcement",
-  "biodiesel mandate B40 B30 government decision",
+  "biodiesel mandate blending government decision",
   "sustainable aviation fuel mandate policy regulation",
-  "renewable fuel standard low carbon fuel standard rulemaking",
-  "RED III ReFuelEU biofuel regulation news",
 ];
+
+const CACHE_TTL_MS = 30 * 60 * 1000;
+let cache: { feed: PolicyFeed; at: number } | null = null;
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 interface RawResult {
   url?: string;
@@ -76,20 +79,25 @@ function classify(text: string) {
 }
 
 async function search(query: string, apiKey: string, lovableKey: string) {
-  const res = await fetch(`${GATEWAY}/search`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${lovableKey}`,
-      "X-Connection-Api-Key": apiKey,
-    },
-    body: JSON.stringify({ query, limit: 10, tbs: "qdr:m", sources: ["news", "web"] }),
-  });
-  if (!res.ok) {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const res = await fetch(`${GATEWAY}/search`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${lovableKey}`,
+        "X-Connection-Api-Key": apiKey,
+      },
+      body: JSON.stringify({ query, limit: 10, tbs: "qdr:m", sources: ["news", "web"] }),
+    });
+    if (res.ok) return collect(await res.json());
     const body = await res.text();
-    throw new Error(`Firecrawl search failed [${res.status}]: ${body.slice(0, 300)}`);
+    if (res.status === 429 && attempt < 2) {
+      await sleep(20000);
+      continue;
+    }
+    throw new Error(`Firecrawl search failed [${res.status}]: ${body.slice(0, 200)}`);
   }
-  return collect(await res.json());
+  return [];
 }
 
 export async function fetchPolicyFeed(): Promise<PolicyFeed> {
@@ -101,9 +109,16 @@ export async function fetchPolicyFeed(): Promise<PolicyFeed> {
     return { updates: [], fetchedAt, error: "Live search is not configured." };
   }
 
-  const settled = await Promise.allSettled(
-    QUERIES.map((q) => search(q, apiKey, lovableKey)),
-  );
+  // Sequential with spacing: the search API is aggressively rate limited.
+  const settled: PromiseSettledResult<RawResult[]>[] = [];
+  for (const q of QUERIES) {
+    try {
+      settled.push({ status: "fulfilled", value: await search(q, apiKey, lovableKey) });
+    } catch (e) {
+      settled.push({ status: "rejected", reason: e });
+    }
+    await sleep(2500);
+  }
 
   const failures = settled.filter((s) => s.status === "rejected");
   const raw = settled.flatMap((s) => (s.status === "fulfilled" ? s.value : []));
@@ -154,4 +169,13 @@ export async function fetchPolicyFeed(): Promise<PolicyFeed> {
     fetchedAt,
     error: failures.length === settled.length ? "All searches failed." : null,
   };
+}
+
+export async function getCachedPolicyFeed(): Promise<PolicyFeed> {
+  if (cache && Date.now() - cache.at < CACHE_TTL_MS && cache.feed.updates.length > 0) {
+    return cache.feed;
+  }
+  const feed = await fetchPolicyFeed();
+  if (feed.updates.length > 0) cache = { feed, at: Date.now() };
+  return feed;
 }
