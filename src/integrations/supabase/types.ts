@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      policy_updates: {
+        Row: {
+          country_name: string | null
+          country_slug: string | null
+          created_at: string
+          fuels: string[]
+          id: string
+          published_at: string | null
+          region: string
+          source: string
+          summary: string
+          title: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          country_name?: string | null
+          country_slug?: string | null
+          created_at?: string
+          fuels?: string[]
+          id?: string
+          published_at?: string | null
+          region?: string
+          source?: string
+          summary?: string
+          title: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          country_name?: string | null
+          country_slug?: string | null
+          created_at?: string
+          fuels?: string[]
+          id?: string
+          published_at?: string | null
+          region?: string
+          source?: string
+          summary?: string
+          title?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       site_visits: {
         Row: {
           created_at: string

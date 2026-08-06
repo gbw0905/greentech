@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { queryOptions, useQuery } from "@tanstack/react-query";
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { RefreshCw, Globe2, Layers, Filter, X } from "lucide-react";
-import { getPolicyFeed } from "@/lib/policy.functions";
+import { RefreshCw, Globe2, Layers, Filter, X, Radio } from "lucide-react";
+import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
 import {
   COUNTRIES,
   FUEL_TYPES,
@@ -17,11 +17,15 @@ import { WorldPolicyMap } from "@/components/WorldPolicyMap";
 import { TrafficPanel } from "@/components/TrafficPanel";
 import { Counter } from "@/components/Counter";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
+import { fetchTrafficStats } from "@/lib/traffic";
 
 const feedQuery = queryOptions({
   queryKey: ["policy-feed"],
   queryFn: () => getPolicyFeed(),
-  staleTime: 10 * 60 * 1000,
+  staleTime: 5 * 60 * 1000,
+  // Keeps the desk current without a page reload.
+  refetchInterval: 5 * 60 * 1000,
+  refetchOnWindowFocus: true,
 });
 
 const TITLE = "Global Bioenergy Watch | Worldwide Biofuel Policy Tracker";
@@ -91,7 +95,20 @@ function Chip({
 
 function Index() {
   useVisitTracker();
-  const { data: feed, isFetching, refetch } = useQuery(feedQuery);
+  const queryClient = useQueryClient();
+  const { data: feed, isFetching } = useQuery(feedQuery);
+  const rescan = useMutation({
+    mutationFn: () => refreshPolicyFeed(),
+    onSuccess: (fresh) => {
+      queryClient.setQueryData(["policy-feed"], fresh);
+    },
+  });
+  const { data: traffic } = useQuery({
+    queryKey: ["traffic-stats"],
+    queryFn: fetchTrafficStats,
+    refetchInterval: 30_000,
+  });
+  const busy = isFetching || rescan.isPending;
   const data = feed ?? { updates: [], fetchedAt: null as string | null, error: null as string | null };
   const [regions, setRegions] = useState<Region[]>([]);
   const [fuels, setFuels] = useState<FuelType[]>([]);
@@ -155,18 +172,28 @@ function Index() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <div className="hidden items-center gap-2 rounded-full border border-border bg-surface-2/70 px-3 py-1.5 md:flex">
+              <span className="pulse-dot size-1.5 rounded-full bg-primary" />
+              <Radio className="size-3.5 text-primary" />
+              <span className="label-mono text-muted-foreground">
+                <span className="font-mono text-foreground">{traffic?.live_now ?? 0}</span> reading now
+                {" · "}
+                <span className="font-mono text-foreground">{traffic?.views_today ?? 0}</span> views today
+              </span>
+            </div>
             <div className="hidden text-right sm:block">
               <div className="label-mono text-muted-foreground">Last scan</div>
               <div className="font-mono text-xs">
-                {isFetching && !feed ? "scanning…" : formatDate(data.fetchedAt)}
+                {busy && !feed ? "scanning…" : formatDate(data.fetchedAt)}
               </div>
             </div>
             <button
               type="button"
-              onClick={() => refetch()}
+              onClick={() => rescan.mutate()}
+              disabled={busy}
               className="label-mono inline-flex items-center gap-2 rounded-full surface-gradient-primary px-4 py-2 text-primary-foreground shadow-[var(--shadow-frost)] transition-transform duration-200 hover:-translate-y-0.5 active:scale-95"
             >
-              <RefreshCw className={`size-3.5 ${isFetching ? "animate-spin" : ""}`} />
+              <RefreshCw className={`size-3.5 ${busy ? "animate-spin" : ""}`} />
               Rescan
             </button>
           </div>
@@ -350,7 +377,7 @@ function Index() {
             </h2>
             <div className="mt-3 space-y-3">
               {filtered.length === 0 &&
-                (isFetching && !feed ? (
+                (busy && !feed ? (
                   <div className="space-y-3">
                     {[0, 1, 2].map((i) => (
                       <div key={i} className="scanning-bar h-28 rounded-[var(--radius)]" />

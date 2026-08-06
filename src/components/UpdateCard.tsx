@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
 import { REGION_ACCENT } from "@/lib/policy-taxonomy";
-import type { PolicyUpdate } from "@/lib/policy.server";
+import type { PolicyUpdate } from "@/lib/policy-types";
 
 export function formatDate(iso: string | null) {
   if (!iso) return "Undated";

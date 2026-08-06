@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CountriesSlugRouteImport } from './routes/countries.$slug'
+import { Route as ApiPublicIngestPolicyRouteImport } from './routes/api/public/ingest-policy'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +23,40 @@ const CountriesSlugRoute = CountriesSlugRouteImport.update({
   path: '/countries/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicIngestPolicyRoute = ApiPublicIngestPolicyRouteImport.update({
+  id: '/api/public/ingest-policy',
+  path: '/api/public/ingest-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/countries/$slug': typeof CountriesSlugRoute
+  '/api/public/ingest-policy': typeof ApiPublicIngestPolicyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/countries/$slug': typeof CountriesSlugRoute
+  '/api/public/ingest-policy': typeof ApiPublicIngestPolicyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/countries/$slug': typeof CountriesSlugRoute
+  '/api/public/ingest-policy': typeof ApiPublicIngestPolicyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/countries/$slug'
+  fullPaths: '/' | '/countries/$slug' | '/api/public/ingest-policy'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/countries/$slug'
-  id: '__root__' | '/' | '/countries/$slug'
+  to: '/' | '/countries/$slug' | '/api/public/ingest-policy'
+  id: '__root__' | '/' | '/countries/$slug' | '/api/public/ingest-policy'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CountriesSlugRoute: typeof CountriesSlugRoute
+  ApiPublicIngestPolicyRoute: typeof ApiPublicIngestPolicyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +75,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CountriesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/ingest-policy': {
+      id: '/api/public/ingest-policy'
+      path: '/api/public/ingest-policy'
+      fullPath: '/api/public/ingest-policy'
+      preLoaderRoute: typeof ApiPublicIngestPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CountriesSlugRoute: CountriesSlugRoute,
+  ApiPublicIngestPolicyRoute: ApiPublicIngestPolicyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
