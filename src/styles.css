@@ -221,6 +221,14 @@
   color: transparent;
 }
 
+@utility surface-gradient-primary {
+  background-image: var(--gradient-primary);
+}
+
+@utility surface-gradient-frost {
+  background-image: var(--gradient-frost);
+}
+
 @keyframes rise-in {
   from {
     opacity: 0;
