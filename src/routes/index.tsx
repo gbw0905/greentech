@@ -128,16 +128,29 @@ function SectionHeading({
   subtitle: string;
 }) {
   return (
-    <div className="mb-3 flex items-start gap-3 border-l-4 border-l-primary pl-3">
-      <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-lg surface-gradient-primary font-mono text-xs font-bold text-primary-foreground">
-        {step}
-      </span>
-      <div>
-        <h2 className="flex items-center gap-2 font-display text-lg font-bold text-foreground">
-          <Icon className="size-4 text-primary" />
-          {title}
-        </h2>
-        <p className="text-xs text-muted-foreground">{subtitle}</p>
+    <div className="mb-4 overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-r from-primary via-primary-glow to-accent shadow-[var(--shadow-lift)]">
+      <div className="relative px-5 py-4 sm:px-6 sm:py-5">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-10"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(45deg, transparent, transparent 16px, currentColor 16px, currentColor 18px)",
+          }}
+        />
+        <div className="relative flex items-center gap-4">
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-foreground/20 font-mono text-sm font-bold text-primary-foreground ring-1 ring-inset ring-primary-foreground/30">
+            {step}
+          </span>
+          <div className="min-w-0">
+            <h2 className="flex items-center gap-2.5 font-display text-2xl font-black leading-none tracking-tight text-primary-foreground sm:text-3xl">
+              <Icon className="size-6 shrink-0 text-primary-foreground/90" />
+              <span className="truncate">{title}</span>
+            </h2>
+            <p className="mt-1.5 max-w-2xl text-sm font-medium text-primary-foreground/80">
+              {subtitle}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
