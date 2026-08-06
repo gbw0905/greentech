@@ -14,8 +14,9 @@ export function formatDate(iso: string | null) {
 
 export function UpdateCard({ update }: { update: PolicyUpdate }) {
   return (
-    <article className="group relative border-l-2 bg-surface/60 p-5 transition-colors hover:bg-surface-2/70"
-      style={{ borderLeftColor: REGION_ACCENT[update.region] }}
+    <article
+      className="glass-panel lift group relative overflow-hidden p-5 pl-6"
+      style={{ borderLeftColor: REGION_ACCENT[update.region], borderLeftWidth: 3 }}
     >
       <div className="label-mono flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground">
         <time>{formatDate(update.publishedAt)}</time>
@@ -56,7 +57,7 @@ export function UpdateCard({ update }: { update: PolicyUpdate }) {
         {update.fuels.map((f) => (
           <span
             key={f}
-            className="label-mono rounded-full border border-border px-2 py-0.5 text-foreground/80"
+            className="label-mono rounded-full bg-secondary px-2 py-0.5 text-secondary-foreground"
           >
             {f}
           </span>
