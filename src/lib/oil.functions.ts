@@ -8,11 +8,12 @@ export type OilQuote = {
   change: number;
   changePct: number;
   currency: string;
+  unit: string;
   series: Array<{ t: number; c: number }>;
   updatedAt: number;
 };
 
-async function loadSymbol(symbol: string, label: string): Promise<OilQuote | null> {
+async function loadSymbol(symbol: string, label: string, unit: string): Promise<OilQuote | null> {
   try {
     const res = await fetch(
       `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=1mo&interval=1d`,
@@ -41,6 +42,7 @@ async function loadSymbol(symbol: string, label: string): Promise<OilQuote | nul
       change: price - prevClose,
       changePct: prevClose ? ((price - prevClose) / prevClose) * 100 : 0,
       currency: r.meta?.currency ?? "USD",
+      unit,
       series,
       updatedAt: Date.now(),
     };
@@ -50,9 +52,10 @@ async function loadSymbol(symbol: string, label: string): Promise<OilQuote | nul
 }
 
 export const getOilPricesFn = createServerFn({ method: "GET" }).handler(async () => {
-  const [wti, brent] = await Promise.all([
-    loadSymbol("CL=F", "WTI Crude"),
-    loadSymbol("BZ=F", "Brent Crude"),
+  const [wti, brent, spx] = await Promise.all([
+    loadSymbol("CL=F", "WTI Crude", "/bbl"),
+    loadSymbol("BZ=F", "Brent Crude", "/bbl"),
+    loadSymbol("^GSPC", "S&P 500", "index"),
   ]);
-  return { quotes: [wti, brent].filter(Boolean) as OilQuote[] };
+  return { quotes: [wti, brent, spx].filter(Boolean) as OilQuote[] };
 });
