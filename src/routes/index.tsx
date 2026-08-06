@@ -59,10 +59,10 @@ function Chip({
     <button
       type="button"
       onClick={onClick}
-      className={`label-mono rounded-full border px-3 py-1.5 transition-colors ${
+      className={`label-mono rounded-full border px-3 py-1.5 transition-all duration-200 active:scale-95 ${
         active
-          ? "border-primary bg-primary text-primary-foreground"
-          : "border-border text-muted-foreground hover:border-foreground/40 hover:text-foreground"
+          ? "border-transparent bg-primary text-primary-foreground shadow-[var(--shadow-frost)]"
+          : "border-border bg-surface text-muted-foreground hover:-translate-y-0.5 hover:border-primary/40 hover:text-foreground"
       }`}
       style={!active && color ? { color } : undefined}
     >
@@ -108,27 +108,32 @@ function Index() {
 
   return (
     <div className="min-h-screen">
-      <header className="border-b border-border bg-surface/50 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-end justify-between gap-4 px-6 py-6">
-          <div>
-            <div className="label-mono text-primary">Global biofuel intelligence</div>
-            <h1 className="mt-1 text-3xl font-bold sm:text-4xl">Biofuel Policy Radar</h1>
-            <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-              Continuously scanned mandates, blending obligations and regulatory decisions across{" "}
-              {COUNTRIES.length} tracked jurisdictions.
-            </p>
+      <header className="sticky top-0 z-30 border-b border-border/80 bg-surface/70 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-[110rem] flex-wrap items-center justify-between gap-4 px-5 py-3.5 lg:px-8">
+          <div className="flex items-center gap-3">
+            <span className="grid size-9 place-items-center rounded-xl bg-[var(--gradient-primary)] text-primary-foreground shadow-[var(--shadow-frost)]">
+              <Globe2 className="size-4.5" />
+            </span>
+            <div>
+              <div className="font-display text-base leading-tight font-bold">
+                Biofuel Policy Radar
+              </div>
+              <div className="label-mono text-muted-foreground">
+                {COUNTRIES.length} jurisdictions tracked
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="text-right">
+          <div className="flex items-center gap-3">
+            <div className="hidden text-right sm:block">
               <div className="label-mono text-muted-foreground">Last scan</div>
-              <div className="font-mono text-sm">
+              <div className="font-mono text-xs">
                 {isFetching && !feed ? "scanning…" : formatDate(data.fetchedAt)}
               </div>
             </div>
             <button
               type="button"
               onClick={() => refetch()}
-              className="label-mono inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 hover:border-primary hover:text-primary"
+              className="label-mono inline-flex items-center gap-2 rounded-full bg-[var(--gradient-primary)] px-4 py-2 text-primary-foreground shadow-[var(--shadow-frost)] transition-transform duration-200 hover:-translate-y-0.5 active:scale-95"
             >
               <RefreshCw className={`size-3.5 ${isFetching ? "animate-spin" : ""}`} />
               Rescan
@@ -137,73 +142,28 @@ function Index() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-6 py-8">
-        {data.error && (
-          <p className="mb-6 border-l-2 border-destructive bg-surface p-4 text-sm text-muted-foreground">
-            Live scan issue: {data.error}
-          </p>
-        )}
-
-        <section className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
-          <div className="rounded-md border border-border bg-surface/50 p-4">
-            <h2 className="label-mono text-muted-foreground">Policy activity by jurisdiction</h2>
-            <WorldPolicyMap counts={counts} activeCountry={country} onSelect={setCountry} />
-          </div>
-
-          <div className="space-y-6">
-            <div className="grid grid-cols-3 gap-px overflow-hidden rounded-md border border-border bg-border">
-              {[
-                ["Updates", data.updates.length],
-                ["Jurisdictions", Object.keys(counts).length],
-                ["In view", filtered.length],
-              ].map(([label, value]) => (
-                <div key={label as string} className="bg-surface p-4">
-                  <div className="label-mono text-muted-foreground">{label}</div>
-                  <div className="mt-1 font-display text-2xl font-bold text-primary">{value}</div>
-                </div>
-              ))}
+      <div className="mx-auto grid max-w-[110rem] gap-6 px-5 py-6 lg:grid-cols-[17rem_minmax(0,1fr)] lg:px-8 lg:py-8">
+        {/* Sidebar */}
+        <aside className="lg:sticky lg:top-24 lg:self-start">
+          <div className="glass-panel rise space-y-6 p-5">
+            <div className="flex items-center justify-between">
+              <h2 className="label-mono flex items-center gap-2 text-muted-foreground">
+                <Filter className="size-3.5" /> Filters
+              </h2>
+              {hasFilters && (
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="label-mono inline-flex items-center gap-1 text-primary hover:underline"
+                >
+                  <X className="size-3" /> Clear
+                </button>
+              )}
             </div>
 
-            <div className="rounded-md border border-border bg-surface/50 p-4">
-              <h2 className="label-mono text-muted-foreground">Most active markets</h2>
-              <ul className="mt-3 space-y-2">
-                {topCountries.length === 0 && (
-                  <li className="text-sm text-muted-foreground">No matches in this scan.</li>
-                )}
-                {topCountries.map(([slug, n]) => {
-                  const c = COUNTRIES.find((x) => x.slug === slug)!;
-                  return (
-                    <li key={slug} className="flex items-center gap-3">
-                      <Link
-                        to="/countries/$slug"
-                        params={{ slug }}
-                        className="w-40 shrink-0 truncate text-sm hover:text-primary"
-                      >
-                        {c.name}
-                      </Link>
-                      <div className="h-2 flex-1 rounded-full bg-surface-2">
-                        <div
-                          className="h-2 rounded-full"
-                          style={{
-                            width: `${(n / topCountries[0]![1]) * 100}%`,
-                            backgroundColor: REGION_ACCENT[c.region],
-                          }}
-                        />
-                      </div>
-                      <span className="font-mono text-xs text-muted-foreground">{n}</span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        <section className="mt-10 border-t border-border pt-6">
-          <div className="flex flex-wrap items-start gap-x-10 gap-y-5">
             <div>
-              <h2 className="label-mono mb-3 text-muted-foreground">Region</h2>
-              <div className="flex flex-wrap gap-2">
+              <h3 className="label-mono mb-2.5 text-muted-foreground">Region</h3>
+              <div className="flex flex-wrap gap-1.5">
                 {REGIONS.map((r) => (
                   <Chip
                     key={r}
@@ -216,9 +176,10 @@ function Index() {
                 ))}
               </div>
             </div>
+
             <div>
-              <h2 className="label-mono mb-3 text-muted-foreground">Fuel type</h2>
-              <div className="flex flex-wrap gap-2">
+              <h3 className="label-mono mb-2.5 text-muted-foreground">Fuel type</h3>
+              <div className="flex flex-wrap gap-1.5">
                 {FUEL_TYPES.map((f) => (
                   <Chip
                     key={f}
@@ -230,72 +191,146 @@ function Index() {
                 ))}
               </div>
             </div>
-            {(country || regions.length > 0 || fuels.length > 0) && (
-              <button
-                type="button"
-                onClick={() => {
-                  setCountry(null);
-                  setRegions([]);
-                  setFuels([]);
-                }}
-                className="label-mono self-end text-primary underline-offset-4 hover:underline"
-              >
-                Clear filters
-              </button>
-            )}
-          </div>
-        </section>
 
-        <section className="mt-10">
-          <h2 className="label-mono text-muted-foreground">
-            Timeline · {filtered.length} updates
-            {country && ` · ${COUNTRIES.find((c) => c.slug === country)?.name}`}
-          </h2>
-          <div className="mt-4 space-y-3 border-l border-border pl-0">
-            {filtered.length === 0 && (
-              <p className="p-6 text-sm text-muted-foreground">
-                {isFetching && !feed
-                  ? "Scanning global sources for the latest policy moves…"
-                  : "No updates match the current filters."}
+            <div className="border-t border-border pt-5">
+              <h3 className="label-mono mb-3 text-muted-foreground">Most active markets</h3>
+              <ul className="space-y-2.5">
+                {topCountries.length === 0 && (
+                  <li className="text-sm text-muted-foreground">No matches in this scan.</li>
+                )}
+                {topCountries.map(([slug, n]) => {
+                  const c = COUNTRIES.find((x) => x.slug === slug)!;
+                  return (
+                    <li key={slug} className="space-y-1">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <Link
+                          to="/countries/$slug"
+                          params={{ slug }}
+                          className="truncate text-sm transition-colors hover:text-primary"
+                        >
+                          {c.name}
+                        </Link>
+                        <span className="font-mono text-xs text-muted-foreground">{n}</span>
+                      </div>
+                      <div className="h-1.5 overflow-hidden rounded-full bg-surface-2">
+                        <div
+                          className="h-full rounded-full transition-[width] duration-700 ease-out"
+                          style={{
+                            width: `${(n / topCountries[0]![1]) * 100}%`,
+                            backgroundColor: REGION_ACCENT[c.region],
+                          }}
+                        />
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </div>
+        </aside>
+
+        {/* Main */}
+        <main className="min-w-0 space-y-6">
+          <section className="glass-panel rise overflow-hidden">
+            <div className="bg-[var(--gradient-frost)] px-6 py-7">
+              <div className="label-mono text-primary">Global biofuel intelligence</div>
+              <h1 className="mt-2 max-w-2xl font-display text-3xl leading-tight font-bold sm:text-4xl">
+                Every biofuel <span className="text-gradient">policy move</span>, tracked as it
+                lands.
+              </h1>
+              <p className="mt-3 max-w-xl text-sm text-muted-foreground">
+                Continuously scanned mandates, blending obligations and regulatory decisions across{" "}
+                {COUNTRIES.length} jurisdictions.
               </p>
-            )}
-            {filtered.map((u) => (
-              <UpdateCard key={u.id} update={u} />
-            ))}
-          </div>
-        </section>
+            </div>
+            <div className="grid grid-cols-3 divide-x divide-border border-t border-border">
+              {stats.map(([label, value]) => (
+                <div key={label} className="px-6 py-4">
+                  <div className="label-mono text-muted-foreground">{label}</div>
+                  <div className="mt-1 font-display text-2xl font-bold text-primary tabular-nums">
+                    {value}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
 
-        <section className="mt-14 border-t border-border pt-6">
-          <h2 className="label-mono text-muted-foreground">Country profiles</h2>
-          <div className="mt-4 grid gap-px overflow-hidden rounded-md border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">
-            {COUNTRIES.map((c) => (
-              <Link
-                key={c.slug}
-                to="/countries/$slug"
-                params={{ slug: c.slug }}
-                className="group bg-surface p-4 transition-colors hover:bg-surface-2"
-              >
-                <div className="label-mono" style={{ color: REGION_ACCENT[c.region] }}>
-                  {c.region}
-                </div>
-                <div className="mt-1 font-display font-semibold group-hover:text-primary">
-                  {c.name}
-                </div>
-                <div className="mt-1 font-mono text-xs text-muted-foreground">
-                  {c.mandates[0]?.value}
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      </main>
+          {data.error && (
+            <p className="glass-panel border-l-4 border-l-destructive p-4 text-sm text-muted-foreground">
+              Live scan issue: {data.error}
+            </p>
+          )}
 
-      <footer className="mt-10 border-t border-border py-8">
-        <p className="mx-auto max-w-7xl px-6 text-xs text-muted-foreground">
-          Updates are aggregated from live web sources and auto-classified by jurisdiction and fuel
-          type. Verify against primary legislation before use in compliance decisions.
-        </p>
-      </footer>
+          <section className="glass-panel rise p-5">
+            <h2 className="label-mono text-muted-foreground">Policy activity by jurisdiction</h2>
+            <WorldPolicyMap counts={counts} activeCountry={country} onSelect={setCountry} />
+          </section>
+
+          <section>
+            <h2 className="label-mono flex items-center gap-2 text-muted-foreground">
+              <Layers className="size-3.5" /> Timeline · {filtered.length} updates
+              {country && ` · ${COUNTRIES.find((c) => c.slug === country)?.name}`}
+            </h2>
+            <div className="mt-3 space-y-3">
+              {filtered.length === 0 &&
+                (isFetching && !feed ? (
+                  <div className="space-y-3">
+                    {[0, 1, 2].map((i) => (
+                      <div key={i} className="scanning-bar h-28 rounded-[var(--radius)]" />
+                    ))}
+                    <p className="label-mono text-center text-muted-foreground">
+                      Scanning global sources…
+                    </p>
+                  </div>
+                ) : (
+                  <p className="glass-panel p-6 text-sm text-muted-foreground">
+                    No updates match the current filters.
+                  </p>
+                ))}
+              {filtered.map((u, i) => (
+                <div
+                  key={u.id}
+                  className="rise"
+                  style={{ animationDelay: `${Math.min(i, 12) * 35}ms` }}
+                >
+                  <UpdateCard update={u} />
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="pt-4">
+            <h2 className="label-mono text-muted-foreground">Country profiles</h2>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {COUNTRIES.map((c) => (
+                <Link
+                  key={c.slug}
+                  to="/countries/$slug"
+                  params={{ slug: c.slug }}
+                  className="glass-panel lift group p-4"
+                >
+                  <div className="label-mono" style={{ color: REGION_ACCENT[c.region] }}>
+                    {c.region}
+                  </div>
+                  <div className="mt-1 font-display font-semibold transition-colors group-hover:text-primary">
+                    {c.name}
+                  </div>
+                  <div className="mt-1 font-mono text-xs text-muted-foreground">
+                    {c.mandates[0]?.value}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          <footer className="border-t border-border pt-6 pb-10">
+            <p className="text-xs text-muted-foreground">
+              Updates are aggregated from live web sources and auto-classified by jurisdiction and
+              fuel type. Verify against primary legislation before use in compliance decisions.
+            </p>
+          </footer>
+        </main>
+      </div>
     </div>
   );
 }
