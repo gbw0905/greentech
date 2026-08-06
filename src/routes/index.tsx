@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { RefreshCw, Globe2, Layers, Filter, X, Radio, Sparkles } from "lucide-react";
+import { RefreshCw, Globe2, Layers, Filter, X, Radio, Sparkles, AlertTriangle } from "lucide-react";
 import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
 import {
   COUNTRIES,
@@ -159,15 +159,12 @@ function Index() {
       <header className="sticky top-0 z-30 border-b border-border/80 bg-surface/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[110rem] flex-wrap items-center justify-between gap-4 px-5 py-3.5 lg:px-8">
           <div className="flex items-center gap-3">
-            <span className="grid size-9 place-items-center rounded-xl surface-gradient-primary text-primary-foreground shadow-[var(--shadow-frost)]">
-              <Globe2 className="size-4.5" />
+            <span className="grid size-10 place-items-center rounded-xl surface-gradient-primary text-primary-foreground shadow-[var(--shadow-frost)]">
+              <Globe2 className="size-5" />
             </span>
             <div>
-              <div className="font-display text-base leading-tight font-bold">
+              <div className="font-display text-xl leading-tight font-bold text-gradient drop-shadow-[0_0_12px_rgba(0,240,255,0.35)]">
                 Global Bioenergy Watch
-              </div>
-              <div className="label-mono text-muted-foreground">
-                {COUNTRIES.length} jurisdictions tracked
               </div>
             </div>
           </div>
@@ -321,8 +318,6 @@ function Index() {
             </div>
           </section>
 
-          <TrafficPanel />
-
           {data.error && (
             <p className="glass-panel border-l-4 border-l-destructive p-4 text-sm text-muted-foreground">
               Live scan issue: {data.error}
@@ -428,6 +423,20 @@ function Index() {
                   </div>
                 </Link>
               ))}
+            </div>
+          </section>
+
+          <TrafficPanel />
+
+          <section className="glass-panel rise border-l-4 border-l-signal p-5">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="size-5 shrink-0 text-signal" />
+              <div>
+                <h3 className="font-display font-semibold text-foreground">AI-generated content disclaimer</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  This outlook is assembled and summarized by AI from live web sources. It may contain errors, omissions, or outdated information. Always cross-verify against official government announcements and primary legislation before making compliance or investment decisions.
+                </p>
+              </div>
             </div>
           </section>
 
