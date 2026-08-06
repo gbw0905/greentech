@@ -377,7 +377,7 @@ function Index() {
             </h2>
             <div className="mt-3 space-y-3">
               {filtered.length === 0 &&
-                (isFetching && !feed ? (
+                (busy && !feed ? (
                   <div className="space-y-3">
                     {[0, 1, 2].map((i) => (
                       <div key={i} className="scanning-bar h-28 rounded-[var(--radius)]" />
