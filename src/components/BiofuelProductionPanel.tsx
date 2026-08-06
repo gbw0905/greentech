@@ -131,7 +131,6 @@ export function BiofuelProductionPanel() {
   const total = rows.reduce((a, r) => a + r.daily, 0);
   const unitLabel = unit === "litres" ? "million litres / day" : "thousand barrels / day";
   const scale = (v: number) => (unit === "litres" ? v / 1e6 : v / 1e3);
-  const consumerTotal = CONSUMERS.reduce((a, c) => a + c.annualBnL, 0);
   const users = userView === "countries" ? CONSUMERS : COMPANIES;
   const usersTotal = users.reduce((a, c) => a + c.annualBnL, 0);
 
