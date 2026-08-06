@@ -57,25 +57,31 @@ function Chip({
   onClick,
   children,
   color,
+  count,
 }: {
   active: boolean;
   onClick: () => void;
   children: React.ReactNode;
   color?: string;
+  count?: number;
 }) {
   const tint = color ?? "var(--primary)";
+  const empty = count === 0;
   return (
     <button
       type="button"
       onClick={onClick}
-      className="label-mono inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
+      aria-pressed={active}
+      className={`label-mono inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-all duration-200 hover:-translate-y-0.5 hover:brightness-125 active:scale-95 ${
+        empty && !active ? "opacity-45" : ""
+      }`}
       style={
         active
           ? {
               backgroundColor: tint,
               borderColor: tint,
               color: "var(--primary-foreground)",
-              boxShadow: "var(--shadow-frost)",
+              boxShadow: `0 0 0 3px color-mix(in oklab, ${tint} 28%, transparent), var(--shadow-frost)`,
             }
           : {
               backgroundColor: `color-mix(in oklab, ${tint} 12%, var(--surface))`,
@@ -85,10 +91,22 @@ function Chip({
       }
     >
       <span
-        className="size-1.5 rounded-full"
+        className={`size-1.5 rounded-full ${active ? "pulse-dot" : ""}`}
         style={{ backgroundColor: active ? "var(--primary-foreground)" : tint }}
       />
       {children}
+      {typeof count === "number" && (
+        <span
+          className="ml-0.5 rounded-full px-1.5 text-[0.65rem] tabular-nums"
+          style={{
+            backgroundColor: active
+              ? "color-mix(in oklab, var(--primary-foreground) 22%, transparent)"
+              : `color-mix(in oklab, ${tint} 20%, transparent)`,
+          }}
+        >
+          {count}
+        </span>
+      )}
     </button>
   );
 }
