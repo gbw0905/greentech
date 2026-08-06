@@ -261,7 +261,7 @@ function Dashboard() {
 
       <div className="mx-auto grid max-w-[110rem] gap-6 px-5 py-6 lg:grid-cols-[17rem_minmax(0,1fr)] lg:px-8 lg:py-8">
         {/* Sidebar */}
-        <aside className="lg:sticky lg:top-24 lg:self-start">
+        <aside className="space-y-5 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:self-start lg:overflow-y-auto lg:pr-1">
           <div className="glass-panel rise space-y-5 p-5 transition-shadow duration-300 hover:shadow-[var(--shadow-frost)]">
             <div className="flex items-center justify-between">
               <h2 className="label-mono flex items-center gap-2 text-muted-foreground">
@@ -388,6 +388,57 @@ function Dashboard() {
               </div>
             </div>
 
+          </div>
+
+          <div className="glass-panel rise space-y-4 p-5">
+            <h2 className="label-mono text-muted-foreground">Most active markets</h2>
+            <ul className="space-y-2.5">
+              {topCountries.length === 0 && (
+                <li className="text-sm text-muted-foreground">No matches in this scan.</li>
+              )}
+              {topCountries.map(([slug, n]) => {
+                const c = COUNTRIES.find((x) => x.slug === slug)!;
+                return (
+                  <li
+                    key={slug}
+                    className={`space-y-1 rounded-md px-1.5 py-1 transition-colors ${
+                      country === slug ? "bg-primary/10" : "hover:bg-surface-2/70"
+                    }`}
+                  >
+                    <div className="flex items-baseline justify-between gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setCountry(country === slug ? null : slug)}
+                        className={`flex min-w-0 items-center gap-1.5 truncate text-sm transition-colors hover:text-primary ${
+                          country === slug ? "text-primary" : ""
+                        }`}
+                      >
+                        <span aria-hidden>{flagFor(slug)}</span>
+                        <span className="truncate">{c.name}</span>
+                      </button>
+                      <span className="font-mono text-xs text-muted-foreground">{n}</span>
+                    </div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-surface-2">
+                      <div
+                        className="h-full rounded-full transition-[width] duration-700 ease-out"
+                        style={{
+                          width: `${(n / topCountries[0]![1]) * 100}%`,
+                          backgroundColor: REGION_ACCENT[c.region],
+                          opacity: country && country !== slug ? 0.4 : 1,
+                        }}
+                      />
+                    </div>
+                    <Link
+                      to="/countries/$slug"
+                      params={{ slug }}
+                      className="label-mono text-[0.65rem] text-muted-foreground transition-colors hover:text-primary"
+                    >
+                      View profile →
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         </aside>
 
