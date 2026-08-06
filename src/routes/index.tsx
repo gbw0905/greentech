@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { RefreshCw, Globe2, Layers, Filter, X, AlertTriangle, Map, Video, Activity, Flag } from "lucide-react";
+import { RefreshCw, Globe2, Layers, Filter, X, AlertTriangle, Map, Video, Activity, Flag, Factory } from "lucide-react";
 import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
 import {
   COUNTRIES,
@@ -18,6 +18,7 @@ import { WorldPolicyMap } from "@/components/WorldPolicyMap";
 import { TrafficPanel } from "@/components/TrafficPanel";
 import { OilPricePanel } from "@/components/OilPricePanel";
 import { VideoLibrary } from "@/components/VideoLibrary";
+import { BiofuelProductionPanel } from "@/components/BiofuelProductionPanel";
 import { Counter } from "@/components/Counter";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
 
@@ -475,11 +476,12 @@ function Dashboard() {
             >
               {[
                 ["#map", "1 · Map"],
-                ["#timeline", "2 · Timeline"],
-                ["#profiles", "3 · Country profiles"],
-                ["#videos", "4 · Videos"],
-                ["#audience", "5 · Live audience"],
-                ["#disclaimer", "6 · AI disclaimer"],
+                ["#production", "2 · Production"],
+                ["#timeline", "3 · Timeline"],
+                ["#profiles", "4 · Country profiles"],
+                ["#videos", "5 · Videos"],
+                ["#audience", "6 · Live audience"],
+                ["#disclaimer", "7 · AI disclaimer"],
               ].map(([href, label]) => (
                 <a
                   key={href}
@@ -515,9 +517,19 @@ function Dashboard() {
             </div>
           </section>
 
-          <section id="timeline">
+          <section id="production" className="pt-4">
             <SectionHeading
               step={2}
+              icon={Factory}
+              title="Global biofuel production per day"
+              subtitle="Daily output of every biofuel type worldwide — ethanol, biodiesel, renewable diesel, SAF and biomethane."
+            />
+            <BiofuelProductionPanel />
+          </section>
+
+          <section id="timeline">
+            <SectionHeading
+              step={3}
               icon={Layers}
               title={`Policy update timeline · ${filtered.length} updates${
                 country ? ` · ${COUNTRIES.find((c) => c.slug === country)?.name}` : ""
@@ -554,7 +566,7 @@ function Dashboard() {
 
           <section id="profiles" className="pt-4">
             <SectionHeading
-              step={3}
+              step={4}
               icon={Flag}
               title="Country policy profiles"
               subtitle="Headline mandate for each tracked jurisdiction — open a profile for full detail."
@@ -586,7 +598,7 @@ function Dashboard() {
 
           <section id="videos" className="pt-4">
             <SectionHeading
-              step={4}
+              step={5}
               icon={Video}
               title="Video briefing room"
               subtitle="YouTube channels and official video hubs, linked to the countries and policies they cover."
@@ -601,7 +613,7 @@ function Dashboard() {
 
           <section id="audience" className="pt-4">
             <SectionHeading
-              step={5}
+              step={6}
               icon={Activity}
               title="Live audience"
               subtitle="Real-time readership of this desk."
