@@ -79,7 +79,7 @@ export function OilPricePanel() {
   return (
     <div className="glass-panel rise space-y-4 p-5">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="label-mono text-muted-foreground">Crude oil &amp; S&amp;P 500 · live</h2>
+        <h2 className="label-mono text-muted-foreground">WTI crude &amp; S&amp;P 500 · live</h2>
         <span className="label-mono inline-flex items-center gap-1.5 text-primary">
           <span className="pulse-dot size-2 rounded-full bg-primary" />
           real time
