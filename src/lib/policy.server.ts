@@ -180,6 +180,11 @@ export async function getCachedPolicyFeed(): Promise<PolicyFeed> {
     return cache.feed;
   }
   const feed = await fetchPolicyFeed();
-  if (feed.updates.length > 0) cache = { feed, at: Date.now() };
+  if (feed.updates.length > 0) {
+    cache = { feed, at: Date.now() };
+    return feed;
+  }
+  // Serve the last good scan rather than an empty screen when sources are throttled.
+  if (cache) return { ...cache.feed, error: feed.error };
   return feed;
 }
