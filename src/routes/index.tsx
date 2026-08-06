@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { RefreshCw, Globe2, Layers, Filter, X, Radio, Sparkles, AlertTriangle } from "lucide-react";
+import { RefreshCw, Globe2, Layers, Filter, X, AlertTriangle } from "lucide-react";
 import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
 import {
   COUNTRIES,
@@ -9,15 +9,16 @@ import {
   REGIONS,
   REGION_ACCENT,
   FUEL_ACCENT,
+  flagFor,
   type FuelType,
   type Region,
 } from "@/lib/policy-taxonomy";
 import { UpdateCard, formatDate } from "@/components/UpdateCard";
 import { WorldPolicyMap } from "@/components/WorldPolicyMap";
 import { TrafficPanel } from "@/components/TrafficPanel";
+import { WatchAgent } from "@/components/WatchAgent";
 import { Counter } from "@/components/Counter";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
-import { fetchTrafficStats } from "@/lib/traffic";
 
 const feedQuery = queryOptions({
   queryKey: ["policy-feed"],
@@ -103,11 +104,6 @@ function Index() {
       queryClient.setQueryData(["policy-feed"], fresh);
     },
   });
-  const { data: traffic } = useQuery({
-    queryKey: ["traffic-stats"],
-    queryFn: fetchTrafficStats,
-    refetchInterval: 30_000,
-  });
   const busy = isFetching || rescan.isPending;
   const data = feed ?? { updates: [], fetchedAt: null as string | null, error: null as string | null };
   const [regions, setRegions] = useState<Region[]>([]);
@@ -169,15 +165,6 @@ function Index() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="hidden items-center gap-2 rounded-full border border-border bg-surface-2/70 px-3 py-1.5 md:flex">
-              <span className="pulse-dot size-1.5 rounded-full bg-primary" />
-              <Radio className="size-3.5 text-primary" />
-              <span className="label-mono text-muted-foreground">
-                <span className="font-mono text-foreground">{traffic?.live_now ?? 0}</span> reading now
-                {" · "}
-                <span className="font-mono text-foreground">{traffic?.views_today ?? 0}</span> views today
-              </span>
-            </div>
             <div className="hidden text-right sm:block">
               <div className="label-mono text-muted-foreground">Last scan</div>
               <div className="font-mono text-xs">
