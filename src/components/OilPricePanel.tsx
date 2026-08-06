@@ -21,6 +21,8 @@ function Chart({ q }: { q: OilQuote }) {
   const up = q.change >= 0;
   const stroke = up ? "var(--primary)" : "var(--destructive)";
   const active = hover ?? pts.length - 1;
+  const id = `oilFill-${q.symbol.replace(/\W/g, "")}`;
+  const fmt = (n: number) => n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   return (
     <div className="relative">
@@ -36,12 +38,12 @@ function Chart({ q }: { q: OilQuote }) {
         }}
       >
         <defs>
-          <linearGradient id={`oilFill-${q.symbol}`} x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={stroke} stopOpacity="0.3" />
             <stop offset="100%" stopColor={stroke} stopOpacity="0" />
           </linearGradient>
         </defs>
-        <path d={`${line} L${w},${h} L0,${h} Z`} fill={`url(#oilFill-${q.symbol})`} />
+        <path d={`${line} L${w},${h} L0,${h} Z`} fill={`url(#${id})`} />
         <path
           d={line}
           fill="none"
@@ -56,7 +58,8 @@ function Chart({ q }: { q: OilQuote }) {
       <div className="label-mono mt-1 flex justify-between text-muted-foreground">
         <span>30 days</span>
         <span className="font-mono">
-          ${pts[active]!.c.toFixed(2)} ·{" "}
+          {q.unit === "index" ? "" : "$"}
+          {fmt(pts[active]!.c)} ·{" "}
           {new Date(pts[active]!.t).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
         </span>
       </div>
@@ -76,7 +79,7 @@ export function OilPricePanel() {
   return (
     <div className="glass-panel rise space-y-4 p-5">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="label-mono text-muted-foreground">Crude oil · live</h2>
+        <h2 className="label-mono text-muted-foreground">Crude oil &amp; S&amp;P 500 · live</h2>
         <span className="label-mono inline-flex items-center gap-1.5 text-primary">
           <span className="pulse-dot size-2 rounded-full bg-primary" />
           real time
@@ -90,10 +93,11 @@ export function OilPricePanel() {
         <p className="text-sm text-muted-foreground">Price feed unavailable right now.</p>
       )}
 
-      {quotes.map((q) => {
-        const up = q.change >= 0;
-        return (
-          <div key={q.symbol} className="space-y-1.5">
+      <div className="grid gap-4 sm:grid-cols-2">
+        {quotes.map((q) => {
+          const up = q.change >= 0;
+          return (
+            <div key={q.symbol} className="space-y-1.5">
             <div className="flex items-baseline justify-between gap-2">
               <span className="text-sm font-semibold">{q.label}</span>
               <span
@@ -105,15 +109,17 @@ export function OilPricePanel() {
               </span>
             </div>
             <div className="font-display text-2xl font-bold tabular-nums text-gradient">
-              ${q.price.toFixed(2)}
+              {q.unit === "index" ? "" : "$"}
+              {q.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               <span className="ml-1 font-mono text-xs font-normal text-muted-foreground">
-                /bbl
+                {q.unit}
               </span>
             </div>
             <Chart q={q} />
-          </div>
-        );
-      })}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
