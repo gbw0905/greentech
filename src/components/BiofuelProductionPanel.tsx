@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Droplets, Factory } from "lucide-react";
+import { Factory, Users } from "lucide-react";
 
 type Stream = {
   name: string;
@@ -54,6 +54,62 @@ const STREAMS: Stream[] = [
 const fmt = (n: number, d = 0) =>
   n.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
 
+/** Largest biofuel consuming markets — billion litres per year (all liquid biofuels). */
+const CONSUMERS = [
+  { name: "United States", flag: "🇺🇸", annualBnL: 66, color: "var(--primary)" },
+  { name: "Brazil", flag: "🇧🇷", annualBnL: 39, color: "var(--accent)" },
+  { name: "Indonesia", flag: "🇮🇩", annualBnL: 13, color: "var(--signal)" },
+  { name: "European Union", flag: "🇪🇺", annualBnL: 12, color: "var(--primary-glow)" },
+  { name: "China", flag: "🇨🇳", annualBnL: 5, color: "var(--muted-foreground)" },
+  { name: "India", flag: "🇮🇳", annualBnL: 5, color: "var(--primary)" },
+];
+
+function ColumnChart({
+  items,
+  unitLabel,
+  decimals = 1,
+}: {
+  items: { key: string; label: string; sub?: string; value: number; color: string }[];
+  unitLabel: string;
+  decimals?: number;
+}) {
+  const max = Math.max(...items.map((i) => i.value));
+  return (
+    <div>
+      <div className="flex items-end gap-2 sm:gap-3" style={{ height: 200 }}>
+        {items.map((i) => (
+          <div key={i.key} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1">
+            <span className="font-mono text-[11px] tabular-nums">
+              {fmt(i.value, i.value < 100 ? decimals : 0)}
+            </span>
+            <div
+              className="w-full rounded-t-md transition-[height] duration-700"
+              style={{
+                height: `${Math.max((i.value / max) * 100, 2)}%`,
+                background: `linear-gradient(180deg, ${i.color}, color-mix(in oklch, ${i.color} 55%, transparent))`,
+              }}
+              title={`${i.label}: ${fmt(i.value, decimals)} ${unitLabel}`}
+            />
+          </div>
+        ))}
+      </div>
+      <div className="mt-2 flex gap-2 border-t border-border pt-2 sm:gap-3">
+        {items.map((i) => (
+          <div key={i.key} className="min-w-0 flex-1 text-center">
+            <div className="truncate text-[11px] font-semibold leading-tight" title={i.label}>
+              {i.label}
+            </div>
+            {i.sub ? (
+              <div className="truncate text-[10px] text-muted-foreground">{i.sub}</div>
+            ) : null}
+          </div>
+        ))}
+      </div>
+      <div className="label-mono mt-2 text-muted-foreground">{unitLabel}</div>
+    </div>
+  );
+}
+
 export function BiofuelProductionPanel() {
   const [unit, setUnit] = useState<"litres" | "barrels">("litres");
 
@@ -62,9 +118,9 @@ export function BiofuelProductionPanel() {
     daily: unit === "litres" ? (s.annualBnL * 1e9) / 365 : s.barrelsPerDay,
   }));
   const total = rows.reduce((a, r) => a + r.daily, 0);
-  const max = Math.max(...rows.map((r) => r.daily));
   const unitLabel = unit === "litres" ? "million litres / day" : "thousand barrels / day";
   const scale = (v: number) => (unit === "litres" ? v / 1e6 : v / 1e3);
+  const consumerTotal = CONSUMERS.reduce((a, c) => a + c.annualBnL, 0);
 
   return (
     <div className="glass-panel rise p-5">
@@ -101,31 +157,38 @@ export function BiofuelProductionPanel() {
         </div>
       </div>
 
-      <ul className="mt-4 space-y-3">
-        {rows.map((r) => (
-          <li key={r.name}>
-            <div className="flex items-baseline justify-between gap-3">
-              <span className="flex min-w-0 items-center gap-2 text-sm font-semibold">
-                <Droplets className="size-3.5 shrink-0" style={{ color: r.color }} />
-                <span className="truncate">{r.name}</span>
-              </span>
-              <span className="font-mono text-sm tabular-nums">
-                {fmt(scale(r.daily), scale(r.daily) < 100 ? 1 : 0)}
-                <span className="ml-1 text-xs text-muted-foreground">
-                  ({((r.daily / total) * 100).toFixed(1)}%)
-                </span>
-              </span>
-            </div>
-            <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-surface-2">
-              <div
-                className="h-full rounded-full transition-[width] duration-700"
-                style={{ width: `${(r.daily / max) * 100}%`, background: r.color }}
-              />
-            </div>
-            <div className="mt-1 text-xs text-muted-foreground">{r.note}</div>
-          </li>
-        ))}
-      </ul>
+      <div className="mt-5 grid gap-6 lg:grid-cols-2">
+        <section>
+          <h3 className="label-mono mb-2 text-muted-foreground">Output by fuel type</h3>
+          <ColumnChart
+            unitLabel={unitLabel}
+            items={rows.map((r) => ({
+              key: r.name,
+              label: r.name,
+              sub: `${((r.daily / total) * 100).toFixed(1)}%`,
+              value: scale(r.daily),
+              color: r.color,
+            }))}
+          />
+        </section>
+
+        <section>
+          <h3 className="label-mono mb-2 flex items-center gap-2 text-muted-foreground">
+            <Users className="size-3.5" />
+            Global top biofuel users
+          </h3>
+          <ColumnChart
+            unitLabel="billion litres / year consumed"
+            items={CONSUMERS.map((c) => ({
+              key: c.name,
+              label: `${c.flag} ${c.name}`,
+              sub: `${((c.annualBnL / consumerTotal) * 100).toFixed(0)}% of top-6`,
+              value: c.annualBnL,
+              color: c.color,
+            }))}
+          />
+        </section>
+      </div>
 
       <p className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
         Reference figures, not a live meter: national statistics agencies report biofuel output
