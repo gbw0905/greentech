@@ -16,6 +16,7 @@ import {
 import { UpdateCard, formatDate } from "@/components/UpdateCard";
 import { WorldPolicyMap } from "@/components/WorldPolicyMap";
 import { TrafficPanel } from "@/components/TrafficPanel";
+import { VideoLibrary } from "@/components/VideoLibrary";
 import { Counter } from "@/components/Counter";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
 
@@ -497,6 +498,8 @@ function Index() {
               ))}
             </div>
           </section>
+
+          <VideoLibrary />
 
           <TrafficPanel />
 
