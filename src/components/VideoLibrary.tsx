@@ -121,7 +121,7 @@ const ENTRIES: VideoEntry[] = [
     blurb: "CORSIA rules, SAF eligibility and the global aviation fuel framework.",
     url: "https://www.youtube.com/@icaovideo/videos",
     regions: ["Global"],
-    countries: ["united-arab-emirates", "saudi-arabia", "japan", "singapore"],
+    countries: ["united-arab-emirates", "saudi-arabia", "japan", "south-korea"],
     fuels: ["SAF"],
     policies: ["CORSIA", "ICAO LTAG"],
   },
