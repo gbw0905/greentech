@@ -517,6 +517,16 @@ function Dashboard() {
             </div>
           </section>
 
+          <section id="production" className="pt-4">
+            <SectionHeading
+              step={2}
+              icon={Factory}
+              title="Global biofuel production per day"
+              subtitle="Daily output of every biofuel type worldwide — ethanol, biodiesel, renewable diesel, SAF and biomethane."
+            />
+            <BiofuelProductionPanel />
+          </section>
+
           <section id="timeline">
             <SectionHeading
               step={3}
