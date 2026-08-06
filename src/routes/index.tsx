@@ -102,7 +102,7 @@ function Chip({
           style={{
             backgroundColor: active
               ? "color-mix(in oklab, var(--primary-foreground) 22%, transparent)"
-              : `color-mix(in oklab, ${tint} 20%, transparent)`,
+              : "color-mix(in oklab, var(--primary-foreground) 20%, transparent)",
           }}
         >
           {count}
