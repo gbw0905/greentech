@@ -141,7 +141,7 @@ export function WorldPolicyMap({
               const fill = country
                 ? count > 0
                   ? REGION_ACCENT[country.region]
-                  : "var(--surface-2)"
+                  : "var(--grid)"
                 : "var(--muted)";
               return (
                 <path
