@@ -147,7 +147,9 @@ export async function fetchPolicyFeed(): Promise<PolicyFeed> {
 
     const summary = (item.description ?? item.snippet ?? "").trim();
     const { country, fuels } = classify(`${title} ${summary}`);
-    const published = item.publishedDate ?? item.date ?? null;
+    const rawDate = item.publishedDate ?? item.date ?? null;
+    const parsed = rawDate ? Date.parse(rawDate) : NaN;
+    const published = Number.isNaN(parsed) ? null : new Date(parsed).toISOString();
 
     updates.push({
       id: url,
@@ -155,7 +157,7 @@ export async function fetchPolicyFeed(): Promise<PolicyFeed> {
       summary,
       url,
       source: hostOf(url),
-      publishedAt: published ? new Date(published).toISOString() : null,
+      publishedAt: published,
       region: country?.region ?? "Global",
       countrySlug: country?.slug ?? null,
       countryName: country?.name ?? null,
