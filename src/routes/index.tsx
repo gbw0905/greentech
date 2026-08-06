@@ -8,6 +8,7 @@ import {
   FUEL_TYPES,
   REGIONS,
   REGION_ACCENT,
+  FUEL_ACCENT,
   type FuelType,
   type Region,
 } from "@/lib/policy-taxonomy";
@@ -55,17 +56,31 @@ function Chip({
   children: React.ReactNode;
   color?: string;
 }) {
+  const tint = color ?? "var(--primary)";
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`label-mono rounded-full border px-3 py-1.5 transition-all duration-200 active:scale-95 ${
+      className="label-mono inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
+      style={
         active
-          ? "border-transparent bg-primary text-primary-foreground shadow-[var(--shadow-frost)]"
-          : "border-border bg-surface text-muted-foreground hover:-translate-y-0.5 hover:border-primary/40 hover:text-foreground"
-      }`}
-      style={!active && color ? { color } : undefined}
+          ? {
+              backgroundColor: tint,
+              borderColor: tint,
+              color: "var(--primary-foreground)",
+              boxShadow: "var(--shadow-frost)",
+            }
+          : {
+              backgroundColor: `color-mix(in oklab, ${tint} 12%, var(--surface))`,
+              borderColor: `color-mix(in oklab, ${tint} 35%, transparent)`,
+              color: tint,
+            }
+      }
     >
+      <span
+        className="size-1.5 rounded-full"
+        style={{ backgroundColor: active ? "var(--primary-foreground)" : tint }}
+      />
       {children}
     </button>
   );
@@ -196,6 +211,7 @@ function Index() {
                   <Chip
                     key={f}
                     active={fuels.includes(f)}
+                    color={FUEL_ACCENT[f]}
                     onClick={() => toggle(fuels, setFuels, f)}
                   >
                     {f}
