@@ -428,13 +428,18 @@ function Index() {
 
           <TrafficPanel />
 
-          <section className="glass-panel rise border-l-4 border-l-signal p-5">
+          <section className="glass-panel rise border-l-4 border-l-signal bg-signal/[0.03] p-5">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="size-5 shrink-0 text-signal" />
+              <div className="grid size-10 place-items-center rounded-full bg-signal/15 shrink-0">
+                <AlertTriangle className="size-5 text-signal" />
+              </div>
               <div>
                 <h3 className="font-display font-semibold text-foreground">AI-generated content disclaimer</h3>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  This outlook is assembled and summarized by AI from live web sources. It may contain errors, omissions, or outdated information. Always cross-verify against official government announcements and primary legislation before making compliance or investment decisions.
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Stories are gathered from public web sources, including government policy portals, regulatory notices, international agencies, and energy trade press. An AI layer classifies each item by region, country and fuel type, then writes the summary you see here.
+                </p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  <strong className="text-foreground">Cross-verify</strong> means checking any summary against the original source and the relevant official announcement or primary legislation before using it for compliance, trading or investment decisions. The feed may contain errors, omissions or outdated information.
                 </p>
               </div>
             </div>
