@@ -16,7 +16,6 @@ import {
 import { UpdateCard, formatDate } from "@/components/UpdateCard";
 import { WorldPolicyMap } from "@/components/WorldPolicyMap";
 import { TrafficPanel } from "@/components/TrafficPanel";
-import { WatchAgent } from "@/components/WatchAgent";
 import { Counter } from "@/components/Counter";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
 
@@ -306,8 +305,6 @@ function Index() {
               Live scan issue: {data.error}
             </p>
           )}
-
-          <WatchAgent updates={data.updates} fetchedAt={data.fetchedAt} busy={busy} />
 
           <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_15rem]">
             <div className="glass-panel rise min-w-0 p-5">
