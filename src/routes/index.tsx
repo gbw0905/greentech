@@ -289,9 +289,49 @@ function Index() {
             </p>
           )}
 
-          <section className="glass-panel rise p-5">
-            <h2 className="label-mono text-muted-foreground">Policy activity by jurisdiction</h2>
-            <WorldPolicyMap counts={counts} activeCountry={country} onSelect={setCountry} />
+          <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_15rem]">
+            <div className="glass-panel rise min-w-0 p-5">
+              <h2 className="label-mono text-muted-foreground">Policy activity by jurisdiction</h2>
+              <div className="mt-3">
+                <WorldPolicyMap counts={counts} activeCountry={country} onSelect={setCountry} />
+              </div>
+            </div>
+            <div className="glass-panel rise space-y-4 p-5">
+              <h2 className="label-mono text-muted-foreground">Regional split</h2>
+              <ul className="space-y-2.5">
+                {REGIONS.map((r) => {
+                  const n = data.updates.filter((u) => u.region === r).length;
+                  const max = Math.max(
+                    1,
+                    ...REGIONS.map((x) => data.updates.filter((u) => u.region === x).length),
+                  );
+                  return (
+                    <li key={r} className="space-y-1">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <button
+                          type="button"
+                          onClick={() => toggle(regions, setRegions, r)}
+                          className="label-mono truncate transition-opacity hover:opacity-70"
+                          style={{ color: REGION_ACCENT[r] }}
+                        >
+                          {r}
+                        </button>
+                        <span className="font-mono text-xs text-muted-foreground">{n}</span>
+                      </div>
+                      <div className="h-1.5 overflow-hidden rounded-full bg-surface-2">
+                        <div
+                          className="h-full rounded-full transition-[width] duration-700 ease-out"
+                          style={{
+                            width: `${(n / max) * 100}%`,
+                            backgroundColor: REGION_ACCENT[r],
+                          }}
+                        />
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           </section>
 
           <section>
