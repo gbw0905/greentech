@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { getPolicyFeed } from "@/lib/policy.functions";
-import { countryBySlug, REGION_ACCENT } from "@/lib/policy-taxonomy";
+import { countryBySlug, REGION_ACCENT, flagFor } from "@/lib/policy-taxonomy";
 import { UpdateCard } from "@/components/UpdateCard";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
 
@@ -60,7 +60,10 @@ function CountryPage() {
           <div className="label-mono" style={{ color: REGION_ACCENT[country.region] }}>
             {country.region}
           </div>
-          <h1 className="mt-2 font-display text-4xl font-bold">{country.name}</h1>
+          <h1 className="mt-2 flex items-center gap-3 font-display text-4xl font-bold">
+            <span aria-hidden>{flagFor(country.slug)}</span>
+            {country.name}
+          </h1>
           <p className="mt-4 max-w-2xl text-muted-foreground">{country.blurb}</p>
           <div className="mt-5 flex flex-wrap gap-2">
             {country.frameworks.map((f) => (
