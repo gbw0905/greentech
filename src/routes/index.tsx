@@ -301,8 +301,7 @@ function Index() {
                 AI powered global bioenergy outlook
               </h1>
               <p className="mt-4 max-w-xl text-sm/relaxed opacity-90">
-                Continuously scanned mandates, blending obligations and regulatory decisions across{" "}
-                {COUNTRIES.length} jurisdictions — with live readership of the desk.
+                Continuously scanned mandates, blending obligations and regulatory decisions across all global jurisdictions — with live readership of the desk.
               </p>
             </div>
             <div className="grid grid-cols-3 divide-x divide-border border-t border-border">
