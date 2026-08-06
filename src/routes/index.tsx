@@ -249,9 +249,10 @@ function Index() {
                         <Link
                           to="/countries/$slug"
                           params={{ slug }}
-                          className="truncate text-sm transition-colors hover:text-primary"
+                          className="flex min-w-0 items-center gap-1.5 truncate text-sm transition-colors hover:text-primary"
                         >
-                          {c.name}
+                          <span aria-hidden>{flagFor(slug)}</span>
+                          <span className="truncate">{c.name}</span>
                         </Link>
                         <span className="font-mono text-xs text-muted-foreground">{n}</span>
                       </div>
