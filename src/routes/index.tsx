@@ -428,7 +428,7 @@ function Index() {
 
           <TrafficPanel />
 
-          <section className="glass-panel rise border-l-4 border-l-signal p-5 surface-gradient-signal/5">
+          <section className="glass-panel rise border-l-4 border-l-signal bg-signal/[0.03] p-5">
             <div className="flex items-start gap-3">
               <div className="grid size-10 place-items-center rounded-full bg-signal/15 shrink-0">
                 <AlertTriangle className="size-5 text-signal" />
