@@ -93,7 +93,7 @@ function Chip({
     >
       <span
         className={`size-1.5 rounded-full ${active ? "pulse-dot" : ""}`}
-        style={{ backgroundColor: active ? "var(--primary-foreground)" : tint }}
+        style={{ backgroundColor: "var(--primary-foreground)" }}
       />
       {children}
       {typeof count === "number" && (
