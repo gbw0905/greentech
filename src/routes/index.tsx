@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { RefreshCw, Globe2, Layers, Filter, X, Radio } from "lucide-react";
+import { RefreshCw, Globe2, Layers, Filter, X, Radio, Sparkles } from "lucide-react";
 import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
 import {
   COUNTRIES,
@@ -296,8 +296,12 @@ function Index() {
                 <span className="pulse-dot size-1.5 rounded-full bg-current" />
                 Global biofuel intelligence
               </div>
-              <h1 className="mt-4 max-w-3xl font-display text-4xl leading-[1.05] font-bold sm:text-5xl">
-                Every biofuel policy move, tracked as it lands.
+              <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/20 px-3 py-1 backdrop-blur-sm shadow-[0_0_18px_rgba(255,255,255,0.25)]">
+                <Sparkles className="size-3.5" />
+                <span className="label-mono">AI Powered</span>
+              </div>
+              <h1 className="mt-3 max-w-3xl font-display text-4xl leading-[1.05] font-bold sm:text-5xl lg:text-6xl [text-shadow:0_2px_24px_rgba(255,255,255,0.35)]">
+                AI powered global bioenergy outlook
               </h1>
               <p className="mt-4 max-w-xl text-sm/relaxed opacity-90">
                 Continuously scanned mandates, blending obligations and regulatory decisions across{" "}
