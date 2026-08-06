@@ -78,7 +78,7 @@ function classify(text: string) {
 }
 
 async function search(query: string, apiKey: string, lovableKey: string) {
-  for (let attempt = 0; attempt < 3; attempt++) {
+  for (let attempt = 0; attempt < 5; attempt++) {
     const res = await fetch(`${GATEWAY}/search`, {
       method: "POST",
       headers: {
@@ -88,10 +88,15 @@ async function search(query: string, apiKey: string, lovableKey: string) {
       },
       body: JSON.stringify({ query, limit: 10, tbs: "qdr:m", sources: ["news", "web"] }),
     });
-    if (res.ok) return collect(await res.json());
     const body = await res.text();
-    if (res.status === 429 && attempt < 2) {
-      await sleep(12000);
+    const rateLimited = res.status === 429 || body.includes("Rate limit exceeded");
+    if (res.ok && !rateLimited) {
+      return collect(JSON.parse(body));
+    }
+    if (rateLimited && attempt < 4) {
+      const m = body.match(/retry after (\d+)s/i);
+      const waitSec = m?.[1] ? Number(m[1]) : 15;
+      await sleep(Math.min(waitSec + 3, 45) * 1000);
       continue;
     }
     throw new Error(`Firecrawl search failed [${res.status}]: ${body.slice(0, 200)}`);
