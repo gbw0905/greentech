@@ -159,15 +159,12 @@ function Index() {
       <header className="sticky top-0 z-30 border-b border-border/80 bg-surface/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[110rem] flex-wrap items-center justify-between gap-4 px-5 py-3.5 lg:px-8">
           <div className="flex items-center gap-3">
-            <span className="grid size-9 place-items-center rounded-xl surface-gradient-primary text-primary-foreground shadow-[var(--shadow-frost)]">
-              <Globe2 className="size-4.5" />
+            <span className="grid size-10 place-items-center rounded-xl surface-gradient-primary text-primary-foreground shadow-[var(--shadow-frost)]">
+              <Globe2 className="size-5" />
             </span>
             <div>
-              <div className="font-display text-base leading-tight font-bold">
+              <div className="font-display text-xl leading-tight font-bold text-gradient drop-shadow-[0_0_12px_rgba(0,240,255,0.35)]">
                 Global Bioenergy Watch
-              </div>
-              <div className="label-mono text-muted-foreground">
-                {COUNTRIES.length} jurisdictions tracked
               </div>
             </div>
           </div>
