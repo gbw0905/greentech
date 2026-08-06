@@ -30,7 +30,6 @@ const GATEWAY = "https://connector-gateway.lovable.dev/firecrawl/v2";
 const QUERIES = [
   "biofuel policy mandate update government",
   "ethanol blending mandate policy announcement",
-  "biodiesel mandate blending government decision",
   "sustainable aviation fuel mandate policy regulation",
 ];
 
@@ -92,7 +91,7 @@ async function search(query: string, apiKey: string, lovableKey: string) {
     if (res.ok) return collect(await res.json());
     const body = await res.text();
     if (res.status === 429 && attempt < 2) {
-      await sleep(20000);
+      await sleep(12000);
       continue;
     }
     throw new Error(`Firecrawl search failed [${res.status}]: ${body.slice(0, 200)}`);
@@ -117,7 +116,7 @@ export async function fetchPolicyFeed(): Promise<PolicyFeed> {
     } catch (e) {
       settled.push({ status: "rejected", reason: e });
     }
-    await sleep(2500);
+    await sleep(1500);
   }
 
   const failures = settled.filter((s) => s.status === "rejected");
