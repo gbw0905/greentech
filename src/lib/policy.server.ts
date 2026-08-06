@@ -35,6 +35,7 @@ const QUERIES = [
 
 const CACHE_TTL_MS = 30 * 60 * 1000;
 let cache: { feed: PolicyFeed; at: number } | null = null;
+let inFlight: Promise<PolicyFeed> | null = null;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -179,7 +180,11 @@ export async function getCachedPolicyFeed(): Promise<PolicyFeed> {
   if (cache && Date.now() - cache.at < CACHE_TTL_MS && cache.feed.updates.length > 0) {
     return cache.feed;
   }
-  const feed = await fetchPolicyFeed();
+  // One scan at a time: the shared search quota is small.
+  inFlight ??= fetchPolicyFeed().finally(() => {
+    inFlight = null;
+  });
+  const feed = await inFlight;
   if (feed.updates.length > 0) {
     cache = { feed, at: Date.now() };
     return feed;
