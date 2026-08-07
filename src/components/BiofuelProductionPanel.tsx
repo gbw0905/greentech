@@ -263,6 +263,7 @@ export function BiofuelProductionPanel() {
           <h3 className="label-mono mb-2 text-muted-foreground">Output by fuel type</h3>
           <ColumnChart
             unitLabel={unitLabel}
+            legendNotes={Object.fromEntries(STREAMS.map((s) => [s.name, s.note]))}
             items={rows.map((r) => ({
               key: r.name,
               label: r.name,
