@@ -25,11 +25,11 @@ function Chart({ q }: { q: OilQuote }) {
   const fmt = (n: number) => n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   return (
-    <div className="relative">
+    <div className="relative flex h-full flex-col">
       <svg
         viewBox={`0 0 ${w} ${h}`}
         preserveAspectRatio="none"
-        className="h-[74px] w-full"
+        className="min-h-0 flex-1 w-full"
         onMouseLeave={() => setHover(null)}
         onMouseMove={(e) => {
           const r = e.currentTarget.getBoundingClientRect();
