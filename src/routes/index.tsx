@@ -507,13 +507,20 @@ function Dashboard() {
               title="Policy activity by jurisdiction"
               subtitle="Click a country on the map or in the ranking to filter everything below — with live crude oil prices alongside."
             />
-            <div className="grid items-start gap-4 xl:grid-cols-2">
-            <div className="glass-panel rise min-w-0 p-5">
-              <div className="mt-3">
-                <WorldPolicyMap counts={counts} activeCountry={country} onSelect={setCountry} />
+            <div className="grid items-stretch gap-4 xl:grid-cols-2">
+              <div className="glass-panel rise flex min-w-0 flex-col p-5">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <h2 className="label-mono text-muted-foreground">Jurisdiction map</h2>
+                  <span className="label-mono inline-flex items-center gap-1.5 text-primary">
+                    <span className="pulse-dot size-2 rounded-full bg-primary" />
+                    interactive
+                  </span>
+                </div>
+                <div className="min-h-0 flex-1">
+                  <WorldPolicyMap counts={counts} activeCountry={country} onSelect={setCountry} />
+                </div>
               </div>
-            </div>
-            <OilPricePanel />
+              <OilPricePanel />
             </div>
           </section>
 
