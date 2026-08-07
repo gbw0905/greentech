@@ -25,11 +25,11 @@ function Chart({ q }: { q: OilQuote }) {
   const fmt = (n: number) => n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   return (
-    <div className="relative">
+    <div className="relative flex h-full flex-col">
       <svg
         viewBox={`0 0 ${w} ${h}`}
         preserveAspectRatio="none"
-        className="h-[74px] w-full"
+        className="min-h-0 flex-1 w-full"
         onMouseLeave={() => setHover(null)}
         onMouseMove={(e) => {
           const r = e.currentTarget.getBoundingClientRect();
@@ -77,7 +77,7 @@ export function OilPricePanel() {
   const quotes = data?.quotes ?? [];
 
   return (
-    <div className="glass-panel rise space-y-4 p-5">
+    <div className="glass-panel rise flex h-full flex-col space-y-4 p-5">
       <div className="flex items-center justify-between gap-3">
         <h2 className="label-mono text-muted-foreground">WTI crude &amp; S&amp;P 500 · live</h2>
         <span className="label-mono inline-flex items-center gap-1.5 text-primary">
@@ -87,17 +87,17 @@ export function OilPricePanel() {
       </div>
 
       {isLoading && quotes.length === 0 && (
-        <div className="scanning-bar h-24 rounded-[var(--radius)]" />
+        <div className="scanning-bar h-24 flex-1 rounded-[var(--radius)]" />
       )}
       {!isLoading && quotes.length === 0 && (
         <p className="text-sm text-muted-foreground">Price feed unavailable right now.</p>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid min-h-0 flex-1 gap-4 sm:grid-cols-2">
         {quotes.map((q) => {
           const up = q.change >= 0;
           return (
-            <div key={q.symbol} className="space-y-1.5">
+            <div key={q.symbol} className="flex flex-col space-y-1.5">
             <div className="flex items-baseline justify-between gap-2">
               <span className="text-sm font-semibold">{q.label}</span>
               <span
@@ -115,7 +115,9 @@ export function OilPricePanel() {
                 {q.unit}
               </span>
             </div>
-            <Chart q={q} />
+            <div className="min-h-0 flex-1">
+              <Chart q={q} />
+            </div>
             </div>
           );
         })}

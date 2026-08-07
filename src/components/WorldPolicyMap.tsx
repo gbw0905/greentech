@@ -97,10 +97,10 @@ export function WorldPolicyMap({
   const zoomed = view.z > 1.01 || view.x !== 0 || view.y !== 0;
 
   return (
-    <div className="relative">
+    <div className="flex h-full flex-col">
       <div
         ref={containerRef}
-        className="relative cursor-grab overflow-hidden rounded-[var(--radius)] border border-border bg-surface-2/40 active:cursor-grabbing"
+        className="relative min-h-0 flex-1 cursor-grab overflow-hidden rounded-[var(--radius)] border border-border bg-surface-2/40 active:cursor-grabbing"
         style={{ touchAction: "none" }}
         onPointerDown={(e) => {
           drag.current = { px: e.clientX, py: e.clientY, ox: view.x, oy: view.y };
@@ -127,7 +127,7 @@ export function WorldPolicyMap({
       >
         <svg
           viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-          className="h-[clamp(180px,32vh,300px)] w-full select-none"
+          className="h-full w-full select-none"
           role="img"
           aria-label="World map of biofuel policy activity"
         >
