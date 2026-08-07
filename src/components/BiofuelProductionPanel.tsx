@@ -135,42 +135,42 @@ export function BiofuelProductionPanel() {
   const usersTotal = users.reduce((a, c) => a + c.annualBnL, 0);
 
   return (
-    <div className="glass-panel rise p-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="label-mono flex items-center gap-2 text-muted-foreground">
-            <Factory className="size-3.5" />
-            Global daily biofuel output
+    <div className="grid gap-4 lg:grid-cols-2">
+      <div className="glass-panel rise p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <div className="label-mono flex items-center gap-2 text-muted-foreground">
+              <Factory className="size-3.5" />
+              Global daily biofuel output
+            </div>
+            <div className="mt-1 font-display text-3xl font-black tracking-tight">
+              {fmt(scale(total), unit === "litres" ? 0 : 0)}{" "}
+              <span className="text-base font-semibold text-muted-foreground">{unitLabel}</span>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              All biofuel types combined, derived from the latest full-year global production
+              estimates (÷ 365).
+            </p>
           </div>
-          <div className="mt-1 font-display text-3xl font-black tracking-tight">
-            {fmt(scale(total), unit === "litres" ? 0 : 0)}{" "}
-            <span className="text-base font-semibold text-muted-foreground">{unitLabel}</span>
+          <div className="flex rounded-full border border-border bg-surface-2 p-0.5">
+            {(["litres", "barrels"] as const).map((u) => (
+              <button
+                key={u}
+                type="button"
+                onClick={() => setUnit(u)}
+                className={`label-mono rounded-full px-3 py-1.5 transition-colors ${
+                  unit === u
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {u === "litres" ? "Litres" : "Barrels"}
+              </button>
+            ))}
           </div>
-          <p className="mt-1 text-xs text-muted-foreground">
-            All biofuel types combined, derived from the latest full-year global production
-            estimates (÷ 365).
-          </p>
         </div>
-        <div className="flex rounded-full border border-border bg-surface-2 p-0.5">
-          {(["litres", "barrels"] as const).map((u) => (
-            <button
-              key={u}
-              type="button"
-              onClick={() => setUnit(u)}
-              className={`label-mono rounded-full px-3 py-1.5 transition-colors ${
-                unit === u
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {u === "litres" ? "Litres" : "Barrels"}
-            </button>
-          ))}
-        </div>
-      </div>
 
-      <div className="mt-5 grid gap-6 lg:grid-cols-2">
-        <section>
+        <section className="mt-5">
           <h3 className="label-mono mb-2 text-muted-foreground">Output by fuel type</h3>
           <ColumnChart
             unitLabel={unitLabel}
@@ -184,51 +184,55 @@ export function BiofuelProductionPanel() {
           />
         </section>
 
-        <section>
-          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-            <h3 className="label-mono flex items-center gap-2 text-muted-foreground">
-              <Users className="size-3.5" />
-              Global top biofuel users
-            </h3>
-            <div className="flex rounded-full border border-border bg-surface-2 p-0.5">
-              {(["countries", "companies"] as const).map((v) => (
-                <button
-                  key={v}
-                  type="button"
-                  onClick={() => setUserView(v)}
-                  className={`label-mono rounded-full px-2.5 py-1 transition-colors ${
-                    userView === v
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {v === "countries" ? "Countries" : "Companies"}
-                </button>
-              ))}
-            </div>
-          </div>
-          <ColumnChart
-            unitLabel={
-              userView === "countries"
-                ? "billion litres / year consumed"
-                : "billion litres / year (corporate capacity)"
-            }
-            items={users.map((c) => ({
-              key: c.name,
-              label: `${c.flag} ${c.name}`,
-              sub: `${((c.annualBnL / usersTotal) * 100).toFixed(0)}% of top-6`,
-              value: c.annualBnL,
-              color: c.color,
-            }))}
-          />
-        </section>
+        <p className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
+          Reference figures, not a live meter: national statistics agencies report biofuel output
+          monthly or annually, so daily values are annualised estimates and should be cross-verified
+          against IEA and EIA releases.
+        </p>
       </div>
 
-      <p className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
-        Reference figures, not a live meter: national statistics agencies report biofuel output
-        monthly or annually, so daily values are annualised estimates and should be cross-verified
-        against IEA and EIA releases.
-      </p>
+      <div className="glass-panel rise p-5">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <h3 className="label-mono flex items-center gap-2 text-muted-foreground">
+            <Users className="size-3.5" />
+            Global top biofuel users
+          </h3>
+          <div className="flex rounded-full border border-border bg-surface-2 p-0.5">
+            {(["countries", "companies"] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => setUserView(v)}
+                className={`label-mono rounded-full px-2.5 py-1 transition-colors ${
+                  userView === v
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {v === "countries" ? "Countries" : "Companies"}
+              </button>
+            ))}
+          </div>
+        </div>
+        <ColumnChart
+          unitLabel={
+            userView === "countries"
+              ? "billion litres / year consumed"
+              : "billion litres / year (corporate capacity)"
+          }
+          items={users.map((c) => ({
+            key: c.name,
+            label: `${c.flag} ${c.name}`,
+            sub: `${((c.annualBnL / usersTotal) * 100).toFixed(0)}% of top-6`,
+            value: c.annualBnL,
+            color: c.color,
+          }))}
+        />
+        <p className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
+          Top consumers and producers by annual liquid biofuel volume. Source: IEA/EIA estimates and
+          company reports.
+        </p>
+      </div>
     </div>
   );
 }
