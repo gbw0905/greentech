@@ -78,34 +78,99 @@ function ColumnChart({
   items,
   unitLabel,
   decimals = 1,
+  legendNotes,
 }: {
   items: { key: string; label: string; sub?: string; value: number; color: string }[];
   unitLabel: string;
   decimals?: number;
+  legendNotes?: Record<string, string>;
 }) {
   const max = Math.max(...items.map((i) => i.value));
+  const total = items.reduce((a, i) => a + i.value, 0);
+  const [hover, setHover] = useState<string | null>(null);
+  const ticks = [1, 0.75, 0.5, 0.25, 0];
   return (
     <div>
-      <div className="flex items-end gap-2 sm:gap-3" style={{ height: 200 }}>
-        {items.map((i) => (
-          <div key={i.key} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1">
-            <span className="font-mono text-[11px] tabular-nums">
-              {fmt(i.value, i.value < 100 ? decimals : 0)}
-            </span>
-            <div
-              className="w-full rounded-t-md transition-[height] duration-700"
-              style={{
-                height: `${Math.max((i.value / max) * 100, 2)}%`,
-                background: `linear-gradient(180deg, ${i.color}, color-mix(in oklch, ${i.color} 55%, transparent))`,
-              }}
-              title={`${i.label}: ${fmt(i.value, decimals)} ${unitLabel}`}
-            />
+      <div className="flex gap-2">
+        {/* y axis */}
+        <div
+          className="flex w-12 shrink-0 flex-col justify-between text-right font-mono text-[10px] text-muted-foreground tabular-nums"
+          style={{ height: 210 }}
+          aria-hidden
+        >
+          {ticks.map((t) => (
+            <span key={t}>{fmt(max * t, max * t < 100 ? decimals : 0)}</span>
+          ))}
+        </div>
+
+        <div className="relative min-w-0 flex-1" style={{ height: 210 }}>
+          {/* gridlines */}
+          <div className="pointer-events-none absolute inset-0 flex flex-col justify-between" aria-hidden>
+            {ticks.map((t) => (
+              <div key={t} className="border-t border-border/60" />
+            ))}
           </div>
-        ))}
+
+          <div className="relative flex h-full items-end gap-2 sm:gap-3">
+            {items.map((i) => {
+              const active = hover === i.key;
+              return (
+                <div
+                  key={i.key}
+                  className="group relative flex h-full min-w-0 flex-1 cursor-default flex-col items-center justify-end"
+                  onMouseEnter={() => setHover(i.key)}
+                  onMouseLeave={() => setHover((h) => (h === i.key ? null : h))}
+                  onFocus={() => setHover(i.key)}
+                  onBlur={() => setHover(null)}
+                  tabIndex={0}
+                  role="img"
+                  aria-label={`${i.label}: ${fmt(i.value, decimals)} ${unitLabel}`}
+                >
+                  {active ? (
+                    <div className="pointer-events-none absolute bottom-full z-20 mb-1 w-max max-w-[180px] rounded-md border border-border bg-surface-2 px-2.5 py-1.5 text-left shadow-lg">
+                      <div className="flex items-center gap-1.5 text-[11px] font-semibold">
+                        <span
+                          className="inline-block size-2 rounded-full"
+                          style={{ background: i.color }}
+                        />
+                        {i.label}
+                      </div>
+                      <div className="font-mono text-[11px] tabular-nums">
+                        {fmt(i.value, decimals)} <span className="text-muted-foreground">{unitLabel}</span>
+                      </div>
+                      <div className="text-[10px] text-muted-foreground">
+                        {((i.value / total) * 100).toFixed(1)}% of shown total
+                      </div>
+                    </div>
+                  ) : null}
+                  <span className="mb-1 font-mono text-[11px] tabular-nums">
+                    {fmt(i.value, i.value < 100 ? decimals : 0)}
+                  </span>
+                  <div
+                    className="w-full rounded-t-md transition-all duration-300"
+                    style={{
+                      height: `${Math.max((i.value / max) * 88, 2)}%`,
+                      background: `linear-gradient(180deg, ${i.color}, color-mix(in oklch, ${i.color} 55%, transparent))`,
+                      outline: active ? `2px solid ${i.color}` : "none",
+                      opacity: hover && !active ? 0.45 : 1,
+                    }}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
+
       <div className="mt-2 flex gap-2 border-t border-border pt-2 sm:gap-3">
+        <div className="w-12 shrink-0" aria-hidden />
         {items.map((i) => (
-          <div key={i.key} className="min-w-0 flex-1 text-center">
+          <div
+            key={i.key}
+            className={`min-w-0 flex-1 text-center transition-opacity ${
+              hover && hover !== i.key ? "opacity-50" : "opacity-100"
+            }`}
+          >
             <div className="truncate text-[11px] font-semibold leading-tight" title={i.label}>
               {i.label}
             </div>
@@ -115,7 +180,31 @@ function ColumnChart({
           </div>
         ))}
       </div>
-      <div className="label-mono mt-2 text-muted-foreground">{unitLabel}</div>
+
+      {/* legend / colour key */}
+      <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1.5 border-t border-border pt-3">
+        {items.map((i) => (
+          <button
+            key={i.key}
+            type="button"
+            onMouseEnter={() => setHover(i.key)}
+            onMouseLeave={() => setHover(null)}
+            className={`flex items-center gap-1.5 text-[11px] transition-opacity ${
+              hover && hover !== i.key ? "opacity-45" : "opacity-100"
+            }`}
+          >
+            <span className="inline-block size-2.5 rounded-sm" style={{ background: i.color }} />
+            <span className="max-w-[150px] truncate">{i.label}</span>
+            <span className="font-mono text-muted-foreground tabular-nums">
+              {fmt(i.value, i.value < 100 ? decimals : 0)}
+            </span>
+            {legendNotes?.[i.key] ? (
+              <span className="text-muted-foreground">· {legendNotes[i.key]}</span>
+            ) : null}
+          </button>
+        ))}
+      </div>
+      <div className="label-mono mt-2 text-muted-foreground">Y axis: {unitLabel}</div>
     </div>
   );
 }
@@ -174,6 +263,7 @@ export function BiofuelProductionPanel() {
           <h3 className="label-mono mb-2 text-muted-foreground">Output by fuel type</h3>
           <ColumnChart
             unitLabel={unitLabel}
+            legendNotes={Object.fromEntries(STREAMS.map((s) => [s.name, s.note]))}
             items={rows.map((r) => ({
               key: r.name,
               label: r.name,
