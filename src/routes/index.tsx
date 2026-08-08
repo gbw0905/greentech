@@ -6,12 +6,10 @@ import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
 import {
   COUNTRIES,
   FUEL_TYPES,
-  REGIONS,
   REGION_ACCENT,
   FUEL_ACCENT,
   flagFor,
   type FuelType,
-  type Region,
 } from "@/lib/policy-taxonomy";
 import { UpdateCard, formatDate } from "@/components/UpdateCard";
 import { WorldPolicyMap } from "@/components/WorldPolicyMap";
@@ -170,7 +168,6 @@ function Dashboard() {
   });
   const busy = isFetching || rescan.isPending;
   const data = feed ?? { updates: [], fetchedAt: null as string | null, error: null as string | null };
-  const [regions, setRegions] = useState<Region[]>([]);
   const [fuels, setFuels] = useState<FuelType[]>([]);
   const [country, setCountry] = useState<string | null>(null);
 
@@ -184,11 +181,10 @@ function Dashboard() {
     () =>
       data.updates.filter(
         (u) =>
-          (regions.length === 0 || regions.includes(u.region)) &&
           (fuels.length === 0 || u.fuels.some((f) => fuels.includes(f))) &&
           (!country || u.countrySlug === country),
       ),
-    [data.updates, regions, fuels, country],
+    [data.updates, fuels, country],
   );
 
   const toggle = <T,>(list: T[], set: (v: T[]) => void, value: T) =>
@@ -202,22 +198,15 @@ function Dashboard() {
     [counts],
   );
 
-  const regionCounts = useMemo(() => {
-    const m = {} as Record<Region, number>;
-    for (const r of REGIONS) m[r] = data.updates.filter((u) => u.region === r).length;
-    return m;
-  }, [data.updates]);
-
   const fuelCounts = useMemo(() => {
     const m = {} as Record<FuelType, number>;
     for (const f of FUEL_TYPES) m[f] = data.updates.filter((u) => u.fuels.includes(f)).length;
     return m;
   }, [data.updates]);
 
-  const hasFilters = Boolean(country) || regions.length > 0 || fuels.length > 0;
+  const hasFilters = Boolean(country) || fuels.length > 0;
   const clearFilters = () => {
     setCountry(null);
-    setRegions([]);
     setFuels([]);
   };
   const stats: Array<[string, number]> = [
