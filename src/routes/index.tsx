@@ -314,10 +314,10 @@ function Dashboard() {
                 ["#production", "2 · Production", "oklch(0.55 0.16 150)"],
                 ["#map", "3 · Map", "oklch(0.55 0.16 320)"],
                 ["#timeline", "4 · Timeline", "oklch(0.55 0.2 50)"],
-                ["#profiles", "5 · Country profiles", "oklch(0.55 0.16 60)"],
-                ["#videos", "6 · Videos", "oklch(0.5 0.14 260)"],
+                ["#profiles", "5 · Country profiles", "oklch(0.55 0.14 180)"],
+                ["#videos", "6 · Videos", "oklch(0.55 0.16 340)"],
                 ["#audience", "7 · Live audience", "oklch(0.55 0.18 25)"],
-                ["#disclaimer", "8 · AI disclaimer", "oklch(0.55 0.18 25)"],
+                ["#disclaimer", "8 · AI disclaimer", "oklch(0.45 0.02 240)"],
               ].map(([href, label, color]) => (
                 <a
                   key={href}
