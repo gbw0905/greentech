@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { Factory, Users } from "lucide-react";
+import type { FuelType } from "@/lib/policy-taxonomy";
 
 type Stream = {
   name: string;
   note: string;
+  /** taxonomy fuel type this stream maps to */
+  fuel: FuelType;
   /** billion litres per year (latest full-year global estimate) */
   annualBnL: number;
   /** litres per barrel-of-oil-equivalent style conversion for display */
@@ -17,6 +20,7 @@ const STREAMS: Stream[] = [
   {
     name: "Fuel ethanol",
     note: "Corn, sugarcane, wheat & cellulosic",
+    fuel: "Ethanol",
     annualBnL: 114,
     barrelsPerDay: 1_965_000,
     color: "var(--primary)",
@@ -24,6 +28,7 @@ const STREAMS: Stream[] = [
   {
     name: "Biodiesel (FAME)",
     note: "Palm, soy, rapeseed & used cooking oil esters",
+    fuel: "Biodiesel",
     annualBnL: 55,
     barrelsPerDay: 948_000,
     color: "var(--accent)",
@@ -31,6 +36,7 @@ const STREAMS: Stream[] = [
   {
     name: "Renewable diesel (HVO)",
     note: "Hydrotreated vegetable oils & waste fats",
+    fuel: "Renewable Diesel",
     annualBnL: 30,
     barrelsPerDay: 517_000,
     color: "var(--signal)",
@@ -38,6 +44,7 @@ const STREAMS: Stream[] = [
   {
     name: "Sustainable aviation fuel",
     note: "HEFA jet, alcohol-to-jet, synthetics",
+    fuel: "SAF",
     annualBnL: 2.4,
     barrelsPerDay: 41_000,
     color: "var(--primary-glow)",
@@ -45,6 +52,7 @@ const STREAMS: Stream[] = [
   {
     name: "Biomethane (liquid-equiv.)",
     note: "Upgraded biogas injected or used as fuel",
+    fuel: "Biogas",
     annualBnL: 12,
     barrelsPerDay: 207_000,
     color: "var(--muted-foreground)",
@@ -54,24 +62,32 @@ const STREAMS: Stream[] = [
 const fmt = (n: number, d = 0) =>
   n.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
 
+type Mix = Partial<Record<FuelType, number>>;
+type Entity = { name: string; flag: string; color: string; mix: Mix };
+const sumMix = (mix: Mix, fuels: FuelType[]) =>
+  Object.entries(mix).reduce(
+    (a, [f, v]) => (fuels.length === 0 || fuels.includes(f as FuelType) ? a + (v ?? 0) : a),
+    0,
+  );
+
 /** Largest biofuel consuming markets — billion litres per year (all liquid biofuels). */
-const CONSUMERS = [
-  { name: "United States", flag: "🇺🇸", annualBnL: 66, color: "var(--primary)" },
-  { name: "Brazil", flag: "🇧🇷", annualBnL: 39, color: "var(--accent)" },
-  { name: "Indonesia", flag: "🇮🇩", annualBnL: 13, color: "var(--signal)" },
-  { name: "European Union", flag: "🇪🇺", annualBnL: 12, color: "var(--primary-glow)" },
-  { name: "China", flag: "🇨🇳", annualBnL: 5, color: "var(--muted-foreground)" },
-  { name: "India", flag: "🇮🇳", annualBnL: 5, color: "var(--primary)" },
+const CONSUMERS: Entity[] = [
+  { name: "United States", flag: "🇺🇸", color: "var(--primary)", mix: { Ethanol: 55, Biodiesel: 6, "Renewable Diesel": 5 } },
+  { name: "Brazil", flag: "🇧🇷", color: "var(--accent)", mix: { Ethanol: 33, Biodiesel: 6 } },
+  { name: "Indonesia", flag: "🇮🇩", color: "var(--signal)", mix: { Biodiesel: 12.5, Ethanol: 0.5 } },
+  { name: "European Union", flag: "🇪🇺", color: "var(--primary-glow)", mix: { Biodiesel: 6, Ethanol: 4, "Renewable Diesel": 2, Biogas: 3 } },
+  { name: "China", flag: "🇨🇳", color: "var(--muted-foreground)", mix: { Ethanol: 4, Biodiesel: 1, Biogas: 1 } },
+  { name: "India", flag: "🇮🇳", color: "var(--primary)", mix: { Ethanol: 4.8, Biodiesel: 0.2 } },
 ];
 
 /** Largest corporate biofuel producers/offtakers — billion litres per year (all liquid biofuels). */
-const COMPANIES = [
-  { name: "POET", flag: "🇺🇸", annualBnL: 12, color: "var(--primary)" },
-  { name: "ADM", flag: "🇺🇸", annualBnL: 9, color: "var(--accent)" },
-  { name: "Valero / Diamond Green", flag: "🇺🇸", annualBnL: 8, color: "var(--signal)" },
-  { name: "Raízen", flag: "🇧🇷", annualBnL: 6, color: "var(--primary-glow)" },
-  { name: "Neste", flag: "🇫🇮", annualBnL: 5.5, color: "var(--muted-foreground)" },
-  { name: "Green Plains", flag: "🇺🇸", annualBnL: 4, color: "var(--primary)" },
+const COMPANIES: Entity[] = [
+  { name: "POET", flag: "🇺🇸", color: "var(--primary)", mix: { Ethanol: 12 } },
+  { name: "ADM", flag: "🇺🇸", color: "var(--accent)", mix: { Ethanol: 8, Biodiesel: 1 } },
+  { name: "Valero / Diamond Green", flag: "🇺🇸", color: "var(--signal)", mix: { Ethanol: 5.5, "Renewable Diesel": 2.5 } },
+  { name: "Raízen", flag: "🇧🇷", color: "var(--primary-glow)", mix: { Ethanol: 6 } },
+  { name: "Neste", flag: "🇫🇮", color: "var(--muted-foreground)", mix: { "Renewable Diesel": 4.7, SAF: 0.8 } },
+  { name: "Green Plains", flag: "🇺🇸", color: "var(--primary)", mix: { Ethanol: 4 } },
 ];
 
 function ColumnChart({
@@ -209,22 +225,39 @@ function ColumnChart({
   );
 }
 
-export function BiofuelProductionPanel() {
+export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
   const [unit, setUnit] = useState<"litres" | "barrels">("litres");
   const [userView, setUserView] = useState<"countries" | "companies">("countries");
 
-  const rows = STREAMS.map((s) => ({
+  const activeStreams = STREAMS.filter((s) => fuels.length === 0 || fuels.includes(s.fuel));
+  const shownStreams = activeStreams.length > 0 ? activeStreams : STREAMS;
+  const rows = shownStreams.map((s) => ({
     ...s,
     daily: unit === "litres" ? (s.annualBnL * 1e9) / 365 : s.barrelsPerDay,
   }));
   const total = rows.reduce((a, r) => a + r.daily, 0);
   const unitLabel = unit === "litres" ? "million litres / day" : "thousand barrels / day";
   const scale = (v: number) => (unit === "litres" ? v / 1e6 : v / 1e3);
-  const users = userView === "countries" ? CONSUMERS : COMPANIES;
-  const usersTotal = users.reduce((a, c) => a + c.annualBnL, 0);
+  const mixFuels = activeStreams.length > 0 ? fuels : [];
+  const users = (userView === "countries" ? CONSUMERS : COMPANIES)
+    .map((e) => ({ ...e, annualBnL: sumMix(e.mix, mixFuels) }))
+    .filter((e) => e.annualBnL > 0)
+    .sort((a, b) => b.annualBnL - a.annualBnL);
+  const usersTotal = users.reduce((a, c) => a + c.annualBnL, 0) || 1;
+  const filterNote =
+    fuels.length > 0
+      ? activeStreams.length > 0
+        ? `Filtered to ${fuels.join(", ")}`
+        : `No production data for ${fuels.join(", ")} — showing all fuels`
+      : null;
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
+      {filterNote ? (
+        <div className="label-mono lg:col-span-2 rounded-full border border-border bg-surface-2 px-3 py-1.5 text-muted-foreground">
+          {filterNote}
+        </div>
+      ) : null}
       <div className="glass-panel rise p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -263,7 +296,7 @@ export function BiofuelProductionPanel() {
           <h3 className="label-mono mb-2 text-muted-foreground">Output by fuel type</h3>
           <ColumnChart
             unitLabel={unitLabel}
-            legendNotes={Object.fromEntries(STREAMS.map((s) => [s.name, s.note]))}
+            legendNotes={Object.fromEntries(shownStreams.map((s) => [s.name, s.note]))}
             items={rows.map((r) => ({
               key: r.name,
               label: r.name,
@@ -304,6 +337,9 @@ export function BiofuelProductionPanel() {
             ))}
           </div>
         </div>
+        {users.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No matching users for this fuel filter.</p>
+        ) : (
         <ColumnChart
           unitLabel={
             userView === "countries"
@@ -313,11 +349,12 @@ export function BiofuelProductionPanel() {
           items={users.map((c) => ({
             key: c.name,
             label: `${c.flag} ${c.name}`,
-            sub: `${((c.annualBnL / usersTotal) * 100).toFixed(0)}% of top-6`,
+            sub: `${((c.annualBnL / usersTotal) * 100).toFixed(0)}% of shown`,
             value: c.annualBnL,
             color: c.color,
           }))}
         />
+        )}
         <p className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
           Top consumers and producers by annual liquid biofuel volume. Source: IEA/EIA estimates and
           company reports.

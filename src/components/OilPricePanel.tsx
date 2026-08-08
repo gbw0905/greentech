@@ -79,7 +79,7 @@ export function OilPricePanel() {
   return (
     <div className="glass-panel rise flex h-full flex-col space-y-4 p-5">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="label-mono text-muted-foreground">WTI crude &amp; S&amp;P 500 · live</h2>
+        <h2 className="label-mono text-muted-foreground">WTI crude · S&amp;P 500 · Gold · live</h2>
         <span className="label-mono inline-flex items-center gap-1.5 text-primary">
           <span className="pulse-dot size-2 rounded-full bg-primary" />
           real time
@@ -93,7 +93,7 @@ export function OilPricePanel() {
         <p className="text-sm text-muted-foreground">Price feed unavailable right now.</p>
       )}
 
-      <div className="grid min-h-0 flex-1 gap-4 sm:grid-cols-2">
+      <div className="grid min-h-0 flex-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {quotes.map((q) => {
           const up = q.change >= 0;
           return (

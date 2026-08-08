@@ -6,12 +6,10 @@ import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
 import {
   COUNTRIES,
   FUEL_TYPES,
-  REGIONS,
   REGION_ACCENT,
   FUEL_ACCENT,
   flagFor,
   type FuelType,
-  type Region,
 } from "@/lib/policy-taxonomy";
 import { UpdateCard, formatDate } from "@/components/UpdateCard";
 import { WorldPolicyMap } from "@/components/WorldPolicyMap";
@@ -170,7 +168,6 @@ function Dashboard() {
   });
   const busy = isFetching || rescan.isPending;
   const data = feed ?? { updates: [], fetchedAt: null as string | null, error: null as string | null };
-  const [regions, setRegions] = useState<Region[]>([]);
   const [fuels, setFuels] = useState<FuelType[]>([]);
   const [country, setCountry] = useState<string | null>(null);
 
@@ -184,11 +181,10 @@ function Dashboard() {
     () =>
       data.updates.filter(
         (u) =>
-          (regions.length === 0 || regions.includes(u.region)) &&
           (fuels.length === 0 || u.fuels.some((f) => fuels.includes(f))) &&
           (!country || u.countrySlug === country),
       ),
-    [data.updates, regions, fuels, country],
+    [data.updates, fuels, country],
   );
 
   const toggle = <T,>(list: T[], set: (v: T[]) => void, value: T) =>
@@ -202,22 +198,15 @@ function Dashboard() {
     [counts],
   );
 
-  const regionCounts = useMemo(() => {
-    const m = {} as Record<Region, number>;
-    for (const r of REGIONS) m[r] = data.updates.filter((u) => u.region === r).length;
-    return m;
-  }, [data.updates]);
-
   const fuelCounts = useMemo(() => {
     const m = {} as Record<FuelType, number>;
     for (const f of FUEL_TYPES) m[f] = data.updates.filter((u) => u.fuels.includes(f)).length;
     return m;
   }, [data.updates]);
 
-  const hasFilters = Boolean(country) || regions.length > 0 || fuels.length > 0;
+  const hasFilters = Boolean(country) || fuels.length > 0;
   const clearFilters = () => {
     setCountry(null);
-    setRegions([]);
     setFuels([]);
   };
   const stats: Array<[string, number]> = [
@@ -269,7 +258,7 @@ function Dashboard() {
                 <Filter className="size-3.5" /> Filters
                 {hasFilters && (
                   <span className="rounded-full bg-primary/20 px-1.5 text-[0.65rem] text-primary tabular-nums">
-                    {regions.length + fuels.length + (country ? 1 : 0)}
+                    {fuels.length + (country ? 1 : 0)}
                   </span>
                 )}
               </h2>
@@ -314,16 +303,6 @@ function Dashboard() {
                     <X className="size-3" />
                   </button>
                 )}
-                {regions.map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={() => toggle(regions, setRegions, r)}
-                    className="label-mono inline-flex items-center gap-1 rounded-full border border-border bg-surface-2 px-2 py-1 transition-colors hover:border-destructive hover:text-destructive"
-                  >
-                    {r} <X className="size-3" />
-                  </button>
-                ))}
                 {fuels.map((f) => (
                   <button
                     key={f}
@@ -336,32 +315,6 @@ function Dashboard() {
                 ))}
               </div>
             )}
-
-            <div>
-              <div className="mb-2.5 flex items-center justify-between">
-                <h3 className="label-mono text-muted-foreground">Region</h3>
-                <button
-                  type="button"
-                  onClick={() => setRegions(regions.length === REGIONS.length ? [] : [...REGIONS])}
-                  className="label-mono text-muted-foreground transition-colors hover:text-primary"
-                >
-                  {regions.length === REGIONS.length ? "None" : "All"}
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {REGIONS.map((r) => (
-                  <Chip
-                    key={r}
-                    active={regions.includes(r)}
-                    color={REGION_ACCENT[r]}
-                    count={regionCounts[r]}
-                    onClick={() => toggle(regions, setRegions, r)}
-                  >
-                    {r}
-                  </Chip>
-                ))}
-              </div>
-            </div>
 
             <div>
               <div className="mb-2.5 flex items-center justify-between">
@@ -391,56 +344,6 @@ function Dashboard() {
 
           </div>
 
-          <div className="glass-panel rise space-y-4 p-5">
-            <h2 className="label-mono text-muted-foreground">Most active markets</h2>
-            <ul className="space-y-2.5">
-              {topCountries.length === 0 && (
-                <li className="text-sm text-muted-foreground">No matches in this scan.</li>
-              )}
-              {topCountries.map(([slug, n]) => {
-                const c = COUNTRIES.find((x) => x.slug === slug)!;
-                return (
-                  <li
-                    key={slug}
-                    className={`space-y-1 rounded-md px-1.5 py-1 transition-colors ${
-                      country === slug ? "bg-primary/10" : "hover:bg-surface-2/70"
-                    }`}
-                  >
-                    <div className="flex items-baseline justify-between gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setCountry(country === slug ? null : slug)}
-                        className={`flex min-w-0 items-center gap-1.5 truncate text-sm transition-colors hover:text-primary ${
-                          country === slug ? "text-primary" : ""
-                        }`}
-                      >
-                        <span aria-hidden>{flagFor(slug)}</span>
-                        <span className="truncate">{c.name}</span>
-                      </button>
-                      <span className="font-mono text-xs text-muted-foreground">{n}</span>
-                    </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-surface-2">
-                      <div
-                        className="h-full rounded-full transition-[width] duration-700 ease-out"
-                        style={{
-                          width: `${(n / topCountries[0]![1]) * 100}%`,
-                          backgroundColor: REGION_ACCENT[c.region],
-                          opacity: country && country !== slug ? 0.4 : 1,
-                        }}
-                      />
-                    </div>
-                    <Link
-                      to="/countries/$slug"
-                      params={{ slug }}
-                      className="label-mono text-[0.65rem] text-muted-foreground transition-colors hover:text-primary"
-                    >
-                      View profile →
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
         </aside>
 
         {/* Main */}
@@ -500,6 +403,55 @@ function Dashboard() {
             </p>
           )}
 
+          {/* Most active markets menubar */}
+          <nav
+            aria-label="Most active markets"
+            className="glass-panel sticky top-[4.5rem] z-20 flex flex-wrap items-center gap-2 p-3"
+          >
+            <span className="label-mono mr-1 inline-flex items-center gap-1.5 text-muted-foreground">
+              <Flag className="size-3.5" /> Most active markets
+            </span>
+            {topCountries.length === 0 && (
+              <span className="text-sm text-muted-foreground">No matches in this scan.</span>
+            )}
+            {topCountries.map(([slug, n]) => {
+              const c = COUNTRIES.find((x) => x.slug === slug)!;
+              const active = country === slug;
+              const tint = REGION_ACCENT[c.region];
+              return (
+                <button
+                  key={slug}
+                  type="button"
+                  onClick={() => setCountry(active ? null : slug)}
+                  aria-pressed={active}
+                  className="label-mono inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
+                  style={
+                    active
+                      ? { backgroundColor: tint, borderColor: tint, color: "var(--primary-foreground)" }
+                      : {
+                          backgroundColor: `color-mix(in oklab, ${tint} 12%, var(--surface))`,
+                          borderColor: `color-mix(in oklab, ${tint} 35%, transparent)`,
+                          color: tint,
+                        }
+                  }
+                >
+                  <span aria-hidden>{flagFor(slug)}</span>
+                  <span className="max-w-[10rem] truncate">{c.name}</span>
+                  <span className="rounded-full bg-black/10 px-1.5 text-[0.65rem] tabular-nums">{n}</span>
+                </button>
+              );
+            })}
+            {country && (
+              <Link
+                to="/countries/$slug"
+                params={{ slug: country }}
+                className="label-mono ml-auto text-muted-foreground transition-colors hover:text-primary"
+              >
+                View profile →
+              </Link>
+            )}
+          </nav>
+
           <section id="map">
             <SectionHeading
               step={1}
@@ -529,9 +481,9 @@ function Dashboard() {
               step={2}
               icon={Factory}
               title="Global biofuel production per day"
-              subtitle="Daily output of every biofuel type worldwide — ethanol, biodiesel, renewable diesel, SAF and biomethane."
+              subtitle="Daily output of every biofuel type worldwide — filtered by the fuel-type selector on the left."
             />
-            <BiofuelProductionPanel />
+            <BiofuelProductionPanel fuels={fuels} />
           </section>
 
           <section id="timeline">
@@ -611,7 +563,7 @@ function Dashboard() {
               subtitle="YouTube channels and official video hubs, linked to the countries and policies they cover."
             />
             <VideoLibrary
-              regions={regions}
+              regions={[]}
               fuels={fuels}
               country={country}
               onSelectCountry={setCountry}
