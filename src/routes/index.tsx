@@ -294,44 +294,35 @@ function Dashboard() {
                 Continuously scanned mandates, blending obligations and regulatory decisions across all global jurisdictions — with live readership of the desk.
               </p>
             </div>
-            <div className="grid grid-cols-3 divide-x divide-border border-t border-border">
-              {stats.map(([label, value]) => (
-                <div key={label} className="px-6 py-4">
-                  <div className="label-mono text-muted-foreground">{label}</div>
-                  <Counter
-                    value={value}
-                    className="mt-1 block font-display text-2xl font-bold text-primary tabular-nums"
-                  />
-                </div>
-              ))}
+            <div className="border-t border-border px-6 py-3 sm:px-8 sm:py-4">
+              <nav
+                aria-label="Page sections"
+                className="flex flex-wrap gap-2.5"
+              >
+                {[
+                  ["#markets", "1 · Markets", "oklch(0.55 0.18 230)"],
+                  ["#production", "2 · Production", "oklch(0.55 0.16 150)"],
+                  ["#map", "3 · Map", "oklch(0.55 0.16 320)"],
+                  ["#timeline", "4 · Timeline", "oklch(0.55 0.2 50)"],
+                  ["#profiles", "5 · Country profiles", "oklch(0.55 0.14 180)"],
+                  ["#videos", "6 · Videos", "oklch(0.55 0.16 340)"],
+                  ["#audience", "7 · Live audience", "oklch(0.55 0.18 25)"],
+                  ["#disclaimer", "8 · AI disclaimer", "oklch(0.45 0.02 240)"],
+                ].map(([href, label, color]) => (
+                  <a
+                    key={href}
+                    href={href}
+                    className="label-mono rounded-full border px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 hover:shadow-md"
+                    style={{
+                      backgroundColor: color,
+                      borderColor: color,
+                    }}
+                  >
+                    {label}
+                  </a>
+                ))}
+              </nav>
             </div>
-            <nav
-              aria-label="Page sections"
-              className="flex flex-wrap gap-2 border-t border-border px-6 py-3"
-            >
-              {[
-                ["#markets", "1 · Markets", "oklch(0.55 0.18 230)"],
-                ["#production", "2 · Production", "oklch(0.55 0.16 150)"],
-                ["#map", "3 · Map", "oklch(0.55 0.16 320)"],
-                ["#timeline", "4 · Timeline", "oklch(0.55 0.2 50)"],
-                ["#profiles", "5 · Country profiles", "oklch(0.55 0.14 180)"],
-                ["#videos", "6 · Videos", "oklch(0.55 0.16 340)"],
-                ["#audience", "7 · Live audience", "oklch(0.55 0.18 25)"],
-                ["#disclaimer", "8 · AI disclaimer", "oklch(0.45 0.02 240)"],
-              ].map(([href, label, color]) => (
-                <a
-                  key={href}
-                  href={href}
-                  className="label-mono rounded-full border px-3 py-1.5 text-white transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 hover:shadow-md"
-                  style={{
-                    backgroundColor: color,
-                    borderColor: color,
-                  }}
-                >
-                  {label}
-                </a>
-              ))}
-            </nav>
           </section>
 
           {data.error && (
