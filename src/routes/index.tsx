@@ -273,23 +273,6 @@ function Dashboard() {
               )}
             </div>
 
-            {/* Live match meter */}
-            <div className="rounded-[var(--radius)] border border-border bg-surface-2/50 p-3">
-              <div className="flex items-baseline justify-between">
-                <span className="label-mono text-muted-foreground">Matching now</span>
-                <span className="font-display text-lg font-bold text-primary tabular-nums">
-                  {filtered.length}
-                </span>
-              </div>
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-2">
-                <div
-                  className="h-full rounded-full bg-primary transition-[width] duration-500 ease-out"
-                  style={{
-                    width: `${data.updates.length ? (filtered.length / data.updates.length) * 100 : 0}%`,
-                  }}
-                />
-              </div>
-            </div>
 
             {hasFilters && (
               <div className="flex flex-wrap gap-1.5">
