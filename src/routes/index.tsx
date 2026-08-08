@@ -318,13 +318,14 @@ function Dashboard() {
               className="flex flex-wrap gap-2 border-t border-border px-6 py-3"
             >
               {[
-                ["#map", "1 · Map"],
+                ["#markets", "1 · Markets"],
                 ["#production", "2 · Production"],
-                ["#timeline", "3 · Timeline"],
-                ["#profiles", "4 · Country profiles"],
-                ["#videos", "5 · Videos"],
-                ["#audience", "6 · Live audience"],
-                ["#disclaimer", "7 · AI disclaimer"],
+                ["#map", "3 · Map"],
+                ["#timeline", "4 · Timeline"],
+                ["#profiles", "5 · Country profiles"],
+                ["#videos", "6 · Videos"],
+                ["#audience", "7 · Live audience"],
+                ["#disclaimer", "8 · AI disclaimer"],
               ].map(([href, label]) => (
                 <a
                   key={href}
