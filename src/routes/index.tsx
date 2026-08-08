@@ -190,14 +190,6 @@ function Dashboard() {
   const toggle = <T,>(list: T[], set: (v: T[]) => void, value: T) =>
     set(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
 
-  const topCountries = useMemo(
-    () =>
-      Object.entries(counts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 6),
-    [counts],
-  );
-
   const fuelCounts = useMemo(() => {
     const m = {} as Record<FuelType, number>;
     for (const f of FUEL_TYPES) m[f] = data.updates.filter((u) => u.fuels.includes(f)).length;
