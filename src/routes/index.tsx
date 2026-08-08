@@ -491,6 +491,16 @@ function Dashboard() {
             <TrafficPanel />
           </section>
 
+          <section id="alerts" className="pt-4">
+            <SectionHeading
+              step={8}
+              icon={BellRing}
+              title="News alerts by email"
+              subtitle="Subscribe to a daily email digest of new bioenergy policy updates, filtered to the fuels you follow."
+            />
+            <AlertSignup />
+          </section>
+
           <section id="disclaimer" className="glass-panel rise border-l-4 border-l-signal bg-signal/[0.03] p-5">
             <div className="flex items-start gap-3">
               <div className="grid size-10 place-items-center rounded-full bg-signal/15 shrink-0">
