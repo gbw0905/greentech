@@ -17,7 +17,6 @@ import { TrafficPanel } from "@/components/TrafficPanel";
 import { OilPricePanel } from "@/components/OilPricePanel";
 import { VideoLibrary } from "@/components/VideoLibrary";
 import { BiofuelProductionPanel } from "@/components/BiofuelProductionPanel";
-import { BiofuelProductionPanel } from "@/components/BiofuelProductionPanel";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
 
 const feedQuery = queryOptions({
