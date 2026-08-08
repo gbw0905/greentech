@@ -10,14 +10,21 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AlertsConfirmRouteImport } from './routes/alerts.confirm'
 import { Route as CountriesSlugRouteImport } from './routes/countries.$slug'
 import { Route as ApiPublicDailyTrafficEmailRouteImport } from './routes/api/public/daily-traffic-email'
 import { Route as ApiPublicIngestPolicyRouteImport } from './routes/api/public/ingest-policy'
+import { Route as ApiPublicPolicyAlertDigestRouteImport } from './routes/api/public/policy-alert-digest'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AlertsConfirmRoute = AlertsConfirmRouteImport.update({
+  id: '/alerts/confirm',
+  path: '/alerts/confirm',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CountriesSlugRoute = CountriesSlugRouteImport.update({
@@ -36,6 +43,12 @@ const ApiPublicIngestPolicyRoute = ApiPublicIngestPolicyRouteImport.update({
   path: '/api/public/ingest-policy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPolicyAlertDigestRoute =
+  ApiPublicPolicyAlertDigestRouteImport.update({
+    id: '/api/public/policy-alert-digest',
+    path: '/api/public/policy-alert-digest',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const LovableEmailTransactionalPreviewRoute =
   LovableEmailTransactionalPreviewRouteImport.update({
     id: '/lovable/email/transactional/preview',
@@ -45,55 +58,69 @@ const LovableEmailTransactionalPreviewRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/alerts/confirm': typeof AlertsConfirmRoute
   '/countries/$slug': typeof CountriesSlugRoute
   '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
   '/api/public/ingest-policy': typeof ApiPublicIngestPolicyRoute
+  '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/alerts/confirm': typeof AlertsConfirmRoute
   '/countries/$slug': typeof CountriesSlugRoute
   '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
   '/api/public/ingest-policy': typeof ApiPublicIngestPolicyRoute
+  '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/alerts/confirm': typeof AlertsConfirmRoute
   '/countries/$slug': typeof CountriesSlugRoute
   '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
   '/api/public/ingest-policy': typeof ApiPublicIngestPolicyRoute
+  '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/alerts/confirm'
     | '/countries/$slug'
     | '/api/public/daily-traffic-email'
     | '/api/public/ingest-policy'
+    | '/api/public/policy-alert-digest'
     | '/lovable/email/transactional/preview'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/alerts/confirm'
     | '/countries/$slug'
     | '/api/public/daily-traffic-email'
     | '/api/public/ingest-policy'
+    | '/api/public/policy-alert-digest'
     | '/lovable/email/transactional/preview'
   id:
     | '__root__'
     | '/'
+    | '/alerts/confirm'
     | '/countries/$slug'
     | '/api/public/daily-traffic-email'
     | '/api/public/ingest-policy'
+    | '/api/public/policy-alert-digest'
     | '/lovable/email/transactional/preview'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AlertsConfirmRoute: typeof AlertsConfirmRoute
   CountriesSlugRoute: typeof CountriesSlugRoute
   ApiPublicDailyTrafficEmailRoute: typeof ApiPublicDailyTrafficEmailRoute
   ApiPublicIngestPolicyRoute: typeof ApiPublicIngestPolicyRoute
+  ApiPublicPolicyAlertDigestRoute: typeof ApiPublicPolicyAlertDigestRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
 }
 
@@ -104,6 +131,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/alerts/confirm': {
+      id: '/alerts/confirm'
+      path: '/alerts/confirm'
+      fullPath: '/alerts/confirm'
+      preLoaderRoute: typeof AlertsConfirmRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/countries/$slug': {
@@ -127,6 +161,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicIngestPolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/policy-alert-digest': {
+      id: '/api/public/policy-alert-digest'
+      path: '/api/public/policy-alert-digest'
+      fullPath: '/api/public/policy-alert-digest'
+      preLoaderRoute: typeof ApiPublicPolicyAlertDigestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/transactional/preview': {
       id: '/lovable/email/transactional/preview'
       path: '/lovable/email/transactional/preview'
@@ -139,21 +180,13 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AlertsConfirmRoute: AlertsConfirmRoute,
   CountriesSlugRoute: CountriesSlugRoute,
   ApiPublicDailyTrafficEmailRoute: ApiPublicDailyTrafficEmailRoute,
   ApiPublicIngestPolicyRoute: ApiPublicIngestPolicyRoute,
+  ApiPublicPolicyAlertDigestRoute: ApiPublicPolicyAlertDigestRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { RefreshCw, Globe2, Layers, Filter, X, AlertTriangle, Map, Video, Activity, Flag, Factory, Flame, TrendingUp } from "lucide-react";
+import { RefreshCw, Globe2, Layers, Filter, X, AlertTriangle, Map, Video, Activity, Flag, Factory, Flame, TrendingUp, BellRing } from "lucide-react";
 import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
 import {
   COUNTRIES,
@@ -17,6 +17,7 @@ import { TrafficPanel } from "@/components/TrafficPanel";
 import { OilPricePanel } from "@/components/OilPricePanel";
 import { VideoLibrary } from "@/components/VideoLibrary";
 import { BiofuelProductionPanel } from "@/components/BiofuelProductionPanel";
+import { AlertSignup } from "@/components/AlertSignup";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
 
 const feedQuery = queryOptions({
@@ -303,7 +304,8 @@ function Dashboard() {
                   ["#profiles", "5 · Country profiles", "oklch(0.55 0.14 180)"],
                   ["#videos", "6 · Videos", "oklch(0.55 0.16 340)"],
                   ["#audience", "7 · Live audience", "oklch(0.55 0.18 25)"],
-                  ["#disclaimer", "8 · AI disclaimer", "oklch(0.45 0.02 240)"],
+                  ["#alerts", "8 · Email alerts", "oklch(0.55 0.17 265)"],
+                  ["#disclaimer", "9 · AI disclaimer", "oklch(0.45 0.02 240)"],
                 ].map(([href, label, color]) => (
                   <a
                     key={href}
@@ -488,6 +490,16 @@ function Dashboard() {
               subtitle="Real-time readership of this desk."
             />
             <TrafficPanel />
+          </section>
+
+          <section id="alerts" className="pt-4">
+            <SectionHeading
+              step={8}
+              icon={BellRing}
+              title="News alerts by email"
+              subtitle="Subscribe to a daily email digest of new bioenergy policy updates, filtered to the fuels you follow."
+            />
+            <AlertSignup />
           </section>
 
           <section id="disclaimer" className="glass-panel rise border-l-4 border-l-signal bg-signal/[0.03] p-5">

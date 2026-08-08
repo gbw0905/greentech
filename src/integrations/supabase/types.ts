@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      alert_subscribers: {
+        Row: {
+          confirm_token: string
+          confirmed_at: string | null
+          created_at: string
+          email: string
+          fuels: string[]
+          id: string
+          last_sent_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          confirm_token?: string
+          confirmed_at?: string | null
+          created_at?: string
+          email: string
+          fuels?: string[]
+          id?: string
+          last_sent_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          confirm_token?: string
+          confirmed_at?: string | null
+          created_at?: string
+          email?: string
+          fuels?: string[]
+          id?: string
+          last_sent_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       policy_updates: {
         Row: {
           country_name: string | null
