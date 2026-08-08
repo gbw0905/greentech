@@ -303,7 +303,8 @@ function Dashboard() {
                   ["#profiles", "5 · Country profiles", "oklch(0.55 0.14 180)"],
                   ["#videos", "6 · Videos", "oklch(0.55 0.16 340)"],
                   ["#audience", "7 · Live audience", "oklch(0.55 0.18 25)"],
-                  ["#disclaimer", "8 · AI disclaimer", "oklch(0.45 0.02 240)"],
+                  ["#alerts", "8 · Email alerts", "oklch(0.55 0.17 265)"],
+                  ["#disclaimer", "9 · AI disclaimer", "oklch(0.45 0.02 240)"],
                 ].map(([href, label, color]) => (
                   <a
                     key={href}
