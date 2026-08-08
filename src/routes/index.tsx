@@ -338,6 +338,12 @@ function Dashboard() {
           </section>
 
           <section id="production" className="pt-4">
+            <SectionHeading
+              step={2}
+              icon={Factory}
+              title="Global biofuel production per day"
+              subtitle="Daily output of every biofuel type worldwide — use the fuel-type menu below to filter the policy feed and both output charts."
+            />
             <nav
               aria-label="Fuel type filter"
               className="glass-panel mb-4 flex flex-wrap items-center gap-2 p-3"
@@ -366,12 +372,6 @@ function Dashboard() {
                 </button>
               )}
             </nav>
-            <SectionHeading
-              step={2}
-              icon={Factory}
-              title="Global biofuel production per day"
-              subtitle="Daily output of every biofuel type worldwide — use the fuel-type menu above to filter the policy feed and both output charts."
-            />
             <BiofuelProductionPanel fuels={fuels} />
           </section>
 
