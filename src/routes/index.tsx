@@ -458,33 +458,17 @@ function Dashboard() {
               <span className="label-mono mr-1 inline-flex items-center gap-1.5 text-muted-foreground">
                 <Flame className="size-3.5" /> Fuel type
               </span>
-              {FUEL_TYPES.map((f) => {
-                const active = fuels.includes(f);
-                const tint = FUEL_ACCENT[f];
-                return (
-                  <button
-                    key={f}
-                    type="button"
-                    onClick={() => toggle(fuels, setFuels, f)}
-                    aria-pressed={active}
-                    className="label-mono inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
-                    style={
-                      active
-                        ? { backgroundColor: tint, borderColor: tint, color: "var(--primary-foreground)" }
-                        : {
-                            backgroundColor: `color-mix(in oklab, ${tint} 12%, var(--surface))`,
-                            borderColor: `color-mix(in oklab, ${tint} 35%, transparent)`,
-                            color: tint,
-                          }
-                    }
-                  >
-                    <span>{f}</span>
-                    <span className="rounded-full bg-black/10 px-1.5 text-[0.65rem] tabular-nums">
-                      {fuelCounts[f]}
-                    </span>
-                  </button>
-                );
-              })}
+              {FUEL_TYPES.map((f) => (
+                <Chip
+                  key={f}
+                  active={fuels.includes(f)}
+                  color={FUEL_ACCENT[f]}
+                  count={fuelCounts[f]}
+                  onClick={() => toggle(fuels, setFuels, f)}
+                >
+                  {f}
+                </Chip>
+              ))}
               {fuels.length > 0 && (
                 <button
                   type="button"
