@@ -52,9 +52,10 @@ async function loadSymbol(symbol: string, label: string, unit: string): Promise<
 }
 
 export const getOilPricesFn = createServerFn({ method: "GET" }).handler(async () => {
-  const [wti, spx] = await Promise.all([
+  const [wti, spx, gold] = await Promise.all([
     loadSymbol("CL=F", "WTI Crude", "/bbl"),
     loadSymbol("^GSPC", "S&P 500", "index"),
+    loadSymbol("GC=F", "Gold", "/oz"),
   ]);
-  return { quotes: [wti, spx].filter(Boolean) as OilQuote[] };
+  return { quotes: [wti, spx, gold].filter(Boolean) as OilQuote[] };
 });
