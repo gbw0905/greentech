@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { RefreshCw, Globe2, Layers, Filter, X, AlertTriangle, Map, Video, Activity, Flag, Factory, Flame } from "lucide-react";
+import { RefreshCw, Globe2, Layers, Filter, X, AlertTriangle, Map, Video, Activity, Flag, Factory, Flame, TrendingUp } from "lucide-react";
 import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
 import {
   COUNTRIES,
@@ -190,14 +190,6 @@ function Dashboard() {
   const toggle = <T,>(list: T[], set: (v: T[]) => void, value: T) =>
     set(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
 
-  const topCountries = useMemo(
-    () =>
-      Object.entries(counts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 6),
-    [counts],
-  );
-
   const fuelCounts = useMemo(() => {
     const m = {} as Record<FuelType, number>;
     for (const f of FUEL_TYPES) m[f] = data.updates.filter((u) => u.fuels.includes(f)).length;
@@ -318,13 +310,14 @@ function Dashboard() {
               className="flex flex-wrap gap-2 border-t border-border px-6 py-3"
             >
               {[
-                ["#map", "1 · Map"],
+                ["#markets", "1 · Markets"],
                 ["#production", "2 · Production"],
-                ["#timeline", "3 · Timeline"],
-                ["#profiles", "4 · Country profiles"],
-                ["#videos", "5 · Videos"],
-                ["#audience", "6 · Live audience"],
-                ["#disclaimer", "7 · AI disclaimer"],
+                ["#map", "3 · Map"],
+                ["#timeline", "4 · Timeline"],
+                ["#profiles", "5 · Country profiles"],
+                ["#videos", "6 · Videos"],
+                ["#audience", "7 · Live audience"],
+                ["#disclaimer", "8 · AI disclaimer"],
               ].map(([href, label]) => (
                 <a
                   key={href}
@@ -343,77 +336,14 @@ function Dashboard() {
             </p>
           )}
 
-          {/* Most active markets menubar */}
-          <nav
-            aria-label="Most active markets"
-            className="glass-panel sticky top-[4.5rem] z-20 flex flex-wrap items-center gap-2 p-3"
-          >
-            <span className="label-mono mr-1 inline-flex items-center gap-1.5 text-muted-foreground">
-              <Flag className="size-3.5" /> Most active markets
-            </span>
-            {topCountries.length === 0 && (
-              <span className="text-sm text-muted-foreground">No matches in this scan.</span>
-            )}
-            {topCountries.map(([slug, n]) => {
-              const c = COUNTRIES.find((x) => x.slug === slug)!;
-              const active = country === slug;
-              const tint = REGION_ACCENT[c.region];
-              return (
-                <button
-                  key={slug}
-                  type="button"
-                  onClick={() => setCountry(active ? null : slug)}
-                  aria-pressed={active}
-                  className="label-mono inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
-                  style={
-                    active
-                      ? { backgroundColor: tint, borderColor: tint, color: "var(--primary-foreground)" }
-                      : {
-                          backgroundColor: `color-mix(in oklab, ${tint} 12%, var(--surface))`,
-                          borderColor: `color-mix(in oklab, ${tint} 35%, transparent)`,
-                          color: tint,
-                        }
-                  }
-                >
-                  <span aria-hidden>{flagFor(slug)}</span>
-                  <span className="max-w-[10rem] truncate">{c.name}</span>
-                  <span className="rounded-full bg-black/10 px-1.5 text-[0.65rem] tabular-nums">{n}</span>
-                </button>
-              );
-            })}
-            {country && (
-              <Link
-                to="/countries/$slug"
-                params={{ slug: country }}
-                className="label-mono ml-auto text-muted-foreground transition-colors hover:text-primary"
-              >
-                View profile →
-              </Link>
-            )}
-          </nav>
-
-          <section id="map">
+          <section id="markets">
             <SectionHeading
               step={1}
-              icon={Map}
-              title="Policy activity by jurisdiction"
-              subtitle="Click a country on the map or in the ranking to filter everything below — with live crude oil prices alongside."
+              icon={TrendingUp}
+              title="Real time Crude Oil price, S&P 500 Index and Gold Price"
+              subtitle="Live benchmark markets that move biofuel economics — 30-day trend, daily change and last close for each."
             />
-            <div className="grid items-stretch gap-4 xl:grid-cols-2">
-              <div className="glass-panel rise flex min-w-0 flex-col p-5">
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <h2 className="label-mono text-muted-foreground">Jurisdiction map</h2>
-                  <span className="label-mono inline-flex items-center gap-1.5 text-primary">
-                    <span className="pulse-dot size-2 rounded-full bg-primary" />
-                    interactive
-                  </span>
-                </div>
-                <div className="min-h-0 flex-1">
-                  <WorldPolicyMap counts={counts} activeCountry={country} onSelect={setCountry} />
-                </div>
-              </div>
-              <OilPricePanel />
-            </div>
+            <OilPricePanel />
           </section>
 
           <section id="production" className="pt-4">
@@ -454,9 +384,30 @@ function Dashboard() {
             <BiofuelProductionPanel fuels={fuels} />
           </section>
 
-          <section id="timeline">
+          <section id="map" className="pt-4">
             <SectionHeading
               step={3}
+              icon={Map}
+              title="Policy activity by jurisdiction"
+              subtitle="Click a country on the map to filter the timeline, profiles and videos below."
+            />
+            <div className="glass-panel rise flex min-w-0 flex-col p-5">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <h2 className="label-mono text-muted-foreground">Jurisdiction map</h2>
+                <span className="label-mono inline-flex items-center gap-1.5 text-primary">
+                  <span className="pulse-dot size-2 rounded-full bg-primary" />
+                  interactive
+                </span>
+              </div>
+              <div className="min-h-0 flex-1">
+                <WorldPolicyMap counts={counts} activeCountry={country} onSelect={setCountry} />
+              </div>
+            </div>
+          </section>
+
+          <section id="timeline" className="pt-4">
+            <SectionHeading
+              step={4}
               icon={Layers}
               title={`Policy update timeline · ${filtered.length} updates${
                 country ? ` · ${COUNTRIES.find((c) => c.slug === country)?.name}` : ""
@@ -493,7 +444,7 @@ function Dashboard() {
 
           <section id="profiles" className="pt-4">
             <SectionHeading
-              step={4}
+              step={5}
               icon={Flag}
               title="Country policy profiles"
               subtitle="Headline mandate for each tracked jurisdiction — open a profile for full detail."
@@ -525,7 +476,7 @@ function Dashboard() {
 
           <section id="videos" className="pt-4">
             <SectionHeading
-              step={5}
+              step={6}
               icon={Video}
               title="Video briefing room"
               subtitle="YouTube channels and official video hubs, linked to the countries and policies they cover."
@@ -540,7 +491,7 @@ function Dashboard() {
 
           <section id="audience" className="pt-4">
             <SectionHeading
-              step={6}
+              step={7}
               icon={Activity}
               title="Live audience"
               subtitle="Real-time readership of this desk."
