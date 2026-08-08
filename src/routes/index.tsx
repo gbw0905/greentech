@@ -403,6 +403,55 @@ function Dashboard() {
             </p>
           )}
 
+          {/* Most active markets menubar */}
+          <nav
+            aria-label="Most active markets"
+            className="glass-panel sticky top-[4.5rem] z-20 flex flex-wrap items-center gap-2 p-3"
+          >
+            <span className="label-mono mr-1 inline-flex items-center gap-1.5 text-muted-foreground">
+              <Flag className="size-3.5" /> Most active markets
+            </span>
+            {topCountries.length === 0 && (
+              <span className="text-sm text-muted-foreground">No matches in this scan.</span>
+            )}
+            {topCountries.map(([slug, n]) => {
+              const c = COUNTRIES.find((x) => x.slug === slug)!;
+              const active = country === slug;
+              const tint = REGION_ACCENT[c.region];
+              return (
+                <button
+                  key={slug}
+                  type="button"
+                  onClick={() => setCountry(active ? null : slug)}
+                  aria-pressed={active}
+                  className="label-mono inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
+                  style={
+                    active
+                      ? { backgroundColor: tint, borderColor: tint, color: "var(--primary-foreground)" }
+                      : {
+                          backgroundColor: `color-mix(in oklab, ${tint} 12%, var(--surface))`,
+                          borderColor: `color-mix(in oklab, ${tint} 35%, transparent)`,
+                          color: tint,
+                        }
+                  }
+                >
+                  <span aria-hidden>{flagFor(slug)}</span>
+                  <span className="max-w-[10rem] truncate">{c.name}</span>
+                  <span className="rounded-full bg-black/10 px-1.5 text-[0.65rem] tabular-nums">{n}</span>
+                </button>
+              );
+            })}
+            {country && (
+              <Link
+                to="/countries/$slug"
+                params={{ slug: country }}
+                className="label-mono ml-auto text-muted-foreground transition-colors hover:text-primary"
+              >
+                View profile →
+              </Link>
+            )}
+          </nav>
+
           <section id="map">
             <SectionHeading
               step={1}
