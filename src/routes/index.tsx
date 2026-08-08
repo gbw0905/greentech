@@ -481,9 +481,9 @@ function Dashboard() {
               step={2}
               icon={Factory}
               title="Global biofuel production per day"
-              subtitle="Daily output of every biofuel type worldwide — ethanol, biodiesel, renewable diesel, SAF and biomethane."
+              subtitle="Daily output of every biofuel type worldwide — filtered by the fuel-type selector on the left."
             />
-            <BiofuelProductionPanel />
+            <BiofuelProductionPanel fuels={fuels} />
           </section>
 
           <section id="timeline">
