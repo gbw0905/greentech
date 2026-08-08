@@ -200,11 +200,7 @@ function Dashboard() {
     setCountry(null);
     setFuels([]);
   };
-  const stats: Array<[string, number]> = [
-    ["Updates", data.updates.length],
-    ["Jurisdictions", Object.keys(counts).length],
-    ["In view", filtered.length],
-  ];
+
 
 
   return (
