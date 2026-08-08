@@ -254,7 +254,7 @@ function Dashboard() {
         {hasFilters && (
           <div className="glass-panel mb-6 flex flex-wrap items-center gap-2 p-3">
             <span className="label-mono mr-1 inline-flex items-center gap-1.5 text-muted-foreground">
-              <X className="size-3.5" /> Active filters
+              <Filter className="size-3.5" /> Active filters
             </span>
             {country && (
               <button
