@@ -564,7 +564,7 @@ function Dashboard() {
               subtitle="YouTube channels and official video hubs, linked to the countries and policies they cover."
             />
             <VideoLibrary
-              regions={regions}
+              regions={[]}
               fuels={fuels}
               country={country}
               onSelectCountry={setCountry}
