@@ -344,77 +344,14 @@ function Dashboard() {
             </p>
           )}
 
-          {/* Most active markets menubar */}
-          <nav
-            aria-label="Most active markets"
-            className="glass-panel sticky top-[4.5rem] z-20 flex flex-wrap items-center gap-2 p-3"
-          >
-            <span className="label-mono mr-1 inline-flex items-center gap-1.5 text-muted-foreground">
-              <Flag className="size-3.5" /> Most active markets
-            </span>
-            {topCountries.length === 0 && (
-              <span className="text-sm text-muted-foreground">No matches in this scan.</span>
-            )}
-            {topCountries.map(([slug, n]) => {
-              const c = COUNTRIES.find((x) => x.slug === slug)!;
-              const active = country === slug;
-              const tint = REGION_ACCENT[c.region];
-              return (
-                <button
-                  key={slug}
-                  type="button"
-                  onClick={() => setCountry(active ? null : slug)}
-                  aria-pressed={active}
-                  className="label-mono inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
-                  style={
-                    active
-                      ? { backgroundColor: tint, borderColor: tint, color: "var(--primary-foreground)" }
-                      : {
-                          backgroundColor: `color-mix(in oklab, ${tint} 12%, var(--surface))`,
-                          borderColor: `color-mix(in oklab, ${tint} 35%, transparent)`,
-                          color: tint,
-                        }
-                  }
-                >
-                  <span aria-hidden>{flagFor(slug)}</span>
-                  <span className="max-w-[10rem] truncate">{c.name}</span>
-                  <span className="rounded-full bg-black/10 px-1.5 text-[0.65rem] tabular-nums">{n}</span>
-                </button>
-              );
-            })}
-            {country && (
-              <Link
-                to="/countries/$slug"
-                params={{ slug: country }}
-                className="label-mono ml-auto text-muted-foreground transition-colors hover:text-primary"
-              >
-                View profile →
-              </Link>
-            )}
-          </nav>
-
-          <section id="map">
+          <section id="markets">
             <SectionHeading
               step={1}
-              icon={Map}
-              title="Policy activity by jurisdiction"
-              subtitle="Click a country on the map or in the ranking to filter everything below — with live crude oil prices alongside."
+              icon={TrendingUp}
+              title="Real time Crude Oil price, S&P 500 Index and Gold Price"
+              subtitle="Live benchmark markets that move biofuel economics — 30-day trend, daily change and last close for each."
             />
-            <div className="grid items-stretch gap-4 xl:grid-cols-2">
-              <div className="glass-panel rise flex min-w-0 flex-col p-5">
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <h2 className="label-mono text-muted-foreground">Jurisdiction map</h2>
-                  <span className="label-mono inline-flex items-center gap-1.5 text-primary">
-                    <span className="pulse-dot size-2 rounded-full bg-primary" />
-                    interactive
-                  </span>
-                </div>
-                <div className="min-h-0 flex-1">
-                  <WorldPolicyMap counts={counts} activeCountry={country} onSelect={setCountry} />
-                </div>
-              </div>
-              <OilPricePanel />
-            </div>
+            <OilPricePanel />
           </section>
 
           <section id="production" className="pt-4">
