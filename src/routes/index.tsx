@@ -249,62 +249,45 @@ function Dashboard() {
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-[110rem] gap-6 px-5 py-6 lg:grid-cols-[17rem_minmax(0,1fr)] lg:px-8 lg:py-8">
-        {/* Sidebar */}
-        <aside className="space-y-5 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:self-start lg:overflow-y-auto lg:pr-1">
-          <div className="glass-panel rise space-y-5 p-5 transition-shadow duration-300 hover:shadow-[var(--shadow-frost)]">
-            <div className="flex items-center justify-between">
-              <h2 className="label-mono flex items-center gap-2 text-muted-foreground">
-                <Filter className="size-3.5" /> Filters
-                {hasFilters && (
-                  <span className="rounded-full bg-primary/20 px-1.5 text-[0.65rem] text-primary tabular-nums">
-                    {fuels.length + (country ? 1 : 0)}
-                  </span>
-                )}
-              </h2>
-              {hasFilters && (
-                <button
-                  type="button"
-                  onClick={clearFilters}
-                  className="label-mono inline-flex items-center gap-1 text-primary transition-transform hover:underline active:scale-95"
-                >
-                  <X className="size-3" /> Clear
-                </button>
-              )}
-            </div>
-
-
-            {hasFilters && (
-              <div className="flex flex-wrap gap-1.5">
-                {country && (
-                  <button
-                    type="button"
-                    onClick={() => setCountry(null)}
-                    className="label-mono inline-flex items-center gap-1 rounded-full border border-border bg-surface-2 px-2 py-1 transition-colors hover:border-destructive hover:text-destructive"
-                  >
-                    {flagFor(country)} {COUNTRIES.find((c) => c.slug === country)?.name}
-                    <X className="size-3" />
-                  </button>
-                )}
-                {fuels.map((f) => (
-                  <button
-                    key={f}
-                    type="button"
-                    onClick={() => toggle(fuels, setFuels, f)}
-                    className="label-mono inline-flex items-center gap-1 rounded-full border border-border bg-surface-2 px-2 py-1 transition-colors hover:border-destructive hover:text-destructive"
-                  >
-                    {f} <X className="size-3" />
-                  </button>
-                ))}
-              </div>
+      <div className="mx-auto max-w-[110rem] px-5 py-6 lg:px-8 lg:py-8">
+        {/* Active filters summary (replaces left sidebar) */}
+        {hasFilters && (
+          <div className="glass-panel mb-6 flex flex-wrap items-center gap-2 p-3">
+            <span className="label-mono mr-1 inline-flex items-center gap-1.5 text-muted-foreground">
+              <X className="size-3.5" /> Active filters
+            </span>
+            {country && (
+              <button
+                type="button"
+                onClick={() => setCountry(null)}
+                className="label-mono inline-flex items-center gap-1 rounded-full border border-border bg-surface-2 px-2 py-1 transition-colors hover:border-destructive hover:text-destructive"
+              >
+                {flagFor(country)} {COUNTRIES.find((c) => c.slug === country)?.name}
+                <X className="size-3" />
+              </button>
             )}
-
+            {fuels.map((f) => (
+              <button
+                key={f}
+                type="button"
+                onClick={() => toggle(fuels, setFuels, f)}
+                className="label-mono inline-flex items-center gap-1 rounded-full border border-border bg-surface-2 px-2 py-1 transition-colors hover:border-destructive hover:text-destructive"
+                style={{ color: FUEL_ACCENT[f] }}
+              >
+                {f} <X className="size-3" />
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="label-mono ml-auto inline-flex items-center gap-1 text-primary transition-transform hover:underline active:scale-95"
+            >
+              <X className="size-3" /> Clear all
+            </button>
           </div>
+        )}
 
-        </aside>
-
-        {/* Main */}
-        <main className="min-w-0 space-y-6">
+        <main className="space-y-6">
           <section className="glass-panel rise overflow-hidden">
             <div style={{ containerType: "inline-size" }} className="hero-glow surface-gradient-aurora px-6 py-10 text-primary-foreground sm:px-8 sm:py-12">
               <div className="label-mono inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-1 backdrop-blur-sm">
