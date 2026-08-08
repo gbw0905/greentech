@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { RefreshCw, Globe2, Layers, Filter, X, AlertTriangle, Map, Video, Activity, Flag, Factory, Flame } from "lucide-react";
+import { RefreshCw, Globe2, Layers, Filter, X, AlertTriangle, Map, Video, Activity, Flag, Factory, Flame, TrendingUp } from "lucide-react";
 import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
 import {
   COUNTRIES,
@@ -392,9 +392,30 @@ function Dashboard() {
             <BiofuelProductionPanel fuels={fuels} />
           </section>
 
-          <section id="timeline">
+          <section id="map" className="pt-4">
             <SectionHeading
               step={3}
+              icon={Map}
+              title="Policy activity by jurisdiction"
+              subtitle="Click a country on the map to filter the timeline, profiles and videos below."
+            />
+            <div className="glass-panel rise flex min-w-0 flex-col p-5">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <h2 className="label-mono text-muted-foreground">Jurisdiction map</h2>
+                <span className="label-mono inline-flex items-center gap-1.5 text-primary">
+                  <span className="pulse-dot size-2 rounded-full bg-primary" />
+                  interactive
+                </span>
+              </div>
+              <div className="min-h-0 flex-1">
+                <WorldPolicyMap counts={counts} activeCountry={country} onSelect={setCountry} />
+              </div>
+            </div>
+          </section>
+
+          <section id="timeline" className="pt-4">
+            <SectionHeading
+              step={4}
               icon={Layers}
               title={`Policy update timeline · ${filtered.length} updates${
                 country ? ` · ${COUNTRIES.find((c) => c.slug === country)?.name}` : ""
