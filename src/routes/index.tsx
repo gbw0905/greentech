@@ -452,7 +452,7 @@ function Dashboard() {
 
           <section id="profiles" className="pt-4">
             <SectionHeading
-              step={4}
+              step={5}
               icon={Flag}
               title="Country policy profiles"
               subtitle="Headline mandate for each tracked jurisdiction — open a profile for full detail."
@@ -484,7 +484,7 @@ function Dashboard() {
 
           <section id="videos" className="pt-4">
             <SectionHeading
-              step={5}
+              step={6}
               icon={Video}
               title="Video briefing room"
               subtitle="YouTube channels and official video hubs, linked to the countries and policies they cover."
@@ -499,7 +499,7 @@ function Dashboard() {
 
           <section id="audience" className="pt-4">
             <SectionHeading
-              step={6}
+              step={7}
               icon={Activity}
               title="Live audience"
               subtitle="Real-time readership of this desk."
