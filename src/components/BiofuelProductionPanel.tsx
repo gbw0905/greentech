@@ -225,22 +225,39 @@ function ColumnChart({
   );
 }
 
-export function BiofuelProductionPanel() {
+export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
   const [unit, setUnit] = useState<"litres" | "barrels">("litres");
   const [userView, setUserView] = useState<"countries" | "companies">("countries");
 
-  const rows = STREAMS.map((s) => ({
+  const activeStreams = STREAMS.filter((s) => fuels.length === 0 || fuels.includes(s.fuel));
+  const shownStreams = activeStreams.length > 0 ? activeStreams : STREAMS;
+  const rows = shownStreams.map((s) => ({
     ...s,
     daily: unit === "litres" ? (s.annualBnL * 1e9) / 365 : s.barrelsPerDay,
   }));
   const total = rows.reduce((a, r) => a + r.daily, 0);
   const unitLabel = unit === "litres" ? "million litres / day" : "thousand barrels / day";
   const scale = (v: number) => (unit === "litres" ? v / 1e6 : v / 1e3);
-  const users = userView === "countries" ? CONSUMERS : COMPANIES;
-  const usersTotal = users.reduce((a, c) => a + c.annualBnL, 0);
+  const mixFuels = activeStreams.length > 0 ? fuels : [];
+  const users = (userView === "countries" ? CONSUMERS : COMPANIES)
+    .map((e) => ({ ...e, annualBnL: sumMix(e.mix, mixFuels) }))
+    .filter((e) => e.annualBnL > 0)
+    .sort((a, b) => b.annualBnL - a.annualBnL);
+  const usersTotal = users.reduce((a, c) => a + c.annualBnL, 0) || 1;
+  const filterNote =
+    fuels.length > 0
+      ? activeStreams.length > 0
+        ? `Filtered to ${fuels.join(", ")}`
+        : `No production data for ${fuels.join(", ")} — showing all fuels`
+      : null;
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
+      {filterNote ? (
+        <div className="label-mono lg:col-span-2 rounded-full border border-border bg-surface-2 px-3 py-1.5 text-muted-foreground">
+          {filterNote}
+        </div>
+      ) : null}
       <div className="glass-panel rise p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -279,7 +296,7 @@ export function BiofuelProductionPanel() {
           <h3 className="label-mono mb-2 text-muted-foreground">Output by fuel type</h3>
           <ColumnChart
             unitLabel={unitLabel}
-            legendNotes={Object.fromEntries(STREAMS.map((s) => [s.name, s.note]))}
+            legendNotes={Object.fromEntries(shownStreams.map((s) => [s.name, s.note]))}
             items={rows.map((r) => ({
               key: r.name,
               label: r.name,
@@ -320,6 +337,9 @@ export function BiofuelProductionPanel() {
             ))}
           </div>
         </div>
+        {users.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No matching users for this fuel filter.</p>
+        ) : (
         <ColumnChart
           unitLabel={
             userView === "countries"
@@ -329,11 +349,12 @@ export function BiofuelProductionPanel() {
           items={users.map((c) => ({
             key: c.name,
             label: `${c.flag} ${c.name}`,
-            sub: `${((c.annualBnL / usersTotal) * 100).toFixed(0)}% of top-6`,
+            sub: `${((c.annualBnL / usersTotal) * 100).toFixed(0)}% of shown`,
             value: c.annualBnL,
             color: c.color,
           }))}
         />
+        )}
         <p className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
           Top consumers and producers by annual liquid biofuel volume. Source: IEA/EIA estimates and
           company reports.
