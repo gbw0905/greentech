@@ -17,7 +17,7 @@ import { TrafficPanel } from "@/components/TrafficPanel";
 import { OilPricePanel } from "@/components/OilPricePanel";
 import { VideoLibrary } from "@/components/VideoLibrary";
 import { BiofuelProductionPanel } from "@/components/BiofuelProductionPanel";
-import { Counter } from "@/components/Counter";
+import { BiofuelProductionPanel } from "@/components/BiofuelProductionPanel";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
 
 const feedQuery = queryOptions({
@@ -206,6 +206,7 @@ function Dashboard() {
     ["Jurisdictions", Object.keys(counts).length],
     ["In view", filtered.length],
   ];
+
 
   return (
     <div className="min-h-screen">
