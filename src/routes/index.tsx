@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { RefreshCw, Globe2, Layers, Filter, X, AlertTriangle, Map, Video, Activity, Flag, Factory } from "lucide-react";
+import { RefreshCw, Globe2, Layers, Filter, X, AlertTriangle, Map, Video, Activity, Flag, Factory, Flame } from "lucide-react";
 import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
 import {
   COUNTRIES,
@@ -316,32 +316,6 @@ function Dashboard() {
               </div>
             )}
 
-            <div>
-              <div className="mb-2.5 flex items-center justify-between">
-                <h3 className="label-mono text-muted-foreground">Fuel type</h3>
-                <button
-                  type="button"
-                  onClick={() => setFuels(fuels.length === FUEL_TYPES.length ? [] : [...FUEL_TYPES])}
-                  className="label-mono text-muted-foreground transition-colors hover:text-primary"
-                >
-                  {fuels.length === FUEL_TYPES.length ? "None" : "All"}
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {FUEL_TYPES.map((f) => (
-                  <Chip
-                    key={f}
-                    active={fuels.includes(f)}
-                    color={FUEL_ACCENT[f]}
-                    count={fuelCounts[f]}
-                    onClick={() => toggle(fuels, setFuels, f)}
-                  >
-                    {f}
-                  </Chip>
-                ))}
-              </div>
-            </div>
-
           </div>
 
         </aside>
@@ -477,11 +451,55 @@ function Dashboard() {
           </section>
 
           <section id="production" className="pt-4">
+            <nav
+              aria-label="Fuel type filter"
+              className="glass-panel mb-4 flex flex-wrap items-center gap-2 p-3"
+            >
+              <span className="label-mono mr-1 inline-flex items-center gap-1.5 text-muted-foreground">
+                <Flame className="size-3.5" /> Fuel type
+              </span>
+              {FUEL_TYPES.map((f) => {
+                const active = fuels.includes(f);
+                const tint = FUEL_ACCENT[f];
+                return (
+                  <button
+                    key={f}
+                    type="button"
+                    onClick={() => toggle(fuels, setFuels, f)}
+                    aria-pressed={active}
+                    className="label-mono inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
+                    style={
+                      active
+                        ? { backgroundColor: tint, borderColor: tint, color: "var(--primary-foreground)" }
+                        : {
+                            backgroundColor: `color-mix(in oklab, ${tint} 12%, var(--surface))`,
+                            borderColor: `color-mix(in oklab, ${tint} 35%, transparent)`,
+                            color: tint,
+                          }
+                    }
+                  >
+                    <span>{f}</span>
+                    <span className="rounded-full bg-black/10 px-1.5 text-[0.65rem] tabular-nums">
+                      {fuelCounts[f]}
+                    </span>
+                  </button>
+                );
+              })}
+              {fuels.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setFuels([])}
+                  className="label-mono ml-auto inline-flex items-center gap-1 text-muted-foreground transition-colors hover:text-destructive"
+                >
+                  Clear <X className="size-3" />
+                </button>
+              )}
+            </nav>
             <SectionHeading
               step={2}
               icon={Factory}
               title="Global biofuel production per day"
-              subtitle="Daily output of every biofuel type worldwide — filtered by the fuel-type selector on the left."
+              subtitle="Daily output of every biofuel type worldwide — use the fuel-type menu above to filter the policy feed and both output charts."
             />
             <BiofuelProductionPanel fuels={fuels} />
           </section>
