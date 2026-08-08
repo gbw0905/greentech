@@ -258,7 +258,7 @@ function Dashboard() {
                 <Filter className="size-3.5" /> Filters
                 {hasFilters && (
                   <span className="rounded-full bg-primary/20 px-1.5 text-[0.65rem] text-primary tabular-nums">
-                    {regions.length + fuels.length + (country ? 1 : 0)}
+                    {fuels.length + (country ? 1 : 0)}
                   </span>
                 )}
               </h2>
@@ -303,16 +303,6 @@ function Dashboard() {
                     <X className="size-3" />
                   </button>
                 )}
-                {regions.map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={() => toggle(regions, setRegions, r)}
-                    className="label-mono inline-flex items-center gap-1 rounded-full border border-border bg-surface-2 px-2 py-1 transition-colors hover:border-destructive hover:text-destructive"
-                  >
-                    {r} <X className="size-3" />
-                  </button>
-                ))}
                 {fuels.map((f) => (
                   <button
                     key={f}
@@ -325,32 +315,6 @@ function Dashboard() {
                 ))}
               </div>
             )}
-
-            <div>
-              <div className="mb-2.5 flex items-center justify-between">
-                <h3 className="label-mono text-muted-foreground">Region</h3>
-                <button
-                  type="button"
-                  onClick={() => setRegions(regions.length === REGIONS.length ? [] : [...REGIONS])}
-                  className="label-mono text-muted-foreground transition-colors hover:text-primary"
-                >
-                  {regions.length === REGIONS.length ? "None" : "All"}
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {REGIONS.map((r) => (
-                  <Chip
-                    key={r}
-                    active={regions.includes(r)}
-                    color={REGION_ACCENT[r]}
-                    count={regionCounts[r]}
-                    onClick={() => toggle(regions, setRegions, r)}
-                  >
-                    {r}
-                  </Chip>
-                ))}
-              </div>
-            </div>
 
             <div>
               <div className="mb-2.5 flex items-center justify-between">
