@@ -19,45 +19,37 @@ const COLORS = [
 const fmt = (n: number, d = 2) =>
   n.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
 
-function MultiLineChart({ quotes, hover, setHover }: { quotes: OilQuote[]; hover: string | null; setHover: (s: string | null) => void }) {
-  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+function ColumnChart({ quotes, hover, setHover }: { quotes: OilQuote[]; hover: string | null; setHover: (s: string | null) => void }) {
+  const [hoveredSymbol, setHoveredSymbol] = useState<string | null>(null);
 
-  // Build normalized series: each line starts at 0% on its first day
-  const normalized = quotes.map((q, idx) => {
-    const base = q.series[0]?.c ?? q.price;
-    const pts = q.series.map((p) => ({ t: p.t, pct: base ? ((p.c - base) / base) * 100 : 0 }));
-    return { ...q, color: COLORS[idx % COLORS.length]!, pts };
-  });
+  const sorted = [...quotes].sort((a, b) => b.price - a.price);
+  const maxPrice = Math.max(...sorted.map((q) => q.price), 1);
+  const niceMax = Math.ceil(maxPrice / 50) * 50;
 
-  const allPct = normalized.flatMap((n) => n.pts.map((p) => p.pct));
-  const lo = Math.min(0, ...allPct);
-  const hi = Math.max(0, ...allPct);
-  const span = hi - lo || 1;
-
-  const w = 320;
-  const h = 140;
-  const padLeft = 36;
-  const padRight = 12;
-  const padTop = 8;
-  const padBottom = 24;
+  const w = 640;
+  const h = 320;
+  const padLeft = 56;
+  const padRight = 16;
+  const padTop = 24;
+  const padBottom = 56;
   const chartW = w - padLeft - padRight;
   const chartH = h - padTop - padBottom;
 
-  const xFor = (i: number, len: number) => padLeft + (len <= 1 ? 0 : (i / (len - 1)) * chartW);
-  const yFor = (pct: number) => padTop + chartH - ((pct - lo) / span) * chartH;
-
-  const maxLen = Math.max(1, ...normalized.map((n) => n.pts.length));
-  const activeIdx = hoverIdx ?? maxLen - 1;
+  const barCount = sorted.length;
+  const gap = 8;
+  const barW = (chartW - gap * (barCount - 1)) / barCount;
+  const yFor = (price: number) => padTop + chartH - (price / niceMax) * chartH;
 
   const yTicks = 5;
+  const activeQuote = sorted.find((q) => q.symbol === (hoveredSymbol ?? hover)) ?? null;
 
   return (
     <div className="relative">
-      <svg viewBox={`0 0 ${w} ${h}`} className="w-full overflow-visible" style={{ minHeight: 240 }}>
+      <svg viewBox={`0 0 ${w} ${h}`} className="w-full overflow-visible" style={{ minHeight: 320 }}>
         {/* Gridlines */}
         {Array.from({ length: yTicks }).map((_, i) => {
           const t = i / (yTicks - 1);
-          const y = padTop + t * chartH;
+          const y = padTop + (1 - t) * chartH;
           return (
             <line
               key={i}
@@ -75,135 +67,121 @@ function MultiLineChart({ quotes, hover, setHover }: { quotes: OilQuote[]; hover
         {/* Y-axis labels */}
         {Array.from({ length: yTicks }).map((_, i) => {
           const t = i / (yTicks - 1);
-          const pct = lo + (1 - t) * span;
+          const price = t * niceMax;
           return (
             <text
               key={i}
-              x={padLeft - 6}
-              y={padTop + t * chartH + 3}
+              x={padLeft - 8}
+              y={padTop + (1 - t) * chartH + 4}
               textAnchor="end"
-              className="font-mono text-[8px] fill-muted-foreground tabular-nums"
+              className="font-mono text-[9px] fill-muted-foreground tabular-nums"
             >
-              {pct >= 0 ? "+" : ""}
-              {pct.toFixed(0)}%
+              ${price.toFixed(0)}
             </text>
           );
         })}
 
-        {/* X-axis labels */}
-        {[0, Math.floor((maxLen - 1) / 2), maxLen - 1].map((i, k) => {
-          const x = xFor(i, maxLen);
+        {/* Y-axis title */}
+        <text
+          x={padLeft - 8}
+          y={padTop - 10}
+          textAnchor="end"
+          className="font-mono text-[9px] fill-muted-foreground"
+        >
+          USD / share
+        </text>
+
+        {/* Bars */}
+        {sorted.map((q, idx) => {
+          const color = COLORS[idx % COLORS.length]!;
+          const active = hover === q.symbol || hoveredSymbol === q.symbol;
+          const x = padLeft + idx * (barW + gap);
+          const y = yFor(q.price);
+          const up = q.changePct >= 0;
           return (
-            <text
-              key={k}
-              x={x}
-              y={h - 6}
-              textAnchor={k === 0 ? "start" : k === 2 ? "end" : "middle"}
-              className="font-mono text-[8px] fill-muted-foreground"
+            <g
+              key={q.symbol}
+              onMouseEnter={() => setHoveredSymbol(q.symbol)}
+              onMouseLeave={() => setHoveredSymbol(null)}
+              onClick={() => setHover(active ? null : q.symbol)}
+              className="cursor-pointer"
             >
-              {new Date(normalized[0]?.pts[i]?.t ?? Date.now()).toLocaleDateString(undefined, {
-                month: "short",
-                day: "numeric",
-              })}
-            </text>
+              <rect
+                x={x}
+                y={y}
+                width={barW}
+                height={padTop + chartH - y}
+                rx={4}
+                fill={color}
+                opacity={active ? 1 : hover === null ? 0.85 : 0.35}
+                className="transition-all duration-200"
+              />
+              {/* Price label on top of bar */}
+              <text
+                x={x + barW / 2}
+                y={y - 8}
+                textAnchor="middle"
+                className="font-mono text-[9px] fill-foreground font-semibold tabular-nums"
+                opacity={active ? 1 : 0.85}
+              >
+                ${fmt(q.price)}
+              </text>
+              {/* Symbol label below X-axis */}
+              <text
+                x={x + barW / 2}
+                y={h - padBottom + 14}
+                textAnchor="middle"
+                className="font-mono text-[9px] fill-foreground font-semibold"
+              >
+                {q.symbol}
+              </text>
+              {/* Company name below symbol */}
+              <text
+                x={x + barW / 2}
+                y={h - padBottom + 30}
+                textAnchor="middle"
+                className="text-[8px] fill-muted-foreground"
+                style={{ fontFamily: "Calibri, sans-serif" }}
+              >
+                {q.label.length > 12 ? `${q.label.slice(0, 12)}…` : q.label}
+              </text>
+              {/* Change badge inside bar if tall enough */}
+              {padTop + chartH - y > 40 && (
+                <text
+                  x={x + barW / 2}
+                  y={padTop + chartH - 10}
+                  textAnchor="middle"
+                  className={`font-mono text-[9px] font-semibold tabular-nums ${up ? "fill-emerald-950" : "fill-red-950"}`}
+                >
+                  {up ? "+" : ""}
+                  {q.changePct.toFixed(1)}%
+                </text>
+              )}
+            </g>
           );
         })}
-
-        {/* Hover guideline */}
-        {hoverIdx !== null && (
-          <line
-            x1={xFor(activeIdx, maxLen)}
-            x2={xFor(activeIdx, maxLen)}
-            y1={padTop}
-            y2={padTop + chartH}
-            stroke="var(--muted-foreground)"
-            strokeWidth="1"
-            strokeDasharray="3 3"
-            opacity="0.5"
-            vectorEffect="non-scaling-stroke"
-          />
-        )}
-
-        {/* Lines */}
-        {normalized.map((n) => {
-          const active = hover === n.symbol || hover === null;
-          const path = n.pts
-            .map((p, i) => `${i === 0 ? "M" : "L"}${xFor(i, n.pts.length).toFixed(2)},${yFor(p.pct).toFixed(2)}`)
-            .join(" ");
-          return (
-            <path
-              key={n.symbol}
-              d={path}
-              fill="none"
-              stroke={n.color}
-              strokeWidth={active ? 2.2 : 1.2}
-              opacity={active ? 1 : 0.25}
-              strokeLinejoin="round"
-              strokeLinecap="round"
-              vectorEffect="non-scaling-stroke"
-            />
-          );
-        })}
-
-        {/* Invisible hover overlay */}
-        <rect
-          x={padLeft}
-          y={padTop}
-          width={chartW}
-          height={chartH}
-          fill="transparent"
-          onMouseMove={(e) => {
-            const r = e.currentTarget.getBoundingClientRect();
-            const ratio = (e.clientX - r.left) / r.width;
-            setHoverIdx(Math.max(0, Math.min(maxLen - 1, Math.round(ratio * (maxLen - 1)))));
-          }}
-          onMouseLeave={() => setHoverIdx(null)}
-        />
       </svg>
 
       {/* Hover tooltip */}
-      {hoverIdx !== null && (
-        <div className="pointer-events-none absolute left-1/2 top-0 z-20 w-max max-w-[260px] -translate-x-1/2 rounded-md border border-border bg-surface-2 px-3 py-2 shadow-lg">
-          <div className="label-mono mb-1 text-muted-foreground">
-            {new Date(normalized[0]?.pts[activeIdx]?.t ?? Date.now()).toLocaleDateString(undefined, {
-              month: "short",
-              day: "numeric",
-            })}
+      {activeQuote && (
+        <div className="pointer-events-none absolute left-1/2 top-0 z-20 w-max max-w-[280px] -translate-x-1/2 rounded-md border border-border bg-surface-2 px-3 py-2 shadow-lg">
+          <div className="flex items-center gap-2">
+            <span className="font-display text-sm font-bold text-foreground">{activeQuote.symbol}</span>
+            <span className="text-xs text-muted-foreground">{activeQuote.label}</span>
           </div>
-          <ul className="space-y-1">
-            {normalized
-              .filter((n) => hover === null || hover === n.symbol)
-              .map((n) => {
-                const pct = n.pts[activeIdx]?.pct ?? 0;
-                const up = pct >= 0;
-                return (
-                  <li key={n.symbol} className="flex items-center justify-between gap-4 text-[11px]">
-                    <span className="flex items-center gap-1.5">
-                      <span className="inline-block size-2 rounded-full" style={{ background: n.color }} />
-                      <span className="font-semibold">{n.symbol}</span>
-                      <span className="truncate text-muted-foreground max-w-[90px]">{n.label}</span>
-                    </span>
-                    <span className={`font-mono tabular-nums ${up ? "text-signal" : "text-destructive"}`}>
-                      {up ? "+" : ""}
-                      {pct.toFixed(1)}%
-                    </span>
-                  </li>
-                );
-              })}
-          </ul>
+          <div className="mt-1 grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+            <span className="text-muted-foreground">Price</span>
+            <span className="font-mono text-right font-semibold text-foreground">${fmt(activeQuote.price)}</span>
+            <span className="text-muted-foreground">Change</span>
+            <span className={`font-mono text-right font-semibold ${activeQuote.changePct >= 0 ? "text-signal" : "text-destructive"}`}>
+              {activeQuote.changePct >= 0 ? "+" : ""}
+              {fmt(activeQuote.changePct, 2)}%
+            </span>
+            <span className="text-muted-foreground">Prev close</span>
+            <span className="font-mono text-right font-semibold text-foreground">${fmt(activeQuote.prevClose)}</span>
+          </div>
         </div>
       )}
-
-      {/* Selected-day legend */}
-      <div className="label-mono mt-1 flex items-center justify-between gap-2 rounded-md border border-border bg-surface-2 px-2 py-1 text-muted-foreground">
-        <span>{hoverIdx === null ? "latest close" : "hover date"}</span>
-        <span className="font-mono tabular-nums text-foreground">
-          {new Date(normalized[0]?.pts[activeIdx]?.t ?? Date.now()).toLocaleDateString(undefined, {
-            month: "short",
-            day: "numeric",
-          })}
-        </span>
-      </div>
     </div>
   );
 }
@@ -225,11 +203,10 @@ export function OilStocksPanel() {
         <div>
           <h3 className="flex items-center gap-2 font-display text-base font-bold tracking-tight text-foreground sm:text-lg">
             <Building2 className="size-4 text-primary" />
-            Top oil companies · 30-day price trend
+            Top 10 oil companies by NYSE stock price
           </h3>
           <p className="mt-1 text-xs text-muted-foreground">
-            Relative price movement of the largest NYSE-listed oil &amp; gas majors, rebased to zero
-            at the start of the window. Hover the chart to compare exact daily moves.
+            Live share price of the largest NYSE-listed oil &amp; gas majors. Hover any column to see the exact price, daily change, and previous close.
           </p>
         </div>
         <span className="label-mono rounded-full border border-border bg-surface-2 px-2.5 py-1 text-muted-foreground">
@@ -242,7 +219,7 @@ export function OilStocksPanel() {
       ) : (
         <>
           <div className="min-h-0">
-            <MultiLineChart quotes={quotes} hover={hover} setHover={setHover} />
+            <ColumnChart quotes={quotes} hover={hover} setHover={setHover} />
           </div>
 
           <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">
@@ -279,8 +256,7 @@ export function OilStocksPanel() {
       )}
 
       <p className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
-        Trends are rebased to show relative performance, not absolute share price. Positive lines
-        outperformed the start of the window; negative lines fell. Quotes refresh every 5 minutes.
+        Prices are quoted in USD per share and refresh every 5 minutes. The column height shows the current price level; percentages reflect the latest session change.
       </p>
     </div>
   );
