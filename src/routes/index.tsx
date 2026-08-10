@@ -375,6 +375,9 @@ function Dashboard() {
               )}
             </nav>
             <BiofuelProductionPanel fuels={fuels} />
+            <div className="mt-4">
+              <OilStocksPanel />
+            </div>
           </section>
 
           <section id="map" className="pt-4">
