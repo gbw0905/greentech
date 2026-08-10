@@ -59,3 +59,26 @@ export const getOilPricesFn = createServerFn({ method: "GET" }).handler(async ()
   ]);
   return { quotes: [wti, spx, gold].filter(Boolean) as OilQuote[] };
 });
+
+/** Ten of the largest NYSE-listed oil & gas companies. */
+const OIL_STOCKS: Array<[string, string]> = [
+  ["XOM", "ExxonMobil"],
+  ["CVX", "Chevron"],
+  ["SHEL", "Shell"],
+  ["TTE", "TotalEnergies"],
+  ["BP", "BP"],
+  ["COP", "ConocoPhillips"],
+  ["EOG", "EOG Resources"],
+  ["SLB", "SLB"],
+  ["PSX", "Phillips 66"],
+  ["MPC", "Marathon Petroleum"],
+];
+
+export const getOilStocksFn = createServerFn({ method: "GET" }).handler(async () => {
+  const quotes = await Promise.all(
+    OIL_STOCKS.map(([sym, label]) => loadSymbol(sym, label, "USD / share")),
+  );
+  return {
+    quotes: (quotes.filter(Boolean) as OilQuote[]).sort((a, b) => b.price - a.price),
+  };
+});

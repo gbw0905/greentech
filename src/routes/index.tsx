@@ -15,6 +15,7 @@ import { UpdateCard, formatDate } from "@/components/UpdateCard";
 import { WorldPolicyMap } from "@/components/WorldPolicyMap";
 import { TrafficPanel } from "@/components/TrafficPanel";
 import { OilPricePanel } from "@/components/OilPricePanel";
+import { OilStocksPanel } from "@/components/OilStocksPanel";
 import { VideoLibrary } from "@/components/VideoLibrary";
 import { BiofuelProductionPanel } from "@/components/BiofuelProductionPanel";
 import { AlertSignup } from "@/components/AlertSignup";
@@ -375,6 +376,9 @@ function Dashboard() {
               )}
             </nav>
             <BiofuelProductionPanel fuels={fuels} />
+            <div className="mt-4">
+              <OilStocksPanel />
+            </div>
           </section>
 
           <section id="map" className="pt-4">
