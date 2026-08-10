@@ -3,6 +3,7 @@ import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/r
 import { useMemo, useState } from "react";
 import { RefreshCw, Globe2, Layers, Filter, X, AlertTriangle, Map, Video, Activity, Flag, Factory, Flame, TrendingUp, BellRing } from "lucide-react";
 import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
+import siteLogo from "@/assets/logo.png";
 import {
   COUNTRIES,
   FUEL_TYPES,
