@@ -68,9 +68,15 @@
   --color-signal: var(--signal);
   --color-signal-foreground: var(--signal-foreground);
   --color-surface: var(--surface);
+  --color-surface-1: var(--surface-1);
   --color-surface-2: var(--surface-2);
   --color-grid: var(--grid);
   --color-primary-glow: var(--primary-glow);
+  --color-chart-6: var(--chart-6);
+  --color-chart-7: var(--chart-7);
+  --color-chart-8: var(--chart-8);
+  --color-chart-9: var(--chart-9);
+  --color-chart-10: var(--chart-10);
 }
 
 :root {
