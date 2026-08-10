@@ -4,15 +4,209 @@ import { Building2, TrendingDown, TrendingUp } from "lucide-react";
 import { getOilStocksFn, type OilQuote } from "@/lib/oil.functions";
 
 const COLORS = [
-  "var(--primary)",
-  "var(--accent)",
-  "var(--signal)",
-  "var(--primary-glow)",
-  "var(--muted-foreground)",
+  "#3b82f6",
+  "#10b981",
+  "#f59e0b",
+  "#8b5cf6",
+  "#ef4444",
+  "#06b6d4",
+  "#ec4899",
+  "#84cc16",
+  "#f97316",
+  "#6366f1",
 ];
 
 const fmt = (n: number, d = 2) =>
   n.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
+
+function MultiLineChart({ quotes, hover, setHover }: { quotes: OilQuote[]; hover: string | null; setHover: (s: string | null) => void }) {
+  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+
+  // Build normalized series: each line starts at 0% on its first day
+  const normalized = quotes.map((q, idx) => {
+    const base = q.series[0]?.c ?? q.price;
+    const pts = q.series.map((p) => ({ t: p.t, pct: base ? ((p.c - base) / base) * 100 : 0 }));
+    return { ...q, color: COLORS[idx % COLORS.length]!, pts };
+  });
+
+  const allPct = normalized.flatMap((n) => n.pts.map((p) => p.pct));
+  const lo = Math.min(0, ...allPct);
+  const hi = Math.max(0, ...allPct);
+  const span = hi - lo || 1;
+
+  const w = 320;
+  const h = 140;
+  const padLeft = 36;
+  const padRight = 12;
+  const padTop = 8;
+  const padBottom = 24;
+  const chartW = w - padLeft - padRight;
+  const chartH = h - padTop - padBottom;
+
+  const xFor = (i: number, len: number) => padLeft + (len <= 1 ? 0 : (i / (len - 1)) * chartW);
+  const yFor = (pct: number) => padTop + chartH - ((pct - lo) / span) * chartH;
+
+  const maxLen = Math.max(1, ...normalized.map((n) => n.pts.length));
+  const activeIdx = hoverIdx ?? maxLen - 1;
+
+  const yTicks = 5;
+
+  return (
+    <div className="relative">
+      <svg viewBox={`0 0 ${w} ${h}`} className="w-full overflow-visible" style={{ minHeight: 240 }}>
+        {/* Gridlines */}
+        {Array.from({ length: yTicks }).map((_, i) => {
+          const t = i / (yTicks - 1);
+          const y = padTop + t * chartH;
+          return (
+            <line
+              key={i}
+              x1={padLeft}
+              x2={w - padRight}
+              y1={y}
+              y2={y}
+              stroke="var(--border)"
+              strokeWidth="1"
+              vectorEffect="non-scaling-stroke"
+            />
+          );
+        })}
+
+        {/* Y-axis labels */}
+        {Array.from({ length: yTicks }).map((_, i) => {
+          const t = i / (yTicks - 1);
+          const pct = lo + (1 - t) * span;
+          return (
+            <text
+              key={i}
+              x={padLeft - 6}
+              y={padTop + t * chartH + 3}
+              textAnchor="end"
+              className="font-mono text-[8px] fill-muted-foreground tabular-nums"
+            >
+              {pct >= 0 ? "+" : ""}
+              {pct.toFixed(0)}%
+            </text>
+          );
+        })}
+
+        {/* X-axis labels */}
+        {[0, Math.floor((maxLen - 1) / 2), maxLen - 1].map((i, k) => {
+          const x = xFor(i, maxLen);
+          return (
+            <text
+              key={k}
+              x={x}
+              y={h - 6}
+              textAnchor={k === 0 ? "start" : k === 2 ? "end" : "middle"}
+              className="font-mono text-[8px] fill-muted-foreground"
+            >
+              {new Date(normalized[0]?.pts[i]?.t ?? Date.now()).toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+              })}
+            </text>
+          );
+        })}
+
+        {/* Hover guideline */}
+        {hoverIdx !== null && (
+          <line
+            x1={xFor(activeIdx, maxLen)}
+            x2={xFor(activeIdx, maxLen)}
+            y1={padTop}
+            y2={padTop + chartH}
+            stroke="var(--muted-foreground)"
+            strokeWidth="1"
+            strokeDasharray="3 3"
+            opacity="0.5"
+            vectorEffect="non-scaling-stroke"
+          />
+        )}
+
+        {/* Lines */}
+        {normalized.map((n) => {
+          const active = hover === n.symbol || hover === null;
+          const path = n.pts
+            .map((p, i) => `${i === 0 ? "M" : "L"}${xFor(i, n.pts.length).toFixed(2)},${yFor(p.pct).toFixed(2)}`)
+            .join(" ");
+          return (
+            <path
+              key={n.symbol}
+              d={path}
+              fill="none"
+              stroke={n.color}
+              strokeWidth={active ? 2.2 : 1.2}
+              opacity={active ? 1 : 0.25}
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              vectorEffect="non-scaling-stroke"
+            />
+          );
+        })}
+
+        {/* Invisible hover overlay */}
+        <rect
+          x={padLeft}
+          y={padTop}
+          width={chartW}
+          height={chartH}
+          fill="transparent"
+          onMouseMove={(e) => {
+            const r = e.currentTarget.getBoundingClientRect();
+            const ratio = (e.clientX - r.left) / r.width;
+            setHoverIdx(Math.max(0, Math.min(maxLen - 1, Math.round(ratio * (maxLen - 1)))));
+          }}
+          onMouseLeave={() => setHoverIdx(null)}
+        />
+      </svg>
+
+      {/* Hover tooltip */}
+      {hoverIdx !== null && (
+        <div className="pointer-events-none absolute left-1/2 top-0 z-20 w-max max-w-[260px] -translate-x-1/2 rounded-md border border-border bg-surface-2 px-3 py-2 shadow-lg">
+          <div className="label-mono mb-1 text-muted-foreground">
+            {new Date(normalized[0]?.pts[activeIdx]?.t ?? Date.now()).toLocaleDateString(undefined, {
+              month: "short",
+              day: "numeric",
+            })}
+          </div>
+          <ul className="space-y-1">
+            {normalized
+              .filter((n) => hover === null || hover === n.symbol)
+              .map((n) => {
+                const pct = n.pts[activeIdx]?.pct ?? 0;
+                const up = pct >= 0;
+                return (
+                  <li key={n.symbol} className="flex items-center justify-between gap-4 text-[11px]">
+                    <span className="flex items-center gap-1.5">
+                      <span className="inline-block size-2 rounded-full" style={{ background: n.color }} />
+                      <span className="font-semibold">{n.symbol}</span>
+                      <span className="truncate text-muted-foreground max-w-[90px]">{n.label}</span>
+                    </span>
+                    <span className={`font-mono tabular-nums ${up ? "text-signal" : "text-destructive"}`}>
+                      {up ? "+" : ""}
+                      {pct.toFixed(1)}%
+                    </span>
+                  </li>
+                );
+              })}
+          </ul>
+        </div>
+      )}
+
+      {/* Selected-day legend */}
+      <div className="label-mono mt-1 flex items-center justify-between gap-2 rounded-md border border-border bg-surface-2 px-2 py-1 text-muted-foreground">
+        <span>{hoverIdx === null ? "latest close" : "hover date"}</span>
+        <span className="font-mono tabular-nums text-foreground">
+          {new Date(normalized[0]?.pts[activeIdx]?.t ?? Date.now()).toLocaleDateString(undefined, {
+            month: "short",
+            day: "numeric",
+          })}
+        </span>
+      </div>
+    </div>
+  );
+}
 
 export function OilStocksPanel() {
   const [hover, setHover] = useState<string | null>(null);
@@ -24,20 +218,18 @@ export function OilStocksPanel() {
   });
 
   const quotes: OilQuote[] = data?.quotes ?? [];
-  const max = Math.max(1, ...quotes.map((q) => q.price));
-  const ticks = [1, 0.75, 0.5, 0.25, 0];
 
   return (
-    <div className="glass-panel rise lg:col-span-2 p-5">
+    <div className="glass-panel rise p-5">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h3 className="flex items-center gap-2 font-display text-base font-bold tracking-tight text-foreground sm:text-lg">
             <Building2 className="size-4 text-primary" />
-            Top 10 oil companies by NYSE stock price
+            Top oil companies · 30-day price trend
           </h3>
           <p className="mt-1 text-xs text-muted-foreground">
-            Live last-traded share price for the largest NYSE-listed oil &amp; gas majors, ranked
-            high to low. Hover a column for the exact price and daily move.
+            Relative price movement of the largest NYSE-listed oil &amp; gas majors, rebased to zero
+            at the start of the window. Hover the chart to compare exact daily moves.
           </p>
         </div>
         <span className="label-mono rounded-full border border-border bg-surface-2 px-2.5 py-1 text-muted-foreground">
@@ -49,141 +241,46 @@ export function OilStocksPanel() {
         <p className="text-sm text-muted-foreground">Market data is unavailable right now.</p>
       ) : (
         <>
-          <div className="flex gap-2">
-            <div
-              className="flex w-14 shrink-0 flex-col justify-between text-right font-mono text-[10px] text-muted-foreground tabular-nums"
-              style={{ height: 220 }}
-              aria-hidden
-            >
-              {ticks.map((t) => (
-                <span key={t}>${fmt(max * t, 0)}</span>
-              ))}
-            </div>
-            <div className="relative min-w-0 flex-1" style={{ height: 220 }}>
-              <div
-                className="pointer-events-none absolute inset-0 flex flex-col justify-between"
-                aria-hidden
-              >
-                {ticks.map((t) => (
-                  <div key={t} className="border-t border-border/60" />
-                ))}
-              </div>
-              <div className="relative flex h-full items-end gap-1.5 sm:gap-2.5">
-                {quotes.map((q, idx) => {
-                  const color = COLORS[idx % COLORS.length]!;
-                  const active = hover === q.symbol;
-                  const up = q.changePct >= 0;
-                  return (
-                    <div
-                      key={q.symbol}
-                      className="relative flex h-full min-w-0 flex-1 cursor-default flex-col items-center justify-end"
-                      onMouseEnter={() => setHover(q.symbol)}
-                      onMouseLeave={() => setHover((h) => (h === q.symbol ? null : h))}
-                      onFocus={() => setHover(q.symbol)}
-                      onBlur={() => setHover(null)}
-                      tabIndex={0}
-                      role="img"
-                      aria-label={`${q.label} (${q.symbol}): $${fmt(q.price)}, ${q.changePct.toFixed(2)}% today`}
-                    >
-                      {active ? (
-                        <div className="pointer-events-none absolute bottom-full z-20 mb-1 w-max max-w-[200px] rounded-md border border-border bg-surface-2 px-2.5 py-1.5 text-left shadow-lg">
-                          <div className="flex items-center gap-1.5 text-[11px] font-semibold">
-                            <span
-                              className="inline-block size-2 rounded-full"
-                              style={{ background: color }}
-                            />
-                            {q.label} · {q.symbol}
-                          </div>
-                          <div className="font-mono text-[11px] tabular-nums">${fmt(q.price)}</div>
-                          <div
-                            className={`font-mono text-[10px] tabular-nums ${
-                              up ? "text-signal" : "text-destructive"
-                            }`}
-                          >
-                            {up ? "+" : ""}
-                            {fmt(q.change)} ({up ? "+" : ""}
-                            {q.changePct.toFixed(2)}%) today
-                          </div>
-                        </div>
-                      ) : null}
-                      <span className="mb-1 font-mono text-[10px] tabular-nums">
-                        ${fmt(q.price, 0)}
-                      </span>
-                      <div
-                        className="w-full rounded-t-md transition-all duration-300"
-                        style={{
-                          height: `${Math.max((q.price / max) * 88, 2)}%`,
-                          background: `linear-gradient(180deg, ${color}, color-mix(in oklch, ${color} 55%, transparent))`,
-                          outline: active ? `2px solid ${color}` : "none",
-                          opacity: hover && !active ? 0.45 : 1,
-                        }}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+          <div className="min-h-0">
+            <MultiLineChart quotes={quotes} hover={hover} setHover={setHover} />
           </div>
 
-          <div className="mt-2 flex gap-2 border-t border-border pt-2 sm:gap-2.5">
-            <div className="w-14 shrink-0" aria-hidden />
-            {quotes.map((q) => {
+          <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">
+            {quotes.map((q, idx) => {
               const up = q.changePct >= 0;
+              const color = COLORS[idx % COLORS.length]!;
+              const active = hover === q.symbol;
               return (
-                <div
+                <button
                   key={q.symbol}
-                  className={`min-w-0 flex-1 text-center transition-opacity ${
-                    hover && hover !== q.symbol ? "opacity-50" : "opacity-100"
+                  type="button"
+                  onMouseEnter={() => setHover(q.symbol)}
+                  onMouseLeave={() => setHover(null)}
+                  onClick={() => setHover(active ? null : q.symbol)}
+                  className={`flex items-center gap-1.5 rounded-full border px-2 py-1 text-[11px] transition-all ${
+                    active
+                      ? "border-border bg-surface-2"
+                      : "border-transparent opacity-80 hover:opacity-100"
                   }`}
                 >
-                  <div className="truncate text-[11px] font-semibold leading-tight" title={q.label}>
-                    {q.symbol}
-                  </div>
-                  <div
-                    className={`inline-flex items-center gap-0.5 font-mono text-[10px] tabular-nums ${
-                      up ? "text-signal" : "text-destructive"
-                    }`}
-                  >
-                    {up ? (
-                      <TrendingUp className="size-2.5" />
-                    ) : (
-                      <TrendingDown className="size-2.5" />
-                    )}
+                  <span className="inline-block size-2.5 rounded-full" style={{ background: color }} />
+                  <span className="font-semibold">{q.symbol}</span>
+                  <span className="hidden truncate text-muted-foreground sm:inline max-w-[110px]">{q.label}</span>
+                  <span className={`font-mono tabular-nums ${up ? "text-signal" : "text-destructive"}`}>
+                    {up ? <TrendingUp className="inline size-2.5" /> : <TrendingDown className="inline size-2.5" />}
+                    {up ? "+" : ""}
                     {q.changePct.toFixed(1)}%
-                  </div>
-                </div>
+                  </span>
+                </button>
               );
             })}
-          </div>
-
-          <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1.5 border-t border-border pt-3">
-            {quotes.map((q, idx) => (
-              <button
-                key={q.symbol}
-                type="button"
-                onMouseEnter={() => setHover(q.symbol)}
-                onMouseLeave={() => setHover(null)}
-                className={`flex items-center gap-1.5 text-[11px] transition-opacity ${
-                  hover && hover !== q.symbol ? "opacity-45" : "opacity-100"
-                }`}
-              >
-                <span
-                  className="inline-block size-2.5 rounded-sm"
-                  style={{ background: COLORS[idx % COLORS.length] }}
-                />
-                <span className="max-w-[150px] truncate">{q.label}</span>
-                <span className="font-mono text-muted-foreground tabular-nums">
-                  ${fmt(q.price)}
-                </span>
-              </button>
-            ))}
           </div>
         </>
       )}
 
       <p className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
-        Share price alone does not rank company size — it reflects price per share, not market
-        capitalisation. Quotes refresh every 5 minutes and may lag the exchange.
+        Trends are rebased to show relative performance, not absolute share price. Positive lines
+        outperformed the start of the window; negative lines fell. Quotes refresh every 5 minutes.
       </p>
     </div>
   );
