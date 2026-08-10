@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { RefreshCw, Globe2, Layers, Filter, X, AlertTriangle, Map, Video, Activity, Flag, Factory, Flame, TrendingUp, BellRing } from "lucide-react";
+import { RefreshCw, Layers, Filter, X, AlertTriangle, Map, Video, Activity, Flag, Factory, Flame, TrendingUp, BellRing } from "lucide-react";
 import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
 import siteLogo from "@/assets/logo.png";
 import {
