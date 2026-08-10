@@ -261,10 +261,10 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
       <div className="glass-panel rise p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="label-mono flex items-center gap-2 text-muted-foreground">
-              <Factory className="size-3.5" />
+            <h3 className="flex items-center gap-2 font-display text-base font-bold tracking-tight text-foreground sm:text-lg">
+              <Factory className="size-4 text-primary" />
               Global daily biofuel output
-            </div>
+            </h3>
             <div className="mt-1 font-display text-3xl font-black tracking-tight">
               {fmt(scale(total), unit === "litres" ? 0 : 0)}{" "}
               <span className="text-base font-semibold text-muted-foreground">{unitLabel}</span>
@@ -293,7 +293,10 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
         </div>
 
         <section className="mt-5">
-          <h3 className="label-mono mb-2 text-muted-foreground">Output by fuel type</h3>
+          <h4 className="mb-3 flex items-center gap-2 font-display text-sm font-bold tracking-tight text-foreground">
+            <span className="inline-block size-2 rounded-full bg-signal" />
+            Output by fuel type
+          </h4>
           <ColumnChart
             unitLabel={unitLabel}
             legendNotes={Object.fromEntries(shownStreams.map((s) => [s.name, s.note]))}
@@ -316,8 +319,8 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
 
       <div className="glass-panel rise p-5">
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-          <h3 className="label-mono flex items-center gap-2 text-muted-foreground">
-            <Users className="size-3.5" />
+          <h3 className="flex items-center gap-2 font-display text-base font-bold tracking-tight text-foreground sm:text-lg">
+            <Users className="size-4 text-accent" />
             Global top biofuel users
           </h3>
           <div className="flex rounded-full border border-border bg-surface-2 p-0.5">
