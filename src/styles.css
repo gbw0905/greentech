@@ -185,6 +185,11 @@
   --chart-3: oklch(0.72 0.25 50);
   --chart-4: oklch(0.7 0.2 320);
   --chart-5: oklch(0.65 0.18 260);
+  --chart-6: oklch(0.7 0.2 25);
+  --chart-7: oklch(0.72 0.2 60);
+  --chart-8: oklch(0.72 0.18 180);
+  --chart-9: oklch(0.7 0.22 300);
+  --chart-10: oklch(0.65 0.14 0);
   --region-na: oklch(0.7 0.22 230);
   --region-latam: oklch(0.75 0.2 150);
   --region-eu: oklch(0.65 0.18 260);
