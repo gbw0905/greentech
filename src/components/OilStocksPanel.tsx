@@ -177,8 +177,8 @@ function CylinderChart({ quotes, hover, setHover }: { quotes: OilQuote[]; hover:
                 cy={padTop + chartH}
                 rx={rx}
                 ry={rx * 0.35}
-                fill={hexToRgba(color, 0.3)}
-                opacity={opacity}
+                fill={color}
+                opacity={active ? 0.4 : 0.2}
                 className="transition-all duration-300"
               />
               {/* Price label on top of bar */}
