@@ -27,16 +27,16 @@ function ColumnChart({ quotes, hover, setHover }: { quotes: OilQuote[]; hover: s
   const niceMax = Math.ceil(maxPrice / 50) * 50;
 
   const w = 640;
-  const h = 320;
-  const padLeft = 56;
-  const padRight = 16;
-  const padTop = 24;
-  const padBottom = 56;
+  const h = 360;
+  const padLeft = 62;
+  const padRight = 18;
+  const padTop = 34;
+  const padBottom = 64;
   const chartW = w - padLeft - padRight;
   const chartH = h - padTop - padBottom;
 
   const barCount = sorted.length;
-  const gap = 8;
+  const gap = 10;
   const barW = (chartW - gap * (barCount - 1)) / barCount;
   const yFor = (price: number) => padTop + chartH - (price / niceMax) * chartH;
 
@@ -45,7 +45,18 @@ function ColumnChart({ quotes, hover, setHover }: { quotes: OilQuote[]; hover: s
 
   return (
     <div className="relative">
-      <svg viewBox={`0 0 ${w} ${h}`} className="w-full overflow-visible" style={{ minHeight: 320 }}>
+      <svg viewBox={`0 0 ${w} ${h}`} className="w-full overflow-visible" style={{ minHeight: 360 }}>
+        <defs>
+          {sorted.map((q, idx) => {
+            const color = COLORS[idx % COLORS.length]!;
+            return (
+              <linearGradient key={q.symbol} id={`bar-${q.symbol}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={color} stopOpacity="1" />
+                <stop offset="100%" stopColor={color} stopOpacity="0.45" />
+              </linearGradient>
+            );
+          })}
+        </defs>
         {/* Gridlines */}
         {Array.from({ length: yTicks }).map((_, i) => {
           const t = i / (yTicks - 1);
@@ -59,6 +70,7 @@ function ColumnChart({ quotes, hover, setHover }: { quotes: OilQuote[]; hover: s
               y2={y}
               stroke="var(--border)"
               strokeWidth="1"
+              strokeDasharray={i === 0 ? undefined : "3 5"}
               vectorEffect="non-scaling-stroke"
             />
           );
@@ -74,7 +86,7 @@ function ColumnChart({ quotes, hover, setHover }: { quotes: OilQuote[]; hover: s
               x={padLeft - 8}
               y={padTop + (1 - t) * chartH + 4}
               textAnchor="end"
-              className="font-mono text-[9px] fill-muted-foreground tabular-nums"
+              className="font-mono text-[11px] fill-muted-foreground tabular-nums"
             >
               ${price.toFixed(0)}
             </text>
@@ -84,9 +96,9 @@ function ColumnChart({ quotes, hover, setHover }: { quotes: OilQuote[]; hover: s
         {/* Y-axis title */}
         <text
           x={padLeft - 8}
-          y={padTop - 10}
+          y={padTop - 14}
           textAnchor="end"
-          className="font-mono text-[9px] fill-muted-foreground"
+          className="font-mono text-[11px] fill-muted-foreground font-semibold"
         >
           USD / share
         </text>
@@ -111,17 +123,29 @@ function ColumnChart({ quotes, hover, setHover }: { quotes: OilQuote[]; hover: s
                 y={y}
                 width={barW}
                 height={padTop + chartH - y}
-                rx={4}
-                fill={color}
-                opacity={active ? 1 : hover === null ? 0.85 : 0.35}
+                rx={6}
+                fill={`url(#bar-${q.symbol})`}
+                stroke={color}
+                strokeWidth={active ? 1.5 : 0}
+                opacity={active ? 1 : hover === null ? 0.92 : 0.32}
                 className="transition-all duration-200"
+                style={active ? { filter: `drop-shadow(0 0 10px ${color})` } : undefined}
+              />
+              <rect
+                x={x}
+                y={y}
+                width={barW}
+                height={4}
+                rx={2}
+                fill={color}
+                opacity={active ? 1 : hover === null ? 1 : 0.35}
               />
               {/* Price label on top of bar */}
               <text
                 x={x + barW / 2}
-                y={y - 8}
+                y={y - 10}
                 textAnchor="middle"
-                className="font-mono text-[9px] fill-foreground font-semibold tabular-nums"
+                className="font-mono text-[11px] fill-foreground font-bold tabular-nums"
                 opacity={active ? 1 : 0.85}
               >
                 ${fmt(q.price)}
@@ -129,29 +153,29 @@ function ColumnChart({ quotes, hover, setHover }: { quotes: OilQuote[]; hover: s
               {/* Symbol label below X-axis */}
               <text
                 x={x + barW / 2}
-                y={h - padBottom + 14}
+                y={h - padBottom + 18}
                 textAnchor="middle"
-                className="font-mono text-[9px] fill-foreground font-semibold"
+                className="font-mono text-[12px] fill-foreground font-bold"
               >
                 {q.symbol}
               </text>
               {/* Company name below symbol */}
               <text
                 x={x + barW / 2}
-                y={h - padBottom + 30}
+                y={h - padBottom + 35}
                 textAnchor="middle"
-                className="text-[8px] fill-muted-foreground"
+                className="text-[10px] fill-muted-foreground"
                 style={{ fontFamily: "Calibri, sans-serif" }}
               >
                 {q.label.length > 12 ? `${q.label.slice(0, 12)}…` : q.label}
               </text>
               {/* Change badge inside bar if tall enough */}
-              {padTop + chartH - y > 40 && (
+              {padTop + chartH - y > 44 && (
                 <text
                   x={x + barW / 2}
-                  y={padTop + chartH - 10}
+                  y={padTop + chartH - 12}
                   textAnchor="middle"
-                  className={`font-mono text-[9px] font-semibold tabular-nums ${up ? "fill-emerald-950" : "fill-red-950"}`}
+                  className={`font-mono text-[11px] font-bold tabular-nums ${up ? "fill-emerald-950" : "fill-red-950"}`}
                 >
                   {up ? "+" : ""}
                   {q.changePct.toFixed(1)}%
