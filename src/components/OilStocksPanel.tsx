@@ -165,10 +165,10 @@ function CylinderChart({ quotes, hover, setHover }: { quotes: OilQuote[]; hover:
                 cy={y}
                 rx={rx}
                 ry={rx * 0.35}
-                fill={hexToRgba(color, 0.9)}
+                fill={color}
                 stroke={color}
                 strokeWidth={active ? 2 : 0}
-                opacity={opacity}
+                opacity={active ? 0.95 : 0.75}
                 className="transition-all duration-300"
               />
               {/* Cylinder bottom cap */}
