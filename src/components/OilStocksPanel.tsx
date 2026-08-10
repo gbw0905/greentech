@@ -258,17 +258,17 @@ export function OilStocksPanel() {
                   onMouseEnter={() => setHover(q.symbol)}
                   onMouseLeave={() => setHover(null)}
                   onClick={() => setHover(active ? null : q.symbol)}
-                  className={`flex items-center gap-1.5 rounded-full border px-2 py-1 text-[11px] transition-all ${
+                  className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-[13px] transition-all ${
                     active
                       ? "border-border bg-surface-2"
                       : "border-transparent opacity-80 hover:opacity-100"
                   }`}
                 >
-                  <span className="inline-block size-2.5 rounded-full" style={{ background: color }} />
+                  <span className="inline-block size-3 rounded-full" style={{ background: color }} />
                   <span className="font-semibold">{q.symbol}</span>
-                  <span className="hidden truncate text-muted-foreground sm:inline max-w-[110px]">{q.label}</span>
+                  <span className="hidden truncate text-muted-foreground sm:inline max-w-[120px]">{q.label}</span>
                   <span className={`font-mono tabular-nums ${up ? "text-signal" : "text-destructive"}`}>
-                    {up ? <TrendingUp className="inline size-2.5" /> : <TrendingDown className="inline size-2.5" />}
+                    {up ? <TrendingUp className="inline size-3" /> : <TrendingDown className="inline size-3" />}
                     {up ? "+" : ""}
                     {q.changePct.toFixed(1)}%
                   </span>
