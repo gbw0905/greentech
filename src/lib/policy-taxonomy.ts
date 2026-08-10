@@ -60,6 +60,8 @@ export interface CountryProfile {
   name: string;
   region: Region;
   aliases: string[];
+  /** Extra terms that pull matching headlines into this country's live feed. */
+  updateKeywords?: string[];
   blurb: string;
   mandates: { label: string; value: string }[];
   frameworks: string[];
@@ -72,15 +74,34 @@ export const COUNTRIES: CountryProfile[] = [
     name: "United States",
     region: "North America",
     aliases: ["united states", "u.s.", "us epa", "usa", "america", "washington"],
+    updateKeywords: [
+      "45z",
+      "45v",
+      "epa",
+      "irs",
+      "treasury",
+      "renewable fuel standard",
+      "rfs",
+      "rvo",
+      "rin",
+      "small refinery exemption",
+      "e15",
+      "clean fuel production credit",
+      "clean hydrogen production credit",
+      "lcfs",
+    ],
     blurb:
       "The Renewable Fuel Standard sets annual volume obligations, while 45Z clean fuel production credits and state low-carbon fuel programs drive renewable diesel and SAF economics.",
     mandates: [
       { label: "Program", value: "Renewable Fuel Standard (RFS2)" },
       { label: "Ethanol blend", value: "E10 baseline, E15 seasonal expansion" },
       { label: "Tax credit", value: "45Z Clean Fuel Production Credit" },
+      { label: "Hydrogen credit", value: "45V Clean Hydrogen Production Credit" },
+      { label: "EPA rulemaking", value: "Annual RVOs, RIN market, small refinery exemptions" },
+      { label: "IRS / Treasury", value: "45Z & 45V guidance, registration and GREET emissions rates" },
       { label: "State layer", value: "CA LCFS, OR CFP, WA CFS" },
     ],
-    frameworks: ["RFS2", "45Z", "LCFS", "SAF Grand Challenge"],
+    frameworks: ["RFS2", "45Z", "45V", "EPA", "IRS", "LCFS", "SAF Grand Challenge"],
   },
   {
     slug: "canada",
