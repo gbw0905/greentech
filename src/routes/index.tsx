@@ -210,9 +210,13 @@ function Dashboard() {
       <header className="sticky top-0 z-30 border-b border-border/80 bg-surface/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[110rem] flex-wrap items-center justify-between gap-4 px-5 py-3.5 lg:px-8">
           <div className="flex items-center gap-3">
-            <span className="grid size-10 place-items-center rounded-xl surface-gradient-primary text-primary-foreground shadow-[var(--shadow-frost)]">
-              <Globe2 className="size-5" />
-            </span>
+            <img
+              src={siteLogo}
+              alt="Global Bioenergy Watch logo: a globe with a leaf and rising data line"
+              width={1024}
+              height={1024}
+              className="size-12 rounded-xl object-contain drop-shadow-[0_0_16px_rgba(0,240,255,0.35)]"
+            />
             <div>
               <div className="font-display text-3xl leading-tight font-black text-gradient drop-shadow-[0_0_16px_rgba(0,240,255,0.45)]">
                 Global Bioenergy Watch
