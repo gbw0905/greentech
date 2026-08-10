@@ -110,27 +110,6 @@ export function TrafficPanel() {
         <Sparkline data={stats.daily} />
       </div>
 
-      {stats.top_paths.length > 0 && (
-        <div className="border-t border-border px-5 py-4">
-          <h3 className="label-mono mb-2.5 text-muted-foreground">Most visited pages</h3>
-          <ul className="space-y-2">
-            {stats.top_paths.map((p) => (
-              <li key={p.path} className="space-y-1">
-                <div className="flex items-baseline justify-between gap-3">
-                  <span className="truncate font-mono text-xs">{p.path}</span>
-                  <span className="font-mono text-xs text-muted-foreground">{p.views}</span>
-                </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-surface-2">
-                  <div
-                    className="h-full rounded-full surface-gradient-primary transition-[width] duration-700 ease-out"
-                    style={{ width: `${(p.views / stats.top_paths[0]!.views) * 100}%` }}
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </section>
   );
 }
