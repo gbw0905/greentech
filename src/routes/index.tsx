@@ -129,8 +129,8 @@ function SectionHeading({
   subtitle: string;
 }) {
   return (
-    <div className="mb-4 overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-r from-primary via-primary-glow to-accent shadow-[var(--shadow-lift)]">
-      <div className="relative px-5 py-4 sm:px-6 sm:py-5">
+    <div className="mb-5 overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-r from-primary via-primary-glow to-accent shadow-[var(--shadow-lift)]">
+      <div className="relative px-6 py-5 sm:px-8 sm:py-6">
         <div
           className="pointer-events-none absolute inset-0 opacity-10"
           style={{
@@ -138,16 +138,16 @@ function SectionHeading({
               "repeating-linear-gradient(45deg, transparent, transparent 16px, currentColor 16px, currentColor 18px)",
           }}
         />
-        <div className="relative flex items-center gap-4">
-          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-foreground/20 font-mono text-sm font-bold text-primary-foreground ring-1 ring-inset ring-primary-foreground/30">
+        <div className="relative flex items-center gap-4 sm:gap-5">
+          <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-primary-foreground/20 font-mono text-base font-bold text-primary-foreground ring-1 ring-inset ring-primary-foreground/30 sm:size-14 sm:text-lg">
             {step}
           </span>
           <div className="min-w-0">
-            <h2 className="flex items-center gap-2.5 font-display text-2xl font-black leading-none tracking-tight text-primary-foreground sm:text-3xl">
-              <Icon className="size-6 shrink-0 text-primary-foreground/90" />
+            <h2 className="flex items-center gap-3 font-display text-3xl font-black leading-none tracking-tight text-primary-foreground sm:text-4xl [text-shadow:0_2px_16px_rgba(0,0,0,0.15)]">
+              <Icon className="size-7 shrink-0 text-primary-foreground/90 sm:size-8" />
               <span className="truncate">{title}</span>
             </h2>
-            <p className="mt-1.5 max-w-2xl text-sm font-medium text-primary-foreground/80">
+            <p className="mt-2 max-w-2xl text-base font-semibold text-primary-foreground/85">
               {subtitle}
             </p>
           </div>

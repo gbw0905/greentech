@@ -31,8 +31,8 @@ export function OilStocksPanel() {
     <div className="glass-panel rise lg:col-span-2 p-5">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h3 className="label-mono flex items-center gap-2 text-muted-foreground">
-            <Building2 className="size-3.5" />
+          <h3 className="flex items-center gap-2 font-display text-base font-bold tracking-tight text-foreground sm:text-lg">
+            <Building2 className="size-4 text-primary" />
             Top 10 oil companies by NYSE stock price
           </h3>
           <p className="mt-1 text-xs text-muted-foreground">

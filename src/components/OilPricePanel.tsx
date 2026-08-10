@@ -119,7 +119,10 @@ export function OilPricePanel() {
   return (
     <div className="glass-panel rise flex h-full flex-col space-y-4 p-5">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="label-mono text-muted-foreground">WTI crude · S&amp;P 500 · Gold · live</h2>
+        <h2 className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-foreground sm:text-xl">
+          <span className="inline-block size-2.5 rounded-full bg-primary" />
+          WTI crude · S&amp;P 500 · Gold · live
+        </h2>
         <span className="label-mono inline-flex items-center gap-1.5 text-primary">
           <span className="pulse-dot size-2 rounded-full bg-primary" />
           real time
