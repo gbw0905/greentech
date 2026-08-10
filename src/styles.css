@@ -85,6 +85,7 @@
   --background: oklch(0.97 0.005 100);
   --foreground: oklch(0.18 0.01 240);
   --surface: oklch(0.99 0.004 100);
+  --surface-1: oklch(0.965 0.004 100);
   --surface-2: oklch(0.94 0.005 100);
   --grid: oklch(0.88 0.01 240);
   --card: oklch(0.995 0.004 100);
