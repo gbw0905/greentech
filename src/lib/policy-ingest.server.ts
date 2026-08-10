@@ -81,13 +81,16 @@ const POLICY_SIGNALS = [
   "policy", "mandate", "blend", "regulation", "regulator", "law", "bill", "ruling",
   "government", "ministry", "parliament", "directive", "target", "subsidy", "tax credit",
   "incentive", "standard", "quota", "tariff", "epa", "rule", "decree", "legislation",
-  "approval", "waiver", "obligation",
+  "approval", "waiver", "obligation", "irs", "treasury", "guidance", "final rule",
+  "notice", "credit",
 ];
 
 const BIO_SIGNALS = [
   "biofuel", "bioenergy", "ethanol", "biodiesel", "renewable diesel", "hvo",
   "sustainable aviation fuel", "saf", "biogas", "biomethane", "renewable fuel",
   "low carbon fuel", "feedstock", "biomass",
+  "45z", "45v", "clean fuel production credit", "clean hydrogen production credit",
+  "renewable fuel standard", "e15", "rin",
 ];
 
 function isRelevant(text: string): boolean {
