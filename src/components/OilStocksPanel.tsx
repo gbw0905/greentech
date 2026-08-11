@@ -3,138 +3,91 @@ import { useQuery } from "@tanstack/react-query";
 import { Building2, TrendingDown, TrendingUp } from "lucide-react";
 import { getOilStocksFn, type OilQuote } from "@/lib/oil.functions";
 
-const CHART_COLORS = [
-  "var(--chart-1)",
-  "var(--chart-2)",
-  "var(--chart-3)",
-  "var(--chart-4)",
-  "var(--chart-5)",
-  "var(--chart-6)",
-  "var(--chart-7)",
-  "var(--chart-8)",
-  "var(--chart-9)",
-  "var(--chart-10)",
-];
-
 const fmt = (n: number, d = 2) =>
   n.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
 
-function CylinderChart({ quotes, hover, setHover }: { quotes: OilQuote[]; hover: string | null; setHover: (s: string | null) => void }) {
+function BarChart({
+  quotes,
+  hover,
+  setHover,
+}: {
+  quotes: OilQuote[];
+  hover: string | null;
+  setHover: (s: string | null) => void;
+}) {
   const [hoveredSymbol, setHoveredSymbol] = useState<string | null>(null);
 
   const sorted = [...quotes].sort((a, b) => b.price - a.price);
   const maxPrice = Math.max(...sorted.map((q) => q.price), 1);
-  const niceMax = Math.ceil(maxPrice / 50) * 50;
+  const niceMax = Math.ceil(maxPrice / 25) * 25;
 
-  const w = 720;
-  const h = 420;
-  const padLeft = 72;
-  const padRight = 24;
-  const padTop = 42;
-  const padBottom = 88;
-  const chartW = w - padLeft - padRight;
-  const chartH = h - padTop - padBottom;
-
-  const barCount = sorted.length;
-  const gap = 12;
-  const barW = (chartW - gap * (barCount - 1)) / barCount;
-  const yFor = (price: number) => padTop + chartH - (price / niceMax) * chartH;
-  const yTicks = 5;
+  // Layout — horizontal bars
+  const rowH = 34;
+  const gap = 8;
+  const labelW = 150; // left label column
+  const valueW = 96; // right value column
+  const w = 760;
+  const padTop = 24;
+  const padBottom = 28;
+  const chartW = w - labelW - valueW;
+  const h = padTop + sorted.length * (rowH + gap) - gap + padBottom;
 
   const activeQuote = sorted.find((q) => q.symbol === (hoveredSymbol ?? hover)) ?? null;
   const anyActive = hover !== null || hoveredSymbol !== null;
 
+  const xFor = (price: number) => (price / niceMax) * chartW;
+  const yFor = (idx: number) => padTop + idx * (rowH + gap);
+
   return (
     <div className="relative">
-      <svg viewBox={`0 0 ${w} ${h}`} className="w-full overflow-visible" style={{ minHeight: 420 }}>
+      <svg viewBox={`0 0 ${w} ${h}`} className="w-full overflow-visible" style={{ minHeight: h }}>
         <defs>
-          {sorted.map((q, idx) => {
-            const color = CHART_COLORS[idx % CHART_COLORS.length]!;
-            return (
-              <linearGradient key={q.symbol} id={`bar-${q.symbol}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={color} stopOpacity="1" />
-                <stop offset="60%" stopColor={color} stopOpacity="0.75" />
-                <stop offset="100%" stopColor={color} stopOpacity="0.35" />
-              </linearGradient>
-            );
-          })}
-          <filter id="neon-glow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="4" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
+          <linearGradient id="bar-fill" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.85" />
+            <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.55" />
+          </linearGradient>
+          <linearGradient id="bar-fill-active" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="var(--primary)" stopOpacity="1" />
+            <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.75" />
+          </linearGradient>
         </defs>
 
-        {/* Subtle chart background */}
-        <rect
-          x={padLeft}
-          y={padTop}
-          width={chartW}
-          height={chartH}
-          rx={12}
-          fill="var(--surface-1)"
-          opacity={0.4}
-        />
-
-        {/* Gridlines */}
-        {Array.from({ length: yTicks }).map((_, i) => {
-          const t = i / (yTicks - 1);
-          const y = padTop + (1 - t) * chartH;
+        {/* X-axis gridlines */}
+        {[0, 0.25, 0.5, 0.75, 1].map((t) => {
+          const x = labelW + t * chartW;
           return (
-            <line
-              key={i}
-              x1={padLeft}
-              x2={w - padRight}
-              y1={y}
-              y2={y}
-              stroke="var(--border)"
-              strokeWidth="1"
-              strokeDasharray={i === 0 ? undefined : "4 6"}
-              opacity={0.5}
-              vectorEffect="non-scaling-stroke"
-            />
+            <g key={t}>
+              <line
+                x1={x}
+                x2={x}
+                y1={padTop - 8}
+                y2={h - padBottom}
+                stroke="var(--border)"
+                strokeWidth="1"
+                strokeDasharray={t === 0 ? undefined : "3 5"}
+                opacity={0.45}
+                vectorEffect="non-scaling-stroke"
+              />
+              <text
+                x={x}
+                y={h - padBottom + 16}
+                textAnchor="middle"
+                className="font-mono text-[11px] fill-muted-foreground tabular-nums"
+              >
+                ${Math.round(t * niceMax)}
+              </text>
+            </g>
           );
         })}
 
-        {/* Y-axis labels */}
-        {Array.from({ length: yTicks }).map((_, i) => {
-          const t = i / (yTicks - 1);
-          const price = t * niceMax;
-          return (
-            <text
-              key={i}
-              x={padLeft - 12}
-              y={padTop + (1 - t) * chartH + 4}
-              textAnchor="end"
-              className="font-mono text-xs fill-muted-foreground tabular-nums"
-            >
-              ${price.toFixed(0)}
-            </text>
-          );
-        })}
-
-        {/* Y-axis title */}
-        <text
-          x={padLeft - 12}
-          y={padTop - 18}
-          textAnchor="end"
-          className="font-semibold text-xs fill-muted-foreground"
-        >
-          USD / share
-        </text>
-
-        {/* Bars as 3D cylinders */}
+        {/* Bars */}
         {sorted.map((q, idx) => {
-          const color = CHART_COLORS[idx % CHART_COLORS.length]!;
           const active = hover === q.symbol || hoveredSymbol === q.symbol;
-          const x = padLeft + idx * (barW + gap);
-          const y = yFor(q.price);
+          const y = yFor(idx);
+          const bw = xFor(q.price);
           const up = q.changePct >= 0;
-          const barHeight = padTop + chartH - y;
-          const rx = barW / 2;
-          const opacity = anyActive ? (active ? 1 : 0.35) : 0.95;
+          const dim = anyActive && !active;
+          const trackW = chartW;
 
           return (
             <g
@@ -144,96 +97,84 @@ function CylinderChart({ quotes, hover, setHover }: { quotes: OilQuote[]; hover:
               onClick={() => setHover(active ? null : q.symbol)}
               className="cursor-pointer"
               style={{ transition: "opacity 0.2s ease" }}
+              opacity={dim ? 0.4 : 1}
             >
-              {/* Cylinder body */}
+              {/* Row hover background */}
               <rect
-                x={x}
-                y={y}
-                width={barW}
-                height={barHeight}
-                rx={rx}
-                fill={`url(#bar-${q.symbol})`}
-                stroke={color}
-                strokeWidth={active ? 2 : 0}
-                opacity={opacity}
-                className="transition-all duration-300"
-                style={active ? { filter: "url(#neon-glow)" } : undefined}
+                x={0}
+                y={y - 2}
+                width={w}
+                height={rowH + 4}
+                rx={6}
+                fill="var(--foreground)"
+                opacity={active ? 0.04 : 0}
+                className="transition-opacity duration-200"
               />
-              {/* Cylinder top cap */}
-              <ellipse
-                cx={x + barW / 2}
-                cy={y}
-                rx={rx}
-                ry={rx * 0.35}
-                fill={color}
-                stroke={color}
-                strokeWidth={active ? 2 : 0}
-                opacity={active ? 0.95 : 0.75}
-                className="transition-all duration-300"
+              {/* Track */}
+              <rect
+                x={labelW}
+                y={y + 6}
+                width={trackW}
+                height={rowH - 12}
+                rx={5}
+                fill="var(--surface-1)"
+                opacity={0.6}
               />
-              {/* Cylinder bottom cap */}
-              <ellipse
-                cx={x + barW / 2}
-                cy={padTop + chartH}
-                rx={rx}
-                ry={rx * 0.35}
-                fill={color}
-                opacity={active ? 0.4 : 0.2}
+              {/* Filled bar */}
+              <rect
+                x={labelW}
+                y={y + 6}
+                width={bw}
+                height={rowH - 12}
+                rx={5}
+                fill={active ? "url(#bar-fill-active)" : "url(#bar-fill)"}
                 className="transition-all duration-300"
               />
-              {/* Price label on top of bar */}
+              {/* Left label: symbol + company */}
               <text
-                x={x + barW / 2}
-                y={y - 14}
-                textAnchor="middle"
-                className="font-mono text-sm font-bold fill-foreground tabular-nums"
-                opacity={active ? 1 : 0.9}
-              >
-                ${fmt(q.price)}
-              </text>
-              {/* Symbol label below X-axis */}
-              <text
-                x={x + barW / 2}
-                y={h - padBottom + 22}
-                textAnchor="middle"
-                className="font-mono text-sm font-bold fill-foreground"
+                x={12}
+                y={y + rowH / 2 + 1}
+                className="font-mono text-[13px] font-bold fill-foreground"
               >
                 {q.symbol}
               </text>
-              {/* Company name below symbol */}
               <text
-                x={x + barW / 2}
-                y={h - padBottom + 42}
-                textAnchor="middle"
-                className="text-xs fill-muted-foreground"
+                x={48}
+                y={y + rowH / 2 + 1}
+                className="text-[12px] fill-muted-foreground"
                 style={{ fontFamily: "Calibri, sans-serif" }}
               >
-                {q.label.length > 14 ? `${q.label.slice(0, 14)}…` : q.label}
+                {q.label.length > 16 ? `${q.label.slice(0, 16)}…` : q.label}
               </text>
-              {/* Change badge inside bar if tall enough */}
-              {barHeight > 56 && (
-                <g>
-                  <rect
-                    x={x + 4}
-                    y={padTop + chartH - 28}
-                    width={barW - 8}
-                    height={20}
-                    rx={10}
-                    fill={up ? "var(--signal)" : "var(--destructive)"}
-                    opacity={active ? 0.95 : 0.75}
-                  />
-                  <text
-                    x={x + barW / 2}
-                    y={padTop + chartH - 14}
-                    textAnchor="middle"
-                    className="font-mono text-[11px] font-bold tabular-nums"
-                    fill={up ? "var(--signal-foreground)" : "var(--destructive-foreground)"}
-                  >
-                    {up ? "+" : ""}
-                    {q.changePct.toFixed(1)}%
-                  </text>
-                </g>
-              )}
+              {/* Right value: price + change */}
+              <text
+                x={w - valueW + 8}
+                y={y + rowH / 2 + 1}
+                className="font-mono text-[13px] font-semibold fill-foreground tabular-nums"
+              >
+                ${fmt(q.price)}
+              </text>
+              <g transform={`translate(${w - 14}, ${y + rowH / 2 - 8})`}>
+                <rect
+                  x={-(up ? 56 : 62)}
+                  y={-1}
+                  width={up ? 56 : 62}
+                  height={16}
+                  rx={8}
+                  fill={up ? "var(--primary)" : "var(--destructive)"}
+                  opacity={active ? 1 : 0.85}
+                />
+                <text
+                  x={-(up ? 28 : 31)}
+                  y={11}
+                  textAnchor="middle"
+                  className="font-mono text-[10px] font-bold tabular-nums"
+                  fill="var(--primary-foreground)"
+                >
+                  {up ? "+" : ""}
+                  {q.changePct.toFixed(1)}%
+                </text>
+              </g>
             </g>
           );
         })}
@@ -243,19 +184,29 @@ function CylinderChart({ quotes, hover, setHover }: { quotes: OilQuote[]; hover:
       {activeQuote && (
         <div className="pointer-events-none absolute left-1/2 top-0 z-20 w-max max-w-[300px] -translate-x-1/2 rounded-xl border border-border bg-surface-2 px-4 py-3 shadow-xl">
           <div className="flex items-center gap-2 border-b border-border pb-2 mb-2">
-            <span className="font-display text-base font-bold text-foreground">{activeQuote.symbol}</span>
+            <span className="font-display text-base font-bold text-foreground">
+              {activeQuote.symbol}
+            </span>
             <span className="text-sm text-muted-foreground">{activeQuote.label}</span>
           </div>
           <div className="grid grid-cols-2 gap-x-5 gap-y-1.5 text-sm">
             <span className="text-muted-foreground">Price</span>
-            <span className="font-mono text-right font-semibold text-foreground">${fmt(activeQuote.price)}</span>
+            <span className="font-mono text-right font-semibold text-foreground">
+              ${fmt(activeQuote.price)}
+            </span>
             <span className="text-muted-foreground">Change</span>
-            <span className={`font-mono text-right font-semibold ${activeQuote.changePct >= 0 ? "text-signal" : "text-destructive"}`}>
+            <span
+              className={`font-mono text-right font-semibold ${
+                activeQuote.changePct >= 0 ? "text-primary" : "text-destructive"
+              }`}
+            >
               {activeQuote.changePct >= 0 ? "+" : ""}
               {fmt(activeQuote.changePct, 2)}%
             </span>
             <span className="text-muted-foreground">Prev close</span>
-            <span className="font-mono text-right font-semibold text-foreground">${fmt(activeQuote.prevClose)}</span>
+            <span className="font-mono text-right font-semibold text-foreground">
+              ${fmt(activeQuote.prevClose)}
+            </span>
           </div>
         </div>
       )}
@@ -283,7 +234,8 @@ export function OilStocksPanel() {
             Top 10 oil companies by NYSE stock price
           </h3>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            Live share price of the largest NYSE-listed oil &amp; gas majors. Hover any column to see the exact price, daily change, and previous close.
+            Live share price of the largest NYSE-listed oil & gas majors. Hover any row to see the
+            exact price, daily change, and previous close.
           </p>
         </div>
         <span className="label-mono rounded-full border border-border bg-surface-2 px-3 py-1.5 text-sm text-muted-foreground">
@@ -294,46 +246,14 @@ export function OilStocksPanel() {
       {quotes.length === 0 && !isLoading ? (
         <p className="text-sm text-muted-foreground">Market data is unavailable right now.</p>
       ) : (
-        <>
-          <div className="min-h-0">
-            <CylinderChart quotes={quotes} hover={hover} setHover={setHover} />
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-2 border-t border-border pt-4">
-            {quotes.map((q, idx) => {
-              const up = q.changePct >= 0;
-              const color = CHART_COLORS[idx % CHART_COLORS.length]!;
-              const active = hover === q.symbol;
-              return (
-                <button
-                  key={q.symbol}
-                  type="button"
-                  onMouseEnter={() => setHover(q.symbol)}
-                  onMouseLeave={() => setHover(null)}
-                  onClick={() => setHover(active ? null : q.symbol)}
-                  className={`flex items-center gap-1.5 rounded-full border px-3 py-2 text-sm transition-all ${
-                    active
-                      ? "border-border bg-surface-2 shadow-md"
-                      : "border-transparent opacity-85 hover:opacity-100"
-                  }`}
-                >
-                  <span className="inline-block size-3 rounded-full shadow-sm" style={{ background: color }} />
-                  <span className="font-semibold">{q.symbol}</span>
-                  <span className="hidden truncate text-muted-foreground sm:inline max-w-[140px]">{q.label}</span>
-                  <span className={`font-mono tabular-nums ${up ? "text-signal" : "text-destructive"}`}>
-                    {up ? <TrendingUp className="inline size-3.5" /> : <TrendingDown className="inline size-3.5" />}
-                    {up ? "+" : ""}
-                    {q.changePct.toFixed(1)}%
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </>
+        <div className="min-h-0">
+          <BarChart quotes={quotes} hover={hover} setHover={setHover} />
+        </div>
       )}
 
       <p className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
-        Prices are quoted in USD per share and refresh every 5 minutes. The column height shows the current price level; percentages reflect the latest session change.
+        Prices are quoted in USD per share and refresh every 5 minutes. Bar length shows the current
+        price level; percentages reflect the latest session change.
       </p>
     </div>
   );
