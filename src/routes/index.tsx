@@ -7,17 +7,15 @@ import siteLogo from "@/assets/logo.png";
 import {
   COUNTRIES,
   FUEL_TYPES,
-  REGION_ACCENT,
   FUEL_ACCENT,
   flagFor,
   type FuelType,
 } from "@/lib/policy-taxonomy";
-import { UpdateCard, formatDate } from "@/components/UpdateCard";
+import { formatDate } from "@/components/UpdateCard";
 import { WorldPolicyMap } from "@/components/WorldPolicyMap";
 import { TrafficPanel } from "@/components/TrafficPanel";
 import { OilPricePanel } from "@/components/OilPricePanel";
 import { OilStocksPanel } from "@/components/OilStocksPanel";
-import { VideoLibrary } from "@/components/VideoLibrary";
 import { BiofuelProductionPanel } from "@/components/BiofuelProductionPanel";
 import { AlertSignup } from "@/components/AlertSignup";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
@@ -179,16 +177,6 @@ function Dashboard() {
     return c;
   }, [data.updates]);
 
-  const filtered = useMemo(
-    () =>
-      data.updates.filter(
-        (u) =>
-          (fuels.length === 0 || u.fuels.some((f) => fuels.includes(f))) &&
-          (!country || u.countrySlug === country),
-      ),
-    [data.updates, fuels, country],
-  );
-
   const toggle = <T,>(list: T[], set: (v: T[]) => void, value: T) =>
     set(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
 
@@ -312,19 +300,20 @@ function Dashboard() {
                   ["#audience", "7 · Live audience", "oklch(0.55 0.18 25)"],
                   ["#alerts", "8 · Email alerts", "oklch(0.55 0.17 265)"],
                   ["#disclaimer", "9 · AI disclaimer", "oklch(0.45 0.02 240)"],
-                ].map(([href, label, color]) => (
-                  <a
-                    key={href}
-                    href={href}
-                    className="label-mono rounded-full border px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 hover:shadow-md"
-                    style={{
-                      backgroundColor: color,
-                      borderColor: color,
-                    }}
-                  >
-                    {label}
-                  </a>
-                ))}
+                ].map(([href, label, color]) => {
+                  const cls =
+                    "label-mono rounded-full border px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 hover:shadow-md";
+                  const style = { backgroundColor: color, borderColor: color };
+                  return href!.startsWith("/") ? (
+                    <Link key={href} to={href!} className={cls} style={style}>
+                      {label}
+                    </Link>
+                  ) : (
+                    <a key={href} href={href} className={cls} style={style}>
+                      {label}
+                    </a>
+                  );
+                })}
               </nav>
             </div>
           </section>
