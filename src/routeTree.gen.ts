@@ -10,6 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProfilesRouteImport } from './routes/profiles'
+import { Route as TimelineRouteImport } from './routes/timeline'
+import { Route as VideosRouteImport } from './routes/videos'
 import { Route as AlertsConfirmRouteImport } from './routes/alerts.confirm'
 import { Route as CountriesSlugRouteImport } from './routes/countries.$slug'
 import { Route as ApiPublicDailyTrafficEmailRouteImport } from './routes/api/public/daily-traffic-email'
@@ -20,6 +23,21 @@ import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/l
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfilesRoute = ProfilesRouteImport.update({
+  id: '/profiles',
+  path: '/profiles',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TimelineRoute = TimelineRouteImport.update({
+  id: '/timeline',
+  path: '/timeline',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VideosRoute = VideosRouteImport.update({
+  id: '/videos',
+  path: '/videos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AlertsConfirmRoute = AlertsConfirmRouteImport.update({
@@ -58,6 +76,9 @@ const LovableEmailTransactionalPreviewRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/profiles': typeof ProfilesRoute
+  '/timeline': typeof TimelineRoute
+  '/videos': typeof VideosRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/countries/$slug': typeof CountriesSlugRoute
   '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
@@ -67,6 +88,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/profiles': typeof ProfilesRoute
+  '/timeline': typeof TimelineRoute
+  '/videos': typeof VideosRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/countries/$slug': typeof CountriesSlugRoute
   '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
@@ -77,6 +101,9 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/profiles': typeof ProfilesRoute
+  '/timeline': typeof TimelineRoute
+  '/videos': typeof VideosRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/countries/$slug': typeof CountriesSlugRoute
   '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
@@ -88,6 +115,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/profiles'
+    | '/timeline'
+    | '/videos'
     | '/alerts/confirm'
     | '/countries/$slug'
     | '/api/public/daily-traffic-email'
@@ -97,6 +127,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/profiles'
+    | '/timeline'
+    | '/videos'
     | '/alerts/confirm'
     | '/countries/$slug'
     | '/api/public/daily-traffic-email'
@@ -106,6 +139,9 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/profiles'
+    | '/timeline'
+    | '/videos'
     | '/alerts/confirm'
     | '/countries/$slug'
     | '/api/public/daily-traffic-email'
@@ -116,6 +152,9 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ProfilesRoute: typeof ProfilesRoute
+  TimelineRoute: typeof TimelineRoute
+  VideosRoute: typeof VideosRoute
   AlertsConfirmRoute: typeof AlertsConfirmRoute
   CountriesSlugRoute: typeof CountriesSlugRoute
   ApiPublicDailyTrafficEmailRoute: typeof ApiPublicDailyTrafficEmailRoute
@@ -131,6 +170,27 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profiles': {
+      id: '/profiles'
+      path: '/profiles'
+      fullPath: '/profiles'
+      preLoaderRoute: typeof ProfilesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/timeline': {
+      id: '/timeline'
+      path: '/timeline'
+      fullPath: '/timeline'
+      preLoaderRoute: typeof TimelineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/videos': {
+      id: '/videos'
+      path: '/videos'
+      fullPath: '/videos'
+      preLoaderRoute: typeof VideosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/alerts/confirm': {
@@ -180,6 +240,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ProfilesRoute: ProfilesRoute,
+  TimelineRoute: TimelineRoute,
+  VideosRoute: VideosRoute,
   AlertsConfirmRoute: AlertsConfirmRoute,
   CountriesSlugRoute: CountriesSlugRoute,
   ApiPublicDailyTrafficEmailRoute: ApiPublicDailyTrafficEmailRoute,
