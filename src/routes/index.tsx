@@ -407,88 +407,51 @@ function Dashboard() {
             </div>
           </section>
 
-          <section id="timeline" className="pt-4">
-            <SectionHeading
-              step={4}
-              icon={Layers}
-              title={`Policy update timeline · ${filtered.length} updates${
-                country ? ` · ${COUNTRIES.find((c) => c.slug === country)?.name}` : ""
-              }`}
-              subtitle="Newest mandates, obligations and regulatory decisions from the live scan."
-            />
-            <div className="mt-3 space-y-3">
-              {filtered.length === 0 &&
-                (busy && !feed ? (
-                  <div className="space-y-3">
-                    {[0, 1, 2].map((i) => (
-                      <div key={i} className="scanning-bar h-28 rounded-[var(--radius)]" />
-                    ))}
-                    <p className="label-mono text-center text-muted-foreground">
-                      Scanning global sources…
-                    </p>
+          <section className="pt-4">
+            <div className="grid gap-4 md:grid-cols-3">
+              {[
+                {
+                  to: "/timeline" as const,
+                  step: 4,
+                  icon: Layers,
+                  title: "Policy update timeline",
+                  desc: `${data.updates.length} mandates, obligations and regulatory decisions from the live scan.`,
+                  color: "oklch(0.55 0.2 50)",
+                },
+                {
+                  to: "/profiles" as const,
+                  step: 5,
+                  icon: Flag,
+                  title: "Country policy profiles",
+                  desc: `Headline mandates for ${COUNTRIES.length} tracked jurisdictions.`,
+                  color: "oklch(0.55 0.14 180)",
+                },
+                {
+                  to: "/videos" as const,
+                  step: 6,
+                  icon: Video,
+                  title: "Video briefing room",
+                  desc: "YouTube channels and official video hubs by country and fuel type.",
+                  color: "oklch(0.55 0.16 340)",
+                },
+              ].map(({ to, step, icon: Icon, title, desc, color }) => (
+                <Link key={to} to={to} className="glass-panel lift group flex gap-4 p-5">
+                  <div
+                    className="grid size-12 shrink-0 place-items-center rounded-xl text-white"
+                    style={{ backgroundColor: color }}
+                  >
+                    <Icon className="size-6" />
                   </div>
-                ) : (
-                  <p className="glass-panel p-6 text-sm text-muted-foreground">
-                    No updates match the current filters.
-                  </p>
-                ))}
-              {filtered.map((u, i) => (
-                <div
-                  key={u.id}
-                  className="rise"
-                  style={{ animationDelay: `${Math.min(i, 12) * 35}ms` }}
-                >
-                  <UpdateCard update={u} />
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section id="profiles" className="pt-4">
-            <SectionHeading
-              step={5}
-              icon={Flag}
-              title="Country policy profiles"
-              subtitle="Headline mandate for each tracked jurisdiction — open a profile for full detail."
-            />
-            <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {COUNTRIES.map((c) => (
-                <Link
-                  key={c.slug}
-                  to="/countries/$slug"
-                  params={{ slug: c.slug }}
-                  className="glass-panel lift group p-4"
-                >
-                  <div className="label-mono" style={{ color: REGION_ACCENT[c.region] }}>
-                    {c.region}
-                  </div>
-                  <div className="mt-1 font-display font-semibold transition-colors group-hover:text-primary">
-                    <span className="mr-1.5" aria-hidden>
-                      {flagFor(c.slug)}
-                    </span>
-                    {c.name}
-                  </div>
-                  <div className="mt-1 font-mono text-xs text-muted-foreground">
-                    {c.mandates[0]?.value}
+                  <div>
+                    <div className="label-mono text-muted-foreground">Section {step}</div>
+                    <div className="font-display text-lg font-bold transition-colors group-hover:text-primary">
+                      {title}
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">{desc}</p>
                   </div>
                 </Link>
               ))}
             </div>
-          </section>
-
-          <section id="videos" className="pt-4">
-            <SectionHeading
-              step={6}
-              icon={Video}
-              title="Video briefing room"
-              subtitle="YouTube channels and official video hubs, linked to the countries and policies they cover."
-            />
-            <VideoLibrary
-              regions={[]}
-              fuels={fuels}
-              country={country}
-              onSelectCountry={setCountry}
-            />
           </section>
 
           <section id="audience" className="pt-4">
