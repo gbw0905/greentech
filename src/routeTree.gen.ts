@@ -15,6 +15,7 @@ import { Route as TimelineRouteImport } from './routes/timeline'
 import { Route as VideosRouteImport } from './routes/videos'
 import { Route as AlertsConfirmRouteImport } from './routes/alerts.confirm'
 import { Route as CountriesSlugRouteImport } from './routes/countries.$slug'
+import { Route as ApiPublicDailyFlyerEmailRouteImport } from './routes/api/public/daily-flyer-email'
 import { Route as ApiPublicDailyTrafficEmailRouteImport } from './routes/api/public/daily-traffic-email'
 import { Route as ApiPublicIngestPolicyRouteImport } from './routes/api/public/ingest-policy'
 import { Route as ApiPublicPolicyAlertDigestRouteImport } from './routes/api/public/policy-alert-digest'
@@ -50,6 +51,12 @@ const CountriesSlugRoute = CountriesSlugRouteImport.update({
   path: '/countries/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicDailyFlyerEmailRoute =
+  ApiPublicDailyFlyerEmailRouteImport.update({
+    id: '/api/public/daily-flyer-email',
+    path: '/api/public/daily-flyer-email',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicDailyTrafficEmailRoute =
   ApiPublicDailyTrafficEmailRouteImport.update({
     id: '/api/public/daily-traffic-email',
@@ -81,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/videos': typeof VideosRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/countries/$slug': typeof CountriesSlugRoute
+  '/api/public/daily-flyer-email': typeof ApiPublicDailyFlyerEmailRoute
   '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
   '/api/public/ingest-policy': typeof ApiPublicIngestPolicyRoute
   '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
@@ -93,6 +101,7 @@ export interface FileRoutesByTo {
   '/videos': typeof VideosRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/countries/$slug': typeof CountriesSlugRoute
+  '/api/public/daily-flyer-email': typeof ApiPublicDailyFlyerEmailRoute
   '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
   '/api/public/ingest-policy': typeof ApiPublicIngestPolicyRoute
   '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
@@ -106,6 +115,7 @@ export interface FileRoutesById {
   '/videos': typeof VideosRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/countries/$slug': typeof CountriesSlugRoute
+  '/api/public/daily-flyer-email': typeof ApiPublicDailyFlyerEmailRoute
   '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
   '/api/public/ingest-policy': typeof ApiPublicIngestPolicyRoute
   '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
@@ -120,6 +130,7 @@ export interface FileRouteTypes {
     | '/videos'
     | '/alerts/confirm'
     | '/countries/$slug'
+    | '/api/public/daily-flyer-email'
     | '/api/public/daily-traffic-email'
     | '/api/public/ingest-policy'
     | '/api/public/policy-alert-digest'
@@ -132,6 +143,7 @@ export interface FileRouteTypes {
     | '/videos'
     | '/alerts/confirm'
     | '/countries/$slug'
+    | '/api/public/daily-flyer-email'
     | '/api/public/daily-traffic-email'
     | '/api/public/ingest-policy'
     | '/api/public/policy-alert-digest'
@@ -144,6 +156,7 @@ export interface FileRouteTypes {
     | '/videos'
     | '/alerts/confirm'
     | '/countries/$slug'
+    | '/api/public/daily-flyer-email'
     | '/api/public/daily-traffic-email'
     | '/api/public/ingest-policy'
     | '/api/public/policy-alert-digest'
@@ -157,6 +170,7 @@ export interface RootRouteChildren {
   VideosRoute: typeof VideosRoute
   AlertsConfirmRoute: typeof AlertsConfirmRoute
   CountriesSlugRoute: typeof CountriesSlugRoute
+  ApiPublicDailyFlyerEmailRoute: typeof ApiPublicDailyFlyerEmailRoute
   ApiPublicDailyTrafficEmailRoute: typeof ApiPublicDailyTrafficEmailRoute
   ApiPublicIngestPolicyRoute: typeof ApiPublicIngestPolicyRoute
   ApiPublicPolicyAlertDigestRoute: typeof ApiPublicPolicyAlertDigestRoute
@@ -207,6 +221,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CountriesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/daily-flyer-email': {
+      id: '/api/public/daily-flyer-email'
+      path: '/api/public/daily-flyer-email'
+      fullPath: '/api/public/daily-flyer-email'
+      preLoaderRoute: typeof ApiPublicDailyFlyerEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/daily-traffic-email': {
       id: '/api/public/daily-traffic-email'
       path: '/api/public/daily-traffic-email'
@@ -245,6 +266,7 @@ const rootRouteChildren: RootRouteChildren = {
   VideosRoute: VideosRoute,
   AlertsConfirmRoute: AlertsConfirmRoute,
   CountriesSlugRoute: CountriesSlugRoute,
+  ApiPublicDailyFlyerEmailRoute: ApiPublicDailyFlyerEmailRoute,
   ApiPublicDailyTrafficEmailRoute: ApiPublicDailyTrafficEmailRoute,
   ApiPublicIngestPolicyRoute: ApiPublicIngestPolicyRoute,
   ApiPublicPolicyAlertDigestRoute: ApiPublicPolicyAlertDigestRoute,
