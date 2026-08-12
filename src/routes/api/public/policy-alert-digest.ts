@@ -8,7 +8,7 @@ async function run() {
 
   const { data: updates, error: updErr } = await supabaseAdmin
     .from("policy_updates")
-    .select("url,title,summary,source,country_name,fuels,created_at")
+    .select("url,title,summary,source,country_slug,country_name,fuels,created_at")
     .gte("created_at", since)
     .order("created_at", { ascending: false })
     .limit(40);
@@ -18,7 +18,7 @@ async function run() {
 
   const { data: subs, error: subErr } = await supabaseAdmin
     .from("alert_subscribers")
-    .select("id,email,fuels")
+    .select("id,email,fuels,countries")
     .not("confirmed_at", "is", null);
 
   if (subErr) return Response.json({ error: subErr.message }, { status: 500 });
@@ -37,8 +37,14 @@ async function run() {
 
   for (const sub of subs ?? []) {
     const wanted = sub.fuels ?? [];
+    const wantedCountries = sub.countries ?? [];
     const items = updates
       .filter((u) => wanted.length === 0 || (u.fuels ?? []).some((f) => wanted.includes(f)))
+      .filter(
+        (u) =>
+          wantedCountries.length === 0 ||
+          (u.country_slug != null && wantedCountries.includes(u.country_slug)),
+      )
       .slice(0, 15)
       .map((u) => ({
         title: u.title,

@@ -14,6 +14,7 @@ import type { TemplateEntry } from './registry'
 interface Props {
   confirmUrl?: string
   fuels?: string[]
+  countries?: string[]
 }
 
 const main = { backgroundColor: '#ffffff', fontFamily: 'Calibri, Carlito, Segoe UI, Arial, sans-serif' }
@@ -32,7 +33,7 @@ const button = {
 }
 const foot = { fontSize: '11px', color: '#8a92a1', margin: '20px 0 0' }
 
-const AlertConfirm = ({ confirmUrl = '#', fuels = [] }: Props) => (
+const AlertConfirm = ({ confirmUrl = '#', fuels = [], countries = [] }: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>Confirm your Global Bioenergy Watch policy alerts</Preview>
@@ -46,6 +47,10 @@ const AlertConfirm = ({ confirmUrl = '#', fuels = [] }: Props) => (
         <Text style={text}>
           Coverage:{' '}
           <strong>{fuels.length > 0 ? fuels.join(', ') : 'all fuel types'}</strong>
+        </Text>
+        <Text style={text}>
+          Countries:{' '}
+          <strong>{countries.length > 0 ? countries.join(', ') : 'all countries'}</strong>
         </Text>
         <Button href={confirmUrl} style={button}>
           Confirm subscription
@@ -65,5 +70,6 @@ export const template = {
   previewData: {
     confirmUrl: 'https://www.globalbioenergywatch.org/alerts/confirm?token=example',
     fuels: ['Ethanol', 'SAF'],
+    countries: ['United States', 'Brazil'],
   },
 } satisfies TemplateEntry
