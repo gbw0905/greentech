@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           confirm_token: string
           confirmed_at: string | null
+          countries: string[]
           created_at: string
           email: string
           fuels: string[]
@@ -28,6 +29,7 @@ export type Database = {
         Insert: {
           confirm_token?: string
           confirmed_at?: string | null
+          countries?: string[]
           created_at?: string
           email: string
           fuels?: string[]
@@ -38,6 +40,7 @@ export type Database = {
         Update: {
           confirm_token?: string
           confirmed_at?: string | null
+          countries?: string[]
           created_at?: string
           email?: string
           fuels?: string[]

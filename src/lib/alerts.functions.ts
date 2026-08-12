@@ -1,9 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { countryBySlug } from "@/lib/policy-taxonomy";
 
 const subscribeSchema = z.object({
   email: z.string().trim().email().max(255),
   fuels: z.array(z.string().max(40)).max(12).default([]),
+  countries: z.array(z.string().max(60)).max(40).default([]),
 });
 
 export const subscribeToAlerts = createServerFn({ method: "POST" })
@@ -14,7 +16,7 @@ export const subscribeToAlerts = createServerFn({ method: "POST" })
 
     const { data: row, error } = await supabaseAdmin
       .from("alert_subscribers")
-      .upsert({ email, fuels: data.fuels }, { onConflict: "email" })
+      .upsert({ email, fuels: data.fuels, countries: data.countries }, { onConflict: "email" })
       .select("id, confirm_token, confirmed_at")
       .single();
 
@@ -27,7 +29,11 @@ export const subscribeToAlerts = createServerFn({ method: "POST" })
     const { sendTemplateEmail } = await import("@/lib/email-templates/send-email");
     const confirmUrl = `https://www.globalbioenergywatch.org/alerts/confirm?token=${row.confirm_token}`;
     const result = await sendTemplateEmail("alert-confirm", email, {
-      templateData: { confirmUrl, fuels: data.fuels },
+      templateData: {
+        confirmUrl,
+        fuels: data.fuels,
+        countries: data.countries.map((s) => countryBySlug(s)?.name ?? s),
+      },
       idempotencyKey: `alert-confirm-${row.id}-${row.confirm_token.slice(0, 8)}`,
     });
 
