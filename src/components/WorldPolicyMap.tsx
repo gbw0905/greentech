@@ -243,7 +243,7 @@ export function WorldPolicyMap({
           </div>
         ) : (
           <div className="label-mono text-muted-foreground">
-            Scroll to zoom · drag to pan · click to filter
+            Scroll to zoom · drag to pan · click a country to open its profile
           </div>
         )}
         <div className="label-mono font-mono text-muted-foreground">{view.z.toFixed(1)}×</div>
