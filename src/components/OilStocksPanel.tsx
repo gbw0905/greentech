@@ -22,13 +22,14 @@ function BarChart({
   const niceMax = Math.ceil(maxPrice / 25) * 25;
 
   // Layout — horizontal bars
-  const rowH = 34;
-  const gap = 8;
-  const labelW = 150; // left label column
-  const valueW = 96; // right value column
-  const w = 760;
-  const padTop = 24;
-  const padBottom = 28;
+  const rowH = 30;
+  const gap = 10;
+  const rankW = 28;
+  const labelW = 210; // rank + ticker + company
+  const valueW = 168; // price + change badge
+  const w = 860;
+  const padTop = 30;
+  const padBottom = 34;
   const chartW = w - labelW - valueW;
   const h = padTop + sorted.length * (rowH + gap) - gap + padBottom;
 
@@ -61,24 +62,37 @@ function BarChart({
                 x1={x}
                 x2={x}
                 y1={padTop - 8}
-                y2={h - padBottom}
+                y2={h - padBottom + 4}
                 stroke="var(--border)"
                 strokeWidth="1"
                 strokeDasharray={t === 0 ? undefined : "3 5"}
-                opacity={0.45}
+                opacity={t === 0 ? 0.9 : 0.35}
                 vectorEffect="non-scaling-stroke"
               />
               <text
                 x={x}
-                y={h - padBottom + 16}
+                y={h - padBottom + 22}
                 textAnchor="middle"
-                className="font-mono text-[11px] fill-muted-foreground tabular-nums"
+                className="font-mono text-[10px] fill-muted-foreground tabular-nums"
               >
                 ${Math.round(t * niceMax)}
               </text>
             </g>
           );
         })}
+
+        {/* Column headers */}
+        <text x={0} y={padTop - 14} className="font-mono text-[9px] fill-muted-foreground tracking-[0.14em]">
+          RANK · COMPANY
+        </text>
+        <text
+          x={w}
+          y={padTop - 14}
+          textAnchor="end"
+          className="font-mono text-[9px] fill-muted-foreground tracking-[0.14em]"
+        >
+          PRICE · 1D
+        </text>
 
         {/* Bars */}
         {sorted.map((q, idx) => {
@@ -113,66 +127,84 @@ function BarChart({
               {/* Track */}
               <rect
                 x={labelW}
-                y={y + 6}
+                y={y + 8}
                 width={trackW}
-                height={rowH - 12}
-                rx={5}
+                height={rowH - 16}
+                rx={3}
                 fill="var(--surface-1)"
-                opacity={0.6}
+                opacity={0.5}
               />
               {/* Filled bar */}
               <rect
                 x={labelW}
-                y={y + 6}
+                y={y + 8}
                 width={bw}
-                height={rowH - 12}
-                rx={5}
+                height={rowH - 16}
+                rx={3}
                 fill={active ? "url(#bar-fill-active)" : "url(#bar-fill)"}
                 className="transition-all duration-300"
               />
-              {/* Left label: symbol + company */}
+              {/* Rank */}
               <text
-                x={12}
+                x={rankW - 10}
                 y={y + rowH / 2 + 1}
-                className="font-mono text-[13px] font-bold fill-foreground"
+                textAnchor="end"
+                className="font-mono text-[11px] fill-muted-foreground tabular-nums"
+              >
+                {String(idx + 1).padStart(2, "0")}
+              </text>
+              {/* Ticker */}
+              <text
+                x={rankW}
+                y={y + rowH / 2 + 1}
+                className="font-mono text-[12px] font-bold fill-foreground"
               >
                 {q.symbol}
               </text>
+              {/* Company */}
               <text
-                x={48}
+                x={rankW + 52}
                 y={y + rowH / 2 + 1}
                 className="text-[12px] fill-muted-foreground"
                 style={{ fontFamily: "Calibri, sans-serif" }}
               >
-                {q.label.length > 16 ? `${q.label.slice(0, 16)}…` : q.label}
+                {q.label.length > 18 ? `${q.label.slice(0, 18)}…` : q.label}
               </text>
-              {/* Right value: price + change */}
+              {/* Price */}
               <text
-                x={w - valueW + 8}
+                x={w - 92}
                 y={y + rowH / 2 + 1}
-                className="font-mono text-[13px] font-semibold fill-foreground tabular-nums"
+                textAnchor="end"
+                className="font-mono text-[12.5px] font-semibold fill-foreground tabular-nums"
               >
                 ${fmt(q.price)}
               </text>
-              <g transform={`translate(${w - 14}, ${y + rowH / 2 - 8})`}>
+              {/* Change badge */}
+              <g transform={`translate(${w}, ${y + rowH / 2 - 8})`}>
                 <rect
-                  x={-(up ? 56 : 62)}
-                  y={-1}
-                  width={up ? 56 : 62}
+                  x={-58}
+                  y={0}
+                  width={58}
                   height={16}
-                  rx={8}
+                  rx={3}
                   fill={up ? "var(--primary)" : "var(--destructive)"}
-                  opacity={active ? 1 : 0.85}
+                  opacity={active ? 1 : 0.14}
                 />
                 <text
-                  x={-(up ? 28 : 31)}
-                  y={11}
+                  x={-29}
+                  y={12}
                   textAnchor="middle"
                   className="font-mono text-[10px] font-bold tabular-nums"
-                  fill="var(--primary-foreground)"
+                  fill={
+                    active
+                      ? "var(--primary-foreground)"
+                      : up
+                        ? "var(--primary)"
+                        : "var(--destructive)"
+                  }
                 >
-                  {up ? "+" : ""}
-                  {q.changePct.toFixed(1)}%
+                  {up ? "▲ +" : "▼ "}
+                  {q.changePct.toFixed(2)}%
                 </text>
               </g>
             </g>
