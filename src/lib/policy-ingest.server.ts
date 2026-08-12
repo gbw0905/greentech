@@ -77,12 +77,31 @@ function classify(text: string) {
   return { country, fuels };
 }
 
-const POLICY_SIGNALS = [
-  "policy", "mandate", "blend", "regulation", "regulator", "law", "bill", "ruling",
-  "government", "ministry", "parliament", "directive", "target", "subsidy", "tax credit",
-  "incentive", "standard", "quota", "tariff", "epa", "rule", "decree", "legislation",
-  "approval", "waiver", "obligation", "irs", "treasury", "guidance", "final rule",
-  "credit",
+/** Who acted — an official body or lawmaking process must be named. */
+const GOVERNMENT_ACTORS = [
+  "government", "ministry", "minister", "ministerial", "parliament", "congress", "senate",
+  "house of representatives", "cabinet", "president", "prime minister", "governor",
+  "european commission", "european union", "eu ", "council of the eu", "regulator",
+  "agency", "authority", "department of energy", "department of agriculture", "usda",
+  "epa", "irs", "treasury", "doe", "carb", "federal register", "commission", "state",
+  "administration", "lawmakers", "legislature", "court", "supreme court", "petrobras policy",
+  "national assembly", "gazette", "official journal",
+];
+
+/** What happened — a policy instrument or legislative action. */
+const POLICY_ACTIONS = [
+  "policy", "mandate", "blending obligation", "blend mandate", "regulation", "regulatory",
+  "law", "bill", "ruling", "directive", "decree", "legislation", "rulemaking", "final rule",
+  "proposed rule", "guidance", "waiver", "obligation", "quota", "subsidy", "tax credit",
+  "incentive scheme", "standard", "tariff", "target", "framework", "act", "amendment",
+  "consultation", "notice", "exemption", "compliance", "enacted", "approved", "signed into law",
+];
+
+/** Market/company noise that is not a government policy move. */
+const NON_POLICY_SIGNALS = [
+  "earnings", "quarterly results", "share price", "stock", "ipo", "merger", "acquisition",
+  "acquires", "groundbreaking", "opens new plant", "expands capacity", "partnership",
+  "signs mou", "appoints", "hires", "ceo", "webinar", "conference", "award", "sponsor",
 ];
 
 const BIO_SIGNALS = [
@@ -93,9 +112,12 @@ const BIO_SIGNALS = [
   "renewable fuel standard", "e15 ", "rin credit", "rins",
 ];
 
-function isRelevant(text: string): boolean {
-  const t = text.toLowerCase();
-  return BIO_SIGNALS.some((s) => t.includes(s)) && POLICY_SIGNALS.some((s) => t.includes(s));
+/** Only government policy moves are published — company/market news is dropped. */
+export function isRelevant(text: string): boolean {
+  const t = ` ${text.toLowerCase()} `;
+  if (!BIO_SIGNALS.some((s) => t.includes(s))) return false;
+  if (NON_POLICY_SIGNALS.some((s) => t.includes(s))) return false;
+  return GOVERNMENT_ACTORS.some((s) => t.includes(s)) && POLICY_ACTIONS.some((s) => t.includes(s));
 }
 
 function hostOf(url: string): string {
@@ -184,6 +206,18 @@ export async function ingestPolicyUpdates(): Promise<IngestResult> {
     // Keep the archive tidy: drop anything older than 180 days.
     const cutoff = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString();
     await supabaseAdmin.from("policy_updates").delete().lt("published_at", cutoff);
+
+    // Purge previously stored items that are not government policy moves.
+    const { data: existing } = await supabaseAdmin
+      .from("policy_updates")
+      .select("url,title,summary")
+      .limit(2000);
+    const stale = (existing ?? [])
+      .filter((r) => !isRelevant(`${r.title} ${r.summary ?? ""}`))
+      .map((r) => r.url);
+    for (let i = 0; i < stale.length; i += 100) {
+      await supabaseAdmin.from("policy_updates").delete().in("url", stale.slice(i, i + 100));
+    }
   }
 
   return {
