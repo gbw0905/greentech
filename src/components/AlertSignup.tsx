@@ -1,17 +1,26 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { BellRing, Check, Loader2 } from "lucide-react";
-import { FUEL_TYPES, FUEL_ACCENT, type FuelType } from "@/lib/policy-taxonomy";
+import { BellRing, Check, Loader2, X } from "lucide-react";
+import {
+  FUEL_TYPES,
+  FUEL_ACCENT,
+  COUNTRIES,
+  flagFor,
+  countryBySlug,
+  type FuelType,
+} from "@/lib/policy-taxonomy";
 import { subscribeToAlerts } from "@/lib/alerts.functions";
 
 export function AlertSignup() {
   const subscribe = useServerFn(subscribeToAlerts);
   const [email, setEmail] = useState("");
   const [fuels, setFuels] = useState<FuelType[]>([]);
+  const [countries, setCountries] = useState<string[]>([]);
 
   const mutation = useMutation({
-    mutationFn: (input: { email: string; fuels: string[] }) => subscribe({ data: input }),
+    mutationFn: (input: { email: string; fuels: string[]; countries: string[] }) =>
+      subscribe({ data: input }),
   });
 
   const status = mutation.data?.status;
@@ -26,7 +35,8 @@ export function AlertSignup() {
           <h3 className="font-display text-lg font-bold">Get new policy updates by email</h3>
           <p className="mt-1 text-sm text-muted-foreground">
             One daily email whenever new bioenergy policy moves land. Pick the fuels you follow, or
-            leave blank for everything. Unsubscribe any time.
+            leave blank for everything. Add countries to only hear about those markets. Unsubscribe
+            any time.
           </p>
 
           <form
@@ -34,7 +44,7 @@ export function AlertSignup() {
             onSubmit={(e) => {
               e.preventDefault();
               if (!email.trim()) return;
-              mutation.mutate({ email: email.trim(), fuels });
+              mutation.mutate({ email: email.trim(), fuels, countries });
             }}
           >
             <input
@@ -80,6 +90,44 @@ export function AlertSignup() {
                 </button>
               );
             })}
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <label className="label-mono text-muted-foreground" htmlFor="alert-country">
+              Countries
+            </label>
+            <select
+              id="alert-country"
+              value=""
+              onChange={(e) => {
+                const slug = e.target.value;
+                if (slug) setCountries((prev) => (prev.includes(slug) ? prev : [...prev, slug]));
+              }}
+              className="label-mono rounded-full border border-border bg-surface-2 px-3 py-1.5 text-foreground"
+            >
+              <option value="">Add a country…</option>
+              {COUNTRIES.filter((c) => !countries.includes(c.slug)).map((c) => (
+                <option key={c.slug} value={c.slug}>
+                  {flagFor(c.slug)} {c.name}
+                </option>
+              ))}
+            </select>
+            {countries.length === 0 ? (
+              <span className="label-mono text-muted-foreground">All countries</span>
+            ) : (
+              countries.map((slug) => (
+                <button
+                  key={slug}
+                  type="button"
+                  onClick={() => setCountries((prev) => prev.filter((s) => s !== slug))}
+                  className="label-mono inline-flex items-center gap-1 rounded-full bg-primary/15 px-3 py-1 text-primary"
+                  aria-label={`Remove ${countryBySlug(slug)?.name ?? slug}`}
+                >
+                  {flagFor(slug)} {countryBySlug(slug)?.name ?? slug}
+                  <X className="size-3" />
+                </button>
+              ))
+            )}
           </div>
 
           {status === "confirmation_sent" && (
