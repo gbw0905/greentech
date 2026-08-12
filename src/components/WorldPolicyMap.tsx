@@ -1,7 +1,7 @@
 import { geoNaturalEarth1, geoPath, geoGraticule10 } from "d3-geo";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { feature } from "topojson-client";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Minus, Plus, Maximize2 } from "lucide-react";
 import { COUNTRIES, REGION_ACCENT } from "@/lib/policy-taxonomy";
 
@@ -28,6 +28,7 @@ export function WorldPolicyMap({
   onSelect: (slug: string | null) => void;
 }) {
   const [features, setFeatures] = useState<GeoFeature[] | null>(null);
+  const navigate = useNavigate();
   const [hover, setHover] = useState<string | null>(null);
   const [tip, setTip] = useState<{ x: number; y: number } | null>(null);
   const [view, setView] = useState({ z: 1, x: 0, y: 0 });
@@ -169,7 +170,8 @@ export function WorldPolicyMap({
                   onMouseEnter={() => country && setHover(f.properties.name)}
                   onClick={() => {
                     if (moved.current || !country) return;
-                    onSelect(country.slug === activeCountry ? null : country.slug);
+                    onSelect(country.slug);
+                    navigate({ to: "/countries/$slug", params: { slug: country.slug } });
                   }}
                 />
               );
@@ -241,7 +243,7 @@ export function WorldPolicyMap({
           </div>
         ) : (
           <div className="label-mono text-muted-foreground">
-            Scroll to zoom · drag to pan · click to filter
+            Scroll to zoom · drag to pan · click a country to open its profile
           </div>
         )}
         <div className="label-mono font-mono text-muted-foreground">{view.z.toFixed(1)}×</div>
