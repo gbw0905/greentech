@@ -1,0 +1,1 @@
+ALTER TABLE public.alert_subscribers ADD COLUMN IF NOT EXISTS countries text[] NOT NULL DEFAULT '{}'::text[];
