@@ -2,8 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Activity, Eye, Users, TrendingUp } from "lucide-react";
 import { fetchTrafficStats } from "@/lib/traffic";
 import { Counter } from "@/components/Counter";
-
-
 function Sparkline({ data }: { data: Array<{ day: string; views: number }> }) {
   const w = 100;
   const h = 34;
@@ -74,8 +72,6 @@ export function TrafficPanel() {
     live_now: 0,
     daily: [],
     top_paths: [],
-    top_countries: [],
-    top_sources: [],
   };
 
   const tiles = [
@@ -112,36 +108,6 @@ export function TrafficPanel() {
       <div className="border-t border-border px-5 py-4">
         <Sparkline data={stats.daily} />
       </div>
-
-      <div className="grid gap-px border-t border-border bg-border md:grid-cols-2">
-        <div className="bg-card">
-          <BreakdownList
-            title="Where readers are reading from"
-            icon={Globe2}
-            empty="No location data yet — countries appear once the live site gets traffic."
-            rows={(stats.top_countries ?? []).map((c) => ({
-              key: c.country,
-              label: countryLabel(c.country),
-              prefix: countryFlag(c.country),
-              value: c.views,
-              sub: `${(c.visitors ?? 0).toLocaleString()} visitors`,
-            }))}
-          />
-        </div>
-        <div className="bg-card">
-          <BreakdownList
-            title="How they arrived"
-            icon={Link2}
-            empty="Collecting referral sources…"
-            rows={(stats.top_sources ?? []).map((s) => ({
-              key: s.source,
-              label: s.source,
-              value: s.views,
-            }))}
-          />
-        </div>
-      </div>
-
     </section>
   );
 }
