@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { RefreshCw, Layers, Filter, X, AlertTriangle, Map, Video, Flag, Factory, Flame, TrendingUp, BellRing } from "lucide-react";
+import { RefreshCw, Layers, Filter, X, AlertTriangle, Map, Video, Flag, Factory, Flame, TrendingUp, BellRing, Activity } from "lucide-react";
 import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
 import siteLogo from "@/assets/logo.png";
 import {
@@ -18,6 +18,7 @@ import { OilPricePanel } from "@/components/OilPricePanel";
 import { OilStocksPanel } from "@/components/OilStocksPanel";
 import { BiofuelProductionPanel } from "@/components/BiofuelProductionPanel";
 import { AlertSignup } from "@/components/AlertSignup";
+import { TrafficPanel } from "@/components/TrafficPanel";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
 
 const feedQuery = queryOptions({
@@ -298,7 +299,8 @@ function Dashboard() {
                   ["/profiles", "5 · Country profiles", "oklch(0.55 0.14 180)"],
                   ["/videos", "6 · Videos", "oklch(0.55 0.16 340)"],
                   ["#alerts", "7 · Email alerts", "oklch(0.55 0.17 265)"],
-                  ["#disclaimer", "8 · AI disclaimer", "oklch(0.45 0.02 240)"],
+                  ["#traffic", "8 · Live audience", "oklch(0.6 0.18 25)"],
+                  ["#disclaimer", "9 · AI disclaimer", "oklch(0.45 0.02 240)"],
                 ].map(([href, label, color]) => {
                   const cls =
                     "label-mono rounded-full border px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 hover:shadow-md";
@@ -450,6 +452,16 @@ function Dashboard() {
               subtitle="Subscribe to a daily email digest of new bioenergy policy updates, filtered to the fuels you follow."
             />
             <AlertSignup />
+          </section>
+
+          <section id="traffic" className="pt-4">
+            <SectionHeading
+              step={9}
+              icon={Activity}
+              title="Live audience"
+              subtitle="Real-time readership of the desk — who is reading now, where they are reading from and how they arrived."
+            />
+            <TrafficPanel />
           </section>
 
           <section id="disclaimer" className="glass-panel rise border-l-4 border-l-signal bg-signal/[0.03] p-5">
