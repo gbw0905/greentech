@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Factory, Users } from "lucide-react";
 import type { FuelType } from "@/lib/policy-taxonomy";
+import { EntityNewsDialog, type NewsTarget } from "@/components/EntityNewsDialog";
 
 type Stream = {
   name: string;
@@ -284,6 +285,7 @@ function ColumnChart({
 
 export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
   const [unit, setUnit] = useState<"litres" | "barrels">("litres");
+  const [newsTarget, setNewsTarget] = useState<NewsTarget>(null);
   const [userView, setUserView] = useState<"countries" | "companies">("countries");
 
   const activeStreams = STREAMS.filter((s) => fuels.length === 0 || fuels.includes(s.fuel));
@@ -413,20 +415,20 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
             value: c.annualBnL,
             color: c.color,
           }))}
-          links={Object.fromEntries(
+          onSelect={setNewsTarget}
+          news={Object.fromEntries(
             users.map((c) => [
               c.name,
-              `https://news.google.com/rss/search?q=${encodeURIComponent(
-                `"${c.name}" biofuel OR renewable OR clean energy when:30d`
-              )}&hl=en-US&gl=US&ceid=US:en`,
+              { name: c.name, query: `"${c.name}" biofuel OR renewable OR clean energy` },
             ])
           )}
         />
         )}
         <p className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
-          Top consumers and producers by annual liquid biofuel volume. Click any bar to open the latest news for that entity. Source: IEA/EIA estimates and company reports.
+          Top consumers and producers by annual liquid biofuel volume. Click any bar to read the latest global news for that entity right here. Source: IEA/EIA estimates and company reports.
         </p>
       </div>
+      <EntityNewsDialog target={newsTarget} onClose={() => setNewsTarget(null)} />
     </div>
   );
 }
