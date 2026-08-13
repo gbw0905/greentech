@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Activity, Eye, Users, TrendingUp } from "lucide-react";
 import { fetchTrafficStats } from "@/lib/traffic";
 import { Counter } from "@/components/Counter";
+
 function Sparkline({ data }: { data: Array<{ day: string; views: number }> }) {
   const w = 100;
   const h = 34;
