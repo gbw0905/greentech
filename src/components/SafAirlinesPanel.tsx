@@ -32,6 +32,8 @@ const AIRLINES: Airline[] = [
 ];
 
 export function SafAirlinesPanel() {
+  const newsUrl = (name: string) =>
+    `https://news.google.com/search?q=${encodeURIComponent(`${name} sustainable aviation fuel`)}`;
   const [active, setActive] = useState<string | null>(null);
   const sorted = [...AIRLINES].sort((a, b) => b.volume - a.volume);
   const max = Math.max(...sorted.map((a) => a.volume));
@@ -60,9 +62,11 @@ export function SafAirlinesPanel() {
           const isActive = active === a.code;
           const dim = active !== null && !isActive;
           return (
-            <button
+            <a
               key={a.code}
-              type="button"
+              href={newsUrl(a.name)}
+              target="_blank"
+              rel="noopener noreferrer"
               onMouseEnter={() => setActive(a.code)}
               onMouseLeave={() => setActive(null)}
               onFocus={() => setActive(a.code)}
@@ -95,7 +99,7 @@ export function SafAirlinesPanel() {
               <span className="w-12 shrink-0 text-right font-mono text-[11px] tabular-nums text-muted-foreground">
                 {a.share.toFixed(2)}%
               </span>
-            </button>
+            </a>
           );
         })}
 
@@ -128,7 +132,8 @@ export function SafAirlinesPanel() {
       <div className="mt-4 space-y-2 border-t border-border pt-3">
         <p className="text-xs text-muted-foreground">
           Estimates compiled from airline sustainability reports, published offtake agreements and
-          national SAF mandates. Cross-verify against primary disclosures before use.
+          national SAF mandates. Click any airline to open its latest SAF news. Cross-verify against
+          primary disclosures before use.
         </p>
         <div className="rounded-lg border border-border/60 bg-surface-2/50 p-2.5">
           <p className="text-xs font-semibold text-foreground">Note</p>

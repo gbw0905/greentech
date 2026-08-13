@@ -6,6 +6,9 @@ import { getOilStocksFn, type OilQuote } from "@/lib/oil.functions";
 const fmt = (n: number, d = 2) =>
   n.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
 
+const newsUrl = (q: string) =>
+  `https://news.google.com/search?q=${encodeURIComponent(`${q} biofuel OR renewable OR energy`)}`;
+
 function BarChart({
   quotes,
   hover,
@@ -104,11 +107,15 @@ function BarChart({
           const trackW = chartW;
 
           return (
-            <g
+            <a
               key={q.symbol}
+              href={newsUrl(q.label)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+            <g
               onMouseEnter={() => setHoveredSymbol(q.symbol)}
               onMouseLeave={() => setHoveredSymbol(null)}
-              onClick={() => setHover(active ? null : q.symbol)}
               className="cursor-pointer"
               style={{ transition: "opacity 0.2s ease" }}
               opacity={dim ? 0.4 : 1}
@@ -208,6 +215,7 @@ function BarChart({
                 </text>
               </g>
             </g>
+            </a>
           );
         })}
       </svg>
@@ -286,7 +294,8 @@ export function OilStocksPanel() {
       <div className="mt-4 space-y-2 border-t border-border pt-3">
         <p className="text-xs text-muted-foreground">
           Prices are quoted in USD per share and refresh every 5 minutes. Bar length shows the current
-          price level; percentages reflect the latest session change.
+          price level; percentages reflect the latest session change. Click any company to open its
+          latest news.
         </p>
         <div className="rounded-lg border border-border/60 bg-surface-2/50 p-2.5">
           <p className="text-xs font-semibold text-foreground">Note</p>
