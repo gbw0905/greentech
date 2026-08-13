@@ -4,6 +4,8 @@ import { feature } from "topojson-client";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Minus, Plus, Maximize2 } from "lucide-react";
 import { COUNTRIES, REGION_ACCENT } from "@/lib/policy-taxonomy";
+import { useQuery } from "@tanstack/react-query";
+import { getCountryIndicesFn } from "@/lib/country-markets.functions";
 
 interface GeoFeature {
   type: "Feature";
@@ -29,6 +31,13 @@ export function WorldPolicyMap({
 }) {
   const [features, setFeatures] = useState<GeoFeature[] | null>(null);
   const navigate = useNavigate();
+  const { data: marketData } = useQuery({
+    queryKey: ["country-indices"],
+    queryFn: () => getCountryIndicesFn(),
+    staleTime: 5 * 60 * 1000,
+    refetchInterval: 5 * 60 * 1000,
+  });
+  const indices = marketData?.indices ?? {};
   const [hover, setHover] = useState<string | null>(null);
   const [tip, setTip] = useState<{ x: number; y: number } | null>(null);
   const [view, setView] = useState({ z: 1, x: 0, y: 0 });
@@ -95,6 +104,7 @@ export function WorldPolicyMap({
   }, []);
 
   const hovered = hover ? byMapName.get(hover) : null;
+  const hoveredIndex = hovered ? indices[hovered.slug] : undefined;
   const zoomed = view.z > 1.01 || view.x !== 0 || view.y !== 0;
 
   return (
@@ -181,7 +191,7 @@ export function WorldPolicyMap({
 
         {hovered && tip && (
           <div
-            className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-[calc(100%+10px)] rounded-md border border-border bg-surface px-2.5 py-1.5 shadow-[var(--shadow-lift)]"
+            className="pointer-events-none absolute z-10 w-56 -translate-x-1/2 -translate-y-[calc(100%+10px)] rounded-md border border-border bg-surface px-2.5 py-1.5 shadow-[var(--shadow-lift)]"
             style={{ left: tip.x, top: tip.y }}
           >
             <div className="font-display text-xs font-semibold whitespace-nowrap">
@@ -190,6 +200,49 @@ export function WorldPolicyMap({
             <div className="label-mono" style={{ color: REGION_ACCENT[hovered.region] }}>
               {counts[hovered.slug] ?? 0} updates
             </div>
+            <dl className="mt-1.5 space-y-1 border-t border-border pt-1.5 font-mono text-[10px] text-muted-foreground">
+              <div className="flex items-baseline justify-between gap-2">
+                <dt>Index</dt>
+                <dd className="truncate text-right text-foreground">
+                  {hoveredIndex?.index ?? "—"}
+                </dd>
+              </div>
+              <div className="flex items-baseline justify-between gap-2">
+                <dt>Last</dt>
+                <dd className="text-right text-foreground">
+                  {hoveredIndex
+                    ? `${hoveredIndex.price.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${hoveredIndex.currency}`
+                    : "loading…"}
+                </dd>
+              </div>
+              <div className="flex items-baseline justify-between gap-2">
+                <dt>1D</dt>
+                <dd
+                  className="text-right"
+                  style={{
+                    color: hoveredIndex
+                      ? hoveredIndex.changePct >= 0
+                        ? "var(--success, oklch(0.65 0.18 150))"
+                        : "var(--destructive)"
+                      : undefined,
+                  }}
+                >
+                  {hoveredIndex
+                    ? `${hoveredIndex.changePct >= 0 ? "▲" : "▼"} ${Math.abs(hoveredIndex.changePct).toFixed(2)}%`
+                    : "—"}
+                </dd>
+              </div>
+              <div className="flex items-baseline justify-between gap-2">
+                <dt>Region</dt>
+                <dd className="truncate text-right text-foreground">{hovered.region}</dd>
+              </div>
+              <div className="flex items-baseline justify-between gap-2">
+                <dt>Mandate</dt>
+                <dd className="truncate text-right text-foreground">
+                  {hovered.mandates[0]?.value ?? "—"}
+                </dd>
+              </div>
+            </dl>
           </div>
         )}
 
@@ -244,6 +297,11 @@ export function WorldPolicyMap({
         ) : (
           <div className="label-mono text-muted-foreground">
             Scroll to zoom · drag to pan · click a country to open its profile
+          </div>
+        )}
+        {hoveredIndex && (
+          <div className="label-mono font-mono text-muted-foreground">
+            {hoveredIndex.index} {hoveredIndex.price.toLocaleString(undefined, { maximumFractionDigits: 2 })}
           </div>
         )}
         <div className="label-mono font-mono text-muted-foreground">{view.z.toFixed(1)}×</div>
