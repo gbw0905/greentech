@@ -283,6 +283,139 @@ function ColumnChart({
   );
 }
 
+function BarChart({
+  items,
+  unitLabel,
+  decimals = 1,
+  news,
+  onSelect,
+}: {
+  items: { key: string; label: string; sub?: string; value: number; color: string }[];
+  unitLabel: string;
+  decimals?: number;
+  news?: Record<string, { name: string; query: string }>;
+  onSelect?: (t: NewsTarget) => void;
+}) {
+  const max = Math.max(...items.map((i) => i.value));
+  const total = items.reduce((a, i) => a + i.value, 0);
+  const [hover, setHover] = useState<string | null>(null);
+  const ticks = [0, 0.25, 0.5, 0.75, 1];
+
+  return (
+    <div>
+      {/* top x-axis labels */}
+      <div className="flex gap-2 pl-[152px]">
+        <div className="relative h-5 flex-1" aria-hidden>
+          <div className="pointer-events-none absolute inset-0 flex justify-between">
+            {ticks.map((t) => (
+              <div key={t} className="flex flex-col items-center">
+                <div className="h-1.5 w-px bg-border" />
+                <span className="font-mono text-[10px] text-muted-foreground tabular-nums">
+                  {fmt(max * t, max * t < 100 ? decimals : 0)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* bars */}
+      <div className="relative">
+        {/* background gridlines */}
+        <div className="pointer-events-none absolute inset-0 flex justify-between pl-[152px]" aria-hidden>
+          {ticks.map((t) => (
+            <div key={t} className="h-full w-px bg-border/40" />
+          ))}
+        </div>
+
+        <div className="flex flex-col gap-2">
+          {items.map((i) => {
+            const active = hover === i.key;
+            const target = news?.[i.key];
+            const widthPct = Math.max((i.value / max) * 100, 1.5);
+            const Row = (
+              <div
+                key={i.key}
+                className={`group relative flex items-center gap-3 ${target ? "cursor-pointer" : "cursor-default"}`}
+                onMouseEnter={() => setHover(i.key)}
+                onMouseLeave={() => setHover((h) => (h === i.key ? null : h))}
+                onFocus={() => setHover(i.key)}
+                onBlur={() => setHover(null)}
+                tabIndex={target ? 0 : -1}
+                role="img"
+                aria-label={`${i.label}: ${fmt(i.value, decimals)} ${unitLabel}`}
+              >
+                <div className="w-[140px] shrink-0 text-right">
+                  <div
+                    className="truncate text-xs font-semibold leading-tight"
+                    title={i.label}
+                  >
+                    {i.label}
+                  </div>
+                  {i.sub ? (
+                    <div className="truncate text-[10px] text-muted-foreground">{i.sub}</div>
+                  ) : null}
+                </div>
+
+                <div className="relative min-w-0 flex-1 py-1.5">
+                  <div
+                    className="h-7 rounded-r-md transition-all duration-300"
+                    style={{
+                      width: `${widthPct}%`,
+                      background: `linear-gradient(90deg, ${i.color}, color-mix(in oklch, ${i.color} 55%, transparent))`,
+                      outline: active ? `2px solid ${i.color}` : "none",
+                      opacity: hover && !active ? 0.45 : 1,
+                    }}
+                  />
+                  <span className="pointer-events-none absolute left-[calc(var(--w)+6px)] top-1/2 -translate-y-1/2 font-mono text-[11px] tabular-nums text-foreground"
+                    style={{ "--w": `${widthPct}%` } as React.CSSProperties}
+                  >
+                    {fmt(i.value, i.value < 100 ? decimals : 0)}
+                  </span>
+
+                  {active ? (
+                    <div className="pointer-events-none absolute left-[calc(var(--w)+8px)] top-1/2 z-20 w-max max-w-[200px] -translate-y-1/2 rounded-md border border-border bg-surface-2 px-2.5 py-1.5 shadow-lg"
+                      style={{ "--w": `${widthPct}%` } as React.CSSProperties}
+                    >
+                      <div className="flex items-center gap-1.5 text-[11px] font-semibold">
+                        <span className="inline-block size-2 rounded-full" style={{ background: i.color }} />
+                        {i.label}
+                      </div>
+                      <div className="font-mono text-[11px] tabular-nums">
+                        {fmt(i.value, decimals)} <span className="text-muted-foreground">{unitLabel}</span>
+                      </div>
+                      <div className="text-[10px] text-muted-foreground">
+                        {((i.value / total) * 100).toFixed(1)}% of shown total
+                      </div>
+                      {target ? <div className="text-[10px] text-primary mt-1">Click to open latest news</div> : null}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            );
+            return target ? (
+              <div
+                key={i.key}
+                className="contents"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelect?.(target);
+                }}
+              >
+                {Row}
+              </div>
+            ) : (
+              Row
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="label-mono mt-3 text-muted-foreground">X axis: {unitLabel}</div>
+    </div>
+  );
+}
+
 export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
   const [unit, setUnit] = useState<"litres" | "barrels">("litres");
   const [userView, setUserView] = useState<"countries" | "companies">("countries");
