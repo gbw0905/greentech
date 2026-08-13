@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Plane } from "lucide-react";
-import { EntityNewsDialog, type NewsTarget } from "@/components/EntityNewsDialog";
+import { openEntityNews, type NewsTarget } from "@/lib/open-news";
 
 type Airline = {
   code: string;
@@ -44,7 +44,6 @@ const AIRLINES: Airline[] = [
 
 export function SafAirlinesPanel() {
   const [active, setActive] = useState<string | null>(null);
-  const [newsTarget, setNewsTarget] = useState<NewsTarget>(null);
   const sorted = [...AIRLINES].sort((a, b) => b.volume - a.volume);
   const max = Math.max(...sorted.map((a) => a.volume));
   const activeRow = sorted.find((a) => a.code === active) ?? null;
@@ -76,7 +75,7 @@ export function SafAirlinesPanel() {
               key={a.code}
               type="button"
               onClick={() =>
-                setNewsTarget({
+                openEntityNews({
                   name: a.name,
                   query: `${a.name} sustainable aviation fuel OR SAF`,
                 })
@@ -146,7 +145,7 @@ export function SafAirlinesPanel() {
       <div className="mt-4 space-y-2 border-t border-border pt-3">
         <p className="text-xs text-muted-foreground">
           Estimates compiled from airline sustainability reports, published offtake agreements and
-          national SAF mandates. Click any airline to read its latest SAF news right here. Cross-verify
+          national SAF mandates. Click any airline to open its latest SAF news. Cross-verify
           against primary disclosures before use.
         </p>
         <div className="rounded-lg border border-border/60 bg-surface-2/50 p-2.5">
@@ -157,7 +156,6 @@ export function SafAirlinesPanel() {
           </p>
         </div>
       </div>
-      <EntityNewsDialog target={newsTarget} onClose={() => setNewsTarget(null)} />
     </div>
   );
 }
