@@ -415,11 +415,18 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
             value: c.annualBnL,
             color: c.color,
           }))}
+          links={Object.fromEntries(
+            users.map((c) => [
+              c.name,
+              `https://news.google.com/rss/search?q=${encodeURIComponent(
+                `"${c.name}" biofuel OR renewable OR clean energy when:30d`
+              )}&hl=en-US&gl=US&ceid=US:en`,
+            ])
+          )}
         />
         )}
         <p className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
-          Top consumers and producers by annual liquid biofuel volume. Source: IEA/EIA estimates and
-          company reports.
+          Top consumers and producers by annual liquid biofuel volume. Click any bar to open the latest news for that entity. Source: IEA/EIA estimates and company reports.
         </p>
       </div>
     </div>
