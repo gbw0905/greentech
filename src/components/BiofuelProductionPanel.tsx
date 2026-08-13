@@ -534,7 +534,7 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
         {users.length === 0 ? (
           <p className="text-sm text-muted-foreground">No matching users for this fuel filter.</p>
         ) : (
-        <ColumnChart
+        <BarChart
           unitLabel={
             userView === "countries"
               ? "billion litres / year consumed"
