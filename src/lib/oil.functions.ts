@@ -60,7 +60,7 @@ export const getOilPricesFn = createServerFn({ method: "GET" }).handler(async ()
   return { quotes: [wti, spx, gold].filter(Boolean) as OilQuote[] };
 });
 
-/** Ten of the largest NYSE-listed oil & gas companies. */
+/** Twenty of the largest NYSE-listed oil & gas companies. */
 const OIL_STOCKS: Array<[string, string]> = [
   ["XOM", "ExxonMobil"],
   ["CVX", "Chevron"],
@@ -72,6 +72,16 @@ const OIL_STOCKS: Array<[string, string]> = [
   ["SLB", "SLB"],
   ["PSX", "Phillips 66"],
   ["MPC", "Marathon Petroleum"],
+  ["VLO", "Valero Energy"],
+  ["OXY", "Occidental Petroleum"],
+  ["PBR", "Petrobras"],
+  ["E", "Eni"],
+  ["EQNR", "Equinor"],
+  ["SU", "Suncor Energy"],
+  ["CNQ", "Canadian Natural"],
+  ["HES", "Hess"],
+  ["DVN", "Devon Energy"],
+  ["BKR", "Baker Hughes"],
 ];
 
 export const getOilStocksFn = createServerFn({ method: "GET" }).handler(async () => {

@@ -271,7 +271,7 @@ export function OilStocksPanel() {
         <div className="max-w-2xl">
           <h3 className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-foreground sm:text-xl">
             <Building2 className="size-5 text-primary" />
-            Top 10 oil companies by NYSE stock price
+            Top 20 oil companies by NYSE stock price
           </h3>
           <p className="mt-1.5 text-sm text-muted-foreground">
             Live share price of the largest NYSE-listed oil & gas majors. Hover any row to see the
