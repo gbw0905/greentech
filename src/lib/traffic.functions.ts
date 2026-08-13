@@ -10,12 +10,18 @@ const visitInput = z.object({
 export const recordVisitFn = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => visitInput.parse(input))
   .handler(async ({ data }) => {
+    const { getRequestHeader } = await import("@tanstack/react-start/server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const country =
+      (getRequestHeader("cf-ipcountry" as never) as string | undefined) ??
+      (getRequestHeader("x-vercel-ip-country" as never) as string | undefined) ??
+      undefined;
     await supabaseAdmin.rpc("record_visit", {
       _path: data.path,
       _visitor_id: data.visitorId,
       ...(data.referrer ? { _referrer: data.referrer } : {}),
-    });
+      ...(country ? { _country: country } : {}),
+    } as never);
     return { ok: true };
   });
 

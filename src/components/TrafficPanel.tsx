@@ -1,7 +1,77 @@
 import { useQuery } from "@tanstack/react-query";
-import { Activity, Eye, Users, TrendingUp } from "lucide-react";
+import { Activity, Eye, Users, TrendingUp, Globe2, Link2 } from "lucide-react";
 import { fetchTrafficStats } from "@/lib/traffic";
 import { Counter } from "@/components/Counter";
+
+const regionNames =
+  typeof Intl !== "undefined" && "DisplayNames" in Intl
+    ? new Intl.DisplayNames(["en"], { type: "region" })
+    : null;
+
+function countryLabel(code: string) {
+  if (!code || code === "ZZ" || code.length !== 2) return "Unknown";
+  try {
+    return regionNames?.of(code.toUpperCase()) ?? code;
+  } catch {
+    return code;
+  }
+}
+
+function countryFlag(code: string) {
+  if (!code || code === "ZZ" || code.length !== 2) return "🌐";
+  return String.fromCodePoint(
+    ...code.toUpperCase().split("").map((c) => 127397 + c.charCodeAt(0)),
+  );
+}
+
+function BreakdownList({
+  title,
+  icon: Icon,
+  rows,
+  empty,
+}: {
+  title: string;
+  icon: typeof Globe2;
+  rows: Array<{ key: string; label: string; prefix?: string; value: number; sub?: string }>;
+  empty: string;
+}) {
+  const max = Math.max(1, ...rows.map((r) => r.value));
+  return (
+    <div className="px-5 py-4">
+      <div className="label-mono flex items-center gap-1.5 text-muted-foreground">
+        <Icon className="size-3.5" /> {title}
+      </div>
+      {rows.length === 0 ? (
+        <p className="label-mono mt-3 text-muted-foreground">{empty}</p>
+      ) : (
+        <ul className="mt-3 space-y-2">
+          {rows.map((r) => (
+            <li key={r.key} className="group">
+              <div className="flex items-baseline justify-between gap-3 text-sm">
+                <span className="truncate">
+                  {r.prefix ? <span className="mr-1.5">{r.prefix}</span> : null}
+                  <span className="font-medium">{r.label}</span>
+                  {r.sub ? (
+                    <span className="label-mono ml-2 text-muted-foreground">{r.sub}</span>
+                  ) : null}
+                </span>
+                <span className="font-display font-bold tabular-nums">
+                  {r.value.toLocaleString()}
+                </span>
+              </div>
+              <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all"
+                  style={{ width: `${Math.max(4, (r.value / max) * 100)}%` }}
+                />
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 function Sparkline({ data }: { data: Array<{ day: string; views: number }> }) {
   const w = 100;
@@ -73,6 +143,8 @@ export function TrafficPanel() {
     live_now: 0,
     daily: [],
     top_paths: [],
+    top_countries: [],
+    top_sources: [],
   };
 
   const tiles = [
@@ -108,6 +180,35 @@ export function TrafficPanel() {
 
       <div className="border-t border-border px-5 py-4">
         <Sparkline data={stats.daily} />
+      </div>
+
+      <div className="grid gap-px border-t border-border bg-border md:grid-cols-2">
+        <div className="bg-card">
+          <BreakdownList
+            title="Where readers are reading from"
+            icon={Globe2}
+            empty="No location data yet — countries appear once the live site gets traffic."
+            rows={(stats.top_countries ?? []).map((c) => ({
+              key: c.country,
+              label: countryLabel(c.country),
+              prefix: countryFlag(c.country),
+              value: c.views,
+              sub: `${(c.visitors ?? 0).toLocaleString()} visitors`,
+            }))}
+          />
+        </div>
+        <div className="bg-card">
+          <BreakdownList
+            title="How they arrived"
+            icon={Link2}
+            empty="Collecting referral sources…"
+            rows={(stats.top_sources ?? []).map((s) => ({
+              key: s.source,
+              label: s.source,
+              value: s.views,
+            }))}
+          />
+        </div>
       </div>
 
     </section>

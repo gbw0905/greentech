@@ -97,6 +97,7 @@ export type Database = {
       }
       site_visits: {
         Row: {
+          country: string | null
           created_at: string
           id: string
           path: string
@@ -104,6 +105,7 @@ export type Database = {
           visitor_id: string
         }
         Insert: {
+          country?: string | null
           created_at?: string
           id?: string
           path?: string
@@ -111,6 +113,7 @@ export type Database = {
           visitor_id: string
         }
         Update: {
+          country?: string | null
           created_at?: string
           id?: string
           path?: string
@@ -126,7 +129,12 @@ export type Database = {
     Functions: {
       get_traffic_stats: { Args: never; Returns: Json }
       record_visit: {
-        Args: { _path: string; _referrer?: string; _visitor_id: string }
+        Args: {
+          _country?: string
+          _path: string
+          _referrer?: string
+          _visitor_id: string
+        }
         Returns: undefined
       }
     }
