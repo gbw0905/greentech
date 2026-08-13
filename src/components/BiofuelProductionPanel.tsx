@@ -109,13 +109,15 @@ function ColumnChart({
   unitLabel,
   decimals = 1,
   legendNotes,
-  links,
+  news,
+  onSelect,
 }: {
   items: { key: string; label: string; sub?: string; value: number; color: string }[];
   unitLabel: string;
   decimals?: number;
   legendNotes?: Record<string, string>;
-  links?: Record<string, string>;
+  news?: Record<string, { name: string; query: string }>;
+  onSelect?: (t: NewsTarget) => void;
 }) {
   const max = Math.max(...items.map((i) => i.value));
   const total = items.reduce((a, i) => a + i.value, 0);
@@ -146,7 +148,8 @@ function ColumnChart({
           <div className="relative flex h-full items-end gap-2 sm:gap-3">
             {items.map((i) => {
               const active = hover === i.key;
-              const href = links?.[i.key];
+              const target = news?.[i.key];
+              const href = target ? "#" : undefined;
               const Bar = (
                 <div
                   key={i.key}
@@ -191,17 +194,17 @@ function ColumnChart({
                   />
                 </div>
               );
-              return href ? (
-                <a
+              return target ? (
+                <div
                   key={i.key}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="contents"
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelect?.(target);
+                  }}
                 >
                   {Bar}
-                </a>
+                </div>
               ) : (
                 Bar
               );
@@ -213,7 +216,7 @@ function ColumnChart({
       <div className="mt-2 flex gap-2 border-t border-border pt-2 sm:gap-3">
         <div className="w-12 shrink-0" aria-hidden />
         {items.map((i) => {
-          const href = links?.[i.key];
+          const target = news?.[i.key];
           const Label = (
             <div
               key={i.key}
@@ -229,17 +232,17 @@ function ColumnChart({
               ) : null}
             </div>
           );
-          return href ? (
-            <a
+          return target ? (
+            <div
               key={i.key}
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="contents"
-              onClick={(e) => e.stopPropagation()}
+              className="contents cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelect?.(target);
+              }}
             >
               {Label}
-            </a>
+            </div>
           ) : (
             Label
           );
@@ -249,16 +252,17 @@ function ColumnChart({
       {/* legend / colour key */}
       <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1.5 border-t border-border pt-3">
         {items.map((i) => {
-          const href = links?.[i.key];
+          const target = news?.[i.key];
           const Legend = (
             <button
               key={i.key}
               type="button"
+              onClick={() => target && onSelect?.(target)}
               onMouseEnter={() => setHover(i.key)}
               onMouseLeave={() => setHover(null)}
               className={`flex items-center gap-1.5 text-[11px] transition-opacity ${
                 hover && hover !== i.key ? "opacity-45" : "opacity-100"
-              } ${href ? "hover:underline" : ""}`}
+              } ${target ? "hover:underline" : ""}`}
             >
               <span className="inline-block size-2.5 rounded-sm" style={{ background: i.color }} />
               <span className="max-w-[150px] truncate">{i.label}</span>
@@ -270,13 +274,7 @@ function ColumnChart({
               ) : null}
             </button>
           );
-          return href ? (
-            <a key={i.key} href={href} target="_blank" rel="noopener noreferrer" className="contents">
-              {Legend}
-            </a>
-          ) : (
-            Legend
-          );
+          return Legend;
         })}
       </div>
       <div className="label-mono mt-2 text-muted-foreground">Y axis: {unitLabel}</div>
