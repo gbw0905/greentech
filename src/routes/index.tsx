@@ -297,9 +297,8 @@ function Dashboard() {
                   ["/timeline", "4 · Timeline", "oklch(0.55 0.2 50)"],
                   ["/profiles", "5 · Country profiles", "oklch(0.55 0.14 180)"],
                   ["/videos", "6 · Videos", "oklch(0.55 0.16 340)"],
-                  ["#audience", "7 · Live audience", "oklch(0.55 0.18 25)"],
-                  ["#alerts", "8 · Email alerts", "oklch(0.55 0.17 265)"],
-                  ["#disclaimer", "9 · AI disclaimer", "oklch(0.45 0.02 240)"],
+                  ["#alerts", "7 · Email alerts", "oklch(0.55 0.17 265)"],
+                  ["#disclaimer", "8 · AI disclaimer", "oklch(0.45 0.02 240)"],
                 ].map(([href, label, color]) => {
                   const cls =
                     "label-mono rounded-full border px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 hover:shadow-md";
@@ -441,16 +440,6 @@ function Dashboard() {
                 </Link>
               ))}
             </div>
-          </section>
-
-          <section id="audience" className="pt-4">
-            <SectionHeading
-              step={7}
-              icon={Activity}
-              title="Live audience"
-              subtitle="Real-time readership of this desk."
-            />
-            <TrafficPanel />
           </section>
 
           <section id="alerts" className="pt-4">
