@@ -256,6 +256,7 @@ function BarChart({
 
 export function OilStocksPanel() {
   const [hover, setHover] = useState<string | null>(null);
+  const [newsTarget, setNewsTarget] = useState<NewsTarget>(null);
   const { data, isLoading } = useQuery({
     queryKey: ["oil-stocks"],
     queryFn: () => getOilStocksFn(),
@@ -287,15 +288,15 @@ export function OilStocksPanel() {
         <p className="text-sm text-muted-foreground">Market data is unavailable right now.</p>
       ) : (
         <div className="min-h-0 flex-1">
-          <BarChart quotes={quotes} hover={hover} setHover={setHover} />
+          <BarChart quotes={quotes} hover={hover} setHover={setHover} onSelect={setNewsTarget} />
         </div>
       )}
 
       <div className="mt-4 space-y-2 border-t border-border pt-3">
         <p className="text-xs text-muted-foreground">
           Prices are quoted in USD per share and refresh every 5 minutes. Bar length shows the current
-          price level; percentages reflect the latest session change. Click any company to open its
-          latest news.
+          price level; percentages reflect the latest session change. Click any company to read its
+          latest global news right here.
         </p>
         <div className="rounded-lg border border-border/60 bg-surface-2/50 p-2.5">
           <p className="text-xs font-semibold text-foreground">Note</p>
@@ -306,6 +307,7 @@ export function OilStocksPanel() {
           </p>
         </div>
       </div>
+      <EntityNewsDialog target={newsTarget} onClose={() => setNewsTarget(null)} />
     </div>
   );
 }
