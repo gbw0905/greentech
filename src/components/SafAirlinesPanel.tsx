@@ -29,6 +29,16 @@ const AIRLINES: Airline[] = [
   { code: "QF", name: "Qantas", country: "Australia", flag: "🇦🇺", volume: 12, share: 0.4, note: "London and California uplift, domestic SAF fund." },
   { code: "JL", name: "Japan Airlines", country: "Japan", flag: "🇯🇵", volume: 10, share: 0.3, note: "Japan 10% SAF-by-2030 target." },
   { code: "EK", name: "Emirates", country: "UAE", flag: "🇦🇪", volume: 9, share: 0.1, note: "Neste supply at DXB and Amsterdam." },
+  { code: "AC", name: "Air Canada", country: "Canada", flag: "🇨🇦", volume: 8.5, share: 0.25, note: "Canadian SAF coalition and California uplift." },
+  { code: "CX", name: "Cathay Pacific", country: "Hong Kong", flag: "🇭🇰", volume: 8, share: 0.3, note: "Targets 10% SAF by 2030; corporate SAF programme." },
+  { code: "KE", name: "Korean Air", country: "South Korea", flag: "🇰🇷", volume: 7.5, share: 0.2, note: "Korea 1% SAF mandate from 2027." },
+  { code: "AZ/ITA", name: "ITA Airways", country: "Italy", flag: "🇮🇹", volume: 7, share: 0.9, note: "ReFuelEU compliance with Eni Enilive supply." },
+  { code: "IB", name: "Iberia", country: "Spain", flag: "🇪🇸", volume: 6.5, share: 0.8, note: "Repsol SAF supply across Spanish hubs." },
+  { code: "SK", name: "SAS", country: "Scandinavia", flag: "🇸🇪", volume: 6, share: 1.0, note: "Nordic blending mandates in Sweden and Norway." },
+  { code: "LX", name: "Swiss International", country: "Switzerland", flag: "🇨🇭", volume: 5.5, share: 0.7, note: "Swiss CO2 Act SAF blending obligation." },
+  { code: "AS", name: "Alaska Airlines", country: "United States", flag: "🇺🇸", volume: 5, share: 0.2, note: "West-coast SAF corridors and Gevo offtake." },
+  { code: "WN", name: "Southwest Airlines", country: "United States", flag: "🇺🇸", volume: 4.5, share: 0.1, note: "USA BioEnergy and LanzaJet offtakes." },
+  { code: "NZ", name: "Air New Zealand", country: "New Zealand", flag: "🇳🇿", volume: 4, share: 0.4, note: "Neste imports and domestic SAF development." },
 ];
 
 export function SafAirlinesPanel() {
