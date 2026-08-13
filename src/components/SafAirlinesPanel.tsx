@@ -38,7 +38,7 @@ export function SafAirlinesPanel() {
   const activeRow = sorted.find((a) => a.code === active) ?? null;
 
   return (
-    <div className="glass-panel rise p-5">
+    <div className="glass-panel rise flex h-full flex-col p-5">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div className="max-w-2xl">
           <h3 className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-foreground sm:text-xl">
@@ -55,7 +55,7 @@ export function SafAirlinesPanel() {
         </span>
       </div>
 
-      <div className="relative space-y-1.5">
+      <div className="relative flex-1 space-y-1.5">
         {sorted.map((a, idx) => {
           const isActive = active === a.code;
           const dim = active !== null && !isActive;
@@ -125,10 +125,19 @@ export function SafAirlinesPanel() {
         )}
       </div>
 
-      <p className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
-        Estimates compiled from airline sustainability reports, published offtake agreements and
-        national SAF mandates. Cross-verify against primary disclosures before use.
-      </p>
+      <div className="mt-4 space-y-2 border-t border-border pt-3">
+        <p className="text-xs text-muted-foreground">
+          Estimates compiled from airline sustainability reports, published offtake agreements and
+          national SAF mandates. Cross-verify against primary disclosures before use.
+        </p>
+        <div className="rounded-lg border border-border/60 bg-surface-2/50 p-2.5">
+          <p className="text-xs font-semibold text-foreground">Note</p>
+          <p className="text-xs text-muted-foreground">
+            SAF demand from international carriers is driven by ReFuelEU, UK, US and Singapore mandates.
+            Airlines with the largest offtake portfolios typically operate under the strictest blending rules.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

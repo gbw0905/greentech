@@ -372,7 +372,7 @@ function Dashboard() {
               )}
             </nav>
             <BiofuelProductionPanel fuels={fuels} />
-            <div className="mt-4 grid gap-4 xl:grid-cols-2 xl:items-start">
+            <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2 xl:items-stretch">
               <OilStocksPanel />
               <SafAirlinesPanel />
             </div>
