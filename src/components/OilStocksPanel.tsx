@@ -258,7 +258,7 @@ export function OilStocksPanel() {
   const quotes: OilQuote[] = data?.quotes ?? [];
 
   return (
-    <div className="glass-panel rise p-5">
+    <div className="glass-panel rise flex h-full flex-col p-5">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div className="max-w-2xl">
           <h3 className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-foreground sm:text-xl">
@@ -278,15 +278,25 @@ export function OilStocksPanel() {
       {quotes.length === 0 && !isLoading ? (
         <p className="text-sm text-muted-foreground">Market data is unavailable right now.</p>
       ) : (
-        <div className="min-h-0">
+        <div className="min-h-0 flex-1">
           <BarChart quotes={quotes} hover={hover} setHover={setHover} />
         </div>
       )}
 
-      <p className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
-        Prices are quoted in USD per share and refresh every 5 minutes. Bar length shows the current
-        price level; percentages reflect the latest session change.
-      </p>
+      <div className="mt-4 space-y-2 border-t border-border pt-3">
+        <p className="text-xs text-muted-foreground">
+          Prices are quoted in USD per share and refresh every 5 minutes. Bar length shows the current
+          price level; percentages reflect the latest session change.
+        </p>
+        <div className="rounded-lg border border-border/60 bg-surface-2/50 p-2.5">
+          <p className="text-xs font-semibold text-foreground">Note</p>
+          <p className="text-xs text-muted-foreground">
+            Oil majors influence biofuel economics through refining margins, renewable diesel capacity and
+            feedstock demand. A rising oil price normally improves the relative competitiveness of ethanol,
+            biodiesel and HVO.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
