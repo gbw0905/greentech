@@ -8,6 +8,8 @@ export type TrafficStats = {
   live_now: number;
   daily: Array<{ day: string; views: number }>;
   top_paths: Array<{ path: string; views: number }>;
+  top_countries: Array<{ country: string; views: number; visitors: number }>;
+  top_sources: Array<{ source: string; views: number }>;
 };
 
 const STORAGE_KEY = "gbw_visitor_id";
@@ -48,6 +50,8 @@ const EMPTY: TrafficStats = {
   live_now: 0,
   daily: [],
   top_paths: [],
+  top_countries: [],
+  top_sources: [],
 };
 
 export async function fetchTrafficStats(): Promise<TrafficStats> {
