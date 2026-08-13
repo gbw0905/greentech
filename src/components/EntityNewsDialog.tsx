@@ -28,6 +28,7 @@ export function EntityNewsDialog({
     queryFn: () => fetchNews({ data: { query: target!.query } }),
     enabled: !!target,
     staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
 
   return (
@@ -73,9 +74,32 @@ export function EntityNewsDialog({
             ))}
           </ol>
         ) : (
-          <p className="py-6 text-sm text-muted-foreground">
-            No recent headlines found for {target?.name}.
-          </p>
+          <div className="space-y-3 py-6">
+            <p className="text-sm text-muted-foreground">
+              {q.isError
+                ? `Couldn't load headlines for ${target?.name} right now.`
+                : `No recent headlines found for ${target?.name}.`}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => q.refetch()}
+                className="rounded-md border border-border px-3 py-1.5 text-xs font-semibold hover:bg-surface-2"
+              >
+                Try again
+              </button>
+              {target ? (
+                <a
+                  href={`https://news.google.com/search?q=${encodeURIComponent(target.query)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-md border border-border px-3 py-1.5 text-xs font-semibold hover:bg-surface-2"
+                >
+                  Open on Google News
+                </a>
+              ) : null}
+            </div>
+          </div>
         )}
       </DialogContent>
     </Dialog>
