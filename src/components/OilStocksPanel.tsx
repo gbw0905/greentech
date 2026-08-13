@@ -2,21 +2,21 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Building2, TrendingDown, TrendingUp } from "lucide-react";
 import { getOilStocksFn, type OilQuote } from "@/lib/oil.functions";
+import { EntityNewsDialog, type NewsTarget } from "@/components/EntityNewsDialog";
 
 const fmt = (n: number, d = 2) =>
   n.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
-
-const newsUrl = (q: string) =>
-  `https://news.google.com/search?q=${encodeURIComponent(`${q} biofuel OR renewable OR energy`)}`;
 
 function BarChart({
   quotes,
   hover,
   setHover,
+  onSelect,
 }: {
   quotes: OilQuote[];
   hover: string | null;
   setHover: (s: string | null) => void;
+  onSelect: (t: NewsTarget) => void;
 }) {
   const [hoveredSymbol, setHoveredSymbol] = useState<string | null>(null);
 
@@ -107,13 +107,14 @@ function BarChart({
           const trackW = chartW;
 
           return (
-            <a
-              key={q.symbol}
-              href={newsUrl(q.label)}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
             <g
+              key={q.symbol}
+              onClick={() =>
+                onSelect({
+                  name: q.label,
+                  query: `${q.label} energy OR biofuel OR renewable`,
+                })
+              }
               onMouseEnter={() => setHoveredSymbol(q.symbol)}
               onMouseLeave={() => setHoveredSymbol(null)}
               className="cursor-pointer"
@@ -215,7 +216,6 @@ function BarChart({
                 </text>
               </g>
             </g>
-            </a>
           );
         })}
       </svg>
@@ -256,6 +256,7 @@ function BarChart({
 
 export function OilStocksPanel() {
   const [hover, setHover] = useState<string | null>(null);
+  const [newsTarget, setNewsTarget] = useState<NewsTarget>(null);
   const { data, isLoading } = useQuery({
     queryKey: ["oil-stocks"],
     queryFn: () => getOilStocksFn(),
@@ -287,15 +288,15 @@ export function OilStocksPanel() {
         <p className="text-sm text-muted-foreground">Market data is unavailable right now.</p>
       ) : (
         <div className="min-h-0 flex-1">
-          <BarChart quotes={quotes} hover={hover} setHover={setHover} />
+          <BarChart quotes={quotes} hover={hover} setHover={setHover} onSelect={setNewsTarget} />
         </div>
       )}
 
       <div className="mt-4 space-y-2 border-t border-border pt-3">
         <p className="text-xs text-muted-foreground">
           Prices are quoted in USD per share and refresh every 5 minutes. Bar length shows the current
-          price level; percentages reflect the latest session change. Click any company to open its
-          latest news.
+          price level; percentages reflect the latest session change. Click any company to read its
+          latest global news right here.
         </p>
         <div className="rounded-lg border border-border/60 bg-surface-2/50 p-2.5">
           <p className="text-xs font-semibold text-foreground">Note</p>
@@ -306,6 +307,7 @@ export function OilStocksPanel() {
           </p>
         </div>
       </div>
+      <EntityNewsDialog target={newsTarget} onClose={() => setNewsTarget(null)} />
     </div>
   );
 }

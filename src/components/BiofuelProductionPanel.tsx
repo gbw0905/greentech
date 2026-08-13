@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Factory, Users } from "lucide-react";
 import type { FuelType } from "@/lib/policy-taxonomy";
+import { EntityNewsDialog, type NewsTarget } from "@/components/EntityNewsDialog";
 
 type Stream = {
   name: string;
@@ -109,13 +110,15 @@ function ColumnChart({
   unitLabel,
   decimals = 1,
   legendNotes,
-  links,
+  news,
+  onSelect,
 }: {
   items: { key: string; label: string; sub?: string; value: number; color: string }[];
   unitLabel: string;
   decimals?: number;
   legendNotes?: Record<string, string>;
-  links?: Record<string, string>;
+  news?: Record<string, { name: string; query: string }>;
+  onSelect?: (t: NewsTarget) => void;
 }) {
   const max = Math.max(...items.map((i) => i.value));
   const total = items.reduce((a, i) => a + i.value, 0);
@@ -146,7 +149,8 @@ function ColumnChart({
           <div className="relative flex h-full items-end gap-2 sm:gap-3">
             {items.map((i) => {
               const active = hover === i.key;
-              const href = links?.[i.key];
+              const target = news?.[i.key];
+              const href = target ? "#" : undefined;
               const Bar = (
                 <div
                   key={i.key}
@@ -191,17 +195,17 @@ function ColumnChart({
                   />
                 </div>
               );
-              return href ? (
-                <a
+              return target ? (
+                <div
                   key={i.key}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="contents"
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelect?.(target);
+                  }}
                 >
                   {Bar}
-                </a>
+                </div>
               ) : (
                 Bar
               );
@@ -213,7 +217,7 @@ function ColumnChart({
       <div className="mt-2 flex gap-2 border-t border-border pt-2 sm:gap-3">
         <div className="w-12 shrink-0" aria-hidden />
         {items.map((i) => {
-          const href = links?.[i.key];
+          const target = news?.[i.key];
           const Label = (
             <div
               key={i.key}
@@ -229,17 +233,17 @@ function ColumnChart({
               ) : null}
             </div>
           );
-          return href ? (
-            <a
+          return target ? (
+            <div
               key={i.key}
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="contents"
-              onClick={(e) => e.stopPropagation()}
+              className="contents cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelect?.(target);
+              }}
             >
               {Label}
-            </a>
+            </div>
           ) : (
             Label
           );
@@ -249,16 +253,17 @@ function ColumnChart({
       {/* legend / colour key */}
       <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1.5 border-t border-border pt-3">
         {items.map((i) => {
-          const href = links?.[i.key];
+          const target = news?.[i.key];
           const Legend = (
             <button
               key={i.key}
               type="button"
+              onClick={() => target && onSelect?.(target)}
               onMouseEnter={() => setHover(i.key)}
               onMouseLeave={() => setHover(null)}
               className={`flex items-center gap-1.5 text-[11px] transition-opacity ${
                 hover && hover !== i.key ? "opacity-45" : "opacity-100"
-              } ${href ? "hover:underline" : ""}`}
+              } ${target ? "hover:underline" : ""}`}
             >
               <span className="inline-block size-2.5 rounded-sm" style={{ background: i.color }} />
               <span className="max-w-[150px] truncate">{i.label}</span>
@@ -270,13 +275,7 @@ function ColumnChart({
               ) : null}
             </button>
           );
-          return href ? (
-            <a key={i.key} href={href} target="_blank" rel="noopener noreferrer" className="contents">
-              {Legend}
-            </a>
-          ) : (
-            Legend
-          );
+          return Legend;
         })}
       </div>
       <div className="label-mono mt-2 text-muted-foreground">Y axis: {unitLabel}</div>
@@ -286,6 +285,7 @@ function ColumnChart({
 
 export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
   const [unit, setUnit] = useState<"litres" | "barrels">("litres");
+  const [newsTarget, setNewsTarget] = useState<NewsTarget>(null);
   const [userView, setUserView] = useState<"countries" | "companies">("countries");
 
   const activeStreams = STREAMS.filter((s) => fuels.length === 0 || fuels.includes(s.fuel));
@@ -415,20 +415,20 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
             value: c.annualBnL,
             color: c.color,
           }))}
-          links={Object.fromEntries(
+          onSelect={setNewsTarget}
+          news={Object.fromEntries(
             users.map((c) => [
               c.name,
-              `https://news.google.com/rss/search?q=${encodeURIComponent(
-                `"${c.name}" biofuel OR renewable OR clean energy when:30d`
-              )}&hl=en-US&gl=US&ceid=US:en`,
+              { name: c.name, query: `"${c.name}" biofuel OR renewable OR clean energy` },
             ])
           )}
         />
         )}
         <p className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
-          Top consumers and producers by annual liquid biofuel volume. Click any bar to open the latest news for that entity. Source: IEA/EIA estimates and company reports.
+          Top consumers and producers by annual liquid biofuel volume. Click any bar to read the latest global news for that entity right here. Source: IEA/EIA estimates and company reports.
         </p>
       </div>
+      <EntityNewsDialog target={newsTarget} onClose={() => setNewsTarget(null)} />
     </div>
   );
 }
