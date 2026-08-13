@@ -2,21 +2,21 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Building2, TrendingDown, TrendingUp } from "lucide-react";
 import { getOilStocksFn, type OilQuote } from "@/lib/oil.functions";
+import { EntityNewsDialog, type NewsTarget } from "@/components/EntityNewsDialog";
 
 const fmt = (n: number, d = 2) =>
   n.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
-
-const newsUrl = (q: string) =>
-  `https://news.google.com/search?q=${encodeURIComponent(`${q} biofuel OR renewable OR energy`)}`;
 
 function BarChart({
   quotes,
   hover,
   setHover,
+  onSelect,
 }: {
   quotes: OilQuote[];
   hover: string | null;
   setHover: (s: string | null) => void;
+  onSelect: (t: NewsTarget) => void;
 }) {
   const [hoveredSymbol, setHoveredSymbol] = useState<string | null>(null);
 
@@ -107,13 +107,14 @@ function BarChart({
           const trackW = chartW;
 
           return (
-            <a
-              key={q.symbol}
-              href={newsUrl(q.label)}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
             <g
+              key={q.symbol}
+              onClick={() =>
+                onSelect({
+                  name: q.label,
+                  query: `${q.label} energy OR biofuel OR renewable`,
+                })
+              }
               onMouseEnter={() => setHoveredSymbol(q.symbol)}
               onMouseLeave={() => setHoveredSymbol(null)}
               className="cursor-pointer"
@@ -214,8 +215,6 @@ function BarChart({
                   {q.changePct.toFixed(2)}%
                 </text>
               </g>
-            </g>
-            </a>
           );
         })}
       </svg>
