@@ -17,6 +17,7 @@ import { WorldPolicyMap } from "@/components/WorldPolicyMap";
 import { OilPricePanel } from "@/components/OilPricePanel";
 import { OilStocksPanel } from "@/components/OilStocksPanel";
 import { BiofuelProductionPanel } from "@/components/BiofuelProductionPanel";
+import { SafAirlinesPanel } from "@/components/SafAirlinesPanel";
 import { AlertSignup } from "@/components/AlertSignup";
 import { TrafficPanel } from "@/components/TrafficPanel";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
@@ -371,8 +372,9 @@ function Dashboard() {
               )}
             </nav>
             <BiofuelProductionPanel fuels={fuels} />
-            <div className="mt-4">
+            <div className="mt-4 grid gap-4 xl:grid-cols-2 xl:items-start">
               <OilStocksPanel />
+              <SafAirlinesPanel />
             </div>
           </section>
 
