@@ -215,6 +215,7 @@ function BarChart({
                   {q.changePct.toFixed(2)}%
                 </text>
               </g>
+            </g>
           );
         })}
       </svg>
