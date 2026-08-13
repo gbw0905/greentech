@@ -88,6 +88,20 @@ const COMPANIES: Entity[] = [
   { name: "Raízen", flag: "🇧🇷", color: "var(--primary-glow)", mix: { Ethanol: 6 } },
   { name: "Neste", flag: "🇫🇮", color: "var(--muted-foreground)", mix: { "Renewable Diesel": 4.7, SAF: 0.8 } },
   { name: "Green Plains", flag: "🇺🇸", color: "var(--primary)", mix: { Ethanol: 4 } },
+  { name: "Flint Hills Resources", flag: "🇺🇸", color: "var(--accent)", mix: { Ethanol: 3.6 } },
+  { name: "Marathon Petroleum", flag: "🇺🇸", color: "var(--signal)", mix: { Ethanol: 3.4, "Renewable Diesel": 1.5 } },
+  { name: "Cargill", flag: "🇺🇸", color: "var(--primary-glow)", mix: { Ethanol: 2.5, Biodiesel: 1.2 } },
+  { name: "Wilmar International", flag: "🇸🇬", color: "var(--muted-foreground)", mix: { Biodiesel: 3.2 } },
+  { name: "Musim Mas", flag: "🇮🇩", color: "var(--primary)", mix: { Biodiesel: 2.4 } },
+  { name: "Sinar Mas / Golden Agri", flag: "🇮🇩", color: "var(--accent)", mix: { Biodiesel: 2.2 } },
+  { name: "Louis Dreyfus Company", flag: "🇳🇱", color: "var(--signal)", mix: { Biodiesel: 1.6, Ethanol: 0.8 } },
+  { name: "Bunge", flag: "🇺🇸", color: "var(--primary-glow)", mix: { Biodiesel: 1.8 } },
+  { name: "Eni Enilive", flag: "🇮🇹", color: "var(--muted-foreground)", mix: { "Renewable Diesel": 1.5, SAF: 0.3 } },
+  { name: "TotalEnergies", flag: "🇫🇷", color: "var(--primary)", mix: { "Renewable Diesel": 1.2, SAF: 0.3 } },
+  { name: "Repsol", flag: "🇪🇸", color: "var(--accent)", mix: { "Renewable Diesel": 0.9, SAF: 0.25 } },
+  { name: "Chevron REG", flag: "🇺🇸", color: "var(--signal)", mix: { Biodiesel: 1.7, "Renewable Diesel": 0.8 } },
+  { name: "Darling / Diamond Green", flag: "🇺🇸", color: "var(--primary-glow)", mix: { "Renewable Diesel": 2.4 } },
+  { name: "BP Bunge Bioenergia", flag: "🇧🇷", color: "var(--muted-foreground)", mix: { Ethanol: 2.1 } },
 ];
 
 function ColumnChart({
