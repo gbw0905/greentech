@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Building2, TrendingDown, TrendingUp } from "lucide-react";
 import { getOilStocksFn, type OilQuote } from "@/lib/oil.functions";
-import { EntityNewsDialog, type NewsTarget } from "@/components/EntityNewsDialog";
+import { openEntityNews, type NewsTarget } from "@/lib/open-news";
 
 const fmt = (n: number, d = 2) =>
   n.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -256,7 +256,6 @@ function BarChart({
 
 export function OilStocksPanel() {
   const [hover, setHover] = useState<string | null>(null);
-  const [newsTarget, setNewsTarget] = useState<NewsTarget>(null);
   const { data, isLoading } = useQuery({
     queryKey: ["oil-stocks"],
     queryFn: () => getOilStocksFn(),
@@ -288,7 +287,7 @@ export function OilStocksPanel() {
         <p className="text-sm text-muted-foreground">Market data is unavailable right now.</p>
       ) : (
         <div className="min-h-0 flex-1">
-          <BarChart quotes={quotes} hover={hover} setHover={setHover} onSelect={setNewsTarget} />
+          <BarChart quotes={quotes} hover={hover} setHover={setHover} onSelect={openEntityNews} />
         </div>
       )}
 
@@ -307,7 +306,6 @@ export function OilStocksPanel() {
           </p>
         </div>
       </div>
-      <EntityNewsDialog target={newsTarget} onClose={() => setNewsTarget(null)} />
     </div>
   );
 }
