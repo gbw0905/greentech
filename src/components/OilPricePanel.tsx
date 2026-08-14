@@ -17,11 +17,25 @@ function Chart({ q }: { q: OilQuote }) {
     const y = h - ((p.c - lo) / span) * (h - 8) - 4;
     return [x, y] as const;
   });
-  const line = xy.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(2)},${y.toFixed(2)}`).join(" ");
+  // Smooth the polyline with a Catmull-Rom → cubic bezier conversion.
+  const line = xy
+    .map(([x, y], i) => {
+      if (i === 0) return `M${x.toFixed(2)},${y.toFixed(2)}`;
+      const [x0, y0] = xy[i - 1]!;
+      const [xp, yp] = xy[i - 2] ?? xy[i - 1]!;
+      const [xn, yn] = xy[i + 1] ?? xy[i]!;
+      const c1x = x0 + (x - xp) / 6;
+      const c1y = y0 + (y - yp) / 6;
+      const c2x = x - (xn - x0) / 6;
+      const c2y = y - (yn - y0) / 6;
+      return `C${c1x.toFixed(2)},${c1y.toFixed(2)} ${c2x.toFixed(2)},${c2y.toFixed(2)} ${x.toFixed(2)},${y.toFixed(2)}`;
+    })
+    .join(" ");
   const up = q.change >= 0;
   const stroke = up ? "var(--primary)" : "var(--destructive)";
   const active = hover ?? pts.length - 1;
   const id = `oilFill-${q.symbol.replace(/\W/g, "")}`;
+  const glowId = `${id}-glow`;
   const fmt = (n: number) => n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const cur = q.unit === "index" ? "" : "$";
 
@@ -46,9 +60,17 @@ function Chart({ q }: { q: OilQuote }) {
       >
         <defs>
           <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={stroke} stopOpacity="0.35" />
+            <stop offset="0%" stopColor={stroke} stopOpacity="0.45" />
+            <stop offset="55%" stopColor={stroke} stopOpacity="0.14" />
             <stop offset="100%" stopColor={stroke} stopOpacity="0" />
           </linearGradient>
+          <filter id={glowId} x="-20%" y="-40%" width="140%" height="180%">
+            <feGaussianBlur stdDeviation="2.4" result="b" />
+            <feMerge>
+              <feMergeNode in="b" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
         </defs>
         {[0.25, 0.5, 0.75].map((t) => (
           <line
@@ -67,10 +89,12 @@ function Chart({ q }: { q: OilQuote }) {
           d={line}
           fill="none"
           stroke={stroke}
-          strokeWidth="2"
+          strokeWidth="2.25"
           strokeLinejoin="round"
           strokeLinecap="round"
           vectorEffect="non-scaling-stroke"
+          filter={`url(#${glowId})`}
+          className="spark-draw"
         />
         <line
           x1={xy[active]![0]}
@@ -86,6 +110,13 @@ function Chart({ q }: { q: OilQuote }) {
         <circle
           cx={xy[active]![0]}
           cy={xy[active]![1]}
+          r="7"
+          fill={stroke}
+          opacity="0.18"
+        />
+        <circle
+          cx={xy[active]![0]}
+          cy={xy[active]![1]}
           r="3.5"
           fill="var(--surface)"
           stroke={stroke}
@@ -93,7 +124,7 @@ function Chart({ q }: { q: OilQuote }) {
           vectorEffect="non-scaling-stroke"
         />
       </svg>
-      <div className="label-mono mt-1.5 flex items-center justify-between gap-2 rounded-md border border-border bg-surface-2 px-2 py-1 text-muted-foreground">
+      <div className="label-mono mt-1.5 flex items-center justify-between gap-2 rounded-md border border-border/70 bg-surface-2/70 px-2 py-1 text-muted-foreground backdrop-blur-sm">
         <span>{hover === null ? "latest close" : "hover"}</span>
         <span className="font-mono font-semibold tabular-nums text-foreground">
           {cur}
