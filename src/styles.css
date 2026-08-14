@@ -451,6 +451,17 @@
   filter: drop-shadow(0 0 10px color-mix(in oklab, var(--primary) 55%, transparent));
 }
 
+@keyframes chart-tip-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 /** Tooltip surface shared by every chart. */
 @utility chart-tip {
   border: 1px solid color-mix(in oklab, var(--primary) 30%, var(--border));
@@ -459,7 +470,7 @@
   box-shadow:
     0 12px 32px -12px rgb(0 0 0 / 0.45),
     0 0 0 1px color-mix(in oklab, var(--primary) 12%, transparent);
-  animation: spark-in 0.18s ease-out both;
+  animation: chart-tip-in 0.16s ease-out both;
 }
 
 /** Faint plotting-paper backdrop behind a chart area. */
