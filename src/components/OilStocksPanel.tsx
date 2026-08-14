@@ -47,13 +47,26 @@ function BarChart({
       <svg viewBox={`0 0 ${w} ${h}`} className="w-full overflow-visible" style={{ minHeight: h }}>
         <defs>
           <linearGradient id="bar-fill" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.85" />
-            <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.55" />
+            <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.95" />
+            <stop offset="60%" stopColor="var(--primary-glow)" stopOpacity="0.7" />
+            <stop offset="100%" stopColor="var(--accent)" stopOpacity="0.55" />
           </linearGradient>
           <linearGradient id="bar-fill-active" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor="var(--primary)" stopOpacity="1" />
-            <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.75" />
+            <stop offset="60%" stopColor="var(--primary-glow)" stopOpacity="0.95" />
+            <stop offset="100%" stopColor="var(--accent)" stopOpacity="0.9" />
           </linearGradient>
+          <linearGradient id="bar-gloss" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#fff" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#fff" stopOpacity="0" />
+          </linearGradient>
+          <filter id="bar-glow" x="-15%" y="-60%" width="130%" height="220%">
+            <feGaussianBlur stdDeviation="3" result="b" />
+            <feMerge>
+              <feMergeNode in="b" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
         </defs>
 
         {/* X-axis gridlines */}
@@ -121,7 +134,7 @@ function BarChart({
               style={{ transition: "opacity 0.2s ease" }}
               opacity={dim ? 0.4 : 1}
             >
-              {/* Row hover background */}
+              {/* Row zebra + hover background */}
               <rect
                 x={0}
                 y={y - 2}
@@ -129,29 +142,51 @@ function BarChart({
                 height={rowH + 4}
                 rx={6}
                 fill="var(--foreground)"
-                opacity={active ? 0.04 : 0}
+                opacity={active ? 0.06 : idx % 2 === 0 ? 0.02 : 0}
                 className="transition-opacity duration-200"
               />
               {/* Track */}
               <rect
                 x={labelW}
-                y={y + 8}
+                y={y + 6}
                 width={trackW}
-                height={rowH - 16}
-                rx={3}
+                height={rowH - 12}
+                rx={(rowH - 12) / 2}
                 fill="var(--surface-1)"
-                opacity={0.5}
+                opacity={0.6}
               />
               {/* Filled bar */}
               <rect
                 x={labelW}
-                y={y + 8}
+                y={y + 6}
                 width={bw}
-                height={rowH - 16}
-                rx={3}
+                height={rowH - 12}
+                rx={(rowH - 12) / 2}
                 fill={active ? "url(#bar-fill-active)" : "url(#bar-fill)"}
+                filter={active ? "url(#bar-glow)" : undefined}
                 className="transition-all duration-300"
               />
+              {/* Gloss highlight */}
+              <rect
+                x={labelW}
+                y={y + 6}
+                width={bw}
+                height={(rowH - 12) / 2}
+                rx={(rowH - 12) / 4}
+                fill="url(#bar-gloss)"
+                pointerEvents="none"
+              />
+              {/* Leading cap */}
+              {bw > 6 && (
+                <circle
+                  cx={labelW + bw - (rowH - 12) / 2}
+                  cy={y + rowH / 2}
+                  r={active ? 3 : 2}
+                  fill="var(--primary-foreground)"
+                  opacity={active ? 0.9 : 0.45}
+                  className="transition-all duration-300"
+                />
+              )}
               {/* Rank */}
               <text
                 x={rankW - 10}
@@ -222,7 +257,7 @@ function BarChart({
 
       {/* Hover tooltip */}
       {activeQuote && (
-        <div className="pointer-events-none absolute left-1/2 top-0 z-20 w-max max-w-[300px] -translate-x-1/2 rounded-xl border border-border bg-surface-2 px-4 py-3 shadow-xl">
+        <div className="chart-tip pointer-events-none absolute left-1/2 top-0 z-20 w-max max-w-[300px] -translate-x-1/2 rounded-xl px-4 py-3">
           <div className="flex items-center gap-2 border-b border-border pb-2 mb-2">
             <span className="font-display text-base font-bold text-foreground">
               {activeQuote.symbol}

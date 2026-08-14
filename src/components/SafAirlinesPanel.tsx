@@ -84,9 +84,9 @@ export function SafAirlinesPanel() {
               onMouseLeave={() => setActive(null)}
               onFocus={() => setActive(a.code)}
               onBlur={() => setActive(null)}
-              className={`flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-all duration-200 hover:bg-foreground/[0.04] ${
-                dim ? "opacity-45" : ""
-              }`}
+              className={`flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-all duration-200 hover:bg-foreground/[0.05] ${
+                dim ? "opacity-40" : ""
+              } ${isActive ? "bg-foreground/[0.05]" : idx % 2 === 0 ? "bg-foreground/[0.015]" : ""}`}
             >
               <span className="w-6 shrink-0 font-mono text-[11px] tabular-nums text-muted-foreground">
                 {String(idx + 1).padStart(2, "0")}
@@ -95,14 +95,18 @@ export function SafAirlinesPanel() {
                 <span className="mr-1.5">{a.flag}</span>
                 {a.name}
               </span>
-              <span className="relative h-3 min-w-0 flex-1 overflow-hidden rounded-full bg-surface-2">
+              <span className="relative h-3.5 min-w-0 flex-1 overflow-hidden rounded-full bg-surface-2 ring-1 ring-inset ring-border/60">
                 <span
-                  className="absolute inset-y-0 left-0 rounded-full transition-all duration-300"
+                  className="chart-bar-x absolute inset-y-0 left-0 rounded-full transition-all duration-300"
                   style={{
                     width: `${(a.volume / max) * 100}%`,
                     background: isActive
                       ? "linear-gradient(90deg, var(--accent), var(--primary))"
                       : "linear-gradient(90deg, color-mix(in oklab, var(--accent) 75%, transparent), color-mix(in oklab, var(--primary) 55%, transparent))",
+                    boxShadow: isActive
+                      ? "0 0 12px color-mix(in oklab, var(--accent) 60%, transparent)"
+                      : undefined,
+                    animationDelay: `${idx * 25}ms`,
                   }}
                 />
               </span>
@@ -117,7 +121,7 @@ export function SafAirlinesPanel() {
         })}
 
         {activeRow && (
-          <div className="pointer-events-none absolute left-1/2 top-0 z-20 w-max max-w-[300px] -translate-x-1/2 rounded-xl border border-border bg-surface-2 px-4 py-3 shadow-xl">
+          <div className="chart-tip pointer-events-none absolute left-1/2 top-0 z-20 w-max max-w-[300px] -translate-x-1/2 rounded-xl px-4 py-3">
             <div className="mb-2 flex items-center gap-2 border-b border-border pb-2">
               <span className="font-display text-base font-bold text-foreground">
                 {activeRow.flag} {activeRow.name}
