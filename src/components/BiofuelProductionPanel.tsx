@@ -362,12 +362,14 @@ function BarChart({
 
                 <div className="relative min-w-0 flex-1 py-1.5">
                   <div
-                    className="h-7 rounded-r-md transition-all duration-300"
+                    className="chart-bar-x h-7 rounded-r-full transition-all duration-300"
                     style={{
                       width: `${widthPct}%`,
-                      background: `linear-gradient(90deg, ${i.color}, color-mix(in oklch, ${i.color} 55%, transparent))`,
-                      outline: active ? `2px solid ${i.color}` : "none",
-                      opacity: hover && !active ? 0.45 : 1,
+                      background: `linear-gradient(90deg, color-mix(in oklch, ${i.color} 92%, white), ${i.color} 45%, color-mix(in oklch, ${i.color} 50%, transparent))`,
+                      boxShadow: active
+                        ? `0 0 0 1.5px ${i.color}, 0 8px 20px -10px ${i.color}`
+                        : `inset 0 0 0 1px color-mix(in oklch, ${i.color} 35%, transparent)`,
+                      opacity: hover && !active ? 0.4 : 1,
                     }}
                   />
                   <span className="pointer-events-none absolute left-[calc(var(--w)+6px)] top-1/2 -translate-y-1/2 font-mono text-[11px] tabular-nums text-foreground"
@@ -377,7 +379,7 @@ function BarChart({
                   </span>
 
                   {active ? (
-                    <div className="pointer-events-none absolute left-[calc(var(--w)+8px)] top-1/2 z-20 w-max max-w-[200px] -translate-y-1/2 rounded-md border border-border bg-surface-2 px-2.5 py-1.5 shadow-lg"
+                    <div className="chart-tip pointer-events-none absolute left-[calc(var(--w)+8px)] top-1/2 z-20 w-max max-w-[200px] -translate-y-1/2 rounded-lg px-2.5 py-1.5"
                       style={{ "--w": `${widthPct}%` } as React.CSSProperties}
                     >
                       <div className="flex items-center gap-1.5 text-[11px] font-semibold">
