@@ -9,6 +9,8 @@ type Station = {
   flag: string;
   /** approx. number of retail sites offering biofuel blends */
   sites: number;
+  /** approx. biofuel volume sold per year, million litres */
+  volumeMnL: number;
   /** biofuel products offered at the forecourt */
   fuels: FuelType[];
   note: string;
@@ -17,26 +19,26 @@ type Station = {
 
 /** Largest retail fuel-station networks that sell biofuel blends at the pump. */
 const STATIONS: Station[] = [
-  { name: "Petrobras BR", country: "Brazil", flag: "🇧🇷", sites: 7800, fuels: ["Ethanol", "Biodiesel"], note: "E100 hydrous ethanol at nearly every site", color: "var(--primary)" },
-  { name: "Ipiranga", country: "Brazil", flag: "🇧🇷", sites: 6000, fuels: ["Ethanol", "Biodiesel"], note: "E27 blend + hydrous ethanol", color: "var(--accent)" },
-  { name: "Raízen / Shell Brazil", country: "Brazil", flag: "🇧🇷", sites: 5800, fuels: ["Ethanol", "Biodiesel"], note: "Sugarcane ethanol retail arm", color: "var(--signal)" },
-  { name: "Indian Oil", country: "India", flag: "🇮🇳", sites: 5400, fuels: ["Ethanol", "Biodiesel"], note: "E20 rollout across retail outlets", color: "var(--primary-glow)" },
-  { name: "Sinopec", country: "China", flag: "🇨🇳", sites: 3200, fuels: ["Ethanol", "Biodiesel"], note: "E10 provinces + B5 pilots", color: "var(--muted-foreground)" },
-  { name: "Pertamina", country: "Indonesia", flag: "🇮🇩", sites: 3000, fuels: ["Biodiesel"], note: "B35 mandate at all forecourts", color: "var(--primary)" },
-  { name: "Casey's", country: "United States", flag: "🇺🇸", sites: 2600, fuels: ["Ethanol"], note: "E15 / E85 flex pumps", color: "var(--accent)" },
-  { name: "Sheetz", country: "United States", flag: "🇺🇸", sites: 1800, fuels: ["Ethanol"], note: "Unleaded 88 (E15) chainwide", color: "var(--signal)" },
-  { name: "Kwik Trip", country: "United States", flag: "🇺🇸", sites: 1500, fuels: ["Ethanol", "Biogas"], note: "E85 plus renewable natural gas", color: "var(--primary-glow)" },
-  { name: "Preem", country: "Sweden", flag: "🇸🇪", sites: 950, fuels: ["Renewable Diesel", "Ethanol"], note: "HVO100 widely available", color: "var(--muted-foreground)" },
-  { name: "Neste retail", country: "Finland", flag: "🇫🇮", sites: 900, fuels: ["Renewable Diesel"], note: "MY renewable diesel network", color: "var(--primary)" },
-  { name: "TotalEnergies", country: "France", flag: "🇫🇷", sites: 850, fuels: ["Renewable Diesel", "Biodiesel"], note: "B100 and HVO truck lanes", color: "var(--accent)" },
-  { name: "Circle K Europe", country: "Norway", flag: "🇳🇴", sites: 800, fuels: ["Renewable Diesel", "Ethanol"], note: "HVO100 + E85 in Nordics", color: "var(--signal)" },
-  { name: "OMV", country: "Austria", flag: "🇦🇹", sites: 700, fuels: ["Renewable Diesel", "Biodiesel"], note: "HVO diesel across CEE", color: "var(--primary-glow)" },
-  { name: "Shell US", country: "United States", flag: "🇺🇸", sites: 650, fuels: ["Renewable Diesel", "Biogas"], note: "R99 renewable diesel + RNG sites", color: "var(--muted-foreground)" },
-  { name: "Repsol", country: "Spain", flag: "🇪🇸", sites: 600, fuels: ["Renewable Diesel"], note: "100% renewable diesel rollout", color: "var(--primary)" },
-  { name: "Certas / Shell UK", country: "United Kingdom", flag: "🇬🇧", sites: 450, fuels: ["Renewable Diesel"], note: "Shell Renewable Diesel fleet sites", color: "var(--accent)" },
-  { name: "Clean Energy Fuels", country: "United States", flag: "🇺🇸", sites: 550, fuels: ["Biogas"], note: "Renewable natural gas stations", color: "var(--signal)" },
-  { name: "Bharat Petroleum", country: "India", flag: "🇮🇳", sites: 3300, fuels: ["Ethanol"], note: "E20 petrol network", color: "var(--primary-glow)" },
-  { name: "YPF", country: "Argentina", flag: "🇦🇷", sites: 1600, fuels: ["Ethanol", "Biodiesel"], note: "E12 / B10 mandated blends", color: "var(--muted-foreground)" },
+  { name: "Petrobras BR", country: "Brazil", flag: "🇧🇷", volumeMnL: 9800, sites: 7800, fuels: ["Ethanol", "Biodiesel"], note: "E100 hydrous ethanol at nearly every site", color: "var(--primary)" },
+  { name: "Ipiranga", country: "Brazil", flag: "🇧🇷", volumeMnL: 7200, sites: 6000, fuels: ["Ethanol", "Biodiesel"], note: "E27 blend + hydrous ethanol", color: "var(--accent)" },
+  { name: "Raízen / Shell Brazil", country: "Brazil", flag: "🇧🇷", volumeMnL: 7000, sites: 5800, fuels: ["Ethanol", "Biodiesel"], note: "Sugarcane ethanol retail arm", color: "var(--signal)" },
+  { name: "Indian Oil", country: "India", flag: "🇮🇳", volumeMnL: 5200, sites: 5400, fuels: ["Ethanol", "Biodiesel"], note: "E20 rollout across retail outlets", color: "var(--primary-glow)" },
+  { name: "Sinopec", country: "China", flag: "🇨🇳", volumeMnL: 2600, sites: 3200, fuels: ["Ethanol", "Biodiesel"], note: "E10 provinces + B5 pilots", color: "var(--muted-foreground)" },
+  { name: "Pertamina", country: "Indonesia", flag: "🇮🇩", volumeMnL: 6400, sites: 3000, fuels: ["Biodiesel"], note: "B35 mandate at all forecourts", color: "var(--primary)" },
+  { name: "Casey's", country: "United States", flag: "🇺🇸", volumeMnL: 1400, sites: 2600, fuels: ["Ethanol"], note: "E15 / E85 flex pumps", color: "var(--accent)" },
+  { name: "Sheetz", country: "United States", flag: "🇺🇸", volumeMnL: 900, sites: 1800, fuels: ["Ethanol"], note: "Unleaded 88 (E15) chainwide", color: "var(--signal)" },
+  { name: "Kwik Trip", country: "United States", flag: "🇺🇸", volumeMnL: 800, sites: 1500, fuels: ["Ethanol", "Biogas"], note: "E85 plus renewable natural gas", color: "var(--primary-glow)" },
+  { name: "Preem", country: "Sweden", flag: "🇸🇪", volumeMnL: 1100, sites: 950, fuels: ["Renewable Diesel", "Ethanol"], note: "HVO100 widely available", color: "var(--muted-foreground)" },
+  { name: "Neste retail", country: "Finland", flag: "🇫🇮", volumeMnL: 950, sites: 900, fuels: ["Renewable Diesel"], note: "MY renewable diesel network", color: "var(--primary)" },
+  { name: "TotalEnergies", country: "France", flag: "🇫🇷", volumeMnL: 700, sites: 850, fuels: ["Renewable Diesel", "Biodiesel"], note: "B100 and HVO truck lanes", color: "var(--accent)" },
+  { name: "Circle K Europe", country: "Norway", flag: "🇳🇴", volumeMnL: 620, sites: 800, fuels: ["Renewable Diesel", "Ethanol"], note: "HVO100 + E85 in Nordics", color: "var(--signal)" },
+  { name: "OMV", country: "Austria", flag: "🇦🇹", volumeMnL: 540, sites: 700, fuels: ["Renewable Diesel", "Biodiesel"], note: "HVO diesel across CEE", color: "var(--primary-glow)" },
+  { name: "Shell US", country: "United States", flag: "🇺🇸", volumeMnL: 700, sites: 650, fuels: ["Renewable Diesel", "Biogas"], note: "R99 renewable diesel + RNG sites", color: "var(--muted-foreground)" },
+  { name: "Repsol", country: "Spain", flag: "🇪🇸", volumeMnL: 480, sites: 600, fuels: ["Renewable Diesel"], note: "100% renewable diesel rollout", color: "var(--primary)" },
+  { name: "Certas / Shell UK", country: "United Kingdom", flag: "🇬🇧", volumeMnL: 300, sites: 450, fuels: ["Renewable Diesel"], note: "Shell Renewable Diesel fleet sites", color: "var(--accent)" },
+  { name: "Clean Energy Fuels", country: "United States", flag: "🇺🇸", volumeMnL: 520, sites: 550, fuels: ["Biogas"], note: "Renewable natural gas stations", color: "var(--signal)" },
+  { name: "Bharat Petroleum", country: "India", flag: "🇮🇳", volumeMnL: 3100, sites: 3300, fuels: ["Ethanol"], note: "E20 petrol network", color: "var(--primary-glow)" },
+  { name: "YPF", country: "Argentina", flag: "🇦🇷", volumeMnL: 1200, sites: 1600, fuels: ["Ethanol", "Biodiesel"], note: "E12 / B10 mandated blends", color: "var(--muted-foreground)" },
 ];
 
 const fmt = (n: number, d = 0) =>
@@ -221,10 +223,14 @@ function BarChart({
 
 export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
   const [userView, setUserView] = useState<"countries" | "companies">("countries");
+  const [stationMetric, setStationMetric] = useState<"sites" | "volume">("sites");
 
   const matched = STATIONS.filter((s) => fuels.length === 0 || s.fuels.some((f) => fuels.includes(f)));
-  const stations = (matched.length > 0 ? matched : STATIONS).slice().sort((a, b) => b.sites - a.sites);
-  const stationTotal = stations.reduce((a, s) => a + s.sites, 0) || 1;
+  const byVolume = stationMetric === "volume";
+  const stations = (matched.length > 0 ? matched : STATIONS)
+    .slice()
+    .sort((a, b) => (byVolume ? b.volumeMnL - a.volumeMnL : b.sites - a.sites));
+  const stationTotal = stations.reduce((a, s) => a + (byVolume ? s.volumeMnL : s.sites), 0) || 1;
 
   const mixFuels = fuels;
   const users = (userView === "countries" ? CONSUMERS : COMPANIES)
@@ -257,21 +263,41 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
               Retail networks offering ethanol, biodiesel, renewable diesel or renewable gas at the pump.
             </p>
           </div>
-          <div className="text-right">
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex rounded-full border border-border bg-surface-2 p-0.5">
+              {(["sites", "volume"] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setStationMetric(m)}
+                  className={`label-mono rounded-full px-2.5 py-1 transition-colors ${
+                    stationMetric === m
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {m === "sites" ? "Sites" : "Volume"}
+                </button>
+              ))}
+            </div>
+            <div className="text-right">
             <div className="font-display text-2xl font-black tracking-tight tabular-nums">
               {fmt(stationTotal)}
             </div>
-            <div className="label-mono text-muted-foreground">sites shown</div>
+            <div className="label-mono text-muted-foreground">
+              {byVolume ? "million litres / year shown" : "sites shown"}
+            </div>
+            </div>
           </div>
         </div>
         <BarChart
-          unitLabel="retail sites offering biofuels"
+          unitLabel={byVolume ? "million litres of biofuel sold / year" : "retail sites offering biofuels"}
           decimals={0}
           items={stations.map((s) => ({
             key: s.name,
             label: `${s.flag} ${s.name}`,
-            sub: s.note,
-            value: s.sites,
+            sub: byVolume ? `${fmt(s.sites)} sites · ${s.note}` : `${fmt(s.volumeMnL)} Ml/yr · ${s.note}`,
+            value: byVolume ? s.volumeMnL : s.sites,
             color: s.color,
           }))}
           onSelect={openEntityNews}
