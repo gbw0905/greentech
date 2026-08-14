@@ -267,13 +267,14 @@ export function OilPricePanel() {
               </span>
             </div>
             <div className="label-mono text-muted-foreground">
-              prev close{" "}
-              <span className="font-mono tabular-nums text-foreground">
-                {q.unit === "index" ? "" : "$"}
-                {q.prevClose.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              1D change{" "}
+              <span
+                className={`font-mono font-semibold tabular-nums ${up ? "text-primary" : "text-destructive"}`}
+              >
+                {up ? "+" : ""}
+                {q.change.toFixed(2)}
               </span>{" "}
-              · {up ? "+" : ""}
-              {q.change.toFixed(2)}
+              · <span className="font-mono tabular-nums">{q.symbol}</span>
             </div>
             <div className="min-h-0 flex-1">
               <Chart q={q} />
