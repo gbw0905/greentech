@@ -220,19 +220,13 @@ function BarChart({
 }
 
 export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
-  const [unit, setUnit] = useState<"litres" | "barrels">("litres");
   const [userView, setUserView] = useState<"countries" | "companies">("countries");
 
-  const activeStreams = STREAMS.filter((s) => fuels.length === 0 || fuels.includes(s.fuel));
-  const shownStreams = activeStreams.length > 0 ? activeStreams : STREAMS;
-  const rows = shownStreams.map((s) => ({
-    ...s,
-    daily: unit === "litres" ? (s.annualBnL * 1e9) / 365 : s.barrelsPerDay,
-  }));
-  const total = rows.reduce((a, r) => a + r.daily, 0);
-  const unitLabel = unit === "litres" ? "million litres / day" : "thousand barrels / day";
-  const scale = (v: number) => (unit === "litres" ? v / 1e6 : v / 1e3);
-  const mixFuels = activeStreams.length > 0 ? fuels : [];
+  const matched = STATIONS.filter((s) => fuels.length === 0 || s.fuels.some((f) => fuels.includes(f)));
+  const stations = (matched.length > 0 ? matched : STATIONS).slice().sort((a, b) => b.sites - a.sites);
+  const stationTotal = stations.reduce((a, s) => a + s.sites, 0) || 1;
+
+  const mixFuels = fuels;
   const users = (userView === "countries" ? CONSUMERS : COMPANIES)
     .map((e) => ({ ...e, annualBnL: sumMix(e.mix, mixFuels) }))
     .filter((e) => e.annualBnL > 0)
@@ -240,9 +234,9 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
   const usersTotal = users.reduce((a, c) => a + c.annualBnL, 0) || 1;
   const filterNote =
     fuels.length > 0
-      ? activeStreams.length > 0
+      ? matched.length > 0
         ? `Filtered to ${fuels.join(", ")}`
-        : `No production data for ${fuels.join(", ")} — showing all fuels`
+        : `No station data for ${fuels.join(", ")} — showing all networks`
       : null;
 
   return (
@@ -253,61 +247,43 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
         </div>
       ) : null}
       <div className="glass-panel rise p-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="mb-2 flex flex-wrap items-start justify-between gap-3">
           <div>
             <h3 className="flex items-center gap-2 font-display text-base font-bold tracking-tight text-foreground sm:text-lg">
-              <Factory className="size-4 text-primary" />
-              Global daily biofuel output
+              <Fuel className="size-4 text-primary" />
+              Top global fuel stations selling biofuels
             </h3>
-            <div className="mt-1 font-display text-3xl font-black tracking-tight">
-              {fmt(scale(total), unit === "litres" ? 0 : 0)}{" "}
-              <span className="text-base font-semibold text-muted-foreground">{unitLabel}</span>
-            </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              All biofuel types combined, derived from the latest full-year global production
-              estimates (÷ 365).
+              Retail networks offering ethanol, biodiesel, renewable diesel or renewable gas at the pump.
             </p>
           </div>
-          <div className="flex rounded-full border border-border bg-surface-2 p-0.5">
-            {(["litres", "barrels"] as const).map((u) => (
-              <button
-                key={u}
-                type="button"
-                onClick={() => setUnit(u)}
-                className={`label-mono rounded-full px-3 py-1.5 transition-colors ${
-                  unit === u
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {u === "litres" ? "Litres" : "Barrels"}
-              </button>
-            ))}
+          <div className="text-right">
+            <div className="font-display text-2xl font-black tracking-tight tabular-nums">
+              {fmt(stationTotal)}
+            </div>
+            <div className="label-mono text-muted-foreground">sites shown</div>
           </div>
         </div>
-
-        <section className="mt-5">
-          <h4 className="mb-3 flex items-center gap-2 font-display text-sm font-bold tracking-tight text-foreground">
-            <span className="inline-block size-2 rounded-full bg-signal" />
-            Output by fuel type
-          </h4>
-          <ColumnChart
-            unitLabel={unitLabel}
-            legendNotes={Object.fromEntries(shownStreams.map((s) => [s.name, s.note]))}
-            items={rows.map((r) => ({
-              key: r.name,
-              label: r.name,
-              sub: `${((r.daily / total) * 100).toFixed(1)}%`,
-              value: scale(r.daily),
-              color: r.color,
-            }))}
-          />
-        </section>
-
+        <BarChart
+          unitLabel="retail sites offering biofuels"
+          decimals={0}
+          items={stations.map((s) => ({
+            key: s.name,
+            label: `${s.flag} ${s.name}`,
+            sub: s.note,
+            value: s.sites,
+            color: s.color,
+          }))}
+          onSelect={openEntityNews}
+          news={Object.fromEntries(
+            stations.map((s) => [
+              s.name,
+              { name: s.name, query: `"${s.name}" biofuel OR ethanol OR renewable diesel station` },
+            ])
+          )}
+        />
         <p className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
-          Reference figures, not a live meter: national statistics agencies report biofuel output
-          monthly or annually, so daily values are annualised estimates and should be cross-verified
-          against IEA and EIA releases.
+          Approximate site counts from company retail disclosures and national blending programmes. Click any bar to open the latest news for that network.
         </p>
       </div>
 
