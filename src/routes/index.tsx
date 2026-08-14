@@ -340,8 +340,8 @@ function Dashboard() {
             <SectionHeading
               step={2}
               icon={Factory}
-              title="Global biofuel production per day"
-              subtitle="Daily output of every biofuel type worldwide — use the fuel-type menu below to filter the policy feed and both output charts."
+              title="Biofuel supply at the pump and top users"
+              subtitle="Retail networks selling biofuels worldwide and the largest users — filter both with the fuel-type menu below."
             />
             <nav
               aria-label="Fuel type filter"
