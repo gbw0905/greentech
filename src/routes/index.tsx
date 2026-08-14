@@ -446,25 +446,27 @@ function Dashboard() {
             </div>
           </section>
 
-          <section id="alerts" className="pt-4">
-            <SectionHeading
-              step={8}
-              icon={BellRing}
-              title="News alerts by email"
-              subtitle="Subscribe to a daily email digest of new bioenergy policy updates, filtered to the fuels you follow."
-            />
-            <AlertSignup />
-          </section>
+          <div className="grid gap-6 pt-4 xl:grid-cols-2 xl:items-start">
+            <section id="alerts">
+              <SectionHeading
+                step={8}
+                icon={BellRing}
+                title="News alerts by email"
+                subtitle="Daily email digest of new bioenergy policy updates, filtered to the fuels you follow."
+              />
+              <AlertSignup />
+            </section>
 
-          <section id="traffic" className="pt-4">
-            <SectionHeading
-              step={9}
-              icon={Activity}
-              title="Live audience"
-              subtitle="Real-time readership of the desk — who is reading now, where they are reading from and how they arrived."
-            />
-            <TrafficPanel />
-          </section>
+            <section id="traffic">
+              <SectionHeading
+                step={9}
+                icon={Activity}
+                title="Live audience"
+                subtitle="Real-time readership of the desk — who is reading now and how it trends."
+              />
+              <TrafficPanel />
+            </section>
+          </div>
 
           <section id="disclaimer" className="glass-panel rise border-l-4 border-l-signal bg-signal/[0.03] p-5">
             <div className="flex items-start gap-3">
