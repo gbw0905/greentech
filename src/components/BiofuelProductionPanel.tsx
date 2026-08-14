@@ -1,63 +1,42 @@
 import { useState } from "react";
-import { Factory, Users } from "lucide-react";
+import { Fuel, Users } from "lucide-react";
 import type { FuelType } from "@/lib/policy-taxonomy";
 import { openEntityNews, type NewsTarget } from "@/lib/open-news";
 
-type Stream = {
+type Station = {
   name: string;
+  country: string;
+  flag: string;
+  /** approx. number of retail sites offering biofuel blends */
+  sites: number;
+  /** biofuel products offered at the forecourt */
+  fuels: FuelType[];
   note: string;
-  /** taxonomy fuel type this stream maps to */
-  fuel: FuelType;
-  /** billion litres per year (latest full-year global estimate) */
-  annualBnL: number;
-  /** litres per barrel-of-oil-equivalent style conversion for display */
-  barrelsPerDay: number;
   color: string;
 };
 
-// Latest full-year global output estimates (IEA Renewables / EIA international data).
-// Divided by 365 for the daily figures shown below.
-const STREAMS: Stream[] = [
-  {
-    name: "Fuel ethanol",
-    note: "Corn, sugarcane, wheat & cellulosic",
-    fuel: "Ethanol",
-    annualBnL: 114,
-    barrelsPerDay: 1_965_000,
-    color: "var(--primary)",
-  },
-  {
-    name: "Biodiesel (FAME)",
-    note: "Palm, soy, rapeseed & used cooking oil esters",
-    fuel: "Biodiesel",
-    annualBnL: 55,
-    barrelsPerDay: 948_000,
-    color: "var(--accent)",
-  },
-  {
-    name: "Renewable diesel (HVO)",
-    note: "Hydrotreated vegetable oils & waste fats",
-    fuel: "Renewable Diesel",
-    annualBnL: 30,
-    barrelsPerDay: 517_000,
-    color: "var(--signal)",
-  },
-  {
-    name: "Sustainable aviation fuel",
-    note: "HEFA jet, alcohol-to-jet, synthetics",
-    fuel: "SAF",
-    annualBnL: 2.4,
-    barrelsPerDay: 41_000,
-    color: "var(--primary-glow)",
-  },
-  {
-    name: "Biomethane (liquid-equiv.)",
-    note: "Upgraded biogas injected or used as fuel",
-    fuel: "Biogas",
-    annualBnL: 12,
-    barrelsPerDay: 207_000,
-    color: "var(--muted-foreground)",
-  },
+/** Largest retail fuel-station networks that sell biofuel blends at the pump. */
+const STATIONS: Station[] = [
+  { name: "Petrobras BR", country: "Brazil", flag: "🇧🇷", sites: 7800, fuels: ["Ethanol", "Biodiesel"], note: "E100 hydrous ethanol at nearly every site", color: "var(--primary)" },
+  { name: "Ipiranga", country: "Brazil", flag: "🇧🇷", sites: 6000, fuels: ["Ethanol", "Biodiesel"], note: "E27 blend + hydrous ethanol", color: "var(--accent)" },
+  { name: "Raízen / Shell Brazil", country: "Brazil", flag: "🇧🇷", sites: 5800, fuels: ["Ethanol", "Biodiesel"], note: "Sugarcane ethanol retail arm", color: "var(--signal)" },
+  { name: "Indian Oil", country: "India", flag: "🇮🇳", sites: 5400, fuels: ["Ethanol", "Biodiesel"], note: "E20 rollout across retail outlets", color: "var(--primary-glow)" },
+  { name: "Sinopec", country: "China", flag: "🇨🇳", sites: 3200, fuels: ["Ethanol", "Biodiesel"], note: "E10 provinces + B5 pilots", color: "var(--muted-foreground)" },
+  { name: "Pertamina", country: "Indonesia", flag: "🇮🇩", sites: 3000, fuels: ["Biodiesel"], note: "B35 mandate at all forecourts", color: "var(--primary)" },
+  { name: "Casey's", country: "United States", flag: "🇺🇸", sites: 2600, fuels: ["Ethanol"], note: "E15 / E85 flex pumps", color: "var(--accent)" },
+  { name: "Sheetz", country: "United States", flag: "🇺🇸", sites: 1800, fuels: ["Ethanol"], note: "Unleaded 88 (E15) chainwide", color: "var(--signal)" },
+  { name: "Kwik Trip", country: "United States", flag: "🇺🇸", sites: 1500, fuels: ["Ethanol", "Biogas"], note: "E85 plus renewable natural gas", color: "var(--primary-glow)" },
+  { name: "Preem", country: "Sweden", flag: "🇸🇪", sites: 950, fuels: ["Renewable Diesel", "Ethanol"], note: "HVO100 widely available", color: "var(--muted-foreground)" },
+  { name: "Neste retail", country: "Finland", flag: "🇫🇮", sites: 900, fuels: ["Renewable Diesel"], note: "MY renewable diesel network", color: "var(--primary)" },
+  { name: "TotalEnergies", country: "France", flag: "🇫🇷", sites: 850, fuels: ["Renewable Diesel", "Biodiesel"], note: "B100 and HVO truck lanes", color: "var(--accent)" },
+  { name: "Circle K Europe", country: "Norway", flag: "🇳🇴", sites: 800, fuels: ["Renewable Diesel", "Ethanol"], note: "HVO100 + E85 in Nordics", color: "var(--signal)" },
+  { name: "OMV", country: "Austria", flag: "🇦🇹", sites: 700, fuels: ["Renewable Diesel", "Biodiesel"], note: "HVO diesel across CEE", color: "var(--primary-glow)" },
+  { name: "Shell US", country: "United States", flag: "🇺🇸", sites: 650, fuels: ["Renewable Diesel", "Biogas"], note: "R99 renewable diesel + RNG sites", color: "var(--muted-foreground)" },
+  { name: "Repsol", country: "Spain", flag: "🇪🇸", sites: 600, fuels: ["Renewable Diesel"], note: "100% renewable diesel rollout", color: "var(--primary)" },
+  { name: "Certas / Shell UK", country: "United Kingdom", flag: "🇬🇧", sites: 450, fuels: ["Renewable Diesel"], note: "Shell Renewable Diesel fleet sites", color: "var(--accent)" },
+  { name: "Clean Energy Fuels", country: "United States", flag: "🇺🇸", sites: 550, fuels: ["Biogas"], note: "Renewable natural gas stations", color: "var(--signal)" },
+  { name: "Bharat Petroleum", country: "India", flag: "🇮🇳", sites: 3300, fuels: ["Ethanol"], note: "E20 petrol network", color: "var(--primary-glow)" },
+  { name: "YPF", country: "Argentina", flag: "🇦🇷", sites: 1600, fuels: ["Ethanol", "Biodiesel"], note: "E12 / B10 mandated blends", color: "var(--muted-foreground)" },
 ];
 
 const fmt = (n: number, d = 0) =>
@@ -104,187 +83,6 @@ const COMPANIES: Entity[] = [
   { name: "Darling / Diamond Green", flag: "🇺🇸", color: "var(--primary-glow)", mix: { "Renewable Diesel": 2.4 } },
   { name: "BP Bunge Bioenergia", flag: "🇧🇷", color: "var(--muted-foreground)", mix: { Ethanol: 2.1 } },
 ];
-
-function ColumnChart({
-  items,
-  unitLabel,
-  decimals = 1,
-  legendNotes,
-  news,
-  onSelect,
-}: {
-  items: { key: string; label: string; sub?: string; value: number; color: string }[];
-  unitLabel: string;
-  decimals?: number;
-  legendNotes?: Record<string, string>;
-  news?: Record<string, { name: string; query: string }>;
-  onSelect?: (t: NewsTarget) => void;
-}) {
-  const max = Math.max(...items.map((i) => i.value));
-  const total = items.reduce((a, i) => a + i.value, 0);
-  const [hover, setHover] = useState<string | null>(null);
-  const ticks = [1, 0.75, 0.5, 0.25, 0];
-  return (
-    <div>
-      <div className="flex gap-2">
-        {/* y axis */}
-        <div
-          className="flex w-12 shrink-0 flex-col justify-between text-right font-mono text-[10px] text-muted-foreground tabular-nums"
-          style={{ height: 210 }}
-          aria-hidden
-        >
-          {ticks.map((t) => (
-            <span key={t}>{fmt(max * t, max * t < 100 ? decimals : 0)}</span>
-          ))}
-        </div>
-
-        <div className="relative min-w-0 flex-1" style={{ height: 210 }}>
-          {/* gridlines */}
-          <div className="pointer-events-none absolute inset-0 flex flex-col justify-between" aria-hidden>
-            {ticks.map((t) => (
-              <div key={t} className="border-t border-border/60" />
-            ))}
-          </div>
-
-          <div className="relative flex h-full items-end gap-2 sm:gap-3">
-            {items.map((i) => {
-              const active = hover === i.key;
-              const target = news?.[i.key];
-              const href = target ? "#" : undefined;
-              const Bar = (
-                <div
-                  key={i.key}
-                  className={`group relative flex h-full min-w-0 flex-1 flex-col items-center justify-end ${href ? "cursor-pointer" : "cursor-default"}`}
-                  onMouseEnter={() => setHover(i.key)}
-                  onMouseLeave={() => setHover((h) => (h === i.key ? null : h))}
-                  onFocus={() => setHover(i.key)}
-                  onBlur={() => setHover(null)}
-                  tabIndex={href ? 0 : -1}
-                  role="img"
-                  aria-label={`${i.label}: ${fmt(i.value, decimals)} ${unitLabel}`}
-                >
-                  {active ? (
-                    <div className="chart-tip pointer-events-none absolute bottom-full z-20 mb-1 w-max max-w-[180px] rounded-lg px-2.5 py-1.5 text-left">
-                      <div className="flex items-center gap-1.5 text-[11px] font-semibold">
-                        <span
-                          className="inline-block size-2 rounded-full"
-                          style={{ background: i.color }}
-                        />
-                        {i.label}
-                      </div>
-                      <div className="font-mono text-[11px] tabular-nums">
-                        {fmt(i.value, decimals)} <span className="text-muted-foreground">{unitLabel}</span>
-                      </div>
-                      <div className="text-[10px] text-muted-foreground">
-                        {((i.value / total) * 100).toFixed(1)}% of shown total
-                      </div>
-                      {href ? <div className="text-[10px] text-primary mt-1">Click to open latest news</div> : null}
-                    </div>
-                  ) : null}
-                  <span className="mb-1 font-mono text-[11px] tabular-nums">
-                    {fmt(i.value, i.value < 100 ? decimals : 0)}
-                  </span>
-                  <div
-                    className="chart-bar-y w-full rounded-t-lg transition-all duration-300"
-                    style={{
-                      height: `${Math.max((i.value / max) * 88, 2)}%`,
-                      background: `linear-gradient(180deg, color-mix(in oklch, ${i.color} 92%, white), ${i.color} 45%, color-mix(in oklch, ${i.color} 50%, transparent))`,
-                      boxShadow: active
-                        ? `0 0 0 1.5px ${i.color}, 0 8px 20px -8px ${i.color}`
-                        : `inset 0 0 0 1px color-mix(in oklch, ${i.color} 35%, transparent)`,
-                      opacity: hover && !active ? 0.4 : 1,
-                      transform: active ? "translateY(-2px)" : undefined,
-                    }}
-                  />
-                </div>
-              );
-              return target ? (
-                <div
-                  key={i.key}
-                  className="contents"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onSelect?.(target);
-                  }}
-                >
-                  {Bar}
-                </div>
-              ) : (
-                Bar
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-2 flex gap-2 border-t border-border pt-2 sm:gap-3">
-        <div className="w-12 shrink-0" aria-hidden />
-        {items.map((i) => {
-          const target = news?.[i.key];
-          const Label = (
-            <div
-              key={i.key}
-              className={`min-w-0 flex-1 text-center transition-opacity ${
-                hover && hover !== i.key ? "opacity-50" : "opacity-100"
-              }`}
-            >
-              <div className="truncate text-[11px] font-semibold leading-tight" title={i.label}>
-                {i.label}
-              </div>
-              {i.sub ? (
-                <div className="truncate text-[10px] text-muted-foreground">{i.sub}</div>
-              ) : null}
-            </div>
-          );
-          return target ? (
-            <div
-              key={i.key}
-              className="contents cursor-pointer"
-              onClick={(e) => {
-                e.stopPropagation();
-                onSelect?.(target);
-              }}
-            >
-              {Label}
-            </div>
-          ) : (
-            Label
-          );
-        })}
-      </div>
-
-      {/* legend / colour key */}
-      <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1.5 border-t border-border pt-3">
-        {items.map((i) => {
-          const target = news?.[i.key];
-          const Legend = (
-            <button
-              key={i.key}
-              type="button"
-              onClick={() => target && onSelect?.(target)}
-              onMouseEnter={() => setHover(i.key)}
-              onMouseLeave={() => setHover(null)}
-              className={`flex items-center gap-1.5 text-[11px] transition-opacity ${
-                hover && hover !== i.key ? "opacity-45" : "opacity-100"
-              } ${target ? "hover:underline" : ""}`}
-            >
-              <span className="inline-block size-2.5 rounded-sm" style={{ background: i.color }} />
-              <span className="max-w-[150px] truncate">{i.label}</span>
-              <span className="font-mono text-muted-foreground tabular-nums">
-                {fmt(i.value, i.value < 100 ? decimals : 0)}
-              </span>
-              {legendNotes?.[i.key] ? (
-                <span className="text-muted-foreground">· {legendNotes[i.key]}</span>
-              ) : null}
-            </button>
-          );
-          return Legend;
-        })}
-      </div>
-      <div className="label-mono mt-2 text-muted-foreground">Y axis: {unitLabel}</div>
-    </div>
-  );
-}
 
 function BarChart({
   items,
