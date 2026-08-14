@@ -223,10 +223,14 @@ function BarChart({
 
 export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
   const [userView, setUserView] = useState<"countries" | "companies">("countries");
+  const [stationMetric, setStationMetric] = useState<"sites" | "volume">("sites");
 
   const matched = STATIONS.filter((s) => fuels.length === 0 || s.fuels.some((f) => fuels.includes(f)));
-  const stations = (matched.length > 0 ? matched : STATIONS).slice().sort((a, b) => b.sites - a.sites);
-  const stationTotal = stations.reduce((a, s) => a + s.sites, 0) || 1;
+  const byVolume = stationMetric === "volume";
+  const stations = (matched.length > 0 ? matched : STATIONS)
+    .slice()
+    .sort((a, b) => (byVolume ? b.volumeMnL - a.volumeMnL : b.sites - a.sites));
+  const stationTotal = stations.reduce((a, s) => a + (byVolume ? s.volumeMnL : s.sites), 0) || 1;
 
   const mixFuels = fuels;
   const users = (userView === "countries" ? CONSUMERS : COMPANIES)
@@ -259,21 +263,41 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
               Retail networks offering ethanol, biodiesel, renewable diesel or renewable gas at the pump.
             </p>
           </div>
-          <div className="text-right">
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex rounded-full border border-border bg-surface-2 p-0.5">
+              {(["sites", "volume"] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setStationMetric(m)}
+                  className={`label-mono rounded-full px-2.5 py-1 transition-colors ${
+                    stationMetric === m
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {m === "sites" ? "Sites" : "Volume"}
+                </button>
+              ))}
+            </div>
+            <div className="text-right">
             <div className="font-display text-2xl font-black tracking-tight tabular-nums">
               {fmt(stationTotal)}
             </div>
-            <div className="label-mono text-muted-foreground">sites shown</div>
+            <div className="label-mono text-muted-foreground">
+              {byVolume ? "million litres / year shown" : "sites shown"}
+            </div>
+            </div>
           </div>
         </div>
         <BarChart
-          unitLabel="retail sites offering biofuels"
+          unitLabel={byVolume ? "million litres of biofuel sold / year" : "retail sites offering biofuels"}
           decimals={0}
           items={stations.map((s) => ({
             key: s.name,
             label: `${s.flag} ${s.name}`,
-            sub: s.note,
-            value: s.sites,
+            sub: byVolume ? `${fmt(s.sites)} sites · ${s.note}` : `${fmt(s.volumeMnL)} Ml/yr · ${s.note}`,
+            value: byVolume ? s.volumeMnL : s.sites,
             color: s.color,
           }))}
           onSelect={openEntityNews}
