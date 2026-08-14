@@ -9,6 +9,8 @@ type Station = {
   flag: string;
   /** approx. number of retail sites offering biofuel blends */
   sites: number;
+  /** approx. biofuel volume sold per year, million litres */
+  volumeMnL: number;
   /** biofuel products offered at the forecourt */
   fuels: FuelType[];
   note: string;
