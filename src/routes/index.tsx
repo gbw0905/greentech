@@ -148,7 +148,7 @@ function SectionHeading({
               <Icon className="size-7 shrink-0 text-primary-foreground/90 sm:size-8" />
               <span className="truncate">{title}</span>
             </h2>
-            <p className="mt-2 max-w-2xl text-base font-semibold text-primary-foreground/85">
+            <p className="mt-2 text-base font-semibold whitespace-nowrap truncate text-primary-foreground/85">
               {subtitle}
             </p>
           </div>
@@ -283,7 +283,7 @@ function Dashboard() {
                 className="mt-5 font-display leading-[1.1] font-bold whitespace-nowrap [text-shadow:0_2px_24px_rgba(255,255,255,0.35)]">
                 AI powered global bioenergy outlook
               </h1>
-              <p className="mt-4 max-w-xl text-sm/relaxed opacity-90">
+              <p className="mt-4 text-sm/relaxed whitespace-nowrap opacity-90">
                 Continuously scanned mandates, blending obligations and regulatory decisions across all global jurisdictions — with live readership of the desk.
               </p>
             </div>
