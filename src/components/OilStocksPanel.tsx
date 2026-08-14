@@ -257,7 +257,7 @@ function BarChart({
 
       {/* Hover tooltip */}
       {activeQuote && (
-        <div className="pointer-events-none absolute left-1/2 top-0 z-20 w-max max-w-[300px] -translate-x-1/2 rounded-xl border border-border bg-surface-2 px-4 py-3 shadow-xl">
+        <div className="chart-tip pointer-events-none absolute left-1/2 top-0 z-20 w-max max-w-[300px] -translate-x-1/2 rounded-xl px-4 py-3">
           <div className="flex items-center gap-2 border-b border-border pb-2 mb-2">
             <span className="font-display text-base font-bold text-foreground">
               {activeQuote.symbol}
