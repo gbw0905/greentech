@@ -139,26 +139,55 @@ function Chart({ q }: { q: OilQuote }) {
 }
 
 export function OilPricePanel() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, dataUpdatedAt } = useQuery({
     queryKey: ["oil-prices"],
     queryFn: () => getOilPricesFn(),
     refetchInterval: 60_000,
   });
 
   const quotes = data?.quotes ?? [];
+  const stamp = dataUpdatedAt
+    ? new Date(dataUpdatedAt).toLocaleTimeString(undefined, {
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "UTC",
+      }) + " UTC"
+    : "—";
 
   return (
     <div className="glass-panel rise flex h-full flex-col space-y-4 p-5">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-foreground sm:text-xl">
-          <span className="inline-block size-2.5 rounded-full bg-primary" />
-          WTI crude · S&amp;P 500 · Gold · live
-        </h2>
-        <span className="label-mono inline-flex items-center gap-1.5 text-primary">
-          <span className="pulse-dot size-2 rounded-full bg-primary" />
-          real time
-        </span>
-      </div>
+      <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 border-b border-border/70 pb-3">
+        <div className="min-w-0">
+          <p className="label-mono text-muted-foreground">Benchmark markets</p>
+          <h2 className="mt-1 font-display text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+            Crude Oil, Equities &amp; Gold
+          </h2>
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            {[
+              ["CL=F", "WTI crude"],
+              ["^GSPC", "S&P 500"],
+              ["GC=F", "Gold"],
+            ].map(([sym, name]) => (
+              <span
+                key={sym}
+                className="label-mono inline-flex items-center gap-1.5 rounded-md border border-border bg-surface-2/70 px-2 py-0.5 text-muted-foreground"
+              >
+                <span className="font-mono font-semibold text-foreground">{sym}</span>
+                {name}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div className="flex flex-col items-start gap-1.5 sm:items-end">
+          <span className="label-mono inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-primary">
+            <span className="pulse-dot size-2 rounded-full bg-primary" />
+            live
+          </span>
+          <span className="label-mono text-muted-foreground">
+            updated <span className="font-mono tabular-nums text-foreground">{stamp}</span>
+          </span>
+        </div>
+      </header>
 
       {isLoading && quotes.length === 0 && (
         <div className="scanning-bar h-24 flex-1 rounded-[var(--radius)]" />
