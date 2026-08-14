@@ -164,7 +164,7 @@ function ColumnChart({
                   aria-label={`${i.label}: ${fmt(i.value, decimals)} ${unitLabel}`}
                 >
                   {active ? (
-                    <div className="pointer-events-none absolute bottom-full z-20 mb-1 w-max max-w-[180px] rounded-md border border-border bg-surface-2 px-2.5 py-1.5 text-left shadow-lg">
+                    <div className="chart-tip pointer-events-none absolute bottom-full z-20 mb-1 w-max max-w-[180px] rounded-lg px-2.5 py-1.5 text-left">
                       <div className="flex items-center gap-1.5 text-[11px] font-semibold">
                         <span
                           className="inline-block size-2 rounded-full"
@@ -185,12 +185,15 @@ function ColumnChart({
                     {fmt(i.value, i.value < 100 ? decimals : 0)}
                   </span>
                   <div
-                    className="w-full rounded-t-md transition-all duration-300"
+                    className="chart-bar-y w-full rounded-t-lg transition-all duration-300"
                     style={{
                       height: `${Math.max((i.value / max) * 88, 2)}%`,
-                      background: `linear-gradient(180deg, ${i.color}, color-mix(in oklch, ${i.color} 55%, transparent))`,
-                      outline: active ? `2px solid ${i.color}` : "none",
-                      opacity: hover && !active ? 0.45 : 1,
+                      background: `linear-gradient(180deg, color-mix(in oklch, ${i.color} 92%, white), ${i.color} 45%, color-mix(in oklch, ${i.color} 50%, transparent))`,
+                      boxShadow: active
+                        ? `0 0 0 1.5px ${i.color}, 0 8px 20px -8px ${i.color}`
+                        : `inset 0 0 0 1px color-mix(in oklch, ${i.color} 35%, transparent)`,
+                      opacity: hover && !active ? 0.4 : 1,
+                      transform: active ? "translateY(-2px)" : undefined,
                     }}
                   />
                 </div>
