@@ -6,15 +6,17 @@ import { getOilPricesFn, type OilQuote } from "@/lib/oil.functions";
 function Chart({ q }: { q: OilQuote }) {
   const [hover, setHover] = useState<number | null>(null);
   const w = 220;
-  const h = 96;
+  const h = 104;
+  const padL = 34; // room for y-axis labels
+  const plotW = w - padL;
   const pts = q.series;
   if (pts.length < 2) return null;
   const lo = Math.min(...pts.map((p) => p.c));
   const hi = Math.max(...pts.map((p) => p.c));
   const span = hi - lo || 1;
   const xy = pts.map((p, i) => {
-    const x = (i / (pts.length - 1)) * w;
-    const y = h - ((p.c - lo) / span) * (h - 8) - 4;
+    const x = padL + (i / (pts.length - 1)) * plotW;
+    const y = h - ((p.c - lo) / span) * (h - 12) - 6;
     return [x, y] as const;
   });
   // Smooth the polyline with a Catmull-Rom → cubic bezier conversion.
@@ -37,24 +39,34 @@ function Chart({ q }: { q: OilQuote }) {
   const id = `oilFill-${q.symbol.replace(/\W/g, "")}`;
   const glowId = `${id}-glow`;
   const fmt = (n: number) => n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const compact = (n: number) =>
+    n.toLocaleString(undefined, { maximumFractionDigits: n >= 1000 ? 0 : 1 });
   const cur = q.unit === "index" ? "" : "$";
+  const first = pts[0]!.c;
+  const last = pts[pts.length - 1]!.c;
+  const periodPct = first ? ((last - first) / first) * 100 : 0;
+  const dateOf = (t: number) =>
+    new Date(t).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  const yTicks = [0, 0.5, 1].map((t) => ({ v: lo + span * t, y: h - t * (h - 12) - 6 }));
 
   return (
     <div className="relative flex h-full flex-col">
-      <div className="label-mono flex justify-between text-muted-foreground">
-        <span>30-day range</span>
-        <span className="font-mono tabular-nums">
-          {cur}{fmt(lo)} – {cur}{fmt(hi)}
+      <div className="label-mono flex items-center justify-between text-muted-foreground">
+        <span>30-day trend</span>
+        <span
+          className={`font-mono font-semibold tabular-nums ${periodPct >= 0 ? "text-primary" : "text-destructive"}`}
+        >
+          {periodPct >= 0 ? "+" : ""}
+          {periodPct.toFixed(2)}% 30D
         </span>
       </div>
       <svg
         viewBox={`0 0 ${w} ${h}`}
-        preserveAspectRatio="none"
-        className="mt-1 min-h-[96px] flex-1 w-full overflow-visible"
+        className="mt-1 min-h-[104px] flex-1 w-full overflow-visible"
         onMouseLeave={() => setHover(null)}
         onMouseMove={(e) => {
           const r = e.currentTarget.getBoundingClientRect();
-          const ratio = (e.clientX - r.left) / r.width;
+          const ratio = ((e.clientX - r.left) / r.width - padL / w) / (plotW / w);
           setHover(Math.max(0, Math.min(pts.length - 1, Math.round(ratio * (pts.length - 1)))));
         }}
       >
@@ -72,19 +84,30 @@ function Chart({ q }: { q: OilQuote }) {
             </feMerge>
           </filter>
         </defs>
-        {[0.25, 0.5, 0.75].map((t) => (
-          <line
-            key={t}
-            x1="0"
-            x2={w}
-            y1={h * t}
-            y2={h * t}
-            stroke="var(--border)"
-            strokeWidth="1"
-            vectorEffect="non-scaling-stroke"
-          />
+        {yTicks.map((t) => (
+          <g key={t.v}>
+            <line
+              x1={padL}
+              x2={w}
+              y1={t.y}
+              y2={t.y}
+              stroke="var(--border)"
+              strokeWidth="1"
+              strokeDasharray="2 3"
+              vectorEffect="non-scaling-stroke"
+            />
+            <text
+              x={padL - 4}
+              y={t.y + 3}
+              textAnchor="end"
+              className="fill-muted-foreground font-mono"
+              style={{ fontSize: 7 }}
+            >
+              {compact(t.v)}
+            </text>
+          </g>
         ))}
-        <path d={`${line} L${w},${h} L0,${h} Z`} fill={`url(#${id})`} />
+        <path d={`${line} L${w},${h} L${padL},${h} Z`} fill={`url(#${id})`} />
         <path
           d={line}
           fill="none"
@@ -124,16 +147,33 @@ function Chart({ q }: { q: OilQuote }) {
           vectorEffect="non-scaling-stroke"
         />
       </svg>
+      <div className="label-mono mt-1 flex justify-between px-0.5 text-muted-foreground">
+        <span className="font-mono">{dateOf(pts[0]!.t)}</span>
+        <span className="font-mono">{dateOf(pts[Math.floor(pts.length / 2)]!.t)}</span>
+        <span className="font-mono">{dateOf(pts[pts.length - 1]!.t)}</span>
+      </div>
       <div className="label-mono mt-1.5 flex items-center justify-between gap-2 rounded-md border border-border/70 bg-surface-2/70 px-2 py-1 text-muted-foreground backdrop-blur-sm">
-        <span>{hover === null ? "latest close" : "hover"}</span>
+        <span>{hover === null ? "latest close" : dateOf(pts[active]!.t)}</span>
         <span className="font-mono font-semibold tabular-nums text-foreground">
           {cur}
-          {fmt(pts[active]!.c)}{" "}
-          <span className="font-normal text-muted-foreground">
-          {new Date(pts[active]!.t).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-          </span>
+          {fmt(pts[active]!.c)}
         </span>
       </div>
+      <dl className="mt-1.5 grid grid-cols-3 gap-1 text-center">
+        {[
+          ["30d high", hi],
+          ["30d low", lo],
+          ["prev close", q.prevClose],
+        ].map(([k, v]) => (
+          <div key={k as string} className="rounded-md border border-border/60 bg-surface-2/40 px-1 py-1">
+            <dt className="label-mono text-muted-foreground">{k as string}</dt>
+            <dd className="font-mono text-[11px] font-semibold tabular-nums text-foreground">
+              {cur}
+              {fmt(v as number)}
+            </dd>
+          </div>
+        ))}
+      </dl>
     </div>
   );
 }
@@ -227,13 +267,14 @@ export function OilPricePanel() {
               </span>
             </div>
             <div className="label-mono text-muted-foreground">
-              prev close{" "}
-              <span className="font-mono tabular-nums text-foreground">
-                {q.unit === "index" ? "" : "$"}
-                {q.prevClose.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              1D change{" "}
+              <span
+                className={`font-mono font-semibold tabular-nums ${up ? "text-primary" : "text-destructive"}`}
+              >
+                {up ? "+" : ""}
+                {q.change.toFixed(2)}
               </span>{" "}
-              · {up ? "+" : ""}
-              {q.change.toFixed(2)}
+              · <span className="font-mono tabular-nums">{q.symbol}</span>
             </div>
             <div className="min-h-0 flex-1">
               <Chart q={q} />
