@@ -31,8 +31,8 @@ function walk(node: unknown, out: LiveVideo[], keyword: string) {
     return;
   }
   const rec = node as Record<string, unknown>;
-  const vr = rec["videoRenderer"] as Record<string, any> | undefined;
-  if (vr?.videoId) {
+  const vr = rec["videoRenderer"] as any;
+  if (vr && vr.videoId) {
     const id = String(vr.videoId);
     if (!out.some((v) => v.id === id)) {
       out.push({
@@ -91,7 +91,7 @@ async function searchWeb(keyword: string, limit: number): Promise<LiveArticle[]>
   return items.map((item) => {
     const get = (tag: string) => {
       const m = item.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`));
-      return m ? decode(m[1].replace(/<!\[CDATA\[|\]\]>/g, "").trim()) : "";
+      return m && m[1] ? decode(m[1].replace(/<!\[CDATA\[|\]\]>/g, "").trim()) : "";
     };
     const rawTitle = get("title");
     const source = get("source") || rawTitle.split(" - ").pop() || "Web";
