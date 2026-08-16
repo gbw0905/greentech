@@ -36,6 +36,7 @@ async function quote(symbol: string) {
 }
 
 export const getCountryIndicesFn = createServerFn({ method: "GET" }).handler(async () => {
+  const { cacheGet, cacheSet } = await import("./market-cache.server");
   const symbols = Array.from(new Set(Object.values(COUNTRY_MARKETS).map((m) => m.symbol)));
   const results = await Promise.all(symbols.map(async (s) => [s, await quote(s)] as const));
   const bySymbol = new Map(results);
@@ -51,5 +52,10 @@ export const getCountryIndicesFn = createServerFn({ method: "GET" }).handler(asy
       currency: m.currency,
     };
   }
-  return { indices: out, fetchedAt: Date.now() };
+  const cached = cacheGet<Record<string, IndexQuote>>("country-indices");
+  // Fall back to the most recent successful quote for any market that failed.
+  const merged: Record<string, IndexQuote> = { ...(cached?.value ?? {}), ...out };
+  const stale = Object.keys(out).length < Object.keys(merged).length;
+  if (Object.keys(merged).length > 0) cacheSet("country-indices", merged);
+  return { indices: merged, fetchedAt: stale ? (cached?.at ?? Date.now()) : Date.now(), stale };
 });
