@@ -296,9 +296,12 @@ export function OilStocksPanel() {
     queryFn: () => getOilStocksFn(),
     refetchInterval: 5 * 60 * 1000,
     staleTime: 60 * 1000,
+    placeholderData: keepPreviousData,
+    gcTime: Infinity,
   });
 
   const quotes: OilQuote[] = data?.quotes ?? [];
+  const stale = data?.stale ?? false;
 
   return (
     <div className="glass-panel rise flex h-full flex-col p-5">
@@ -314,7 +317,7 @@ export function OilStocksPanel() {
           </p>
         </div>
         <span className="label-mono rounded-full border border-border bg-surface-2 px-3 py-1.5 text-sm text-muted-foreground">
-          {isLoading ? "Loading…" : "Live · USD / share"}
+          {isLoading ? "Loading…" : stale ? "Last close · USD / share" : "Live · USD / share"}
         </span>
       </div>
 
