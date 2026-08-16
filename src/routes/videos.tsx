@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Video } from "lucide-react";
 import { FUEL_TYPES, FUEL_ACCENT, type FuelType } from "@/lib/policy-taxonomy";
 import { VideoLibrary } from "@/components/VideoLibrary";
+import { LiveMediaFeed } from "@/components/LiveMediaFeed";
 import { PageShell, PageHeading } from "@/components/PageShell";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
 
@@ -67,6 +68,8 @@ function VideosPage() {
           );
         })}
       </div>
+
+      <LiveMediaFeed fuels={fuels} country={country} />
 
       <VideoLibrary regions={[]} fuels={fuels} country={country} onSelectCountry={setCountry} />
     </PageShell>
