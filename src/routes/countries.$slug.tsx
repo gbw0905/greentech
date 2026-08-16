@@ -48,14 +48,20 @@ function CountryPage() {
   const country = countryBySlug(slug)!;
   const { data, isFetching } = useQuery(feedQuery);
   const keywords = (country.updateKeywords ?? []).map((k) => k.toLowerCase());
-  const updates = (data?.updates ?? []).filter((u) => {
-    if (u.countrySlug === slug) return true;
-    if (keywords.length === 0) return false;
-    const text = ` ${`${u.title} ${u.summary ?? ""}`.toLowerCase()} `;
-    return keywords.some((k) =>
-      k.length <= 4 ? new RegExp(`\\b${k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`).test(text) : text.includes(k),
-    );
-  });
+  const updates = (data?.updates ?? [])
+    .filter((u) => {
+      if (u.countrySlug === slug) return true;
+      if (keywords.length === 0) return false;
+      const text = ` ${`${u.title} ${u.summary ?? ""}`.toLowerCase()} `;
+      return keywords.some((k) =>
+        k.length <= 4 ? new RegExp(`\\b${k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`).test(text) : text.includes(k),
+      );
+    })
+    .sort((a, b) => {
+      const aDate = a.publishedAt ?? a.createdAt;
+      const bDate = b.publishedAt ?? b.createdAt;
+      return new Date(bDate).getTime() - new Date(aDate).getTime();
+    });
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-10">

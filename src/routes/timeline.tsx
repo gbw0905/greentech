@@ -41,11 +41,17 @@ function TimelinePage() {
 
   const filtered = useMemo(
     () =>
-      updates.filter(
-        (u) =>
-          (fuels.length === 0 || u.fuels.some((f) => fuels.includes(f))) &&
-          (!country || u.countrySlug === country),
-      ),
+      updates
+        .filter(
+          (u) =>
+            (fuels.length === 0 || u.fuels.some((f) => fuels.includes(f))) &&
+            (!country || u.countrySlug === country),
+        )
+        .sort((a, b) => {
+          const aDate = a.publishedAt ?? a.createdAt;
+          const bDate = b.publishedAt ?? b.createdAt;
+          return new Date(bDate).getTime() - new Date(aDate).getTime();
+        }),
     [updates, fuels, country],
   );
 

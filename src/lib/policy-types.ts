@@ -7,6 +7,7 @@ export interface PolicyUpdate {
   url: string;
   source: string;
   publishedAt: string | null;
+  createdAt: string;
   region: Region;
   countrySlug: string | null;
   countryName: string | null;
