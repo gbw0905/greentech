@@ -27,6 +27,7 @@ async function readFeed(): Promise<PolicyFeed> {
     .from("policy_updates")
     .select("url,title,summary,source,published_at,region,country_slug,country_name,fuels,created_at")
     .order("published_at", { ascending: false, nullsFirst: false })
+    .order("created_at", { ascending: false })
     .limit(400);
 
   if (error) return { updates: [], fetchedAt, error: error.message };
@@ -39,6 +40,7 @@ async function readFeed(): Promise<PolicyFeed> {
       url: r.url,
       source: r.source ?? "",
       publishedAt: r.published_at,
+      createdAt: r.created_at ?? fetchedAt,
       region: (r.region ?? "Global") as Region,
       countrySlug: r.country_slug,
       countryName: r.country_name,
