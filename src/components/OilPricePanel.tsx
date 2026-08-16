@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { TrendingDown, TrendingUp } from "lucide-react";
 import { getOilPricesFn, type OilQuote } from "@/lib/oil.functions";
@@ -183,11 +183,16 @@ export function OilPricePanel() {
     queryKey: ["oil-prices"],
     queryFn: () => getOilPricesFn(),
     refetchInterval: 60_000,
+    placeholderData: keepPreviousData,
+    staleTime: Infinity,
+    gcTime: Infinity,
   });
 
   const quotes = data?.quotes ?? [];
-  const stamp = dataUpdatedAt
-    ? new Date(dataUpdatedAt).toLocaleTimeString(undefined, {
+  const stale = data?.stale ?? false;
+  const asOf = data?.asOf ?? dataUpdatedAt;
+  const stamp = asOf
+    ? new Date(asOf).toLocaleTimeString(undefined, {
         hour: "2-digit",
         minute: "2-digit",
         timeZone: "UTC",
@@ -219,12 +224,20 @@ export function OilPricePanel() {
           </div>
         </div>
         <div className="flex flex-col items-start gap-1.5 sm:items-end">
-          <span className="label-mono inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-primary">
-            <span className="pulse-dot size-2 rounded-full bg-primary" />
-            live
-          </span>
+          {stale ? (
+            <span className="label-mono inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-2/70 px-2.5 py-1 text-muted-foreground">
+              <span className="size-2 rounded-full bg-muted-foreground" />
+              last close
+            </span>
+          ) : (
+            <span className="label-mono inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-primary">
+              <span className="pulse-dot size-2 rounded-full bg-primary" />
+              live
+            </span>
+          )}
           <span className="label-mono text-muted-foreground">
-            updated <span className="font-mono tabular-nums text-foreground">{stamp}</span>
+            {stale ? "as of" : "updated"}{" "}
+            <span className="font-mono tabular-nums text-foreground">{stamp}</span>
           </span>
         </div>
       </header>
