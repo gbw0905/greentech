@@ -4,7 +4,7 @@ import { feature } from "topojson-client";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Minus, Plus, Maximize2 } from "lucide-react";
 import { COUNTRIES, REGION_ACCENT } from "@/lib/policy-taxonomy";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { getCountryIndicesFn } from "@/lib/country-markets.functions";
 
 interface GeoFeature {
@@ -36,6 +36,8 @@ export function WorldPolicyMap({
     queryFn: () => getCountryIndicesFn(),
     staleTime: 5 * 60 * 1000,
     refetchInterval: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
+    gcTime: Infinity,
   });
   const indices = marketData?.indices ?? {};
   const [hover, setHover] = useState<string | null>(null);
