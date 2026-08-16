@@ -52,12 +52,23 @@ async function loadSymbol(symbol: string, label: string, unit: string): Promise<
 }
 
 export const getOilPricesFn = createServerFn({ method: "GET" }).handler(async () => {
+  const { cacheGet, cacheSet } = await import("./market-cache.server");
   const [wti, spx, gold] = await Promise.all([
     loadSymbol("CL=F", "WTI Crude", "/bbl"),
     loadSymbol("^GSPC", "S&P 500", "index"),
     loadSymbol("GC=F", "Gold", "/oz"),
   ]);
-  return { quotes: [wti, spx, gold].filter(Boolean) as OilQuote[] };
+  const fresh = [wti, spx, gold].filter(Boolean) as OilQuote[];
+  const cached = cacheGet<OilQuote[]>("oil-prices");
+  if (fresh.length === 3) {
+    cacheSet("oil-prices", fresh);
+    return { quotes: fresh, stale: false, asOf: Date.now() };
+  }
+  // Market feed partially/fully unavailable: keep the most recent good data.
+  const merged = (cached?.value ?? []).map((old) => fresh.find((f) => f.symbol === old.symbol) ?? old);
+  for (const f of fresh) if (!merged.some((m) => m.symbol === f.symbol)) merged.push(f);
+  if (merged.length > 0) cacheSet("oil-prices", merged);
+  return { quotes: merged, stale: true, asOf: cached?.at ?? Date.now() };
 });
 
 /** Twenty of the largest NYSE-listed oil & gas companies. */
@@ -85,10 +96,20 @@ const OIL_STOCKS: Array<[string, string]> = [
 ];
 
 export const getOilStocksFn = createServerFn({ method: "GET" }).handler(async () => {
+  const { cacheGet, cacheSet } = await import("./market-cache.server");
   const quotes = await Promise.all(
     OIL_STOCKS.map(([sym, label]) => loadSymbol(sym, label, "USD / share")),
   );
-  return {
-    quotes: (quotes.filter(Boolean) as OilQuote[]).sort((a, b) => b.price - a.price),
-  };
+  const fresh = (quotes.filter(Boolean) as OilQuote[]).sort((a, b) => b.price - a.price);
+  const cached = cacheGet<OilQuote[]>("oil-stocks");
+  if (fresh.length >= OIL_STOCKS.length - 2) {
+    cacheSet("oil-stocks", fresh);
+    return { quotes: fresh, stale: false, asOf: Date.now() };
+  }
+  const bySym = new Map(fresh.map((q) => [q.symbol, q]));
+  const merged = [...(cached?.value ?? []).map((old) => bySym.get(old.symbol) ?? old)];
+  for (const f of fresh) if (!merged.some((m) => m.symbol === f.symbol)) merged.push(f);
+  merged.sort((a, b) => b.price - a.price);
+  if (merged.length > 0) cacheSet("oil-stocks", merged);
+  return { quotes: merged, stale: merged.length > 0, asOf: cached?.at ?? Date.now() };
 });
