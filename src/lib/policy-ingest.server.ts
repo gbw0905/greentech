@@ -98,11 +98,20 @@ const POLICY_ACTIONS = [
   "consultation", "notice", "exemption", "compliance", "enacted", "approved", "signed into law",
 ];
 
-/** Market/company noise that is not a government policy move. */
-const NON_POLICY_SIGNALS = [
-  "earnings", "quarterly results", "share price", "stock", "ipo", "merger", "acquisition",
-  "acquires", "groundbreaking", "opens new plant", "expands capacity", "partnership",
-  "signs mou", "appoints", "hires", "ceo", "webinar", "conference", "award", "sponsor",
+/** Substantive market moves worth publishing alongside policy. */
+const MARKET_ACTIONS = [
+  "price", "prices", "demand", "supply", "output", "production", "capacity", "exports",
+  "imports", "margin", "spread", "investment", "invests", "plant", "refinery", "facility",
+  "offtake", "supply deal", "contract", "acquisition", "acquires", "merger", "joint venture",
+  "expansion", "expands", "shutdown", "halts", "forecast", "outlook", "market", "trade",
+  "tender", "auction", "credits", "shipment", "blending rate", "consumption",
+];
+
+/** Pure promotional / people noise — never published. */
+const NOISE_SIGNALS = [
+  "webinar", "conference", "award", "sponsor", "appoints", "hires", "promoted to",
+  "job opening", "press release distribution", "market research report", "market size",
+  "cagr", "forecast period 20",
 ];
 
 const BIO_SIGNALS = [
@@ -113,12 +122,23 @@ const BIO_SIGNALS = [
   "renewable fuel standard", "e15 ", "rin credit", "rins",
 ];
 
-/** Only government policy moves are published — company/market news is dropped. */
-export function isRelevant(text: string): boolean {
+export type UpdateCategory = "policy" | "market";
+
+/** Classify an item as a government policy move, a market update, or noise. */
+export function categorise(text: string): UpdateCategory | null {
   const t = ` ${text.toLowerCase()} `;
-  if (!BIO_SIGNALS.some((s) => t.includes(s))) return false;
-  if (NON_POLICY_SIGNALS.some((s) => t.includes(s))) return false;
-  return GOVERNMENT_ACTORS.some((s) => t.includes(s)) && POLICY_ACTIONS.some((s) => t.includes(s));
+  if (!BIO_SIGNALS.some((s) => t.includes(s))) return null;
+  if (NOISE_SIGNALS.some((s) => t.includes(s))) return null;
+  if (GOVERNMENT_ACTORS.some((s) => t.includes(s)) && POLICY_ACTIONS.some((s) => t.includes(s))) {
+    return "policy";
+  }
+  if (MARKET_ACTIONS.some((s) => t.includes(s))) return "market";
+  return null;
+}
+
+/** Kept for existing callers: true when the item is publishable at all. */
+export function isRelevant(text: string): boolean {
+  return categorise(text) !== null;
 }
 
 function hostOf(url: string): string {
@@ -171,7 +191,8 @@ export async function ingestPolicyUpdates(): Promise<IngestResult> {
 
   for (const item of all) {
     const text = `${item.title} ${item.summary}`;
-    if (!isRelevant(text)) continue;
+    const category = categorise(text);
+    if (!category) continue;
     // Only authentic global media, trade journals and official publishers.
     if (!isTrustedOutlet(item.source, item.link)) continue;
     const titleKey = item.title.toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0, 90);
@@ -189,6 +210,7 @@ export async function ingestPolicyUpdates(): Promise<IngestResult> {
       url: item.link,
       title: item.title.slice(0, 400),
       summary,
+      category,
       source: item.source.includes(".") ? hostOf(`https://${item.source}`) : item.source,
       published_at: item.publishedAt,
       region: country?.region ?? "Global",

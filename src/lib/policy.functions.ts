@@ -25,7 +25,9 @@ async function readFeed(): Promise<PolicyFeed> {
   const fetchedAt = new Date().toISOString();
   const { data, error } = await publicClient()
     .from("policy_updates")
-    .select("url,title,summary,source,published_at,region,country_slug,country_name,fuels,created_at")
+    .select(
+      "url,title,summary,source,published_at,region,country_slug,country_name,fuels,created_at,category",
+    )
     .order("published_at", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false })
     .limit(400);
@@ -36,6 +38,9 @@ async function readFeed(): Promise<PolicyFeed> {
     updates: (data ?? []).map((r) => ({
       id: r.url,
       title: r.title,
+      category: ((r as { category?: string }).category === "market" ? "market" : "policy") as
+        | "policy"
+        | "market",
       summary: r.summary ?? "",
       url: r.url,
       source: r.source ?? "",

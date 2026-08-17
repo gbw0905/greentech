@@ -3,6 +3,7 @@ import type { FuelType, Region } from "./policy-taxonomy";
 export interface PolicyUpdate {
   id: string;
   title: string;
+  category: "policy" | "market";
   summary: string;
   url: string;
   source: string;
