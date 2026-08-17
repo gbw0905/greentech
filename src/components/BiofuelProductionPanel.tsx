@@ -92,12 +92,14 @@ function BarChart({
   decimals = 1,
   news,
   onSelect,
+  yLabel = "Entity",
 }: {
   items: { key: string; label: string; sub?: string; value: number; color: string }[];
   unitLabel: string;
   decimals?: number;
   news?: Record<string, { name: string; query: string }>;
   onSelect?: (t: NewsTarget) => void;
+  yLabel?: string;
 }) {
   const max = Math.max(...items.map((i) => i.value));
   const total = items.reduce((a, i) => a + i.value, 0);
@@ -216,7 +218,10 @@ function BarChart({
         </div>
       </div>
 
-      <div className="label-mono mt-3 text-muted-foreground">X axis: {unitLabel}</div>
+      <div className="label-mono mt-3 flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground">
+        <span>X axis: {unitLabel}</span>
+        <span>Y axis: {yLabel} (ranked, highest first)</span>
+      </div>
     </div>
   );
 }
@@ -292,6 +297,7 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
         </div>
         <BarChart
           unitLabel={byVolume ? "million litres of biofuel sold / year" : "retail sites offering biofuels"}
+          yLabel="Retail fuel network"
           decimals={0}
           items={stations.map((s) => ({
             key: s.name,
@@ -345,6 +351,7 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
               ? "billion litres / year consumed"
               : "billion litres / year (corporate capacity)"
           }
+          yLabel={userView === "countries" ? "Country / market" : "Company"}
           items={users.map((c) => ({
             key: c.name,
             label: `${c.flag} ${c.name}`,

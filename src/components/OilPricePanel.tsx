@@ -152,6 +152,10 @@ function Chart({ q }: { q: OilQuote }) {
         <span className="font-mono">{dateOf(pts[Math.floor(pts.length / 2)]!.t)}</span>
         <span className="font-mono">{dateOf(pts[pts.length - 1]!.t)}</span>
       </div>
+      <div className="label-mono mt-0.5 flex justify-between text-[9px] text-muted-foreground">
+        <span>Y axis: {q.unit === "index" ? "index level" : `price USD ${q.unit}`}</span>
+        <span>X axis: date (last 30 days)</span>
+      </div>
       <div className="label-mono mt-1.5 flex items-center justify-between gap-2 rounded-md border border-border/70 bg-surface-2/70 px-2 py-1 text-muted-foreground backdrop-blur-sm">
         <span>{hover === null ? "latest close" : dateOf(pts[active]!.t)}</span>
         <span className="font-mono font-semibold tabular-nums text-foreground">
