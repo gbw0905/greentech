@@ -23,6 +23,7 @@ import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[
 import { Route as ApiPublicDailyFlyerEmailRouteImport } from './routes/api/public/daily-flyer-email'
 import { Route as ApiPublicDailyTrafficEmailRouteImport } from './routes/api/public/daily-traffic-email'
 import { Route as ApiPublicIngestPolicyRouteImport } from './routes/api/public/ingest-policy'
+import { Route as ApiPublicInstantBriefAlertsRouteImport } from './routes/api/public/instant-brief-alerts'
 import { Route as ApiPublicPolicyAlertDigestRouteImport } from './routes/api/public/policy-alert-digest'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 
@@ -101,6 +102,12 @@ const ApiPublicIngestPolicyRoute = ApiPublicIngestPolicyRouteImport.update({
   path: '/api/public/ingest-policy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicInstantBriefAlertsRoute =
+  ApiPublicInstantBriefAlertsRouteImport.update({
+    id: '/api/public/instant-brief-alerts',
+    path: '/api/public/instant-brief-alerts',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPolicyAlertDigestRoute =
   ApiPublicPolicyAlertDigestRouteImport.update({
     id: '/api/public/policy-alert-digest',
@@ -129,6 +136,7 @@ export interface FileRoutesByFullPath {
   '/api/public/daily-flyer-email': typeof ApiPublicDailyFlyerEmailRoute
   '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
   '/api/public/ingest-policy': typeof ApiPublicIngestPolicyRoute
+  '/api/public/instant-brief-alerts': typeof ApiPublicInstantBriefAlertsRoute
   '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
@@ -147,6 +155,7 @@ export interface FileRoutesByTo {
   '/api/public/daily-flyer-email': typeof ApiPublicDailyFlyerEmailRoute
   '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
   '/api/public/ingest-policy': typeof ApiPublicIngestPolicyRoute
+  '/api/public/instant-brief-alerts': typeof ApiPublicInstantBriefAlertsRoute
   '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
@@ -166,6 +175,7 @@ export interface FileRoutesById {
   '/api/public/daily-flyer-email': typeof ApiPublicDailyFlyerEmailRoute
   '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
   '/api/public/ingest-policy': typeof ApiPublicIngestPolicyRoute
+  '/api/public/instant-brief-alerts': typeof ApiPublicInstantBriefAlertsRoute
   '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
@@ -186,6 +196,7 @@ export interface FileRouteTypes {
     | '/api/public/daily-flyer-email'
     | '/api/public/daily-traffic-email'
     | '/api/public/ingest-policy'
+    | '/api/public/instant-brief-alerts'
     | '/api/public/policy-alert-digest'
     | '/lovable/email/transactional/preview'
   fileRoutesByTo: FileRoutesByTo
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/api/public/daily-flyer-email'
     | '/api/public/daily-traffic-email'
     | '/api/public/ingest-policy'
+    | '/api/public/instant-brief-alerts'
     | '/api/public/policy-alert-digest'
     | '/lovable/email/transactional/preview'
   id:
@@ -222,6 +234,7 @@ export interface FileRouteTypes {
     | '/api/public/daily-flyer-email'
     | '/api/public/daily-traffic-email'
     | '/api/public/ingest-policy'
+    | '/api/public/instant-brief-alerts'
     | '/api/public/policy-alert-digest'
     | '/lovable/email/transactional/preview'
   fileRoutesById: FileRoutesById
@@ -241,6 +254,7 @@ export interface RootRouteChildren {
   ApiPublicDailyFlyerEmailRoute: typeof ApiPublicDailyFlyerEmailRoute
   ApiPublicDailyTrafficEmailRoute: typeof ApiPublicDailyTrafficEmailRoute
   ApiPublicIngestPolicyRoute: typeof ApiPublicIngestPolicyRoute
+  ApiPublicInstantBriefAlertsRoute: typeof ApiPublicInstantBriefAlertsRoute
   ApiPublicPolicyAlertDigestRoute: typeof ApiPublicPolicyAlertDigestRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
 }
@@ -345,6 +359,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicIngestPolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/instant-brief-alerts': {
+      id: '/api/public/instant-brief-alerts'
+      path: '/api/public/instant-brief-alerts'
+      fullPath: '/api/public/instant-brief-alerts'
+      preLoaderRoute: typeof ApiPublicInstantBriefAlertsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/policy-alert-digest': {
       id: '/api/public/policy-alert-digest'
       path: '/api/public/policy-alert-digest'
@@ -378,6 +399,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicDailyFlyerEmailRoute: ApiPublicDailyFlyerEmailRoute,
   ApiPublicDailyTrafficEmailRoute: ApiPublicDailyTrafficEmailRoute,
   ApiPublicIngestPolicyRoute: ApiPublicIngestPolicyRoute,
+  ApiPublicInstantBriefAlertsRoute: ApiPublicInstantBriefAlertsRoute,
   ApiPublicPolicyAlertDigestRoute: ApiPublicPolicyAlertDigestRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
 }
