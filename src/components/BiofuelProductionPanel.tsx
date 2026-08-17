@@ -92,12 +92,14 @@ function BarChart({
   decimals = 1,
   news,
   onSelect,
+  yLabel = "Entity",
 }: {
   items: { key: string; label: string; sub?: string; value: number; color: string }[];
   unitLabel: string;
   decimals?: number;
   news?: Record<string, { name: string; query: string }>;
   onSelect?: (t: NewsTarget) => void;
+  yLabel?: string;
 }) {
   const max = Math.max(...items.map((i) => i.value));
   const total = items.reduce((a, i) => a + i.value, 0);
@@ -216,7 +218,10 @@ function BarChart({
         </div>
       </div>
 
-      <div className="label-mono mt-3 text-muted-foreground">X axis: {unitLabel}</div>
+      <div className="label-mono mt-3 flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground">
+        <span>X axis: {unitLabel}</span>
+        <span>Y axis: {yLabel} (ranked, highest first)</span>
+      </div>
     </div>
   );
 }
