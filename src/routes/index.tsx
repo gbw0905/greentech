@@ -1,19 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { RefreshCw, Filter, X, AlertTriangle, Map, Factory, Flame, TrendingUp, BellRing, Activity } from "lucide-react";
+import { useMemo } from "react";
+import { RefreshCw, AlertTriangle, Map, Factory, TrendingUp, BellRing, Activity } from "lucide-react";
 import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
 import siteLogo from "@/assets/logo.png";
-import {
-  COUNTRIES,
-  FUEL_TYPES,
-  FUEL_ACCENT,
-  flagFor,
-  type FuelType,
-} from "@/lib/policy-taxonomy";
 import { formatDate } from "@/components/UpdateCard";
 import { WorldPolicyMap } from "@/components/WorldPolicyMap";
-import { CountryFocusPanel } from "@/components/CountryFocusPanel";
 
 import { OilPricePanel } from "@/components/OilPricePanel";
 import { OilStocksPanel } from "@/components/OilStocksPanel";
@@ -55,65 +47,6 @@ export const Route = createFileRoute("/")({
   ),
   notFoundComponent: () => <div className="p-10 text-sm">Nothing here.</div>,
 });
-
-function Chip({
-  active,
-  onClick,
-  children,
-  color,
-  count,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-  color?: string;
-  count?: number;
-}) {
-  const tint = color ?? "var(--primary)";
-  const empty = count === 0;
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={`label-mono inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-all duration-200 hover:-translate-y-0.5 hover:brightness-125 active:scale-95 ${
-        empty && !active ? "opacity-45" : ""
-      }`}
-      style={
-        active
-          ? {
-              backgroundColor: tint,
-              borderColor: tint,
-              color: "var(--primary-foreground)",
-              boxShadow: `0 0 0 3px color-mix(in oklab, ${tint} 28%, transparent), var(--shadow-frost)`,
-            }
-          : {
-              backgroundColor: `color-mix(in oklab, ${tint} 12%, var(--surface))`,
-              borderColor: `color-mix(in oklab, ${tint} 35%, transparent)`,
-              color: tint,
-            }
-      }
-    >
-      <span
-        className={`size-1.5 rounded-full ${active ? "pulse-dot" : ""}`}
-        style={{ backgroundColor: active ? "var(--primary-foreground)" : tint }}
-      />
-      {children}
-      {typeof count === "number" && (
-        <span
-          className="ml-0.5 rounded-full px-1.5 text-[0.65rem] tabular-nums"
-          style={{
-            backgroundColor: active
-              ? "color-mix(in oklab, var(--primary-foreground) 22%, transparent)"
-              : `color-mix(in oklab, ${tint} 20%, transparent)`,
-          }}
-        >
-          {count}
-        </span>
-      )}
-    </button>
-  );
-}
 
 function Index() {
   return <Dashboard />;
@@ -171,31 +104,13 @@ function Dashboard() {
   });
   const busy = isFetching || rescan.isPending;
   const data = feed ?? { updates: [], fetchedAt: null as string | null, error: null as string | null };
-  const [fuels, setFuels] = useState<FuelType[]>([]);
-  const [country, setCountry] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const counts = useMemo(() => {
     const c: Record<string, number> = {};
     for (const u of data.updates) if (u.countrySlug) c[u.countrySlug] = (c[u.countrySlug] ?? 0) + 1;
     return c;
   }, [data.updates]);
-
-  const toggle = <T,>(list: T[], set: (v: T[]) => void, value: T) =>
-    set(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
-
-  const fuelCounts = useMemo(() => {
-    const m = {} as Record<FuelType, number>;
-    for (const f of FUEL_TYPES) m[f] = data.updates.filter((u) => u.fuels.includes(f)).length;
-    return m;
-  }, [data.updates]);
-
-  const hasFilters = Boolean(country) || fuels.length > 0;
-  const clearFilters = () => {
-    setCountry(null);
-    setFuels([]);
-  };
-
-
 
   return (
     <div className="min-h-screen">
@@ -236,42 +151,6 @@ function Dashboard() {
       </header>
 
       <div className="mx-auto max-w-[110rem] px-5 py-6 lg:px-8 lg:py-8">
-        {/* Active filters summary (replaces left sidebar) */}
-        {hasFilters && (
-          <div className="glass-panel mb-6 flex flex-wrap items-center gap-2 p-3">
-            <span className="label-mono mr-1 inline-flex items-center gap-1.5 text-muted-foreground">
-              <Filter className="size-3.5" /> Active filters
-            </span>
-            {country && (
-              <button
-                type="button"
-                onClick={() => setCountry(null)}
-                className="label-mono inline-flex items-center gap-1 rounded-full border border-border bg-surface-2 px-2 py-1 transition-colors hover:border-destructive hover:text-destructive"
-              >
-                {flagFor(country)} {COUNTRIES.find((c) => c.slug === country)?.name}
-                <X className="size-3" />
-              </button>
-            )}
-            {fuels.map((f) => (
-              <button
-                key={f}
-                type="button"
-                onClick={() => toggle(fuels, setFuels, f)}
-                className="label-mono inline-flex items-center gap-1 rounded-full border border-border bg-surface-2 px-2 py-1 transition-colors hover:border-destructive hover:text-destructive"
-                style={{ color: FUEL_ACCENT[f] }}
-              >
-                {f} <X className="size-3" />
-              </button>
-            ))}
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="label-mono ml-auto inline-flex items-center gap-1 text-primary transition-transform hover:underline active:scale-95"
-            >
-              <X className="size-3" /> Clear all
-            </button>
-          </div>
-        )}
 
         <main className="space-y-6">
           <section className="glass-panel rise overflow-hidden">
@@ -339,7 +218,7 @@ function Dashboard() {
               step={2}
               icon={Map}
               title="Policy activity by jurisdiction"
-              subtitle="Click a country to load its policy profile, latest policy and market updates, and video briefings below."
+              subtitle="Click any country on the map to open its policy profile, mandates and latest updates."
             />
             <div className="glass-panel rise flex min-w-0 flex-col p-5">
               <div className="mb-3 flex items-center justify-between gap-3">
@@ -350,10 +229,15 @@ function Dashboard() {
                 </span>
               </div>
               <div className="min-h-0 flex-1">
-                <WorldPolicyMap counts={counts} activeCountry={country} onSelect={setCountry} />
+                <WorldPolicyMap
+                  counts={counts}
+                  activeCountry={null}
+                  onSelect={(slug) => {
+                    if (slug) navigate({ to: "/countries/$slug", params: { slug } });
+                  }}
+                />
               </div>
             </div>
-            <CountryFocusPanel country={country} fuels={fuels} onSelectCountry={setCountry} />
           </section>
 
           <section id="production" className="pt-4">
@@ -361,37 +245,9 @@ function Dashboard() {
               step={3}
               icon={Factory}
               title="Biofuel supply at the pump and top users"
-              subtitle="Retail networks selling biofuels worldwide and the largest users — filter both with the fuel-type menu below."
+              subtitle="Retail networks selling biofuels worldwide and the largest users of each fuel."
             />
-            <nav
-              aria-label="Fuel type filter"
-              className="glass-panel mb-4 flex flex-wrap items-center gap-2 p-3"
-            >
-              <span className="label-mono mr-1 inline-flex items-center gap-1.5 text-muted-foreground">
-                <Flame className="size-3.5" /> Fuel type
-              </span>
-              {FUEL_TYPES.map((f) => (
-                <Chip
-                  key={f}
-                  active={fuels.includes(f)}
-                  color={FUEL_ACCENT[f]}
-                  count={fuelCounts[f]}
-                  onClick={() => toggle(fuels, setFuels, f)}
-                >
-                  {f}
-                </Chip>
-              ))}
-              {fuels.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setFuels([])}
-                  className="label-mono ml-auto inline-flex items-center gap-1 text-muted-foreground transition-colors hover:text-destructive"
-                >
-                  Clear <X className="size-3" />
-                </button>
-              )}
-            </nav>
-            <BiofuelProductionPanel fuels={fuels} />
+            <BiofuelProductionPanel fuels={[]} />
             <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2 xl:items-stretch">
               <OilStocksPanel />
               <SafAirlinesPanel />
