@@ -512,7 +512,7 @@ export const FUEL_ACCENT: Record<FuelType, string> = {
 };
 
 /** How far a jurisdiction has taken its biofuel policy. */
-export type PolicyStatus = "Mandated" | "Policy framework" | "Proposed" | "No framework";
+export type PolicyStatus = "Mandated" | "Policy framework" | "In development" | "No framework";
 
 const PLANNED = /(planned|proposed|consultation|draft|target|from 20\d\d|pilot|under review)/i;
 const BLEND = /\b([EB]\d{1,2}|\d{1,2}(\.\d)?\s?%|obligation|mandate|blend)/i;
@@ -523,13 +523,13 @@ export function policyStatusFor(country: CountryProfile | undefined | null): Pol
   const binding = values.some((v) => BLEND.test(v) && !PLANNED.test(v));
   if (binding) return "Mandated";
   if (values.length > 0 && values.some((v) => !PLANNED.test(v))) return "Policy framework";
-  if (values.length > 0) return "Proposed";
+  if (values.length > 0) return "In development";
   return "No framework";
 }
 
 export const POLICY_STATUS_COLOR: Record<PolicyStatus, string> = {
-  Mandated: "oklch(0.5 0.1 168)",
-  "Policy framework": "oklch(0.66 0.13 68)",
-  Proposed: "oklch(0.62 0.12 236)",
-  "No framework": "var(--grid)",
+  Mandated: "oklch(0.62 0.19 152)",
+  "Policy framework": "oklch(0.76 0.17 78)",
+  "In development": "oklch(0.66 0.2 292)",
+  "No framework": "oklch(0.88 0.015 250)",
 };

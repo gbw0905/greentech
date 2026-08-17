@@ -6,7 +6,7 @@ export default defineTool({
   name: "list_jurisdictions",
   title: "List tracked jurisdictions",
   description:
-    "List the jurisdictions tracked by Global Bioenergy Watch with their slug, region and biofuel policy status (Mandated, Policy framework, Proposed, No framework).",
+    "List the jurisdictions tracked by Global Bioenergy Watch with their slug, region and biofuel policy status (Mandated, Policy framework, In development, No framework).",
   inputSchema: {
     region: z.string().optional().describe("Optional region filter, e.g. 'Asia Pacific'."),
   },
