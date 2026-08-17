@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { RefreshCw, Layers, Filter, X, AlertTriangle, Map, Video, Flag, Factory, Flame, TrendingUp, BellRing, Activity } from "lucide-react";
+import { RefreshCw, Filter, X, AlertTriangle, Map, Factory, Flame, TrendingUp, BellRing, Activity } from "lucide-react";
 import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
 import siteLogo from "@/assets/logo.png";
 import {
@@ -13,6 +13,7 @@ import {
 } from "@/lib/policy-taxonomy";
 import { formatDate } from "@/components/UpdateCard";
 import { WorldPolicyMap } from "@/components/WorldPolicyMap";
+import { CountryFocusPanel } from "@/components/CountryFocusPanel";
 
 import { OilPricePanel } from "@/components/OilPricePanel";
 import { OilStocksPanel } from "@/components/OilStocksPanel";
