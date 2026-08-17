@@ -1,6 +1,6 @@
 // Server-only: generates and caches AI briefs for policy/market updates.
 
-const MODEL = "google/gemini-3-flash";
+const MODEL = "google/gemini-3-flash-preview";
 
 export interface BriefSource {
   id: string;
