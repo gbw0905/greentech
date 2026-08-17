@@ -41,4 +41,12 @@ export const FEED_SOURCES: FeedSource[] = [
   { name: "Biodiesel Magazine", url: "https://biodieselmagazine.com/rss/articles" },
   { name: "Ethanol Producer Magazine", url: "https://ethanolproducer.com/rss/articles" },
   { name: "Biomass Magazine", url: "https://biomassmagazine.com/rss/articles" },
+  // Market sweeps (prices, supply, demand, investment)
+  { name: "Google News", url: news("biofuel market prices demand supply when:7d") },
+  { name: "Google News", url: news("ethanol prices market outlook when:7d") },
+  { name: "Google News", url: news("biodiesel HVO feedstock prices market when:7d") },
+  { name: "Google News", url: news("sustainable aviation fuel offtake supply deal when:14d") },
+  { name: "Google News", url: news("renewable diesel capacity refinery investment when:14d") },
+  { name: "Google News", url: news("biogas biomethane investment plant capacity when:14d") },
+  { name: "Google News", url: news("biofuel exports imports trade when:7d") },
 ];
