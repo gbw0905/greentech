@@ -147,6 +147,11 @@ export function SafAirlinesPanel() {
       </div>
 
       <div className="mt-4 space-y-2 border-t border-border pt-3">
+        <div className="label-mono flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground">
+          <span>X axis: SAF uplift, million litres per year (bar length)</span>
+          <span>Y axis: airline, ranked by uplift</span>
+          <span>Right column: SAF share of total fuel burn (%)</span>
+        </div>
         <p className="text-xs text-muted-foreground">
           Estimates compiled from airline sustainability reports, published offtake agreements and
           national SAF mandates. Click any airline to open its latest SAF news. Cross-verify
