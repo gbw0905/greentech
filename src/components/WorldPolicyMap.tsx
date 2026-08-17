@@ -5,7 +5,6 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { Minus, Plus, Maximize2 } from "lucide-react";
 import {
   COUNTRIES,
-  REGION_ACCENT,
   POLICY_STATUS_COLOR,
   policyStatusFor,
   type PolicyStatus,
