@@ -3,7 +3,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { feature } from "topojson-client";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Minus, Plus, Maximize2 } from "lucide-react";
-import { COUNTRIES, REGION_ACCENT } from "@/lib/policy-taxonomy";
+import {
+  COUNTRIES,
+  REGION_ACCENT,
+  POLICY_STATUS_COLOR,
+  policyStatusFor,
+  type PolicyStatus,
+} from "@/lib/policy-taxonomy";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { getCountryIndicesFn } from "@/lib/country-markets.functions";
 
@@ -107,6 +113,7 @@ export function WorldPolicyMap({
 
   const hovered = hover ? byMapName.get(hover) : null;
   const hoveredIndex = hovered ? indices[hovered.slug] : undefined;
+  const hoveredStatus = hovered ? policyStatusFor(hovered) : null;
   const zoomed = view.z > 1.01 || view.x !== 0 || view.y !== 0;
 
   return (
@@ -151,11 +158,8 @@ export function WorldPolicyMap({
               const count = country ? (counts[country.slug] ?? 0) : 0;
               const isActive = country && country.slug === activeCountry;
               const isHover = Boolean(country) && f.properties.name === hover;
-              const fill = country
-                ? count > 0
-                  ? REGION_ACCENT[country.region]
-                  : "var(--grid)"
-                : "var(--muted)";
+              const status: PolicyStatus | null = country ? policyStatusFor(country) : null;
+              const fill = status ? POLICY_STATUS_COLOR[status] : "var(--muted)";
               return (
                 <path
                   key={i}
@@ -165,9 +169,9 @@ export function WorldPolicyMap({
                     country
                       ? isHover
                         ? 1
-                        : count > 0
-                          ? Math.min(0.4 + count * 0.1, 0.95)
-                          : 1
+                        : status === "No framework"
+                          ? 1
+                          : Math.min(0.55 + count * 0.06, 0.95)
                       : 1
                   }
                   stroke={
@@ -199,8 +203,11 @@ export function WorldPolicyMap({
             <div className="font-display text-xs font-semibold whitespace-nowrap">
               {hovered.name}
             </div>
-            <div className="label-mono" style={{ color: REGION_ACCENT[hovered.region] }}>
-              {counts[hovered.slug] ?? 0} updates
+            <div
+              className="label-mono"
+              style={{ color: POLICY_STATUS_COLOR[hoveredStatus ?? "No framework"] }}
+            >
+              {hoveredStatus} · {counts[hovered.slug] ?? 0} updates
             </div>
             <dl className="mt-1.5 space-y-1 border-t border-border pt-1.5 font-mono text-[10px] text-muted-foreground">
               <div className="flex items-baseline justify-between gap-2">
@@ -285,6 +292,17 @@ export function WorldPolicyMap({
       </div>
 
       <div className="mt-2.5 flex flex-wrap items-center justify-between gap-x-5 gap-y-2">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          {(Object.keys(POLICY_STATUS_COLOR) as PolicyStatus[]).map((s) => (
+            <span key={s} className="label-mono flex items-center gap-1.5 text-muted-foreground">
+              <span
+                className="size-2.5 rounded-[3px] border border-border"
+                style={{ background: POLICY_STATUS_COLOR[s] }}
+              />
+              {s}
+            </span>
+          ))}
+        </div>
         {hovered ? (
           <div className="label-mono text-foreground">
             {hovered.name} ·{" "}
