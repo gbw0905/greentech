@@ -223,8 +223,13 @@ export async function ingestPolicyUpdates(): Promise<IngestResult> {
       )
       .map((r) => r.url);
     for (let i = 0; i < stale.length; i += 100) {
-      await supabaseAdmin.from("policy_updates").delete().in("url", stale.slice(i, i + 100));
+      const { error: delErr } = await supabaseAdmin
+        .from("policy_updates")
+        .delete()
+        .in("url", stale.slice(i, i + 100));
+      if (delErr) console.error("purge failed", delErr.message);
     }
+    console.log("purge candidates", stale.length, "of", (existing ?? []).length);
   }
 
   return {
