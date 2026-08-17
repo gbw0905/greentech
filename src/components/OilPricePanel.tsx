@@ -6,7 +6,7 @@ import { getOilPricesFn, type OilQuote } from "@/lib/oil.functions";
 function Chart({ q }: { q: OilQuote }) {
   const [hover, setHover] = useState<number | null>(null);
   const w = 220;
-  const h = 104;
+  const h = 72;
   const padL = 34; // room for y-axis labels
   const plotW = w - padL;
   const pts = q.series;
@@ -62,7 +62,7 @@ function Chart({ q }: { q: OilQuote }) {
       </div>
       <svg
         viewBox={`0 0 ${w} ${h}`}
-        className="mt-1 min-h-[104px] flex-1 w-full overflow-visible"
+        className="mt-1 min-h-[72px] flex-1 w-full overflow-visible"
         onMouseLeave={() => setHover(null)}
         onMouseMove={(e) => {
           const r = e.currentTarget.getBoundingClientRect();
@@ -204,14 +204,14 @@ export function OilPricePanel() {
     : "—";
 
   return (
-    <div className="glass-panel rise flex h-full flex-col space-y-4 p-5">
-      <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 border-b border-border/70 pb-3">
+    <div className="glass-panel rise flex h-full flex-col space-y-3 p-4">
+      <header className="flex flex-wrap items-end justify-between gap-x-5 gap-y-2 border-b border-border/70 pb-2.5">
         <div className="min-w-0">
           <p className="label-mono text-muted-foreground">Benchmark markets</p>
-          <h2 className="mt-1 font-display text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+          <h2 className="mt-0.5 font-display text-base font-bold tracking-tight text-foreground sm:text-lg">
             Crude Oil, Equities &amp; Gold
           </h2>
-          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
             {[
               ["CL=F", "WTI crude"],
               ["^GSPC", "S&P 500"],
@@ -253,13 +253,13 @@ export function OilPricePanel() {
         <p className="text-sm text-muted-foreground">Price feed unavailable right now.</p>
       )}
 
-      <div className="grid min-h-0 flex-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid min-h-0 flex-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {quotes.map((q) => {
           const up = q.change >= 0;
           return (
             <div
               key={q.symbol}
-              className="flex flex-col space-y-1.5 rounded-[var(--radius)] border border-border bg-surface-2/60 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/50"
+              className="flex flex-col space-y-1 rounded-[var(--radius)] border border-border bg-surface-2/60 p-3 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/50"
               style={{
                 boxShadow: `inset 0 2px 0 0 ${up ? "var(--primary)" : "var(--destructive)"}`,
               }}
@@ -276,7 +276,7 @@ export function OilPricePanel() {
                 {q.changePct.toFixed(2)}%
               </span>
             </div>
-            <div className="font-display text-2xl font-bold tabular-nums text-gradient">
+            <div className="font-display text-lg font-bold tabular-nums text-gradient">
               {q.unit === "index" ? "" : "$"}
               {q.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               <span className="ml-1 font-mono text-xs font-normal text-muted-foreground">

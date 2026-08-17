@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { RefreshCw, Layers, Filter, X, AlertTriangle, Map, Video, Flag, Factory, Flame, TrendingUp, BellRing, Activity } from "lucide-react";
+import { RefreshCw, Filter, X, AlertTriangle, Map, Factory, Flame, TrendingUp, BellRing, Activity } from "lucide-react";
 import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
 import siteLogo from "@/assets/logo.png";
 import {
@@ -13,6 +13,7 @@ import {
 } from "@/lib/policy-taxonomy";
 import { formatDate } from "@/components/UpdateCard";
 import { WorldPolicyMap } from "@/components/WorldPolicyMap";
+import { CountryFocusPanel } from "@/components/CountryFocusPanel";
 
 import { OilPricePanel } from "@/components/OilPricePanel";
 import { OilStocksPanel } from "@/components/OilStocksPanel";
@@ -294,14 +295,11 @@ function Dashboard() {
               >
                 {[
                   ["#markets", "1 · Markets", "oklch(0.55 0.18 230)"],
-                  ["#production", "2 · Production", "oklch(0.55 0.16 150)"],
-                  ["#map", "3 · Map", "oklch(0.55 0.16 320)"],
-                  ["/timeline", "4 · Timeline", "oklch(0.55 0.2 50)"],
-                  ["/profiles", "5 · Country profiles", "oklch(0.55 0.14 180)"],
-                  ["/videos", "6 · Videos", "oklch(0.55 0.16 340)"],
-                  ["#alerts", "7 · Email alerts", "oklch(0.55 0.17 265)"],
-                  ["#traffic", "8 · Live audience", "oklch(0.6 0.18 25)"],
-                  ["#disclaimer", "9 · AI disclaimer", "oklch(0.45 0.02 240)"],
+                  ["#map", "2 · Map & country desk", "oklch(0.55 0.16 320)"],
+                  ["#production", "3 · Production", "oklch(0.55 0.16 150)"],
+                  ["#alerts", "4 · Email alerts", "oklch(0.55 0.17 265)"],
+                  ["#traffic", "5 · Live audience", "oklch(0.6 0.18 25)"],
+                  ["#disclaimer", "6 · AI disclaimer", "oklch(0.45 0.02 240)"],
                 ].map(([href, label, color]) => {
                   const cls =
                     "label-mono rounded-full border px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 hover:shadow-md";
@@ -336,9 +334,31 @@ function Dashboard() {
             <OilPricePanel />
           </section>
 
-          <section id="production" className="pt-4">
+          <section id="map" className="pt-4">
             <SectionHeading
               step={2}
+              icon={Map}
+              title="Policy activity by jurisdiction"
+              subtitle="Click a country to load its policy profile, latest policy and market updates, and video briefings below."
+            />
+            <div className="glass-panel rise flex min-w-0 flex-col p-5">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <h2 className="label-mono text-muted-foreground">Jurisdiction map</h2>
+                <span className="label-mono inline-flex items-center gap-1.5 text-primary">
+                  <span className="pulse-dot size-2 rounded-full bg-primary" />
+                  interactive
+                </span>
+              </div>
+              <div className="min-h-0 flex-1">
+                <WorldPolicyMap counts={counts} activeCountry={country} onSelect={setCountry} />
+              </div>
+            </div>
+            <CountryFocusPanel country={country} fuels={fuels} onSelectCountry={setCountry} />
+          </section>
+
+          <section id="production" className="pt-4">
+            <SectionHeading
+              step={3}
               icon={Factory}
               title="Biofuel supply at the pump and top users"
               subtitle="Retail networks selling biofuels worldwide and the largest users — filter both with the fuel-type menu below."
@@ -378,78 +398,10 @@ function Dashboard() {
             </div>
           </section>
 
-          <section id="map" className="pt-4">
-            <SectionHeading
-              step={3}
-              icon={Map}
-              title="Policy activity by jurisdiction"
-              subtitle="Click a country on the map to filter the timeline, profiles and videos below."
-            />
-            <div className="glass-panel rise flex min-w-0 flex-col p-5">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <h2 className="label-mono text-muted-foreground">Jurisdiction map</h2>
-                <span className="label-mono inline-flex items-center gap-1.5 text-primary">
-                  <span className="pulse-dot size-2 rounded-full bg-primary" />
-                  interactive
-                </span>
-              </div>
-              <div className="min-h-0 flex-1">
-                <WorldPolicyMap counts={counts} activeCountry={country} onSelect={setCountry} />
-              </div>
-            </div>
-          </section>
-
-          <section className="pt-4">
-            <div className="grid gap-4 md:grid-cols-3">
-              {[
-                {
-                  to: "/timeline" as const,
-                  step: 4,
-                  icon: Layers,
-                  title: "Policy update timeline",
-                  desc: `${data.updates.length} mandates, obligations and regulatory decisions from the live scan.`,
-                  color: "oklch(0.55 0.2 50)",
-                },
-                {
-                  to: "/profiles" as const,
-                  step: 5,
-                  icon: Flag,
-                  title: "Country policy profiles",
-                  desc: `Headline mandates for ${COUNTRIES.length} tracked jurisdictions.`,
-                  color: "oklch(0.55 0.14 180)",
-                },
-                {
-                  to: "/videos" as const,
-                  step: 6,
-                  icon: Video,
-                  title: "Video briefing room",
-                  desc: "YouTube channels and official video hubs by country and fuel type.",
-                  color: "oklch(0.55 0.16 340)",
-                },
-              ].map(({ to, step, icon: Icon, title, desc, color }) => (
-                <Link key={to} to={to} className="glass-panel lift group flex gap-4 p-5">
-                  <div
-                    className="grid size-12 shrink-0 place-items-center rounded-xl text-white"
-                    style={{ backgroundColor: color }}
-                  >
-                    <Icon className="size-6" />
-                  </div>
-                  <div>
-                    <div className="label-mono text-muted-foreground">Section {step}</div>
-                    <div className="font-display text-lg font-bold transition-colors group-hover:text-primary">
-                      {title}
-                    </div>
-                    <p className="mt-1 text-sm text-muted-foreground">{desc}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-
           <div className="grid gap-6 pt-4 xl:grid-cols-2 xl:items-start">
             <section id="alerts">
               <SectionHeading
-                step={8}
+                step={4}
                 icon={BellRing}
                 title="News alerts by email"
                 subtitle="Daily email digest of new bioenergy policy updates, filtered to the fuels you follow."
@@ -459,7 +411,7 @@ function Dashboard() {
 
             <section id="traffic">
               <SectionHeading
-                step={9}
+                step={5}
                 icon={Activity}
                 title="Live audience"
                 subtitle="Real-time readership of the desk — who is reading now and how it trends."

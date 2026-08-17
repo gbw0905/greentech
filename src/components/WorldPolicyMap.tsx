@@ -1,7 +1,7 @@
 import { geoNaturalEarth1, geoPath, geoGraticule10 } from "d3-geo";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { feature } from "topojson-client";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { Minus, Plus, Maximize2 } from "lucide-react";
 import {
   COUNTRIES,
@@ -35,7 +35,6 @@ export function WorldPolicyMap({
   onSelect: (slug: string | null) => void;
 }) {
   const [features, setFeatures] = useState<GeoFeature[] | null>(null);
-  const navigate = useNavigate();
   const { data: marketData } = useQuery({
     queryKey: ["country-indices"],
     queryFn: () => getCountryIndicesFn(),
@@ -185,8 +184,7 @@ export function WorldPolicyMap({
                   onMouseEnter={() => country && setHover(f.properties.name)}
                   onClick={() => {
                     if (moved.current || !country) return;
-                    onSelect(country.slug);
-                    navigate({ to: "/countries/$slug", params: { slug: country.slug } });
+                    onSelect(country.slug === activeCountry ? null : country.slug);
                   }}
                 />
               );
@@ -310,12 +308,12 @@ export function WorldPolicyMap({
               params={{ slug: hovered.slug }}
               className="text-primary underline-offset-4 hover:underline"
             >
-              open profile
+              full profile page
             </Link>
           </div>
         ) : (
           <div className="label-mono text-muted-foreground">
-            Scroll to zoom · drag to pan · click a country to open its profile
+            Scroll to zoom · drag to pan · click a country to load its profile below
           </div>
         )}
         {hoveredIndex && (
