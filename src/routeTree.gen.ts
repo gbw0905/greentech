@@ -18,6 +18,7 @@ import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as AlertsConfirmRouteImport } from './routes/alerts.confirm'
 import { Route as CountriesSlugRouteImport } from './routes/countries.$slug'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as ApiPublicDailyFlyerEmailRouteImport } from './routes/api/public/daily-flyer-email'
 import { Route as ApiPublicDailyTrafficEmailRouteImport } from './routes/api/public/daily-traffic-email'
@@ -72,6 +73,11 @@ const CountriesSlugRoute = CountriesSlugRouteImport.update({
   path: '/countries/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
     id: '/.mcp/invoke-tool/$tool',
@@ -118,6 +124,7 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/countries/$slug': typeof CountriesSlugRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/daily-flyer-email': typeof ApiPublicDailyFlyerEmailRoute
   '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
@@ -135,6 +142,7 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/countries/$slug': typeof CountriesSlugRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/daily-flyer-email': typeof ApiPublicDailyFlyerEmailRoute
   '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
@@ -153,6 +161,7 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/countries/$slug': typeof CountriesSlugRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/daily-flyer-email': typeof ApiPublicDailyFlyerEmailRoute
   '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
@@ -172,6 +181,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/alerts/confirm'
     | '/countries/$slug'
+    | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/daily-flyer-email'
     | '/api/public/daily-traffic-email'
@@ -189,6 +199,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/alerts/confirm'
     | '/countries/$slug'
+    | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/daily-flyer-email'
     | '/api/public/daily-traffic-email'
@@ -206,6 +217,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/alerts/confirm'
     | '/countries/$slug'
+    | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/daily-flyer-email'
     | '/api/public/daily-traffic-email'
@@ -224,6 +236,7 @@ export interface RootRouteChildren {
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   AlertsConfirmRoute: typeof AlertsConfirmRoute
   CountriesSlugRoute: typeof CountriesSlugRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicDailyFlyerEmailRoute: typeof ApiPublicDailyFlyerEmailRoute
   ApiPublicDailyTrafficEmailRoute: typeof ApiPublicDailyTrafficEmailRoute
@@ -297,6 +310,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CountriesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/.mcp/invoke-tool/$tool': {
       id: '/.mcp/invoke-tool/$tool'
       path: '/.mcp/invoke-tool/$tool'
@@ -353,6 +373,7 @@ const rootRouteChildren: RootRouteChildren = {
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   AlertsConfirmRoute: AlertsConfirmRoute,
   CountriesSlugRoute: CountriesSlugRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicDailyFlyerEmailRoute: ApiPublicDailyFlyerEmailRoute,
   ApiPublicDailyTrafficEmailRoute: ApiPublicDailyTrafficEmailRoute,
