@@ -1,24 +1,28 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { sendTemplateEmail } from "@/lib/email-templates/send-email";
 
-/** Daily digest of new policy updates, sent to confirmed alert subscribers. */
-async function run() {
+/** Digest of new policy updates, sent to confirmed alert subscribers by cadence. */
+async function run({ request }: { request: Request }) {
+  const cadenceParam = new URL(request.url).searchParams.get("cadence") ?? "daily";
+  const cadence = cadenceParam === "weekly" ? "weekly" : "daily";
+  const windowMs = cadence === "weekly" ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const since = new Date(Date.now() - windowMs).toISOString();
 
   const { data: updates, error: updErr } = await supabaseAdmin
     .from("policy_updates")
-    .select("url,title,summary,source,country_slug,country_name,fuels,created_at")
+    .select("id,url,title,summary,source,country_slug,country_name,fuels,created_at")
     .gte("created_at", since)
     .order("created_at", { ascending: false })
-    .limit(40);
+    .limit(60);
 
   if (updErr) return Response.json({ error: updErr.message }, { status: 500 });
   if (!updates || updates.length === 0) return Response.json({ ok: true, sent: 0, reason: "no_new_updates" });
 
   const { data: subs, error: subErr } = await supabaseAdmin
     .from("alert_subscribers")
-    .select("id,email,fuels,countries")
+    .select("id,email,fuels,countries,cadence")
+    .eq("cadence", cadence)
     .not("confirmed_at", "is", null);
 
   if (subErr) return Response.json({ error: subErr.message }, { status: 500 });
@@ -38,22 +42,31 @@ async function run() {
   for (const sub of subs ?? []) {
     const wanted = sub.fuels ?? [];
     const wantedCountries = sub.countries ?? [];
-    const items = updates
+    const { data: alreadySent } = await supabaseAdmin
+      .from("brief_sends")
+      .select("update_id")
+      .eq("email", sub.email)
+      .gte("sent_at", since);
+    const seen = new Set((alreadySent ?? []).map((r) => r.update_id));
+
+    const matched = updates
+      .filter((u) => !seen.has(u.id))
       .filter((u) => wanted.length === 0 || (u.fuels ?? []).some((f) => wanted.includes(f)))
       .filter(
         (u) =>
           wantedCountries.length === 0 ||
           (u.country_slug != null && wantedCountries.includes(u.country_slug)),
       )
-      .slice(0, 15)
-      .map((u) => ({
-        title: u.title,
-        url: u.url,
-        summary: u.summary ?? "",
-        source: u.source ?? "",
-        countryName: u.country_name,
-        fuels: u.fuels ?? [],
-      }));
+      .slice(0, 12);
+
+    const items = matched.map((u) => ({
+      title: u.title,
+      url: u.url,
+      summary: u.summary ?? "",
+      source: u.source ?? "",
+      countryName: u.country_name,
+      fuels: u.fuels ?? [],
+    }));
 
     if (items.length === 0) {
       skipped++;
@@ -63,14 +76,31 @@ async function run() {
     try {
       const result = await sendTemplateEmail("policy-alert", sub.email, {
         templateData: { dateLabel, items },
-        idempotencyKey: `policy-alert-${sub.id}-${dayKey}`,
+        idempotencyKey: `policy-alert-${cadence}-${sub.id}-${dayKey}`,
       });
       if (result.sent) {
         sent++;
         await supabaseAdmin
           .from("alert_subscribers")
-          .update({ last_sent_at: new Date().toISOString() })
+          .update(
+            cadence === "weekly"
+              ? {
+                  last_sent_at: new Date().toISOString(),
+                  last_weekly_sent_at: new Date().toISOString(),
+                }
+              : { last_sent_at: new Date().toISOString() },
+          )
           .eq("id", sub.id);
+        await supabaseAdmin.from("brief_sends").upsert(
+          matched.map((u) => ({
+            email: sub.email,
+            update_id: u.id,
+            subscriber_id: sub.id,
+            cadence,
+            sent_at: new Date().toISOString(),
+          })),
+          { onConflict: "email,update_id" },
+        );
       } else {
         skipped++;
       }
@@ -80,7 +110,7 @@ async function run() {
     }
   }
 
-  return Response.json({ ok: true, sent, skipped, updates: updates.length });
+  return Response.json({ ok: true, cadence, sent, skipped, updates: updates.length });
 }
 
 export const Route = createFileRoute("/api/public/policy-alert-digest")({
