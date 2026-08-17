@@ -6,6 +6,7 @@ const subscribeSchema = z.object({
   email: z.string().trim().email().max(255),
   fuels: z.array(z.string().max(40)).max(12).default([]),
   countries: z.array(z.string().max(60)).max(40).default([]),
+  cadence: z.enum(["instant", "daily", "weekly"]).default("daily"),
 });
 
 export const subscribeToAlerts = createServerFn({ method: "POST" })
@@ -16,7 +17,10 @@ export const subscribeToAlerts = createServerFn({ method: "POST" })
 
     const { data: row, error } = await supabaseAdmin
       .from("alert_subscribers")
-      .upsert({ email, fuels: data.fuels, countries: data.countries }, { onConflict: "email" })
+      .upsert(
+        { email, fuels: data.fuels, countries: data.countries, cadence: data.cadence },
+        { onConflict: "email" },
+      )
       .select("id, confirm_token, confirmed_at")
       .single();
 
@@ -54,4 +58,85 @@ export const confirmAlertSubscription = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     if (!rows || rows.length === 0) return { ok: false as const };
     return { ok: true as const, email: rows[0]!.email };
+  });
+
+const briefSchema = z.object({
+  email: z.string().trim().email().max(255),
+  updateId: z.string().uuid(),
+});
+
+/** On-demand: emails an AI brief for one specific update to a reader. */
+export const requestPolicyBrief = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => briefSchema.parse(data))
+  .handler(async ({ data }) => {
+    const email = data.email.toLowerCase();
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Rate limit: max 10 briefs per address per hour.
+    const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const { count } = await supabaseAdmin
+      .from("brief_sends")
+      .select("id", { count: "exact", head: true })
+      .eq("email", email)
+      .gte("sent_at", hourAgo);
+    if ((count ?? 0) >= 10) return { status: "rate_limited" as const };
+
+    const { data: update, error: updErr } = await supabaseAdmin
+      .from("policy_updates")
+      .select(
+        "id,title,summary,source,url,category,country_name,region,fuels,published_at,ai_brief",
+      )
+      .eq("id", data.updateId)
+      .maybeSingle();
+    if (updErr) throw new Error(updErr.message);
+    if (!update) return { status: "not_found" as const };
+
+    const { getOrCreateBrief } = await import("@/lib/ai-brief.server");
+    const brief = await getOrCreateBrief(update);
+
+    const { sendTemplateEmail } = await import("@/lib/email-templates/send-email");
+    const result = await sendTemplateEmail("policy-brief", email, {
+      templateData: {
+        title: update.title,
+        brief,
+        jurisdiction: update.country_name ?? update.region ?? "Global",
+        fuels: update.fuels ?? [],
+        source: update.source ?? "",
+        category: update.category,
+        url: update.url,
+        dateLabel: update.published_at
+          ? new Date(update.published_at).toLocaleDateString("en-GB", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+              timeZone: "UTC",
+            })
+          : "",
+      },
+      idempotencyKey: `policy-brief-${update.id}-${email}`,
+    });
+
+    if (!result.sent) return { status: "suppressed" as const };
+
+    // Register the reader for future alerts (unconfirmed until they opt in).
+    const { data: sub } = await supabaseAdmin
+      .from("alert_subscribers")
+      .upsert({ email }, { onConflict: "email", ignoreDuplicates: false })
+      .select("id")
+      .single();
+
+    await supabaseAdmin
+      .from("brief_sends")
+      .upsert(
+        {
+          email,
+          update_id: update.id,
+          subscriber_id: sub?.id ?? null,
+          cadence: "ondemand",
+          sent_at: new Date().toISOString(),
+        },
+        { onConflict: "email,update_id" },
+      );
+
+    return { status: "sent" as const };
   });
