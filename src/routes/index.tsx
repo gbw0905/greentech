@@ -104,31 +104,13 @@ function Dashboard() {
   });
   const busy = isFetching || rescan.isPending;
   const data = feed ?? { updates: [], fetchedAt: null as string | null, error: null as string | null };
-  const [fuels, setFuels] = useState<FuelType[]>([]);
-  const [country, setCountry] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const counts = useMemo(() => {
     const c: Record<string, number> = {};
     for (const u of data.updates) if (u.countrySlug) c[u.countrySlug] = (c[u.countrySlug] ?? 0) + 1;
     return c;
   }, [data.updates]);
-
-  const toggle = <T,>(list: T[], set: (v: T[]) => void, value: T) =>
-    set(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
-
-  const fuelCounts = useMemo(() => {
-    const m = {} as Record<FuelType, number>;
-    for (const f of FUEL_TYPES) m[f] = data.updates.filter((u) => u.fuels.includes(f)).length;
-    return m;
-  }, [data.updates]);
-
-  const hasFilters = Boolean(country) || fuels.length > 0;
-  const clearFilters = () => {
-    setCountry(null);
-    setFuels([]);
-  };
-
-
 
   return (
     <div className="min-h-screen">
