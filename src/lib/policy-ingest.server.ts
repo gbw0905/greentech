@@ -152,6 +152,9 @@ export interface IngestResult {
   upserted: number;
   feedsOk: number;
   feedsTotal: number;
+  purged: number;
+  scannedExisting: number;
+  purgeError: string | null;
 }
 
 export async function ingestPolicyUpdates(): Promise<IngestResult> {
@@ -196,6 +199,9 @@ export async function ingestPolicyUpdates(): Promise<IngestResult> {
   }
 
   let upserted = 0;
+  let purged = 0;
+  let scannedExisting = 0;
+  let purgeError: string | null = null;
   if (rows.length > 0) {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     for (let i = 0; i < rows.length; i += 200) {
@@ -227,9 +233,10 @@ export async function ingestPolicyUpdates(): Promise<IngestResult> {
         .from("policy_updates")
         .delete()
         .in("url", stale.slice(i, i + 100));
-      if (delErr) console.error("purge failed", delErr.message);
+      if (delErr) purgeError = delErr.message;
     }
-    console.log("purge candidates", stale.length, "of", (existing ?? []).length);
+    purged = stale.length;
+    scannedExisting = (existing ?? []).length;
   }
 
   return {
@@ -238,5 +245,8 @@ export async function ingestPolicyUpdates(): Promise<IngestResult> {
     upserted,
     feedsOk,
     feedsTotal: FEED_SOURCES.length,
+    purged,
+    scannedExisting,
+    purgeError,
   };
 }
