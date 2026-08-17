@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       alert_subscribers: {
         Row: {
+          cadence: string
           confirm_token: string
           confirmed_at: string | null
           countries: string[]
@@ -24,9 +25,12 @@ export type Database = {
           fuels: string[]
           id: string
           last_sent_at: string | null
+          last_weekly_sent_at: string | null
+          plan: string
           updated_at: string
         }
         Insert: {
+          cadence?: string
           confirm_token?: string
           confirmed_at?: string | null
           countries?: string[]
@@ -35,9 +39,12 @@ export type Database = {
           fuels?: string[]
           id?: string
           last_sent_at?: string | null
+          last_weekly_sent_at?: string | null
+          plan?: string
           updated_at?: string
         }
         Update: {
+          cadence?: string
           confirm_token?: string
           confirmed_at?: string | null
           countries?: string[]
@@ -46,12 +53,61 @@ export type Database = {
           fuels?: string[]
           id?: string
           last_sent_at?: string | null
+          last_weekly_sent_at?: string | null
+          plan?: string
           updated_at?: string
         }
         Relationships: []
       }
+      brief_sends: {
+        Row: {
+          cadence: string
+          created_at: string
+          email: string
+          id: string
+          sent_at: string
+          subscriber_id: string | null
+          update_id: string | null
+        }
+        Insert: {
+          cadence?: string
+          created_at?: string
+          email: string
+          id?: string
+          sent_at?: string
+          subscriber_id?: string | null
+          update_id?: string | null
+        }
+        Update: {
+          cadence?: string
+          created_at?: string
+          email?: string
+          id?: string
+          sent_at?: string
+          subscriber_id?: string | null
+          update_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brief_sends_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "alert_subscribers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brief_sends_update_id_fkey"
+            columns: ["update_id"]
+            isOneToOne: false
+            referencedRelation: "policy_updates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       policy_updates: {
         Row: {
+          ai_brief: string | null
+          ai_brief_at: string | null
           category: string
           country_name: string | null
           country_slug: string | null
@@ -67,6 +123,8 @@ export type Database = {
           url: string
         }
         Insert: {
+          ai_brief?: string | null
+          ai_brief_at?: string | null
           category?: string
           country_name?: string | null
           country_slug?: string | null
@@ -82,6 +140,8 @@ export type Database = {
           url: string
         }
         Update: {
+          ai_brief?: string | null
+          ai_brief_at?: string | null
           category?: string
           country_name?: string | null
           country_slug?: string | null

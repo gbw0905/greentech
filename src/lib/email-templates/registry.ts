@@ -2,6 +2,7 @@ import type { ComponentType } from 'react'
 import { template as dailyTrafficTemplate } from './daily-traffic'
 import { template as alertConfirmTemplate } from './alert-confirm'
 import { template as policyAlertTemplate } from './policy-alert'
+import { template as policyBriefTemplate } from './policy-brief'
 import { template as dailyFlyerTemplate } from './daily-flyer'
 
 export interface TemplateEntry {
@@ -25,5 +26,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'daily-traffic': dailyTrafficTemplate,
   'alert-confirm': alertConfirmTemplate,
   'policy-alert': policyAlertTemplate,
+  'policy-brief': policyBriefTemplate,
   'daily-flyer': dailyFlyerTemplate,
 }
