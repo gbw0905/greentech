@@ -52,6 +52,7 @@ export type Database = {
       }
       policy_updates: {
         Row: {
+          category: string
           country_name: string | null
           country_slug: string | null
           created_at: string
@@ -66,6 +67,7 @@ export type Database = {
           url: string
         }
         Insert: {
+          category?: string
           country_name?: string | null
           country_slug?: string | null
           created_at?: string
@@ -80,6 +82,7 @@ export type Database = {
           url: string
         }
         Update: {
+          category?: string
           country_name?: string | null
           country_slug?: string | null
           created_at?: string
