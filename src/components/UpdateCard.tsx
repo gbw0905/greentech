@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Link2 } from "lucide-react";
 import { REGION_ACCENT, flagFor } from "@/lib/policy-taxonomy";
 import type { PolicyUpdate } from "@/lib/policy-types";
 
@@ -12,7 +12,16 @@ export function formatDate(iso: string | null) {
   });
 }
 
+function hostOf(url: string) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return null;
+  }
+}
+
 export function UpdateCard({ update }: { update: PolicyUpdate }) {
+  const host = hostOf(update.url);
   return (
     <article
       className="glass-panel lift group relative overflow-hidden p-5 pl-6"
@@ -66,7 +75,6 @@ export function UpdateCard({ update }: { update: PolicyUpdate }) {
       )}
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <span className="label-mono text-muted-foreground">{update.source}</span>
         {update.fuels.map((f) => (
           <span
             key={f}
@@ -76,6 +84,29 @@ export function UpdateCard({ update }: { update: PolicyUpdate }) {
           </span>
         ))}
       </div>
+
+      <footer className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-border/70 pt-2.5">
+        <span className="label-mono text-muted-foreground">Source</span>
+        <cite className="label-mono not-italic font-semibold text-foreground">{update.source}</cite>
+        {host && (
+          <>
+            <span className="label-mono text-muted-foreground" aria-hidden>
+              /
+            </span>
+            <span className="label-mono text-muted-foreground">{host}</span>
+          </>
+        )}
+        <a
+          href={update.url}
+          target="_blank"
+          rel="noopener noreferrer nofollow"
+          className="label-mono ml-auto inline-flex items-center gap-1 text-primary underline-offset-4 hover:underline"
+          title={update.url}
+        >
+          <Link2 className="size-3" />
+          View original
+        </a>
+      </footer>
     </article>
   );
 }
