@@ -337,7 +337,16 @@ function BarChart({
             <span className="font-mono text-right font-semibold text-foreground">
               ${fmt(activeQuote.prevClose)}
             </span>
+            <span className="text-muted-foreground">Capacity</span>
+            <span className="font-mono text-right font-semibold text-foreground">
+              {capOf(activeQuote.symbol).mmboe > 0
+                ? `${fmt(capOf(activeQuote.symbol).mmboe, 0)} MMboe/yr`
+                : "n/a"}
+            </span>
           </div>
+          <p className="mt-2 border-t border-border pt-2 text-xs text-muted-foreground">
+            {capOf(activeQuote.symbol).kind}
+          </p>
         </div>
       )}
     </div>
@@ -367,8 +376,8 @@ export function OilStocksPanel() {
             Top 20 oil companies by NYSE stock price
           </h3>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            Live share price of the largest NYSE-listed oil & gas majors. Hover any row to see the
-            exact price, daily change, and previous close.
+            Live share price of the largest NYSE-listed oil &amp; gas majors, shown next to each
+            group's annual output capacity. Hover any row for price, daily change and capacity.
           </p>
         </div>
         <span className="label-mono rounded-full border border-border bg-surface-2 px-3 py-1.5 text-sm text-muted-foreground">
@@ -386,9 +395,10 @@ export function OilStocksPanel() {
 
       <div className="mt-4 space-y-2 border-t border-border pt-3">
         <p className="text-xs text-muted-foreground">
-          Prices are quoted in USD per share and refresh every 5 minutes. Bar length shows the current
-          price level; percentages reflect the latest session change. Click any company to read its
-          latest global news right here.
+          X axis: share price in USD per share (bar length). Y axis: company, ranked by share price.
+          Capacity column: approximate annual output in million barrels of oil equivalent per year
+          (upstream production, or crude throughput for refiners; services firms show "—"). Prices
+          refresh every 5 minutes. Click any company to read its latest global news.
         </p>
         <div className="rounded-lg border border-border/60 bg-surface-2/50 p-2.5">
           <p className="text-xs font-semibold text-foreground">Note</p>
