@@ -297,6 +297,7 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
         </div>
         <BarChart
           unitLabel={byVolume ? "million litres of biofuel sold / year" : "retail sites offering biofuels"}
+          yLabel="Retail fuel network"
           decimals={0}
           items={stations.map((s) => ({
             key: s.name,
@@ -350,6 +351,7 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
               ? "billion litres / year consumed"
               : "billion litres / year (corporate capacity)"
           }
+          yLabel={userView === "countries" ? "Country / market" : "Company"}
           items={users.map((c) => ({
             key: c.name,
             label: `${c.flag} ${c.name}`,
