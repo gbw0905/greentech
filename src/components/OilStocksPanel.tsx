@@ -7,6 +7,35 @@ import { openEntityNews, type NewsTarget } from "@/lib/open-news";
 const fmt = (n: number, d = 2) =>
   n.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
 
+/**
+ * Approximate annual output capacity, million barrels of oil equivalent per year
+ * (upstream production, or crude throughput for refiners). Company reports / EIA.
+ */
+const CAPACITY: Record<string, { mmboe: number; kind: string }> = {
+  XOM: { mmboe: 1570, kind: "Upstream production" },
+  CVX: { mmboe: 1205, kind: "Upstream production" },
+  SHEL: { mmboe: 1022, kind: "Upstream production" },
+  TTE: { mmboe: 913, kind: "Upstream production" },
+  BP: { mmboe: 840, kind: "Upstream production" },
+  COP: { mmboe: 694, kind: "Upstream production" },
+  EOG: { mmboe: 365, kind: "Upstream production" },
+  SLB: { mmboe: 0, kind: "Oilfield services — no own output" },
+  PSX: { mmboe: 657, kind: "Refining throughput" },
+  MPC: { mmboe: 1095, kind: "Refining throughput" },
+  VLO: { mmboe: 1168, kind: "Refining throughput" },
+  OXY: { mmboe: 438, kind: "Upstream production" },
+  PBR: { mmboe: 986, kind: "Upstream production" },
+  E: { mmboe: 621, kind: "Upstream production" },
+  EQNR: { mmboe: 730, kind: "Upstream production" },
+  SU: { mmboe: 292, kind: "Upstream production" },
+  CNQ: { mmboe: 493, kind: "Upstream production" },
+  HES: { mmboe: 183, kind: "Upstream production" },
+  DVN: { mmboe: 256, kind: "Upstream production" },
+  BKR: { mmboe: 0, kind: "Equipment & services — no own output" },
+};
+
+const capOf = (symbol: string) => CAPACITY[symbol] ?? { mmboe: 0, kind: "Not disclosed" };
+
 function BarChart({
   quotes,
   hover,
@@ -29,10 +58,10 @@ function BarChart({
   const gap = 10;
   const rankW = 28;
   const labelW = 210; // rank + ticker + company
-  const valueW = 168; // price + change badge
+  const valueW = 256; // capacity + price + change badge
   const w = 860;
   const padTop = 30;
-  const padBottom = 34;
+  const padBottom = 52;
   const chartW = w - labelW - valueW;
   const h = padTop + sorted.length * (rowH + gap) - gap + padBottom;
 
@@ -99,7 +128,15 @@ function BarChart({
 
         {/* Column headers */}
         <text x={0} y={padTop - 14} className="font-mono text-[9px] fill-muted-foreground tracking-[0.14em]">
-          RANK · COMPANY
+          Y AXIS · RANK &amp; COMPANY
+        </text>
+        <text
+          x={w - 176}
+          y={padTop - 14}
+          textAnchor="end"
+          className="font-mono text-[9px] fill-muted-foreground tracking-[0.14em]"
+        >
+          CAPACITY (MMboe/yr)
         </text>
         <text
           x={w}
@@ -108,6 +145,15 @@ function BarChart({
           className="font-mono text-[9px] fill-muted-foreground tracking-[0.14em]"
         >
           PRICE · 1D
+        </text>
+        {/* X-axis title */}
+        <text
+          x={labelW + chartW / 2}
+          y={h - 4}
+          textAnchor="middle"
+          className="font-mono text-[10px] fill-muted-foreground tracking-[0.12em]"
+        >
+          X AXIS · SHARE PRICE (USD PER SHARE)
         </text>
 
         {/* Bars */}
@@ -221,6 +267,15 @@ function BarChart({
                 className="font-mono text-[12.5px] font-semibold fill-foreground tabular-nums"
               >
                 ${fmt(q.price)}
+              </text>
+              {/* Annual production / throughput capacity */}
+              <text
+                x={w - 176}
+                y={y + rowH / 2 + 1}
+                textAnchor="end"
+                className="font-mono text-[11px] fill-muted-foreground tabular-nums"
+              >
+                {capOf(q.symbol).mmboe > 0 ? fmt(capOf(q.symbol).mmboe, 0) : "—"}
               </text>
               {/* Change badge */}
               <g transform={`translate(${w}, ${y + rowH / 2 - 8})`}>
