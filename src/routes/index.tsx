@@ -218,7 +218,7 @@ function Dashboard() {
               step={2}
               icon={Map}
               title="Policy activity by jurisdiction"
-              subtitle="Click a country to load its policy profile, latest policy and market updates, and video briefings below."
+              subtitle="Click any country on the map to open its policy profile, mandates and latest updates."
             />
             <div className="glass-panel rise flex min-w-0 flex-col p-5">
               <div className="mb-3 flex items-center justify-between gap-3">
@@ -229,10 +229,15 @@ function Dashboard() {
                 </span>
               </div>
               <div className="min-h-0 flex-1">
-                <WorldPolicyMap counts={counts} activeCountry={country} onSelect={setCountry} />
+                <WorldPolicyMap
+                  counts={counts}
+                  activeCountry={null}
+                  onSelect={(slug) => {
+                    if (slug) navigate({ to: "/countries/$slug", params: { slug } });
+                  }}
+                />
               </div>
             </div>
-            <CountryFocusPanel country={country} fuels={fuels} onSelectCountry={setCountry} />
           </section>
 
           <section id="production" className="pt-4">
@@ -240,37 +245,9 @@ function Dashboard() {
               step={3}
               icon={Factory}
               title="Biofuel supply at the pump and top users"
-              subtitle="Retail networks selling biofuels worldwide and the largest users — filter both with the fuel-type menu below."
+              subtitle="Retail networks selling biofuels worldwide and the largest users of each fuel."
             />
-            <nav
-              aria-label="Fuel type filter"
-              className="glass-panel mb-4 flex flex-wrap items-center gap-2 p-3"
-            >
-              <span className="label-mono mr-1 inline-flex items-center gap-1.5 text-muted-foreground">
-                <Flame className="size-3.5" /> Fuel type
-              </span>
-              {FUEL_TYPES.map((f) => (
-                <Chip
-                  key={f}
-                  active={fuels.includes(f)}
-                  color={FUEL_ACCENT[f]}
-                  count={fuelCounts[f]}
-                  onClick={() => toggle(fuels, setFuels, f)}
-                >
-                  {f}
-                </Chip>
-              ))}
-              {fuels.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setFuels([])}
-                  className="label-mono ml-auto inline-flex items-center gap-1 text-muted-foreground transition-colors hover:text-destructive"
-                >
-                  Clear <X className="size-3" />
-                </button>
-              )}
-            </nav>
-            <BiofuelProductionPanel fuels={fuels} />
+            <BiofuelProductionPanel fuels={[]} />
             <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2 xl:items-stretch">
               <OilStocksPanel />
               <SafAirlinesPanel />
