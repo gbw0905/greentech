@@ -134,7 +134,11 @@ function BarChart({
         </div>
 
         <div className="flex flex-col gap-2">
-          {items.map((i) => {
+          {items.map((item, idx) => {
+            const i = {
+              ...item,
+              color: `oklch(${(0.44 + (idx / Math.max(items.length - 1, 1)) * 0.26).toFixed(3)} ${(0.13 - (idx / Math.max(items.length - 1, 1)) * 0.06).toFixed(3)} 245)`,
+            };
             const active = hover === i.key;
             const target = news?.[i.key];
             const widthPct = Math.max((i.value / max) * 100, 1.5);
@@ -167,10 +171,10 @@ function BarChart({
                     className="chart-bar-x h-7 rounded-r-full transition-all duration-300"
                     style={{
                       width: `${widthPct}%`,
-                      background: `linear-gradient(90deg, color-mix(in oklch, ${i.color} 92%, white), ${i.color} 45%, color-mix(in oklch, ${i.color} 50%, transparent))`,
+                      background: i.color,
                       boxShadow: active
-                        ? `0 0 0 1.5px ${i.color}, 0 8px 20px -10px ${i.color}`
-                        : `inset 0 0 0 1px color-mix(in oklch, ${i.color} 35%, transparent)`,
+                        ? `0 0 0 1.5px color-mix(in oklch, ${i.color} 70%, black)`
+                        : undefined,
                       opacity: hover && !active ? 0.4 : 1,
                     }}
                   />
@@ -286,7 +290,7 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
               ))}
             </div>
             <div className="text-right">
-            <div className="font-display text-2xl font-black tracking-tight tabular-nums">
+            <div className="font-display text-2xl font-bold tracking-tight tabular-nums">
               {fmt(stationTotal)}
             </div>
             <div className="label-mono text-muted-foreground">

@@ -73,7 +73,7 @@ function BarChart({
 
   return (
     <div className="relative">
-      <svg viewBox={`0 0 ${w} ${h}`} className="w-full overflow-visible" style={{ minHeight: h }}>
+      <svg viewBox={`0 0 ${w} ${h}`} className="w-full overflow-visible">
         <defs>
           <linearGradient id="bar-fill" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.95" />
@@ -209,7 +209,7 @@ function BarChart({
                 height={rowH - 12}
                 rx={(rowH - 12) / 2}
                 fill={active ? "url(#bar-fill-active)" : "url(#bar-fill)"}
-                filter={active ? "url(#bar-glow)" : undefined}
+                
                 className="transition-all duration-300"
               />
               {/* Gloss highlight */}

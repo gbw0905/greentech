@@ -38,7 +38,7 @@ function ConfirmPage() {
   return (
     <main className="mx-auto max-w-xl px-5 py-20">
       <div className="glass-panel rise p-8">
-        <h1 className="font-display text-2xl font-black tracking-tight">
+        <h1 className="font-display text-2xl font-bold tracking-tight">
           {result.ok ? "You're subscribed" : "Link not valid"}
         </h1>
         <p className="mt-3 text-sm text-muted-foreground">

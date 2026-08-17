@@ -2,7 +2,13 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { getPolicyFeed } from "@/lib/policy.functions";
-import { countryBySlug, REGION_ACCENT, flagFor } from "@/lib/policy-taxonomy";
+import {
+  countryBySlug,
+  REGION_ACCENT,
+  flagFor,
+  policyStatusFor,
+  POLICY_STATUS_COLOR,
+} from "@/lib/policy-taxonomy";
 import { UpdateCard } from "@/components/UpdateCard";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
 
@@ -69,26 +75,39 @@ function CountryPage() {
         <ArrowLeft className="size-3.5" /> Back to tracker
       </Link>
 
-      <header className="glass-panel rise mt-6 overflow-hidden">
-        <div className="surface-gradient-frost p-7">
-          <div className="label-mono" style={{ color: REGION_ACCENT[country.region] }}>
+      <header className="rise mt-6 border-b border-border pb-6">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="label-mono" style={{ color: REGION_ACCENT[country.region] }}>
             {country.region}
-          </div>
-          <h1 className="mt-2 flex items-center gap-3 font-display text-4xl font-bold">
-            <span aria-hidden>{flagFor(country.slug)}</span>
-            {country.name}
-          </h1>
-          <p className="mt-4 max-w-2xl text-muted-foreground">{country.blurb}</p>
-          <div className="mt-5 flex flex-wrap gap-2">
-            {country.frameworks.map((f) => (
-              <span
-                key={f}
-                className="label-mono rounded-full bg-surface/80 px-3 py-1 shadow-[var(--shadow-frost)]"
-              >
-                {f}
-              </span>
-            ))}
-          </div>
+          </span>
+          <span
+            className="label-mono inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5"
+            style={{
+              borderColor: POLICY_STATUS_COLOR[policyStatusFor(country)],
+              color: POLICY_STATUS_COLOR[policyStatusFor(country)],
+            }}
+          >
+            <span
+              className="size-1.5 rounded-full"
+              style={{ background: POLICY_STATUS_COLOR[policyStatusFor(country)] }}
+            />
+            {policyStatusFor(country)}
+          </span>
+        </div>
+        <h1 className="mt-3 flex items-center gap-3 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
+          <span aria-hidden>{flagFor(country.slug)}</span>
+          {country.name}
+        </h1>
+        <p className="mt-4 max-w-2xl text-base/relaxed text-muted-foreground">{country.blurb}</p>
+        <div className="mt-5 flex flex-wrap gap-2">
+          {country.frameworks.map((f) => (
+            <span
+              key={f}
+              className="label-mono rounded-md border border-border bg-surface-1 px-2.5 py-1"
+            >
+              {f}
+            </span>
+          ))}
         </div>
       </header>
 
