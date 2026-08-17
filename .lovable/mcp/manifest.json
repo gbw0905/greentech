@@ -66,7 +66,7 @@
       {
         "name": "list_jurisdictions",
         "title": "List tracked jurisdictions",
-        "description": "List the jurisdictions tracked by Global Bioenergy Watch with their slug, region and biofuel policy status (Mandated, Policy framework, Proposed, No framework).",
+        "description": "List the jurisdictions tracked by Global Bioenergy Watch with their slug, region and biofuel policy status (Mandated, Policy framework, In development, No framework).",
         "annotations": {
           "readOnlyHint": true,
           "idempotentHint": true,
