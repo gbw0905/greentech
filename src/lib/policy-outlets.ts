@@ -19,6 +19,9 @@ export const TRUSTED_OUTLETS: string[] = [
   "thetimes.co.uk", "telegraph.co.uk", "independent.co.uk", "forbes.com", "fortune.com",
   "axios.com", "thehill.com", "npr.org", "pbs.org", "usatoday.com", "latimes.com",
   "businesstimes.com.sg", "arabnews.com", "thenationalnews.com", "zawya.com",
+  "antaranews.com", "quantumcommodityintelligence.com", "biofuels-news.com",
+  "chinimandi.com", "thewire.in", "thenewsminute.com", "etgovernment.com",
+  "outlookbusiness.com", "dailypioneer.com", "financialexpress.com", "deccanherald.com",
   "africanews.com", "businessday.ng", "nation.africa", "mg.co.za", "news24.com",
   // Energy & commodity specialist press
   "spglobal.com", "argusmedia.com", "opisnet.com", "rigzone.com", "oilprice.com",

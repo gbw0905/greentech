@@ -228,11 +228,11 @@ export async function ingestPolicyUpdates(): Promise<IngestResult> {
           !isTrustedOutlet(r.source ?? "", r.url),
       )
       .map((r) => r.url);
-    for (let i = 0; i < stale.length; i += 100) {
+    for (let i = 0; i < stale.length; i += 20) {
       const { error: delErr } = await supabaseAdmin
         .from("policy_updates")
         .delete()
-        .in("url", stale.slice(i, i + 100));
+        .in("url", stale.slice(i, i + 20));
       if (delErr) purgeError = delErr.message;
     }
     purged = stale.length;
