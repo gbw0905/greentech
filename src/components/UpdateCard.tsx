@@ -19,6 +19,18 @@ export function UpdateCard({ update }: { update: PolicyUpdate }) {
       style={{ borderLeftColor: REGION_ACCENT[update.region], borderLeftWidth: 3 }}
     >
       <div className="label-mono flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground">
+        <span
+          className="rounded-full px-2 py-0.5 font-semibold tracking-[0.14em] uppercase"
+          style={{
+            background:
+              update.category === "market"
+                ? "color-mix(in oklch, var(--accent) 22%, transparent)"
+                : "color-mix(in oklch, var(--primary) 22%, transparent)",
+            color: update.category === "market" ? "var(--accent-foreground)" : "var(--primary)",
+          }}
+        >
+          {update.category === "market" ? "Market" : "Policy"}
+        </span>
         <time>{formatDate(update.publishedAt)}</time>
         <span aria-hidden>/</span>
         <span style={{ color: REGION_ACCENT[update.region] }}>{update.region}</span>
