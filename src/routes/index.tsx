@@ -295,14 +295,11 @@ function Dashboard() {
               >
                 {[
                   ["#markets", "1 · Markets", "oklch(0.55 0.18 230)"],
-                  ["#production", "2 · Production", "oklch(0.55 0.16 150)"],
-                  ["#map", "3 · Map", "oklch(0.55 0.16 320)"],
-                  ["/timeline", "4 · Timeline", "oklch(0.55 0.2 50)"],
-                  ["/profiles", "5 · Country profiles", "oklch(0.55 0.14 180)"],
-                  ["/videos", "6 · Videos", "oklch(0.55 0.16 340)"],
-                  ["#alerts", "7 · Email alerts", "oklch(0.55 0.17 265)"],
-                  ["#traffic", "8 · Live audience", "oklch(0.6 0.18 25)"],
-                  ["#disclaimer", "9 · AI disclaimer", "oklch(0.45 0.02 240)"],
+                  ["#map", "2 · Map & country desk", "oklch(0.55 0.16 320)"],
+                  ["#production", "3 · Production", "oklch(0.55 0.16 150)"],
+                  ["#alerts", "4 · Email alerts", "oklch(0.55 0.17 265)"],
+                  ["#traffic", "5 · Live audience", "oklch(0.6 0.18 25)"],
+                  ["#disclaimer", "6 · AI disclaimer", "oklch(0.45 0.02 240)"],
                 ].map(([href, label, color]) => {
                   const cls =
                     "label-mono rounded-full border px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 hover:shadow-md";
