@@ -285,8 +285,9 @@ function Dashboard() {
               kicker="Jurisdiction map"
               icon={Map}
               title="Policy activity by jurisdiction"
-              subtitle="Click any country on the map to open its policy profile, mandates and latest updates."
+              subtitle="Government mandates and market moves side by side — including jurisdictions still developing their frameworks. Click any country to open its full profile."
             />
+            <div className="grid gap-4 xl:grid-cols-[1.7fr_1fr] xl:items-start">
             <div className="glass-panel flex min-w-0 flex-col p-5">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <h3 className="label-mono text-muted-foreground">Jurisdiction map</h3>
@@ -301,6 +302,62 @@ function Dashboard() {
                   }}
                 />
               </div>
+            </div>
+            <div className="grid gap-4">
+              {(
+                [
+                  {
+                    key: "policy",
+                    label: "Policy & mandate updates",
+                    tone: "var(--chart-3)",
+                    items: data.updates.filter((u) => u.category !== "market").slice(0, 6),
+                  },
+                  {
+                    key: "market",
+                    label: "Market updates",
+                    tone: "var(--chart-2)",
+                    items: data.updates.filter((u) => u.category === "market").slice(0, 6),
+                  },
+                ] as const
+              ).map((group) => (
+                <div key={group.key} className="glass-panel p-4">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <h3
+                      className="label-mono rounded-full px-2 py-0.5"
+                      style={{
+                        background: `color-mix(in oklab, ${group.tone} 14%, transparent)`,
+                        color: group.tone,
+                      }}
+                    >
+                      {group.label}
+                    </h3>
+                    <span className="label-mono text-muted-foreground">{group.items.length}</span>
+                  </div>
+                  <ul className="space-y-2.5">
+                    {group.items.map((u) => (
+                      <li key={u.url}>
+                        <a
+                          href={u.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block rounded-md border border-border p-2.5 transition-colors hover:border-primary/50"
+                        >
+                          <div className="label-mono text-muted-foreground">
+                            {formatDate(u.publishedAt)} · {u.countryName ?? u.region} · {u.source}
+                          </div>
+                          <div className="mt-1 line-clamp-2 text-sm font-semibold">{u.title}</div>
+                        </a>
+                      </li>
+                    ))}
+                    {group.items.length === 0 && (
+                      <li className="text-sm text-muted-foreground">
+                        {busy ? "Scanning…" : "No items yet."}
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              ))}
+            </div>
             </div>
           </section>
 
