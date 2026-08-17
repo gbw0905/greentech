@@ -334,9 +334,32 @@ function Dashboard() {
             <OilPricePanel />
           </section>
 
-          <section id="production" className="pt-4">
+          <section id="map" className="pt-4">
             <SectionHeading
               step={2}
+              icon={Map}
+              title="Policy activity by jurisdiction"
+              subtitle="Click a country to load its policy profile, latest policy and market updates, and video briefings below."
+            />
+            <div className="glass-panel rise flex min-w-0 flex-col p-5">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <h2 className="label-mono text-muted-foreground">Jurisdiction map</h2>
+                <span className="label-mono inline-flex items-center gap-1.5 text-primary">
+                  <span className="pulse-dot size-2 rounded-full bg-primary" />
+                  interactive
+                </span>
+              </div>
+              <div className="min-h-0 flex-1">
+                <WorldPolicyMap counts={counts} activeCountry={country} onSelect={setCountry} />
+              </div>
+            </div>
+          </section>
+            <CountryFocusPanel country={country} fuels={fuels} onSelectCountry={setCountry} />
+          </section>
+
+          <section id="production" className="pt-4">
+            <SectionHeading
+              step={3}
               icon={Factory}
               title="Biofuel supply at the pump and top users"
               subtitle="Retail networks selling biofuels worldwide and the largest users — filter both with the fuel-type menu below."
@@ -373,74 +396,6 @@ function Dashboard() {
             <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2 xl:items-stretch">
               <OilStocksPanel />
               <SafAirlinesPanel />
-            </div>
-          </section>
-
-          <section id="map" className="pt-4">
-            <SectionHeading
-              step={3}
-              icon={Map}
-              title="Policy activity by jurisdiction"
-              subtitle="Click a country on the map to filter the timeline, profiles and videos below."
-            />
-            <div className="glass-panel rise flex min-w-0 flex-col p-5">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <h2 className="label-mono text-muted-foreground">Jurisdiction map</h2>
-                <span className="label-mono inline-flex items-center gap-1.5 text-primary">
-                  <span className="pulse-dot size-2 rounded-full bg-primary" />
-                  interactive
-                </span>
-              </div>
-              <div className="min-h-0 flex-1">
-                <WorldPolicyMap counts={counts} activeCountry={country} onSelect={setCountry} />
-              </div>
-            </div>
-          </section>
-
-          <section className="pt-4">
-            <div className="grid gap-4 md:grid-cols-3">
-              {[
-                {
-                  to: "/timeline" as const,
-                  step: 4,
-                  icon: Layers,
-                  title: "Policy update timeline",
-                  desc: `${data.updates.length} mandates, obligations and regulatory decisions from the live scan.`,
-                  color: "oklch(0.55 0.2 50)",
-                },
-                {
-                  to: "/profiles" as const,
-                  step: 5,
-                  icon: Flag,
-                  title: "Country policy profiles",
-                  desc: `Headline mandates for ${COUNTRIES.length} tracked jurisdictions.`,
-                  color: "oklch(0.55 0.14 180)",
-                },
-                {
-                  to: "/videos" as const,
-                  step: 6,
-                  icon: Video,
-                  title: "Video briefing room",
-                  desc: "YouTube channels and official video hubs by country and fuel type.",
-                  color: "oklch(0.55 0.16 340)",
-                },
-              ].map(({ to, step, icon: Icon, title, desc, color }) => (
-                <Link key={to} to={to} className="glass-panel lift group flex gap-4 p-5">
-                  <div
-                    className="grid size-12 shrink-0 place-items-center rounded-xl text-white"
-                    style={{ backgroundColor: color }}
-                  >
-                    <Icon className="size-6" />
-                  </div>
-                  <div>
-                    <div className="label-mono text-muted-foreground">Section {step}</div>
-                    <div className="font-display text-lg font-bold transition-colors group-hover:text-primary">
-                      {title}
-                    </div>
-                    <p className="mt-1 text-sm text-muted-foreground">{desc}</p>
-                  </div>
-                </Link>
-              ))}
             </div>
           </section>
 
