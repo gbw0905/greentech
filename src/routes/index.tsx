@@ -353,7 +353,6 @@ function Dashboard() {
                 <WorldPolicyMap counts={counts} activeCountry={country} onSelect={setCountry} />
               </div>
             </div>
-          </section>
             <CountryFocusPanel country={country} fuels={fuels} onSelectCountry={setCountry} />
           </section>
 
