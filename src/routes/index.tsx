@@ -151,42 +151,6 @@ function Dashboard() {
       </header>
 
       <div className="mx-auto max-w-[110rem] px-5 py-6 lg:px-8 lg:py-8">
-        {/* Active filters summary (replaces left sidebar) */}
-        {hasFilters && (
-          <div className="glass-panel mb-6 flex flex-wrap items-center gap-2 p-3">
-            <span className="label-mono mr-1 inline-flex items-center gap-1.5 text-muted-foreground">
-              <Filter className="size-3.5" /> Active filters
-            </span>
-            {country && (
-              <button
-                type="button"
-                onClick={() => setCountry(null)}
-                className="label-mono inline-flex items-center gap-1 rounded-full border border-border bg-surface-2 px-2 py-1 transition-colors hover:border-destructive hover:text-destructive"
-              >
-                {flagFor(country)} {COUNTRIES.find((c) => c.slug === country)?.name}
-                <X className="size-3" />
-              </button>
-            )}
-            {fuels.map((f) => (
-              <button
-                key={f}
-                type="button"
-                onClick={() => toggle(fuels, setFuels, f)}
-                className="label-mono inline-flex items-center gap-1 rounded-full border border-border bg-surface-2 px-2 py-1 transition-colors hover:border-destructive hover:text-destructive"
-                style={{ color: FUEL_ACCENT[f] }}
-              >
-                {f} <X className="size-3" />
-              </button>
-            ))}
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="label-mono ml-auto inline-flex items-center gap-1 text-primary transition-transform hover:underline active:scale-95"
-            >
-              <X className="size-3" /> Clear all
-            </button>
-          </div>
-        )}
 
         <main className="space-y-6">
           <section className="glass-panel rise overflow-hidden">
