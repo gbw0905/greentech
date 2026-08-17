@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "sdk_version": "0.26.2",
+  "path": "/mcp",
+  "auth": {
+    "type": "none"
+  },
+  "mcp": {
+    "server": {
+      "name": "global-bioenergy-watch",
+      "version": "0.1.0",
+      "title": "Global Bioenergy Watch"
+    },
+    "tools": [
+      {
+        "name": "search_policy_updates",
+        "title": "Search bioenergy policy & market updates",
+        "description": "Search the tracker's feed of global bioenergy policy and market updates from trusted outlets and government sources. Filter by free-text query, country slug, region, fuel type or category, newest first.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "query": {
+              "description": "Free-text match against title and summary.",
+              "type": "string"
+            },
+            "country_slug": {
+              "description": "Country slug, e.g. 'united-states' (see list_jurisdictions).",
+              "type": "string"
+            },
+            "region": {
+              "description": "Region name, e.g. 'Europe'.",
+              "type": "string"
+            },
+            "fuel": {
+              "description": "Fuel type, e.g. 'SAF', 'Ethanol', 'Biodiesel'.",
+              "type": "string"
+            },
+            "category": {
+              "description": "Update category.",
+              "type": "string",
+              "enum": [
+                "policy",
+                "market"
+              ]
+            },
+            "limit": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_jurisdictions",
+        "title": "List tracked jurisdictions",
+        "description": "List the jurisdictions tracked by Global Bioenergy Watch with their slug, region and biofuel policy status (Mandated, Policy framework, Proposed, No framework).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "region": {
+              "description": "Optional region filter, e.g. 'Asia Pacific'.",
+              "type": "string"
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_country_profile",
+        "title": "Get country bioenergy profile",
+        "description": "Get a jurisdiction's bioenergy policy profile — mandates, frameworks, policy status — plus its most recent tracked policy and market updates.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "country_slug": {
+              "type": "string",
+              "description": "Country slug, e.g. 'brazil' (see list_jurisdictions)."
+            },
+            "updates_limit": {
+              "default": 10,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 50
+            }
+          },
+          "required": [
+            "country_slug"
+          ]
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
