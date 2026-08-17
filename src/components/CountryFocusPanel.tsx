@@ -62,30 +62,55 @@ export function CountryFocusPanel({
 
   const status = profile ? policyStatusFor(profile) : null;
 
+  if (!profile) {
+    return (
+      <div className="glass-panel rise mt-4 px-5 py-6">
+        <p className="label-mono inline-flex items-center gap-1.5 text-muted-foreground">
+          <MousePointerClick className="size-3.5" />
+          Select a jurisdiction
+        </p>
+        <h3 className="mt-1 font-display text-xl font-bold">
+          Click a country on the map to load its updates
+        </h3>
+        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+          You&apos;ll get that country&apos;s policy &amp; market updates, mandates and video
+          briefings — all filtered to the selected jurisdiction.
+        </p>
+        <div className="mt-3">
+          <select
+            value=""
+            onChange={(e) => onSelectCountry(e.target.value || null)}
+            aria-label="Select a country"
+            className="label-mono rounded-full border border-border bg-surface-2 px-3 py-1.5 text-foreground"
+          >
+            <option value="">Or pick a country…</option>
+            {COUNTRIES.map((c) => (
+              <option key={c.slug} value={c.slug}>
+                {flagFor(c.slug)} {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="glass-panel rise mt-4 overflow-hidden">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/70 px-5 py-4">
         <div className="min-w-0">
           <p className="label-mono inline-flex items-center gap-1.5 text-muted-foreground">
             <MousePointerClick className="size-3.5" />
-            {profile ? "Selected on the map" : "No country selected"}
+            Selected on the map
           </p>
           <h3 className="mt-1 flex items-center gap-2.5 font-display text-2xl font-bold">
-            {profile ? (
-              <>
-                <span aria-hidden>{flagFor(profile.slug)}</span>
-                {profile.name}
-              </>
-            ) : (
-              "All jurisdictions"
-            )}
+            <span aria-hidden>{flagFor(profile.slug)}</span>
+            {profile.name}
           </h3>
           <div className="mt-1 flex flex-wrap items-center gap-3">
-            {profile && (
-              <span className="label-mono" style={{ color: REGION_ACCENT[profile.region] }}>
-                {profile.region}
-              </span>
-            )}
+            <span className="label-mono" style={{ color: REGION_ACCENT[profile.region] }}>
+              {profile.region}
+            </span>
             {status && (
               <span className="label-mono" style={{ color: POLICY_STATUS_COLOR[status] }}>
                 {status}
@@ -101,22 +126,20 @@ export function CountryFocusPanel({
             aria-label="Select a country"
             className="label-mono rounded-full border border-border bg-surface-2 px-3 py-1.5 text-foreground"
           >
-            <option value="">All countries</option>
+            <option value="">Clear selection</option>
             {COUNTRIES.map((c) => (
               <option key={c.slug} value={c.slug}>
                 {flagFor(c.slug)} {c.name}
               </option>
             ))}
           </select>
-          {profile && (
-            <Link
-              to="/countries/$slug"
-              params={{ slug: profile.slug }}
-              className="label-mono inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-primary transition-transform hover:-translate-y-0.5"
-            >
-              Full page <ExternalLink className="size-3" />
-            </Link>
-          )}
+          <Link
+            to="/countries/$slug"
+            params={{ slug: profile.slug }}
+            className="label-mono inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-primary transition-transform hover:-translate-y-0.5"
+          >
+            Full page <ExternalLink className="size-3" />
+          </Link>
         </div>
       </div>
 
@@ -143,7 +166,7 @@ export function CountryFocusPanel({
 
       <div className="p-5">
         {tab === "profile" &&
-          (profile ? (
+          (
             <div className="space-y-5">
               <p className="max-w-3xl text-sm text-muted-foreground">{profile.blurb}</p>
               <div className="flex flex-wrap gap-2">
@@ -165,12 +188,7 @@ export function CountryFocusPanel({
                 ))}
               </dl>
             </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              Click a country on the map above to load its mandates, blending targets and policy
-              frameworks.
-            </p>
-          ))}
+          )}
 
         {tab === "updates" && (
           <div className="space-y-3">
