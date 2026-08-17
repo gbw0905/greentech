@@ -5,6 +5,7 @@ import {
   type FuelType,
 } from "./policy-taxonomy";
 import { FEED_SOURCES } from "./policy-sources";
+import { isTrustedOutlet } from "./policy-outlets";
 
 interface FeedItem {
   title: string;
@@ -168,6 +169,8 @@ export async function ingestPolicyUpdates(): Promise<IngestResult> {
   for (const item of all) {
     const text = `${item.title} ${item.summary}`;
     if (!isRelevant(text)) continue;
+    // Only authentic global media, trade journals and official publishers.
+    if (!isTrustedOutlet(item.source, item.link)) continue;
     const titleKey = item.title.toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0, 90);
     if (seenUrl.has(item.link) || seenTitle.has(titleKey)) continue;
     seenUrl.add(item.link);
@@ -210,10 +213,14 @@ export async function ingestPolicyUpdates(): Promise<IngestResult> {
     // Purge previously stored items that are not government policy moves.
     const { data: existing } = await supabaseAdmin
       .from("policy_updates")
-      .select("url,title,summary")
+      .select("url,title,summary,source")
       .limit(2000);
     const stale = (existing ?? [])
-      .filter((r) => !isRelevant(`${r.title} ${r.summary ?? ""}`))
+      .filter(
+        (r) =>
+          !isRelevant(`${r.title} ${r.summary ?? ""}`) ||
+          !isTrustedOutlet(r.source ?? "", r.url),
+      )
       .map((r) => r.url);
     for (let i = 0; i < stale.length; i += 100) {
       await supabaseAdmin.from("policy_updates").delete().in("url", stale.slice(i, i + 100));
