@@ -26,13 +26,13 @@ const feedQuery = queryOptions({
 
 const TITLE = "Global Bioenergy Watch | Worldwide Biofuel Policy Tracker";
 
-const SECTIONS: [string, string][] = [
-  ["#markets", "01 Markets"],
-  ["#map", "02 Jurisdiction map"],
-  ["#production", "03 Supply & producers"],
-  ["#alerts", "04 Email alerts"],
-  ["#traffic", "05 Live audience"],
-  ["#disclaimer", "06 Method & disclaimer"],
+const SECTIONS: { href: string; label: string; tone: string }[] = [
+  { href: "#markets", label: "Markets", tone: "var(--chart-2)" },
+  { href: "#map", label: "Jurisdiction map", tone: "var(--chart-3)" },
+  { href: "#production", label: "Supply & producers", tone: "var(--chart-6)" },
+  { href: "#alerts", label: "Email alerts", tone: "var(--chart-4)" },
+  { href: "#traffic", label: "Live audience", tone: "var(--chart-5)" },
+  { href: "#disclaimer", label: "Method & disclaimer", tone: "var(--chart-8)" },
 ];
 
 const DESCRIPTION =
@@ -63,22 +63,45 @@ function Index() {
 }
 
 function SectionHeading({
-  step,
   icon: Icon,
   title,
   subtitle,
+  tone,
+  kicker,
 }: {
-  step: number;
   icon: React.ComponentType<{ className?: string }>;
   title: string;
   subtitle: string;
+  tone: string;
+  kicker: string;
 }) {
   return (
-    <div className="mb-5 border-t-2 border-t-foreground pt-4">
-      <div className="flex items-center gap-2">
-        <Icon className="size-3.5 text-accent" />
-        <span className="kicker">
-          Section {String(step).padStart(2, "0")}
+    <div className="mb-5 pt-4" style={{ ["--tone" as string]: tone }}>
+      <div
+        className="h-1 w-full rounded-full"
+        style={{
+          background:
+            "linear-gradient(90deg, var(--tone), color-mix(in oklab, var(--tone) 25%, transparent))",
+        }}
+      />
+      <div className="mt-3 flex items-center gap-2">
+        <span
+          className="inline-flex size-7 items-center justify-center rounded-md"
+          style={{
+            background: "color-mix(in oklab, var(--tone) 16%, transparent)",
+            color: "var(--tone)",
+          }}
+        >
+          <Icon className="size-4" />
+        </span>
+        <span
+          className="kicker rounded-full px-2 py-0.5"
+          style={{
+            background: "color-mix(in oklab, var(--tone) 12%, transparent)",
+            color: "var(--tone)",
+          }}
+        >
+          {kicker}
         </span>
       </div>
       <h2 className="mt-2 font-display text-2xl leading-tight font-bold text-foreground sm:text-3xl">
@@ -160,15 +183,20 @@ function Dashboard() {
         </div>
         <nav
           aria-label="Page sections"
-          className="mx-auto hidden max-w-[100rem] items-center gap-6 overflow-x-auto border-t border-border px-5 py-2 lg:flex lg:px-8"
+          className="mx-auto hidden max-w-[100rem] items-center gap-2.5 overflow-x-auto border-t border-border px-5 py-2 lg:flex lg:px-8"
         >
-          {SECTIONS.map(([href, label]) => (
+          {SECTIONS.map((s) => (
             <a
-              key={href}
-              href={href}
-              className="label-mono whitespace-nowrap text-muted-foreground transition-colors hover:text-accent"
+              key={s.href}
+              href={s.href}
+              className="label-mono whitespace-nowrap rounded-full px-3 py-1.5 transition-colors"
+              style={{
+                background: `color-mix(in oklab, ${s.tone} 12%, transparent)`,
+                color: s.tone,
+                border: `1px solid color-mix(in oklab, ${s.tone} 30%, transparent)`,
+              }}
             >
-              {label}
+              {s.label}
             </a>
           ))}
         </nav>
@@ -242,7 +270,8 @@ function Dashboard() {
 
           <section id="markets">
             <SectionHeading
-              step={1}
+              tone="var(--chart-2)"
+              kicker="Markets"
               icon={TrendingUp}
               title="Real time Crude Oil price, S&P 500 Index and Gold Price"
               subtitle="Live benchmark markets that move biofuel economics — 30-day trend, daily change and last close for each."
@@ -252,7 +281,8 @@ function Dashboard() {
 
           <section id="map" className="pt-6">
             <SectionHeading
-              step={2}
+              tone="var(--chart-3)"
+              kicker="Jurisdiction map"
               icon={Map}
               title="Policy activity by jurisdiction"
               subtitle="Click any country on the map to open its policy profile, mandates and latest updates."
@@ -276,7 +306,8 @@ function Dashboard() {
 
           <section id="production" className="pt-6">
             <SectionHeading
-              step={3}
+              tone="var(--chart-6)"
+              kicker="Supply & producers"
               icon={Factory}
               title="Biofuel supply at the pump and top users"
               subtitle="Retail networks selling biofuels worldwide and the largest users of each fuel."
@@ -291,7 +322,8 @@ function Dashboard() {
           <div className="grid gap-8 pt-6 xl:grid-cols-2 xl:items-start">
             <section id="alerts">
               <SectionHeading
-                step={4}
+                tone="var(--chart-4)"
+                kicker="Email alerts"
                 icon={BellRing}
                 title="News alerts by email"
                 subtitle="Daily email digest of new bioenergy policy updates, filtered to the fuels you follow."
@@ -301,7 +333,8 @@ function Dashboard() {
 
             <section id="traffic">
               <SectionHeading
-                step={5}
+                tone="var(--chart-5)"
+                kicker="Live audience"
                 icon={Activity}
                 title="Live audience"
                 subtitle="Real-time readership of the desk — who is reading now and how it trends."
