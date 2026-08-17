@@ -401,7 +401,7 @@ function Dashboard() {
           <div className="grid gap-6 pt-4 xl:grid-cols-2 xl:items-start">
             <section id="alerts">
               <SectionHeading
-                step={8}
+                step={4}
                 icon={BellRing}
                 title="News alerts by email"
                 subtitle="Daily email digest of new bioenergy policy updates, filtered to the fuels you follow."
@@ -411,7 +411,7 @@ function Dashboard() {
 
             <section id="traffic">
               <SectionHeading
-                step={9}
+                step={5}
                 icon={Activity}
                 title="Live audience"
                 subtitle="Real-time readership of the desk — who is reading now and how it trends."
