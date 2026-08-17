@@ -183,15 +183,20 @@ function Dashboard() {
         </div>
         <nav
           aria-label="Page sections"
-          className="mx-auto hidden max-w-[100rem] items-center gap-6 overflow-x-auto border-t border-border px-5 py-2 lg:flex lg:px-8"
+          className="mx-auto hidden max-w-[100rem] items-center gap-2.5 overflow-x-auto border-t border-border px-5 py-2 lg:flex lg:px-8"
         >
-          {SECTIONS.map(([href, label]) => (
+          {SECTIONS.map((s) => (
             <a
-              key={href}
-              href={href}
-              className="label-mono whitespace-nowrap text-muted-foreground transition-colors hover:text-accent"
+              key={s.href}
+              href={s.href}
+              className="label-mono whitespace-nowrap rounded-full px-3 py-1.5 transition-colors"
+              style={{
+                background: `color-mix(in oklab, ${s.tone} 12%, transparent)`,
+                color: s.tone,
+                border: `1px solid color-mix(in oklab, ${s.tone} 30%, transparent)`,
+              }}
             >
-              {label}
+              {s.label}
             </a>
           ))}
         </nav>
@@ -265,7 +270,8 @@ function Dashboard() {
 
           <section id="markets">
             <SectionHeading
-              step={1}
+              tone="var(--chart-2)"
+              kicker="Markets"
               icon={TrendingUp}
               title="Real time Crude Oil price, S&P 500 Index and Gold Price"
               subtitle="Live benchmark markets that move biofuel economics — 30-day trend, daily change and last close for each."
@@ -275,7 +281,8 @@ function Dashboard() {
 
           <section id="map" className="pt-6">
             <SectionHeading
-              step={2}
+              tone="var(--chart-3)"
+              kicker="Jurisdiction map"
               icon={Map}
               title="Policy activity by jurisdiction"
               subtitle="Click any country on the map to open its policy profile, mandates and latest updates."
@@ -299,7 +306,8 @@ function Dashboard() {
 
           <section id="production" className="pt-6">
             <SectionHeading
-              step={3}
+              tone="var(--chart-6)"
+              kicker="Supply & producers"
               icon={Factory}
               title="Biofuel supply at the pump and top users"
               subtitle="Retail networks selling biofuels worldwide and the largest users of each fuel."
@@ -314,7 +322,8 @@ function Dashboard() {
           <div className="grid gap-8 pt-6 xl:grid-cols-2 xl:items-start">
             <section id="alerts">
               <SectionHeading
-                step={4}
+                tone="var(--chart-4)"
+                kicker="Email alerts"
                 icon={BellRing}
                 title="News alerts by email"
                 subtitle="Daily email digest of new bioenergy policy updates, filtered to the fuels you follow."
@@ -324,7 +333,8 @@ function Dashboard() {
 
             <section id="traffic">
               <SectionHeading
-                step={5}
+                tone="var(--chart-5)"
+                kicker="Live audience"
                 icon={Activity}
                 title="Live audience"
                 subtitle="Real-time readership of the desk — who is reading now and how it trends."
