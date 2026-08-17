@@ -19,6 +19,7 @@ export const TRUSTED_OUTLETS: string[] = [
   "thetimes.co.uk", "telegraph.co.uk", "independent.co.uk", "forbes.com", "fortune.com",
   "axios.com", "thehill.com", "npr.org", "pbs.org", "usatoday.com", "latimes.com",
   "businesstimes.com.sg", "arabnews.com", "thenationalnews.com", "zawya.com",
+  "aninews.in", "thestatesman.com", "engineeringnews.co.za", "bwbusinessworld.com",
   "antaranews.com", "quantumcommodityintelligence.com", "biofuels-news.com",
   "chinimandi.com", "thewire.in", "thenewsminute.com", "etgovernment.com",
   "outlookbusiness.com", "dailypioneer.com", "financialexpress.com", "deccanherald.com",
@@ -67,6 +68,8 @@ const NAME_ALIASES: Record<string, string> = {
 const normalise = (s: string) => s.toLowerCase().trim().replace(/^www\./, "");
 
 /** True when the publisher (feed <source> name or article host) is an authentic outlet. */
+const GOV_SUFFIXES = [".gov", ".gov.uk", ".gov.in", ".gov.au", ".gov.br", ".gov.sg", ".gc.ca", ".go.id", ".go.jp", ".govt.nz", ".gob.es", ".gouv.fr", ".europa.eu", ".int"];
+
 export function isTrustedOutlet(source: string, link: string): boolean {
   const candidates: string[] = [];
   const s = normalise(source);
@@ -79,6 +82,9 @@ export function isTrustedOutlet(source: string, link: string): boolean {
     candidates.push(normalise(new URL(link).hostname));
   } catch {
     /* ignore malformed links */
+  }
+  if (candidates.some((c) => GOV_SUFFIXES.some((g) => c.endsWith(g) || c.includes(g + ".")))) {
+    return true;
   }
   if (
     candidates.some((c) =>
