@@ -255,7 +255,7 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
       : null;
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
       {filterNote ? (
         <div className="label-mono lg:col-span-2 rounded-full border border-border bg-surface-2 px-3 py-1.5 text-muted-foreground">
           {filterNote}

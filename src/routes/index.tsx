@@ -282,7 +282,7 @@ function Dashboard() {
               subtitle="Retail networks selling biofuels worldwide and the largest users of each fuel."
             />
             <BiofuelProductionPanel fuels={[]} />
-            <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2 xl:items-stretch">
+            <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2 xl:items-start">
               <OilStocksPanel />
               <SafAirlinesPanel />
             </div>
