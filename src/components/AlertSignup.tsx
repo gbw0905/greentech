@@ -17,10 +17,15 @@ export function AlertSignup() {
   const [email, setEmail] = useState("");
   const [fuels, setFuels] = useState<FuelType[]>([]);
   const [countries, setCountries] = useState<string[]>([]);
+  const [cadence, setCadence] = useState<"instant" | "daily" | "weekly">("daily");
 
   const mutation = useMutation({
-    mutationFn: (input: { email: string; fuels: string[]; countries: string[] }) =>
-      subscribe({ data: input }),
+    mutationFn: (input: {
+      email: string;
+      fuels: string[];
+      countries: string[];
+      cadence: "instant" | "daily" | "weekly";
+    }) => subscribe({ data: input }),
   });
 
   const status = mutation.data?.status;
@@ -32,11 +37,11 @@ export function AlertSignup() {
           <BellRing className="size-5 text-primary" />
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="font-display text-lg font-bold">Get new policy updates by email</h3>
+          <h3 className="font-display text-lg font-bold">Get AI policy briefs by email</h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            One daily email whenever new bioenergy policy moves land. Pick the fuels you follow, or
-            leave blank for everything. Add countries to only hear about those markets. Unsubscribe
-            any time.
+            AI-written briefs whenever new bioenergy policy moves land. Choose how often you hear
+            from us, pick the fuels you follow, or leave blank for everything. Add countries to only
+            hear about those markets. Unsubscribe any time.
           </p>
 
           <form
@@ -44,7 +49,7 @@ export function AlertSignup() {
             onSubmit={(e) => {
               e.preventDefault();
               if (!email.trim()) return;
-              mutation.mutate({ email: email.trim(), fuels, countries });
+              mutation.mutate({ email: email.trim(), fuels, countries, cadence });
             }}
           >
             <input
@@ -66,6 +71,25 @@ export function AlertSignup() {
               Subscribe
             </button>
           </form>
+
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="label-mono text-muted-foreground">Frequency</span>
+            {(["instant", "daily", "weekly"] as const).map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setCadence(c)}
+                aria-pressed={cadence === c}
+                className={`label-mono rounded-full px-3 py-1 transition-colors ${
+                  cadence === c
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-secondary-foreground"
+                }`}
+              >
+                {c === "instant" ? "Instant" : c === "daily" ? "Daily digest" : "Weekly digest"}
+              </button>
+            ))}
+          </div>
 
           <div className="mt-3 flex flex-wrap gap-2">
             {FUEL_TYPES.map((f) => {
