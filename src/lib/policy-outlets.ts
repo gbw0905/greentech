@@ -77,7 +77,18 @@ export function isTrustedOutlet(source: string, link: string): boolean {
   } catch {
     /* ignore malformed links */
   }
-  return candidates.some((c) =>
-    TRUSTED_OUTLETS.some((t) => c === t || c.endsWith(`.${t}`) || c.includes(t)),
-  );
+  if (
+    candidates.some((c) =>
+      TRUSTED_OUTLETS.some((t) => c === t || c.endsWith(`.${t}`) || c.includes(t)),
+    )
+  ) {
+    return true;
+  }
+  // Google News reports the publisher by name, e.g. "The Hindu" -> thehindu.com
+  const compact = s.replace(/[^a-z0-9]/g, "");
+  if (compact.length < 4) return false;
+  return TRUSTED_OUTLETS.some((t) => {
+    const root = t.split(".")[0]!;
+    return root.length >= 4 && (root === compact || compact.includes(root) || root.includes(compact));
+  });
 }
