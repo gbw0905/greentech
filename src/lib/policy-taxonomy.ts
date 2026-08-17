@@ -528,8 +528,8 @@ export function policyStatusFor(country: CountryProfile | undefined | null): Pol
 }
 
 export const POLICY_STATUS_COLOR: Record<PolicyStatus, string> = {
-  Mandated: "oklch(0.62 0.19 150)",
-  "Policy framework": "oklch(0.68 0.17 85)",
-  Proposed: "oklch(0.66 0.16 250)",
+  Mandated: "oklch(0.5 0.1 168)",
+  "Policy framework": "oklch(0.66 0.13 68)",
+  Proposed: "oklch(0.62 0.12 236)",
   "No framework": "var(--grid)",
 };

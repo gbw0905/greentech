@@ -1,10 +1,10 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { RefreshCw, AlertTriangle, Map, Factory, TrendingUp, BellRing, Activity } from "lucide-react";
 import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
 import siteLogo from "@/assets/logo.png";
-import { formatDate } from "@/components/UpdateCard";
+import { formatDate, UpdateCard } from "@/components/UpdateCard";
 import { WorldPolicyMap } from "@/components/WorldPolicyMap";
 
 import { OilPricePanel } from "@/components/OilPricePanel";
@@ -25,6 +25,16 @@ const feedQuery = queryOptions({
 });
 
 const TITLE = "Global Bioenergy Watch | Worldwide Biofuel Policy Tracker";
+
+const SECTIONS: [string, string][] = [
+  ["#markets", "01 Markets"],
+  ["#map", "02 Jurisdiction map"],
+  ["#production", "03 Supply & producers"],
+  ["#alerts", "04 Email alerts"],
+  ["#traffic", "05 Live audience"],
+  ["#disclaimer", "06 Method & disclaimer"],
+];
+
 const DESCRIPTION =
   "Live tracker of global bioenergy and biofuel policy: ethanol, biodiesel, renewable diesel and SAF mandates by region, country and fuel type.";
 
@@ -64,30 +74,17 @@ function SectionHeading({
   subtitle: string;
 }) {
   return (
-    <div className="mb-5 overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-r from-primary via-primary-glow to-accent shadow-[var(--shadow-lift)]">
-      <div className="relative px-6 py-5 sm:px-8 sm:py-6">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-10"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(45deg, transparent, transparent 16px, currentColor 16px, currentColor 18px)",
-          }}
-        />
-        <div className="relative flex items-center gap-4 sm:gap-5">
-          <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-primary-foreground/20 font-mono text-base font-bold text-primary-foreground ring-1 ring-inset ring-primary-foreground/30 sm:size-14 sm:text-lg">
-            {step}
-          </span>
-          <div className="min-w-0">
-            <h2 className="flex items-center gap-3 font-display text-3xl font-black leading-none tracking-tight text-primary-foreground sm:text-4xl [text-shadow:0_2px_16px_rgba(0,0,0,0.15)]">
-              <Icon className="size-7 shrink-0 text-primary-foreground/90 sm:size-8" />
-              <span className="truncate">{title}</span>
-            </h2>
-            <p className="mt-2 text-base font-semibold whitespace-nowrap truncate text-primary-foreground/85">
-              {subtitle}
-            </p>
-          </div>
-        </div>
+    <div className="mb-5 border-t-2 border-t-foreground pt-4">
+      <div className="flex items-center gap-2">
+        <Icon className="size-3.5 text-accent" />
+        <span className="kicker">
+          Section {String(step).padStart(2, "0")}
+        </span>
       </div>
+      <h2 className="mt-2 font-display text-2xl leading-tight font-bold text-foreground sm:text-3xl">
+        {title}
+      </h2>
+      <p className="mt-1.5 max-w-3xl text-sm text-muted-foreground">{subtitle}</p>
     </div>
   );
 }
@@ -112,25 +109,38 @@ function Dashboard() {
     return c;
   }, [data.updates]);
 
+  const stats = useMemo(
+    () => ({
+      total: data.updates.length,
+      countries: new Set(data.updates.map((u) => u.countrySlug).filter(Boolean)).size,
+      policy: data.updates.filter((u) => u.category !== "market").length,
+    }),
+    [data.updates],
+  );
+
+  const lead = data.updates[0] ?? null;
+  const runnerUps = data.updates.slice(1, 3);
+
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-30 border-b border-border/80 bg-surface/70 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[110rem] flex-wrap items-center justify-between gap-4 px-5 py-3.5 lg:px-8">
+      <header className="sticky top-0 z-30 border-b border-border bg-surface/95 backdrop-blur">
+        <div className="mx-auto flex max-w-[100rem] flex-wrap items-center justify-between gap-4 px-5 py-3 lg:px-8">
           <div className="flex items-center gap-3">
             <img
               src={siteLogo}
               alt="Global Bioenergy Watch logo: a globe with a leaf and rising data line"
               width={1024}
               height={1024}
-              className="size-12 rounded-xl object-contain drop-shadow-[0_0_16px_rgba(0,240,255,0.35)]"
+              className="size-10 rounded-md object-contain"
             />
             <div>
-              <div className="font-display text-3xl leading-tight font-black text-gradient drop-shadow-[0_0_16px_rgba(0,240,255,0.45)]">
+              <div className="font-display text-xl leading-none font-bold tracking-tight text-foreground sm:text-2xl">
                 Global Bioenergy Watch
               </div>
+              <div className="kicker mt-1">Independent policy & market desk</div>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <div className="hidden text-right sm:block">
               <div className="label-mono text-muted-foreground">Last scan</div>
               <div className="font-mono text-xs">
@@ -141,59 +151,86 @@ function Dashboard() {
               type="button"
               onClick={() => rescan.mutate()}
               disabled={busy}
-              className="label-mono inline-flex items-center gap-2 rounded-full surface-gradient-primary px-4 py-2 text-primary-foreground shadow-[var(--shadow-frost)] transition-transform duration-200 hover:-translate-y-0.5 active:scale-95"
+              className="label-mono inline-flex items-center gap-2 rounded-md bg-primary px-3.5 py-2 text-primary-foreground transition-colors hover:bg-primary-glow disabled:opacity-60"
             >
               <RefreshCw className={`size-3.5 ${busy ? "animate-spin" : ""}`} />
               Rescan
             </button>
           </div>
         </div>
+        <nav
+          aria-label="Page sections"
+          className="mx-auto hidden max-w-[100rem] items-center gap-6 overflow-x-auto border-t border-border px-5 py-2 lg:flex lg:px-8"
+        >
+          {SECTIONS.map(([href, label]) => (
+            <a
+              key={href}
+              href={href}
+              className="label-mono whitespace-nowrap text-muted-foreground transition-colors hover:text-accent"
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
       </header>
 
-      <div className="mx-auto max-w-[110rem] px-5 py-6 lg:px-8 lg:py-8">
+      <div className="mx-auto max-w-[100rem] px-5 py-6 lg:px-8 lg:py-8">
 
         <main className="space-y-6">
-          <section className="glass-panel rise overflow-hidden">
-            <div style={{ containerType: "inline-size" }} className="hero-glow surface-gradient-aurora px-6 py-10 text-primary-foreground sm:px-8 sm:py-12">
-              <div className="label-mono inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-1 backdrop-blur-sm">
-                <span className="pulse-dot size-1.5 rounded-full bg-current" />
+          <section className="rise grid gap-8 border-b border-border pb-8 lg:grid-cols-[1.15fr_1fr] lg:gap-12">
+            <div className="flex flex-col justify-center">
+              <div className="kicker inline-flex items-center gap-2">
+                <span className="size-1.5 rounded-full bg-accent" />
                 Global biofuel intelligence
               </div>
-              <h1 style={{ fontSize: "clamp(0.8rem, 4.5cqi, 3rem)" }}
-                className="mt-5 font-display leading-[1.1] font-bold whitespace-nowrap [text-shadow:0_2px_24px_rgba(255,255,255,0.35)]">
+              <h1 className="mt-4 font-display text-4xl leading-[1.05] font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
                 AI powered global bioenergy outlook
               </h1>
-              <p className="mt-4 text-sm/relaxed whitespace-nowrap opacity-90">
-                Continuously scanned mandates, blending obligations and regulatory decisions across all global jurisdictions — with live readership of the desk.
+              <p className="mt-5 max-w-2xl text-base/relaxed text-muted-foreground">
+                Mandates, blending obligations and regulatory decisions across every tracked
+                jurisdiction — continuously scanned from government portals and credible media,
+                classified by country and fuel, and published as they land.
               </p>
-            </div>
-            <div className="border-t border-border px-6 py-3 sm:px-8 sm:py-4">
-              <nav
-                aria-label="Page sections"
-                className="flex flex-wrap gap-2.5"
-              >
+              <dl className="mt-7 grid grid-cols-3 gap-4 border-t border-border pt-5">
                 {[
-                  ["#markets", "1 · Markets", "oklch(0.55 0.18 230)"],
-                  ["#map", "2 · Map & country desk", "oklch(0.55 0.16 320)"],
-                  ["#production", "3 · Production", "oklch(0.55 0.16 150)"],
-                  ["#alerts", "4 · Email alerts", "oklch(0.55 0.17 265)"],
-                  ["#traffic", "5 · Live audience", "oklch(0.6 0.18 25)"],
-                  ["#disclaimer", "6 · AI disclaimer", "oklch(0.45 0.02 240)"],
-                ].map(([href, label, color]) => {
-                  const cls =
-                    "label-mono rounded-full border px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 hover:shadow-md";
-                  const style = { backgroundColor: color, borderColor: color };
-                  return href!.startsWith("/") ? (
-                    <Link key={href} to={href!} className={cls} style={style}>
-                      {label}
-                    </Link>
-                  ) : (
-                    <a key={href} href={href} className={cls} style={style}>
-                      {label}
-                    </a>
-                  );
-                })}
-              </nav>
+                  ["Updates tracked", String(stats.total)],
+                  ["Jurisdictions covered", String(stats.countries)],
+                  ["Government policy items", String(stats.policy)],
+                ].map(([label, value]) => (
+                  <div key={label}>
+                    <dt className="kicker">{label}</dt>
+                    <dd className="mt-1 font-display text-2xl font-bold tabular-nums text-foreground sm:text-3xl">
+                      {value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+            <div className="flex flex-col">
+              <div className="kicker mb-3">Latest update</div>
+              {lead ? (
+                <UpdateCard update={lead} />
+              ) : (
+                <div className="glass-panel p-6 text-sm text-muted-foreground">
+                  {busy ? "Scanning global sources…" : "No updates available yet."}
+                </div>
+              )}
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                {runnerUps.map((u) => (
+                  <a
+                    key={u.url}
+                    href={u.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="glass-panel lift block p-3"
+                  >
+                    <div className="label-mono text-muted-foreground">
+                      {formatDate(u.publishedAt)} · {u.source}
+                    </div>
+                    <div className="mt-1 line-clamp-2 text-sm font-semibold">{u.title}</div>
+                  </a>
+                ))}
+              </div>
             </div>
           </section>
 
@@ -213,20 +250,17 @@ function Dashboard() {
             <OilPricePanel />
           </section>
 
-          <section id="map" className="pt-4">
+          <section id="map" className="pt-6">
             <SectionHeading
               step={2}
               icon={Map}
               title="Policy activity by jurisdiction"
               subtitle="Click any country on the map to open its policy profile, mandates and latest updates."
             />
-            <div className="glass-panel rise flex min-w-0 flex-col p-5">
+            <div className="glass-panel flex min-w-0 flex-col p-5">
               <div className="mb-3 flex items-center justify-between gap-3">
-                <h2 className="label-mono text-muted-foreground">Jurisdiction map</h2>
-                <span className="label-mono inline-flex items-center gap-1.5 text-primary">
-                  <span className="pulse-dot size-2 rounded-full bg-primary" />
-                  interactive
-                </span>
+                <h3 className="label-mono text-muted-foreground">Jurisdiction map</h3>
+                <span className="label-mono text-accent">Click a country to open its profile</span>
               </div>
               <div className="min-h-0 flex-1">
                 <WorldPolicyMap
@@ -240,7 +274,7 @@ function Dashboard() {
             </div>
           </section>
 
-          <section id="production" className="pt-4">
+          <section id="production" className="pt-6">
             <SectionHeading
               step={3}
               icon={Factory}
@@ -248,13 +282,13 @@ function Dashboard() {
               subtitle="Retail networks selling biofuels worldwide and the largest users of each fuel."
             />
             <BiofuelProductionPanel fuels={[]} />
-            <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2 xl:items-stretch">
+            <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2 xl:items-start">
               <OilStocksPanel />
               <SafAirlinesPanel />
             </div>
           </section>
 
-          <div className="grid gap-6 pt-4 xl:grid-cols-2 xl:items-start">
+          <div className="grid gap-8 pt-6 xl:grid-cols-2 xl:items-start">
             <section id="alerts">
               <SectionHeading
                 step={4}
@@ -276,13 +310,11 @@ function Dashboard() {
             </section>
           </div>
 
-          <section id="disclaimer" className="glass-panel rise border-l-4 border-l-signal bg-signal/[0.03] p-5">
+          <section id="disclaimer" className="border-t border-border pt-6">
             <div className="flex items-start gap-3">
-              <div className="grid size-10 place-items-center rounded-full bg-signal/15 shrink-0">
-                <AlertTriangle className="size-5 text-signal" />
-              </div>
-              <div>
-                <h3 className="font-display font-semibold text-foreground">AI-generated content disclaimer</h3>
+              <AlertTriangle className="mt-0.5 size-4 shrink-0 text-signal" />
+              <div className="max-w-4xl">
+                <h3 className="kicker">Method & AI disclaimer</h3>
                 <p className="mt-2 text-sm text-muted-foreground">
                   Stories are gathered from public web sources, including government policy portals, regulatory notices, international agencies, and energy trade press. An AI layer classifies each item by region, country and fuel type, then writes the summary you see here.
                 </p>
