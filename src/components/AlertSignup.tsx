@@ -32,8 +32,8 @@ export function AlertSignup() {
           <h3 className="font-display text-lg font-bold">Get AI policy briefs by email</h3>
           <p className="mt-1 text-sm text-muted-foreground">
             AI-written briefs whenever new bioenergy policy moves land. Choose how often you hear
-            from us, pick the fuels you follow, or leave blank for everything. Add countries to only
-            hear about those markets. Unsubscribe any time.
+            from us and pick the fuels you follow, or leave blank for everything. Unsubscribe any
+            time.
           </p>
 
           <form
