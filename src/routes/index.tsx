@@ -200,23 +200,23 @@ function Dashboard() {
                 <span className="size-1.5 rounded-full bg-accent" />
                 Global biofuel intelligence
               </div>
-              <h1 className="mt-4 font-display text-4xl leading-[1.05] font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+              <h1 className="mt-4 font-display text-[2.6rem] leading-[1.02] font-extrabold tracking-[-0.03em] text-foreground sm:text-[3.4rem] lg:text-[4rem]">
                 AI powered global bioenergy outlook
               </h1>
-              <p className="mt-5 max-w-2xl text-base/relaxed text-muted-foreground">
+              <p className="mt-5 max-w-[58ch] text-base/relaxed text-muted-foreground">
                 Mandates, blending obligations and regulatory decisions across every tracked
                 jurisdiction — continuously scanned from government portals and credible media,
                 classified by country and fuel, and published as they land.
               </p>
-              <dl className="mt-7 grid grid-cols-3 gap-4 border-t border-border pt-5">
+              <dl className="mt-8 grid grid-cols-3 divide-x divide-border border-y border-border">
                 {[
                   ["Updates tracked", String(stats.total)],
                   ["Jurisdictions covered", String(stats.countries)],
                   ["Government policy items", String(stats.policy)],
                 ].map(([label, value]) => (
-                  <div key={label}>
+                  <div key={label} className="px-4 py-4 first:pl-0">
                     <dt className="kicker">{label}</dt>
-                    <dd className="mt-1 font-display text-2xl font-bold tabular-nums text-foreground sm:text-3xl">
+                    <dd className="mt-1.5 font-display text-2xl font-extrabold tabular-nums text-foreground sm:text-3xl">
                       {value}
                     </dd>
                   </div>
@@ -224,7 +224,10 @@ function Dashboard() {
               </dl>
             </div>
             <div className="flex flex-col">
-              <div className="kicker mb-2">Top 5 latest updates</div>
+              <div className="mb-3 flex items-baseline justify-between gap-3 border-b border-border pb-2">
+                <span className="kicker">Top 5 latest updates</span>
+                <span className="label-mono text-muted-foreground/70">Live</span>
+              </div>
               {topFive.length > 0 ? (
                 <div className="space-y-2">
                   {topFive.map((u, i) => (
