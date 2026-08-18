@@ -307,16 +307,10 @@ function Dashboard() {
               {(
                 [
                   {
-                    key: "policy",
-                    label: "Policy & mandate updates",
-                    tone: "var(--chart-3)",
-                    items: data.updates.filter((u) => u.category !== "market").slice(0, 6),
-                  },
-                  {
                     key: "market",
                     label: "Market updates",
                     tone: "var(--chart-2)",
-                    items: data.updates.filter((u) => u.category === "market").slice(0, 6),
+                    items: data.updates.filter((u) => u.category === "market").slice(0, 10),
                   },
                 ] as const
               ).map((group) => (

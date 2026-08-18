@@ -3,7 +3,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { feature } from "topojson-client";
 import { Link } from "@tanstack/react-router";
 import { Minus, Plus, Maximize2 } from "lucide-react";
-import { COUNTRIES } from "@/lib/policy-taxonomy";
+import {
+  COUNTRIES,
+  POLICY_STATUS_COLOR,
+  policyStatusFor,
+  type PolicyStatus,
+} from "@/lib/policy-taxonomy";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { getCountryIndicesFn } from "@/lib/country-markets.functions";
 
@@ -151,18 +156,19 @@ export function WorldPolicyMap({
               const isActive = country && country.slug === activeCountry;
               const isHover = Boolean(country) && f.properties.name === hover;
               const hasActivity = country && count > 0;
+              const status = country ? policyStatusFor(country) : null;
               return (
                 <path
                   key={i}
                   d={path(f as never) ?? ""}
-                  fill={country ? "var(--primary)" : "var(--muted)"}
+                  fill={status ? POLICY_STATUS_COLOR[status] : "var(--muted)"}
                   fillOpacity={
                     country
                       ? isHover
                         ? 0.95
                         : hasActivity
-                          ? Math.min(0.45 + count * 0.07, 0.9)
-                          : 0.18
+                          ? Math.min(0.7 + count * 0.04, 0.95)
+                          : 0.55
                       : 1
                   }
                   stroke={
@@ -195,6 +201,16 @@ export function WorldPolicyMap({
             </div>
             <div className="label-mono text-primary">
               {counts[hovered.slug] ?? 0} updates
+            </div>
+            <div
+              className="label-mono mt-1 inline-flex items-center gap-1.5"
+              style={{ color: POLICY_STATUS_COLOR[policyStatusFor(hovered)] }}
+            >
+              <span
+                className="size-2 rounded-[2px]"
+                style={{ background: POLICY_STATUS_COLOR[policyStatusFor(hovered)] }}
+              />
+              {policyStatusFor(hovered)}
             </div>
             <dl className="mt-1.5 space-y-1 border-t border-border pt-1.5 font-mono text-[10px] text-muted-foreground">
               <div className="flex items-baseline justify-between gap-2">
@@ -273,12 +289,18 @@ export function WorldPolicyMap({
       </div>
 
       <div className="mt-2.5 flex flex-wrap items-center justify-between gap-x-5 gap-y-2">
-        <div className="label-mono flex items-center gap-2 text-muted-foreground">
-          <span
-            className="size-2.5 rounded-[3px] border border-border"
-            style={{ background: "var(--primary)" }}
-          />
-          Policy activity intensity
+        <div className="label-mono flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground">
+          {(
+            ["Mandated", "Policy framework", "In development", "No framework"] as PolicyStatus[]
+          ).map((s) => (
+            <span key={s} className="inline-flex items-center gap-1.5">
+              <span
+                className="size-2.5 rounded-[3px] border border-border"
+                style={{ background: POLICY_STATUS_COLOR[s] }}
+              />
+              {s}
+            </span>
+          ))}
         </div>
         {hovered ? (
           <div className="label-mono text-foreground">
