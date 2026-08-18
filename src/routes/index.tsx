@@ -179,17 +179,9 @@ function Dashboard() {
             <a
               key={s.href}
               href={s.href}
-              className="label-mono group inline-flex items-center gap-2 whitespace-nowrap rounded-full px-3.5 py-1.5 font-bold transition-all hover:-translate-y-px"
-              style={{
-                background: `color-mix(in oklab, ${s.tone} 30%, transparent)`,
-                color: `color-mix(in oklab, ${s.tone} 40%, white)`,
-                border: `1px solid color-mix(in oklab, ${s.tone} 65%, transparent)`,
-              }}
+              className="label-mono group inline-flex items-center gap-2 whitespace-nowrap rounded-sm px-4 py-2 text-xs font-bold text-white shadow-sm transition-all hover:-translate-y-px hover:brightness-110"
+              style={{ background: s.tone }}
             >
-              <span
-                className="size-1.5 rounded-full"
-                style={{ background: `color-mix(in oklab, ${s.tone} 60%, white)` }}
-              />
               {s.label}
             </a>
           ))}
@@ -208,10 +200,12 @@ function Dashboard() {
               <h1 className="mt-4 font-display text-[2.6rem] leading-[1.02] font-extrabold tracking-[-0.03em] text-foreground sm:text-[3.4rem] lg:text-[4rem]">
                 AI powered global bioenergy outlook
               </h1>
-              <p className="mt-5 max-w-[58ch] text-base/relaxed text-muted-foreground">
-                Mandates, blending obligations and regulatory decisions across every tracked
-                jurisdiction — continuously scanned from government portals and credible media,
-                classified by country and fuel, and published as they land.
+              <p className="mt-5 max-w-[64ch] text-base/relaxed text-muted-foreground">
+                A real-time intelligence desk for biofuel policy, supply chains and benchmark
+                markets. We track mandates, blending targets, tax incentives and regulatory shifts
+                across every major jurisdiction — from the U.S. IRA and EU ReFuelEU to emerging SAF
+                frameworks in Asia-Pacific — then synthesise them into a single, searchable outlook
+                so analysts, traders and policymakers can act on what matters first.
               </p>
               <dl className="mt-8 grid grid-cols-3 divide-x divide-border border-y border-border">
                 {[
