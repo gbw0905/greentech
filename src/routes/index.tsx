@@ -343,18 +343,34 @@ function Dashboard() {
             </section>
           </div>
 
-          <section id="disclaimer" className="border-t border-border pt-8">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="mt-0.5 size-4 shrink-0 text-signal" />
-              <div className="max-w-4xl">
-                <h3 className="kicker">Method & AI disclaimer</h3>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Stories are gathered from public web sources, including government policy portals, regulatory notices, international agencies, and energy trade press. An AI layer classifies each item by region, country and fuel type, then writes the summary you see here.
-                </p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  <strong className="text-foreground">Cross-verify</strong> means checking any summary against the original source and the relevant official announcement or primary legislation before using it for compliance, trading or investment decisions. The feed may contain errors, omissions or outdated information.
-                </p>
-              </div>
+          <section id="disclaimer">
+            <SectionHeading
+              tone="var(--chart-8)"
+              kicker="Editorial standards"
+              icon={AlertTriangle}
+              title="Methodology & AI disclosure"
+              subtitle="How this desk sources, classifies and summarises every item you read here."
+            />
+            <div className="grid gap-4 md:grid-cols-3">
+              {[
+                {
+                  h: "Sourcing",
+                  b: "Items are collected from official government and regulatory portals, intergovernmental agencies, and established energy trade and financial press. Sources outside that set are excluded.",
+                },
+                {
+                  h: "AI processing",
+                  b: "An automated language model classifies each item by jurisdiction, fuel type and category, and drafts the summary shown. Summaries are generated, not editorially reviewed line by line.",
+                },
+                {
+                  h: "Limitations & use",
+                  b: "Automated summaries can contain errors, omissions or outdated figures. Always verify against the original source and the governing legislation before relying on an item for compliance, trading or investment decisions.",
+                },
+              ].map((c) => (
+                <div key={c.h} className="glass-panel p-5">
+                  <h3 className="font-display text-base font-bold text-foreground">{c.h}</h3>
+                  <p className="mt-2 text-sm/relaxed text-muted-foreground">{c.b}</p>
+                </div>
+              ))}
             </div>
           </section>
 
