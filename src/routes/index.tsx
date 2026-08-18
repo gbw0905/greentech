@@ -313,6 +313,7 @@ function Dashboard() {
 
           <div className="grid gap-8 pt-4 xl:grid-cols-2 xl:items-start">
             <section id="alerts">
+              {null}
               <SectionHeading
                 tone="var(--chart-4)"
                 kicker="Email alerts"
