@@ -3,7 +3,14 @@ import { useState } from "react";
 import { TrendingDown, TrendingUp } from "lucide-react";
 import { getOilPricesFn, type OilQuote } from "@/lib/oil.functions";
 
-function Chart({ q }: { q: OilQuote }) {
+const assetColor = (symbol: string) => {
+  if (symbol === "CL=F") return "var(--market-crude)";
+  if (symbol === "^GSPC") return "var(--market-equity)";
+  if (symbol === "GC=F") return "var(--market-gold)";
+  return "var(--primary)";
+};
+
+function Chart({ q, color }: { q: OilQuote; color: string }) {
   const [hover, setHover] = useState<number | null>(null);
   const w = 220;
   const h = 72;
