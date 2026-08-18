@@ -75,7 +75,7 @@ function BarChart({
             {ticks.map((t) => (
               <div key={t} className="flex flex-col items-center">
                 <div className="h-1.5 w-px bg-border" />
-                <span className="font-mono text-[10px] text-muted-foreground tabular-nums">
+                <span className="chart-axis">
                   {fmt(max * t, max * t < 100 ? decimals : 0)}
                 </span>
               </div>
@@ -115,14 +115,11 @@ function BarChart({
                 aria-label={`${i.label}: ${fmt(i.value, decimals)} ${unitLabel}`}
               >
                 <div className="w-[140px] shrink-0 text-right">
-                  <div
-                    className="truncate text-xs font-semibold leading-tight"
-                    title={i.label}
-                  >
+                  <div className="chart-label truncate" title={i.label}>
                     {i.label}
                   </div>
                   {i.sub ? (
-                    <div className="truncate text-[10px] text-muted-foreground">{i.sub}</div>
+                    <div className="chart-sub truncate">{i.sub}</div>
                   ) : null}
                 </div>
 
@@ -138,7 +135,7 @@ function BarChart({
                       opacity: hover && !active ? 0.4 : 1,
                     }}
                   />
-                  <span className="pointer-events-none absolute left-[calc(var(--w)+6px)] top-1/2 -translate-y-1/2 font-mono text-[11px] tabular-nums text-foreground"
+                  <span className="chart-value pointer-events-none absolute left-[calc(var(--w)+6px)] top-1/2 -translate-y-1/2 text-foreground"
                     style={{ "--w": `${widthPct}%` } as React.CSSProperties}
                   >
                     {fmt(i.value, i.value < 100 ? decimals : 0)}
@@ -148,17 +145,17 @@ function BarChart({
                     <div className="chart-tip pointer-events-none absolute left-[calc(var(--w)+8px)] top-1/2 z-20 w-max max-w-[200px] -translate-y-1/2 rounded-lg px-2.5 py-1.5"
                       style={{ "--w": `${widthPct}%` } as React.CSSProperties}
                     >
-                      <div className="flex items-center gap-1.5 text-[11px] font-semibold">
+                      <div className="chart-label flex items-center gap-1.5">
                         <span className="inline-block size-2 rounded-full" style={{ background: i.color }} />
                         {i.label}
                       </div>
-                      <div className="font-mono text-[11px] tabular-nums">
+                      <div className="chart-value">
                         {fmt(i.value, decimals)} <span className="text-muted-foreground">{unitLabel}</span>
                       </div>
-                      <div className="text-[10px] text-muted-foreground">
+                      <div className="chart-sub">
                         {((i.value / total) * 100).toFixed(1)}% of shown total
                       </div>
-                      {target ? <div className="text-[10px] text-primary mt-1">Click to open latest news</div> : null}
+                      {target ? <div className="chart-sub mt-1 text-primary">Click to open latest news</div> : null}
                     </div>
                   ) : null}
                 </div>
