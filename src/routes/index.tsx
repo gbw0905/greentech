@@ -303,55 +303,6 @@ function Dashboard() {
                 />
               </div>
             </div>
-            <div className="grid gap-4">
-              {(
-                [
-                  {
-                    key: "market",
-                    label: "Market updates",
-                    tone: "var(--chart-2)",
-                    items: data.updates.filter((u) => u.category === "market").slice(0, 10),
-                  },
-                ] as const
-              ).map((group) => (
-                <div key={group.key} className="glass-panel p-4">
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <h3
-                      className="label-mono rounded-full px-2 py-0.5"
-                      style={{
-                        background: `color-mix(in oklab, ${group.tone} 14%, transparent)`,
-                        color: group.tone,
-                      }}
-                    >
-                      {group.label}
-                    </h3>
-                    <span className="label-mono text-muted-foreground">{group.items.length}</span>
-                  </div>
-                  <ul className="space-y-2.5">
-                    {group.items.map((u) => (
-                      <li key={u.url}>
-                        <a
-                          href={u.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="block rounded-md border border-border p-2.5 transition-colors hover:border-primary/50"
-                        >
-                          <div className="label-mono text-muted-foreground">
-                            {formatDate(u.publishedAt)} · {u.countryName ?? u.region} · {u.source}
-                          </div>
-                          <div className="mt-1 line-clamp-2 text-sm font-semibold">{u.title}</div>
-                        </a>
-                      </li>
-                    ))}
-                    {group.items.length === 0 && (
-                      <li className="text-sm text-muted-foreground">
-                        {busy ? "Scanning…" : "No items yet."}
-                      </li>
-                    )}
-                  </ul>
-                </div>
-              ))}
-            </div>
             </div>
           </section>
 

@@ -86,32 +86,6 @@ export function UpdateCard({ update }: { update: PolicyUpdate }) {
         ))}
       </div>
 
-      <footer className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-border/70 pt-2.5">
-        <span className="label-mono text-muted-foreground">Source</span>
-        <cite className="label-mono not-italic font-semibold text-foreground">{update.source}</cite>
-        {host && (
-          <>
-            <span className="label-mono text-muted-foreground" aria-hidden>
-              /
-            </span>
-            <span className="label-mono text-muted-foreground">{host}</span>
-          </>
-        )}
-        <a
-          href={update.url}
-          target="_blank"
-          rel="noopener noreferrer nofollow"
-          className="label-mono ml-auto inline-flex items-center gap-1 text-primary underline-offset-4 hover:underline"
-          title={update.url}
-        >
-          <Link2 className="size-3" />
-          View original
-        </a>
-      </footer>
-
-      <div className="mt-2.5 flex flex-wrap items-center gap-2">
-        <BriefRequestButton updateId={update.id} />
-      </div>
     </article>
   );
 }
