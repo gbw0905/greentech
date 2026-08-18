@@ -319,7 +319,7 @@ function Dashboard() {
             <JobsPanel compact />
           </section>
 
-          <div className="grid gap-8 pt-4 xl:grid-cols-2 xl:items-start">
+          <div className="pt-4">
             <section id="alerts">
               <SectionHeading
                 tone="var(--chart-4)"
@@ -329,17 +329,6 @@ function Dashboard() {
                 subtitle="Daily email digest of new bioenergy policy updates, filtered to the fuels you follow."
               />
               <AlertSignup />
-            </section>
-
-            <section id="traffic">
-              <SectionHeading
-                tone="var(--chart-5)"
-                kicker="Live audience"
-                icon={Activity}
-                title="Live audience"
-                subtitle="Real-time readership of the desk — who is reading now and how it trends."
-              />
-              <TrafficPanel />
             </section>
           </div>
 
