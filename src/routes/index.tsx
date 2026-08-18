@@ -11,6 +11,7 @@ import { OilPricePanel } from "@/components/OilPricePanel";
 import { OilStocksPanel } from "@/components/OilStocksPanel";
 import { BiofuelProductionPanel } from "@/components/BiofuelProductionPanel";
 import { SafAirlinesPanel } from "@/components/SafAirlinesPanel";
+import { CarriersPanel } from "@/components/CarriersPanel";
 import { AlertSignup } from "@/components/AlertSignup";
 import { JobsPanel } from "@/components/JobsPanel";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
