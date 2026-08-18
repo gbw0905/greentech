@@ -202,6 +202,16 @@ export function WorldPolicyMap({
             <div className="label-mono text-primary">
               {counts[hovered.slug] ?? 0} updates
             </div>
+            <div
+              className="label-mono mt-1 inline-flex items-center gap-1.5"
+              style={{ color: POLICY_STATUS_COLOR[policyStatusFor(hovered)] }}
+            >
+              <span
+                className="size-2 rounded-[2px]"
+                style={{ background: POLICY_STATUS_COLOR[policyStatusFor(hovered)] }}
+              />
+              {policyStatusFor(hovered)}
+            </div>
             <dl className="mt-1.5 space-y-1 border-t border-border pt-1.5 font-mono text-[10px] text-muted-foreground">
               <div className="flex items-baseline justify-between gap-2">
                 <dt>Index</dt>
@@ -279,12 +289,18 @@ export function WorldPolicyMap({
       </div>
 
       <div className="mt-2.5 flex flex-wrap items-center justify-between gap-x-5 gap-y-2">
-        <div className="label-mono flex items-center gap-2 text-muted-foreground">
-          <span
-            className="size-2.5 rounded-[3px] border border-border"
-            style={{ background: "var(--primary)" }}
-          />
-          Policy activity intensity
+        <div className="label-mono flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground">
+          {(
+            ["Mandated", "Policy framework", "In development", "No framework"] as PolicyStatus[]
+          ).map((s) => (
+            <span key={s} className="inline-flex items-center gap-1.5">
+              <span
+                className="size-2.5 rounded-[3px] border border-border"
+                style={{ background: POLICY_STATUS_COLOR[s] }}
+              />
+              {s}
+            </span>
+          ))}
         </div>
         {hovered ? (
           <div className="label-mono text-foreground">
