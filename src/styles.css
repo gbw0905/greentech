@@ -264,8 +264,27 @@
 @utility glass-panel {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-frost);
+  border-radius: calc(var(--radius) + 4px);
+  box-shadow: var(--shadow-card);
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+  &:hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+}
+
+/** Quiet header strip used at the top of chart/data panels. */
+@utility panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-1);
+  border-top-left-radius: calc(var(--radius) + 3px);
+  border-top-right-radius: calc(var(--radius) + 3px);
+  padding: 0.625rem 1rem;
 }
 
 @utility lift {
