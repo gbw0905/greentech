@@ -3,12 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { feature } from "topojson-client";
 import { Link } from "@tanstack/react-router";
 import { Minus, Plus, Maximize2 } from "lucide-react";
-import {
-  COUNTRIES,
-  POLICY_STATUS_COLOR,
-  policyStatusFor,
-  type PolicyStatus,
-} from "@/lib/policy-taxonomy";
+import { COUNTRIES } from "@/lib/policy-taxonomy";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { getCountryIndicesFn } from "@/lib/country-markets.functions";
 
