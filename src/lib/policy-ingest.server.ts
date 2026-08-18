@@ -4,7 +4,7 @@ import {
   FUEL_TYPES,
   type FuelType,
 } from "./policy-taxonomy";
-import { FEED_SOURCES } from "./policy-sources";
+import { FEED_SOURCES, backfillSources } from "./policy-sources";
 import { isTrustedOutlet } from "./policy-outlets";
 
 interface FeedItem {
@@ -69,7 +69,20 @@ function parseFeed(xml: string, fallbackSource: string): FeedItem[] {
 
 function classify(text: string) {
   const haystack = ` ${text.toLowerCase()} `;
-  const country = COUNTRIES.find((c) => c.aliases.some((a) => haystack.includes(a))) ?? null;
+  // Prefer the most specific jurisdiction: a named member state beats the EU-wide
+  // entry, and a longer alias beats an incidental short one.
+  let country: (typeof COUNTRIES)[number] | null = null;
+  let best = 0;
+  for (const c of COUNTRIES) {
+    for (const a of c.aliases) {
+      if (!haystack.includes(a)) continue;
+      const score = a.trim().length + (c.slug === "european-union" ? 0 : 2);
+      if (score > best) {
+        best = score;
+        country = c;
+      }
+    }
+  }
   const fuels: FuelType[] = FUEL_TYPES.filter((f) =>
     FUEL_KEYWORDS[f].some((k) =>
       k.length <= 4 ? new RegExp(`\\b${k}\\b`).test(haystack) : haystack.includes(k),
