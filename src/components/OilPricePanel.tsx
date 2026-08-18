@@ -41,7 +41,7 @@ function Chart({ q, color }: { q: OilQuote; color: string }) {
     })
     .join(" ");
   const up = q.change >= 0;
-  const stroke = up ? "var(--primary)" : "var(--destructive)";
+  const stroke = color;
   const active = hover ?? pts.length - 1;
   const id = `oilFill-${q.symbol.replace(/\W/g, "")}`;
   const glowId = `${id}-glow`;
@@ -61,7 +61,8 @@ function Chart({ q, color }: { q: OilQuote; color: string }) {
       <div className="label-mono flex items-center justify-between text-muted-foreground">
         <span>30-day trend</span>
         <span
-          className={`font-mono font-semibold tabular-nums ${periodPct >= 0 ? "text-primary" : "text-destructive"}`}
+          className="font-mono font-semibold tabular-nums"
+          style={{ color }}
         >
           {periodPct >= 0 ? "+" : ""}
           {periodPct.toFixed(2)}% 30D
