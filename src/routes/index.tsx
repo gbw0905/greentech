@@ -130,7 +130,7 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-30 border-b border-border bg-surface/85 backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b border-ink bg-ink text-ink-foreground backdrop-blur-xl">
         <div className="mx-auto flex max-w-[100rem] flex-wrap items-center justify-between gap-4 px-5 py-2.5 lg:px-8">
           <div className="flex items-center gap-3">
             <img
@@ -141,10 +141,10 @@ function Dashboard() {
               className="size-9 rounded-md object-contain"
             />
             <div>
-              <div className="font-display text-xl leading-none font-extrabold tracking-tight text-foreground sm:text-[1.4rem]">
+              <div className="font-display text-xl leading-none font-extrabold tracking-tight text-ink-foreground sm:text-[1.4rem]">
                 Global Bioenergy Watch
               </div>
-              <div className="kicker mt-1 flex items-center gap-1.5">
+              <div className="kicker mt-1 flex items-center gap-1.5 text-ink-muted">
                 <span className="size-1.5 rounded-full bg-accent" />
                 Independent policy &amp; market desk
               </div>
@@ -152,7 +152,7 @@ function Dashboard() {
           </div>
           <div className="flex items-center gap-4">
             <div className="hidden text-right sm:block">
-              <div className="label-mono text-muted-foreground">Last scan</div>
+              <div className="label-mono text-ink-muted">Last scan</div>
               <div className="font-mono text-xs">
                 {busy && !feed ? "scanning…" : formatDate(data.fetchedAt)}
               </div>
@@ -161,7 +161,7 @@ function Dashboard() {
               type="button"
               onClick={() => rescan.mutate()}
               disabled={busy}
-              className="label-mono inline-flex items-center gap-2 rounded-md bg-primary px-3.5 py-2 text-primary-foreground transition-colors hover:bg-primary-glow disabled:opacity-60"
+              className="label-mono inline-flex items-center gap-2 rounded-md bg-accent px-3.5 py-2 font-bold text-accent-foreground transition-colors hover:opacity-90 disabled:opacity-60"
             >
               <RefreshCw className={`size-3.5 ${busy ? "animate-spin" : ""}`} />
               Rescan
@@ -170,20 +170,20 @@ function Dashboard() {
         </div>
         <nav
           aria-label="Page sections"
-          className="mx-auto hidden max-w-[100rem] items-center gap-2 overflow-x-auto border-t border-border px-5 py-2 lg:flex lg:px-8"
+          className="mx-auto hidden max-w-[100rem] items-center gap-2 overflow-x-auto border-t border-white/10 px-5 py-2.5 lg:flex lg:px-8"
         >
           {SECTIONS.map((s) => (
             <a
               key={s.href}
               href={s.href}
-              className="label-mono group inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-border bg-surface-1 px-3.5 py-1.5 text-muted-foreground transition-all hover:-translate-y-px hover:border-transparent hover:text-foreground hover:shadow-[var(--shadow-card)]"
-            >
-              <span
-                className="size-1.5 rounded-full"
+              className="label-mono group inline-flex items-center gap-2 whitespace-nowrap rounded-full px-3.5 py-1.5 font-bold transition-all hover:-translate-y-px"
               style={{
-                  background: s.tone,
-                }}
-              />
+                background: `color-mix(in oklab, ${s.tone} 26%, transparent)`,
+                color: `color-mix(in oklab, ${s.tone} 55%, white)`,
+                border: `1px solid color-mix(in oklab, ${s.tone} 55%, transparent)`,
+              }}
+            >
+              <span className="size-1.5 rounded-full" style={{ background: s.tone }} />
               {s.label}
             </a>
           ))}
