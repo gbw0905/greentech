@@ -12,26 +12,26 @@ const fmt = (n: number, d = 2) =>
  * (upstream production, or crude throughput for refiners). Company reports / EIA.
  */
 const CAPACITY: Record<string, { mmboe: number; kind: string }> = {
+  "2222.SR": { mmboe: 4745, kind: "Upstream production" },
   XOM: { mmboe: 1570, kind: "Upstream production" },
   CVX: { mmboe: 1205, kind: "Upstream production" },
   SHEL: { mmboe: 1022, kind: "Upstream production" },
   TTE: { mmboe: 913, kind: "Upstream production" },
   BP: { mmboe: 840, kind: "Upstream production" },
+  "0857.HK": { mmboe: 1690, kind: "Upstream production" },
+  "0386.HK": { mmboe: 1650, kind: "Refining throughput" },
+  "0883.HK": { mmboe: 700, kind: "Upstream production" },
   COP: { mmboe: 694, kind: "Upstream production" },
-  EOG: { mmboe: 365, kind: "Upstream production" },
-  SLB: { mmboe: 0, kind: "Oilfield services — no own output" },
   PSX: { mmboe: 657, kind: "Refining throughput" },
   MPC: { mmboe: 1095, kind: "Refining throughput" },
-  VLO: { mmboe: 1168, kind: "Refining throughput" },
   OXY: { mmboe: 438, kind: "Upstream production" },
   PBR: { mmboe: 986, kind: "Upstream production" },
   E: { mmboe: 621, kind: "Upstream production" },
   EQNR: { mmboe: 730, kind: "Upstream production" },
+  "RELIANCE.NS": { mmboe: 511, kind: "Refining throughput" },
+  "ONGC.NS": { mmboe: 168, kind: "Upstream production" },
   SU: { mmboe: 292, kind: "Upstream production" },
   CNQ: { mmboe: 493, kind: "Upstream production" },
-  HES: { mmboe: 183, kind: "Upstream production" },
-  DVN: { mmboe: 256, kind: "Upstream production" },
-  BKR: { mmboe: 0, kind: "Equipment & services — no own output" },
 };
 
 const capOf = (symbol: string) => CAPACITY[symbol] ?? { mmboe: 0, kind: "Not disclosed" };
@@ -50,12 +50,12 @@ const STOCK_METRICS: Record<
   }
 > = {
   price: {
-    label: "Share price (USD)",
-    axis: "X AXIS · SHARE PRICE (USD PER SHARE)",
-    badge: "USD / share",
+    label: "Share price (listing currency)",
+    axis: "X AXIS · SHARE PRICE (PRIMARY LISTING CURRENCY)",
+    badge: "price / share",
     value: (q) => q.price,
-    format: (n) => `$${fmt(n)}`,
-    tick: (n) => `$${Math.round(n)}`,
+    format: (n) => fmt(n),
+    tick: (n) => fmt(Math.round(n), 0),
   },
   change: {
     label: "1-day change (%)",
@@ -412,11 +412,13 @@ export function OilStocksPanel() {
         <div className="max-w-2xl">
           <h3 className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-foreground sm:text-xl">
             <Building2 className="size-5 text-primary" />
-            Top 20 oil companies by NYSE stock price
+            Top 20 global oil companies
           </h3>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            Live share price of the largest NYSE-listed oil &amp; gas majors, shown next to each
-            group's annual output capacity. Hover any row for price, daily change and capacity.
+            The world's twenty largest oil &amp; gas companies — national and international majors
+            across the US, Europe, the Middle East, Asia and Latin America — with live share
+            prices from their primary listing and annual output capacity. Hover any row for
+            price, daily change and capacity.
           </p>
         </div>
         <div className="flex flex-col items-end gap-2">

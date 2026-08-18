@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { RefreshCw, AlertTriangle, Map, Factory, TrendingUp, BellRing, Activity, Briefcase } from "lucide-react";
+import { RefreshCw, AlertTriangle, Map, Factory, TrendingUp, BellRing, Briefcase } from "lucide-react";
 import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
 import siteLogo from "@/assets/logo.png";
 import { formatDate, UpdateCard } from "@/components/UpdateCard";
@@ -13,7 +13,6 @@ import { BiofuelProductionPanel } from "@/components/BiofuelProductionPanel";
 import { SafAirlinesPanel } from "@/components/SafAirlinesPanel";
 import { AlertSignup } from "@/components/AlertSignup";
 import { JobsPanel } from "@/components/JobsPanel";
-import { TrafficPanel } from "@/components/TrafficPanel";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
 
 const feedQuery = queryOptions({
@@ -33,7 +32,6 @@ const SECTIONS: { href: string; label: string; tone: string }[] = [
   { href: "#production", label: "Supply & producers", tone: "var(--chart-6)" },
   { href: "#jobs", label: "Jobs", tone: "var(--chart-7)" },
   { href: "#alerts", label: "Email alerts", tone: "var(--chart-4)" },
-  { href: "#traffic", label: "Live audience", tone: "var(--chart-5)" },
   { href: "#disclaimer", label: "Method & disclaimer", tone: "var(--chart-8)" },
 ];
 
@@ -319,7 +317,7 @@ function Dashboard() {
             <JobsPanel compact />
           </section>
 
-          <div className="grid gap-8 pt-4 xl:grid-cols-2 xl:items-start">
+          <div className="pt-4">
             <section id="alerts">
               <SectionHeading
                 tone="var(--chart-4)"
@@ -329,17 +327,6 @@ function Dashboard() {
                 subtitle="Daily email digest of new bioenergy policy updates, filtered to the fuels you follow."
               />
               <AlertSignup />
-            </section>
-
-            <section id="traffic">
-              <SectionHeading
-                tone="var(--chart-5)"
-                kicker="Live audience"
-                icon={Activity}
-                title="Live audience"
-                subtitle="Real-time readership of the desk — who is reading now and how it trends."
-              />
-              <TrafficPanel />
             </section>
           </div>
 
