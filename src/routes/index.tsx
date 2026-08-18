@@ -77,9 +77,9 @@ function SectionHeading({
 }) {
   return (
     <div className="mb-5 pt-4" style={{ ["--tone" as string]: tone }}>
-      <div className="flex items-center gap-2">
-        <Icon className="size-3.5" style={{ color: "var(--tone)" }} />
-        <span className="kicker" style={{ color: "var(--tone)" }}>
+      <div className="flex items-center gap-2" style={{ color: "var(--tone)" }}>
+        <Icon className="size-3.5" />
+        <span className="kicker">
           {kicker}
         </span>
       </div>
