@@ -191,9 +191,17 @@ export interface IngestResult {
 }
 
 export async function ingestPolicyUpdates(): Promise<IngestResult> {
-  const results = await Promise.all(
-    FEED_SOURCES.map(async (f) => ({ name: f.name, items: await loadFeed(f.url, f.name) })),
-  );
+  // Live sweeps plus month-by-month backfill so the archive spans all months.
+  const sources = [...FEED_SOURCES, ...backfillSources(6)];
+  const results: { name: string; items: FeedItem[] }[] = [];
+  for (let i = 0; i < sources.length; i += 12) {
+    const batch = sources.slice(i, i + 12);
+    results.push(
+      ...(await Promise.all(
+        batch.map(async (f) => ({ name: f.name, items: await loadFeed(f.url, f.name) })),
+      )),
+    );
+  }
 
   const feedsOk = results.filter((r) => r.items.length > 0).length;
   const all = results.flatMap((r) => r.items);
@@ -272,6 +280,26 @@ export async function ingestPolicyUpdates(): Promise<IngestResult> {
     }
     purged = stale.length;
     scannedExisting = (existing ?? []).length;
+
+    // Re-attribute rows stored before the taxonomy improved.
+    const { data: unattributed } = await supabaseAdmin
+      .from("policy_updates")
+      .select("url,title,summary")
+      .is("country_slug", null)
+      .limit(1000);
+    for (const r of unattributed ?? []) {
+      const { country, fuels } = classify(`${r.title} ${r.summary ?? ""}`);
+      if (!country) continue;
+      await supabaseAdmin
+        .from("policy_updates")
+        .update({
+          country_slug: country.slug,
+          country_name: country.name,
+          region: country.region,
+          fuels,
+        })
+        .eq("url", r.url);
+    }
   }
 
   return {
@@ -279,7 +307,7 @@ export async function ingestPolicyUpdates(): Promise<IngestResult> {
     kept: rows.length,
     upserted,
     feedsOk,
-    feedsTotal: FEED_SOURCES.length,
+    feedsTotal: sources.length,
     purged,
     scannedExisting,
     purgeError,
