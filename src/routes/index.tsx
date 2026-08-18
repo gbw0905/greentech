@@ -193,8 +193,8 @@ function Dashboard() {
 
       <div className="mx-auto max-w-[100rem] px-5 py-6 lg:px-8 lg:py-8">
 
-        <main className="space-y-6">
-          <section className="rise grid gap-8 border-b border-border pb-8 lg:grid-cols-[1.15fr_minmax(0,1fr)] lg:gap-10">
+        <main className="space-y-10">
+          <section className="rise grid gap-8 border-b border-border pb-10 lg:grid-cols-[1.15fr_minmax(0,1fr)] lg:gap-12">
             <div className="flex flex-col justify-center">
               <div className="kicker inline-flex items-center gap-2">
                 <span className="size-1.5 rounded-full bg-accent" />
@@ -269,7 +269,7 @@ function Dashboard() {
             <OilPricePanel />
           </section>
 
-          <section id="map" className="pt-6">
+          <section id="map" className="pt-4">
             <SectionHeading
               tone="var(--chart-3)"
               kicker="Jurisdiction map"
@@ -277,12 +277,12 @@ function Dashboard() {
               title="Policy activity by jurisdiction"
               subtitle="Government mandates and market moves side by side — including jurisdictions still developing their frameworks. Click any country to open its full profile."
             />
-            <div className="glass-panel flex w-full min-w-0 flex-col p-5">
-              <div className="mb-3 flex items-center justify-between gap-3">
+            <div className="glass-panel flex w-full min-w-0 flex-col">
+              <div className="panel-head">
                 <h3 className="label-mono text-muted-foreground">Jurisdiction map</h3>
                 <span className="label-mono text-accent">Click a country to open its profile</span>
               </div>
-              <div className="min-h-0 w-full flex-1">
+              <div className="min-h-0 w-full flex-1 p-5">
                 <WorldPolicyMap
                   counts={counts}
                   activeCountry={null}
@@ -294,7 +294,7 @@ function Dashboard() {
             </div>
           </section>
 
-          <section id="production" className="pt-6">
+          <section id="production" className="pt-4">
             <SectionHeading
               tone="var(--chart-6)"
               kicker="Supply & producers"
@@ -309,7 +309,7 @@ function Dashboard() {
             </div>
           </section>
 
-          <div className="grid gap-8 pt-6 xl:grid-cols-2 xl:items-start">
+          <div className="grid gap-8 pt-4 xl:grid-cols-2 xl:items-start">
             <section id="alerts">
               <SectionHeading
                 tone="var(--chart-4)"
@@ -333,7 +333,7 @@ function Dashboard() {
             </section>
           </div>
 
-          <section id="disclaimer" className="border-t border-border pt-6">
+          <section id="disclaimer" className="border-t border-border pt-8">
             <div className="flex items-start gap-3">
               <AlertTriangle className="mt-0.5 size-4 shrink-0 text-signal" />
               <div className="max-w-4xl">
