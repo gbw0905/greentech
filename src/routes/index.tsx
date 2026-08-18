@@ -141,8 +141,7 @@ function Dashboard() {
     [data.updates],
   );
 
-  const lead = data.updates[0] ?? null;
-  const runnerUps = data.updates.slice(1, 3);
+  const topFive = data.updates.slice(0, 5);
 
   return (
     <div className="min-h-screen">
@@ -235,30 +234,18 @@ function Dashboard() {
               </dl>
             </div>
             <div className="flex flex-col">
-              <div className="kicker mb-3">Latest update</div>
-              {lead ? (
-                <UpdateCard update={lead} />
+              <div className="kicker mb-3">Top 5 latest updates</div>
+              {topFive.length > 0 ? (
+                <div className="space-y-3">
+                  {topFive.map((u) => (
+                    <UpdateCard key={u.id} update={u} />
+                  ))}
+                </div>
               ) : (
                 <div className="glass-panel p-6 text-sm text-muted-foreground">
                   {busy ? "Scanning global sources…" : "No updates available yet."}
                 </div>
               )}
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                {runnerUps.map((u) => (
-                  <a
-                    key={u.url}
-                    href={u.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="glass-panel lift block p-3"
-                  >
-                    <div className="label-mono text-muted-foreground">
-                      {formatDate(u.publishedAt)} · {u.source}
-                    </div>
-                    <div className="mt-1 line-clamp-2 text-sm font-semibold">{u.title}</div>
-                  </a>
-                ))}
-              </div>
             </div>
           </section>
 
