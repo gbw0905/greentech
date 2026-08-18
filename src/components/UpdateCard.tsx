@@ -20,16 +20,24 @@ function hostOf(url: string) {
   }
 }
 
-export function UpdateCard({ update }: { update: PolicyUpdate }) {
+export function UpdateCard({
+  update,
+  compact = false,
+}: {
+  update: PolicyUpdate;
+  compact?: boolean;
+}) {
   const host = hostOf(update.url);
   return (
     <article
-      className="glass-panel lift group relative overflow-hidden p-5 pl-6"
+      className={`glass-panel lift group relative overflow-hidden ${compact ? "p-3 pl-4" : "p-5 pl-6"}`}
       style={{ borderLeftColor: REGION_ACCENT[update.region], borderLeftWidth: 3 }}
     >
-      <div className="label-mono flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground">
+      <div
+        className={`label-mono flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground ${compact ? "text-[11px]" : ""}`}
+      >
         <span
-          className="rounded-full px-2 py-0.5 font-semibold tracking-[0.14em] uppercase"
+          className={`rounded-full font-semibold tracking-[0.14em] uppercase ${compact ? "px-1.5 py-0" : "px-2 py-0.5"}`}
           style={{
             background:
               update.category === "market"
@@ -41,8 +49,10 @@ export function UpdateCard({ update }: { update: PolicyUpdate }) {
           {update.category === "market" ? "Market" : "Policy"}
         </span>
         <time>{formatDate(update.publishedAt)}</time>
-        <span aria-hidden>/</span>
-        <span style={{ color: REGION_ACCENT[update.region] }}>{update.region}</span>
+        {!compact && <span aria-hidden>/</span>}
+        {!compact && (
+          <span style={{ color: REGION_ACCENT[update.region] }}>{update.region}</span>
+        )}
         {update.countrySlug && update.countryName && (
           <>
             <span aria-hidden>/</span>
@@ -58,7 +68,7 @@ export function UpdateCard({ update }: { update: PolicyUpdate }) {
         )}
       </div>
 
-      <h3 className="mt-2 text-lg leading-snug font-semibold">
+      <h3 className={`leading-snug font-semibold ${compact ? "mt-1 text-base" : "mt-2 text-lg"}`}>
         <a
           href={update.url}
           target="_blank"
@@ -66,25 +76,32 @@ export function UpdateCard({ update }: { update: PolicyUpdate }) {
           className="hover:text-primary"
         >
           {update.title}
-          <ArrowUpRight className="ml-1 inline size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+          <ArrowUpRight
+            className={`ml-1 inline opacity-0 transition-opacity group-hover:opacity-100 ${compact ? "size-3.5" : "size-4"}`}
+          />
         </a>
       </h3>
 
       {update.summary && (
-        <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{update.summary}</p>
+        <p
+          className={`text-muted-foreground ${compact ? "mt-1 line-clamp-2 text-xs" : "mt-2 line-clamp-3 text-sm"}`}
+        >
+          {update.summary}
+        </p>
       )}
 
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        {update.fuels.map((f) => (
-          <span
-            key={f}
-            className="label-mono rounded-full bg-secondary px-2 py-0.5 text-secondary-foreground"
-          >
-            {f}
-          </span>
-        ))}
-      </div>
-
+      {update.fuels.length > 0 && (
+        <div className={`flex flex-wrap items-center gap-1.5 ${compact ? "mt-1.5" : "mt-3"}`}>
+          {update.fuels.map((f) => (
+            <span
+              key={f}
+              className={`label-mono rounded-full bg-secondary text-secondary-foreground ${compact ? "px-1.5 py-0 text-[10px]" : "px-2 py-0.5"}`}
+            >
+              {f}
+            </span>
+          ))}
+        </div>
+      )}
     </article>
   );
 }
