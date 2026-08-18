@@ -78,23 +78,23 @@ function SectionHeading({
   kicker: string;
 }) {
   return (
-    <div className="mb-5 pt-4" style={{ ["--tone" as string]: tone }}>
+    <div
+      className="ink-bar mb-6 px-5 py-5 sm:px-7 sm:py-6"
+      style={{ ["--tone" as string]: `color-mix(in oklab, ${tone} 62%, white)` }}
+    >
       <div className="flex items-center gap-2" style={{ color: "var(--tone)" }}>
         <Icon className="size-3.5" />
-        <span className="kicker">
+        <span className="kicker" style={{ color: "var(--tone)" }}>
           {kicker}
         </span>
       </div>
-      <h2 className="mt-2 font-display text-[1.75rem] leading-[1.1] font-extrabold tracking-tight text-foreground sm:text-4xl">
+      <h2 className="mt-2 font-display text-[1.75rem] leading-[1.1] font-extrabold tracking-tight text-ink-foreground sm:text-4xl">
         {title}
       </h2>
-      <p className="mt-2 max-w-3xl text-sm/relaxed text-muted-foreground">{subtitle}</p>
+      <p className="mt-2 max-w-3xl text-sm/relaxed text-ink-muted">{subtitle}</p>
       <div
-        className="mt-4 h-px w-full"
-        style={{
-          background:
-            "linear-gradient(90deg, var(--tone), color-mix(in oklab, var(--tone) 12%, transparent) 55%, transparent)",
-        }}
+        className="mt-4 h-0.5 w-24 rounded-full"
+        style={{ background: "var(--tone)" }}
       />
     </div>
   );
@@ -133,7 +133,7 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-30 border-b border-border bg-surface/85 backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b border-ink bg-ink text-ink-foreground backdrop-blur-xl">
         <div className="mx-auto flex max-w-[100rem] flex-wrap items-center justify-between gap-4 px-5 py-2.5 lg:px-8">
           <div className="flex items-center gap-3">
             <img
@@ -144,10 +144,10 @@ function Dashboard() {
               className="size-9 rounded-md object-contain"
             />
             <div>
-              <div className="font-display text-xl leading-none font-extrabold tracking-tight text-foreground sm:text-[1.4rem]">
+              <div className="font-display text-xl leading-none font-extrabold tracking-tight text-ink-foreground sm:text-[1.4rem]">
                 Global Bioenergy Watch
               </div>
-              <div className="kicker mt-1 flex items-center gap-1.5">
+              <div className="kicker mt-1 flex items-center gap-1.5 text-ink-muted">
                 <span className="size-1.5 rounded-full bg-accent" />
                 Independent policy &amp; market desk
               </div>
@@ -155,7 +155,7 @@ function Dashboard() {
           </div>
           <div className="flex items-center gap-4">
             <div className="hidden text-right sm:block">
-              <div className="label-mono text-muted-foreground">Last scan</div>
+              <div className="label-mono text-ink-muted">Last scan</div>
               <div className="font-mono text-xs">
                 {busy && !feed ? "scanning…" : formatDate(data.fetchedAt)}
               </div>
@@ -164,7 +164,7 @@ function Dashboard() {
               type="button"
               onClick={() => rescan.mutate()}
               disabled={busy}
-              className="label-mono inline-flex items-center gap-2 rounded-md bg-primary px-3.5 py-2 text-primary-foreground transition-colors hover:bg-primary-glow disabled:opacity-60"
+              className="label-mono inline-flex items-center gap-2 rounded-md bg-accent px-3.5 py-2 font-bold text-accent-foreground transition-colors hover:opacity-90 disabled:opacity-60"
             >
               <RefreshCw className={`size-3.5 ${busy ? "animate-spin" : ""}`} />
               Rescan
@@ -173,19 +173,22 @@ function Dashboard() {
         </div>
         <nav
           aria-label="Page sections"
-          className="mx-auto hidden max-w-[100rem] items-center gap-2 overflow-x-auto border-t border-border px-5 py-2 lg:flex lg:px-8"
+          className="mx-auto hidden max-w-[100rem] items-center gap-2 overflow-x-auto border-t border-white/10 px-5 py-2.5 lg:flex lg:px-8"
         >
           {SECTIONS.map((s) => (
             <a
               key={s.href}
               href={s.href}
-              className="label-mono group inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-border bg-surface-1 px-3.5 py-1.5 text-muted-foreground transition-all hover:-translate-y-px hover:border-transparent hover:text-foreground hover:shadow-[var(--shadow-card)]"
+              className="label-mono group inline-flex items-center gap-2 whitespace-nowrap rounded-full px-3.5 py-1.5 font-bold transition-all hover:-translate-y-px"
+              style={{
+                background: `color-mix(in oklab, ${s.tone} 30%, transparent)`,
+                color: `color-mix(in oklab, ${s.tone} 40%, white)`,
+                border: `1px solid color-mix(in oklab, ${s.tone} 65%, transparent)`,
+              }}
             >
               <span
                 className="size-1.5 rounded-full"
-              style={{
-                  background: s.tone,
-                }}
+                style={{ background: `color-mix(in oklab, ${s.tone} 60%, white)` }}
               />
               {s.label}
             </a>
@@ -346,18 +349,34 @@ function Dashboard() {
             </section>
           </div>
 
-          <section id="disclaimer" className="border-t border-border pt-8">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="mt-0.5 size-4 shrink-0 text-signal" />
-              <div className="max-w-4xl">
-                <h3 className="kicker">Method & AI disclaimer</h3>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Stories are gathered from public web sources, including government policy portals, regulatory notices, international agencies, and energy trade press. An AI layer classifies each item by region, country and fuel type, then writes the summary you see here.
-                </p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  <strong className="text-foreground">Cross-verify</strong> means checking any summary against the original source and the relevant official announcement or primary legislation before using it for compliance, trading or investment decisions. The feed may contain errors, omissions or outdated information.
-                </p>
-              </div>
+          <section id="disclaimer">
+            <SectionHeading
+              tone="var(--chart-8)"
+              kicker="Editorial standards"
+              icon={AlertTriangle}
+              title="Methodology & AI disclosure"
+              subtitle="How this desk sources, classifies and summarises every item you read here."
+            />
+            <div className="grid gap-4 md:grid-cols-3">
+              {[
+                {
+                  h: "Sourcing",
+                  b: "Items are collected from official government and regulatory portals, intergovernmental agencies, and established energy trade and financial press. Sources outside that set are excluded.",
+                },
+                {
+                  h: "AI processing",
+                  b: "An automated language model classifies each item by jurisdiction, fuel type and category, and drafts the summary shown. Summaries are generated, not editorially reviewed line by line.",
+                },
+                {
+                  h: "Limitations & use",
+                  b: "Automated summaries can contain errors, omissions or outdated figures. Always verify against the original source and the governing legislation before relying on an item for compliance, trading or investment decisions.",
+                },
+              ].map((c) => (
+                <div key={c.h} className="glass-panel p-5">
+                  <h3 className="font-display text-base font-bold text-foreground">{c.h}</h3>
+                  <p className="mt-2 text-sm/relaxed text-muted-foreground">{c.b}</p>
+                </div>
+              ))}
             </div>
           </section>
 

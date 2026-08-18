@@ -9,7 +9,7 @@ export function PageShell({
 }) {
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-30 border-b border-border bg-surface/85 backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b border-ink bg-ink text-ink-foreground backdrop-blur-xl">
         <div className="mx-auto flex max-w-[100rem] flex-wrap items-center justify-between gap-4 px-5 py-2.5 lg:px-8">
           <Link to="/" className="flex items-center gap-3">
             <img
@@ -20,10 +20,10 @@ export function PageShell({
               className="size-9 rounded-md object-contain"
             />
             <div>
-              <div className="font-display text-xl leading-none font-extrabold tracking-tight text-foreground sm:text-[1.4rem]">
+              <div className="font-display text-xl leading-none font-extrabold tracking-tight text-ink-foreground sm:text-[1.4rem]">
                 Global Bioenergy Watch
               </div>
-              <div className="kicker mt-1 flex items-center gap-1.5">
+              <div className="kicker mt-1 flex items-center gap-1.5 text-ink-muted">
                 <span className="size-1.5 rounded-full bg-accent" />
                 Independent policy &amp; market desk
               </div>
@@ -31,7 +31,7 @@ export function PageShell({
           </Link>
           <Link
             to="/"
-            className="label-mono inline-flex items-center gap-2 rounded-full border border-border bg-surface-1 px-3.5 py-2 transition-all hover:-translate-y-px hover:border-transparent hover:shadow-[var(--shadow-card)]"
+            className="label-mono inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-2 font-bold text-ink-foreground transition-all hover:-translate-y-px hover:bg-white/20"
           >
             <ArrowLeft className="size-3.5" /> Back to dashboard
           </Link>
@@ -72,15 +72,16 @@ export function PageHeading({
   subtitle: string;
 }) {
   return (
-    <div className="mb-6 border-b border-border pb-5">
-      <div className="flex items-center gap-2">
-        <Icon className="size-3.5 text-accent" />
-        <span className="kicker">Global Bioenergy Watch</span>
+    <div className="ink-bar mb-6 px-5 py-6 sm:px-7">
+      <div className="flex items-center gap-2 text-accent">
+        <Icon className="size-3.5" />
+        <span className="kicker text-accent">Global Bioenergy Watch</span>
       </div>
-      <h1 className="mt-2 font-display text-3xl leading-[1.05] font-extrabold tracking-[-0.03em] text-foreground sm:text-[2.6rem]">
+      <h1 className="mt-2 font-display text-3xl leading-[1.05] font-extrabold tracking-[-0.03em] text-ink-foreground sm:text-[2.6rem]">
         {title}
       </h1>
-      <p className="mt-2 max-w-3xl text-sm/relaxed text-muted-foreground">{subtitle}</p>
+      <p className="mt-2 max-w-3xl text-sm/relaxed text-ink-muted">{subtitle}</p>
+      <div className="mt-4 h-0.5 w-24 rounded-full bg-accent" />
     </div>
   );
 }
