@@ -3,7 +3,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { feature } from "topojson-client";
 import { Link } from "@tanstack/react-router";
 import { Minus, Plus, Maximize2 } from "lucide-react";
-import { COUNTRIES } from "@/lib/policy-taxonomy";
+import {
+  COUNTRIES,
+  POLICY_STATUS_COLOR,
+  policyStatusFor,
+  type PolicyStatus,
+} from "@/lib/policy-taxonomy";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { getCountryIndicesFn } from "@/lib/country-markets.functions";
 
@@ -151,18 +156,19 @@ export function WorldPolicyMap({
               const isActive = country && country.slug === activeCountry;
               const isHover = Boolean(country) && f.properties.name === hover;
               const hasActivity = country && count > 0;
+              const status = country ? policyStatusFor(country) : null;
               return (
                 <path
                   key={i}
                   d={path(f as never) ?? ""}
-                  fill={country ? "var(--primary)" : "var(--muted)"}
+                  fill={status ? POLICY_STATUS_COLOR[status] : "var(--muted)"}
                   fillOpacity={
                     country
                       ? isHover
                         ? 0.95
                         : hasActivity
-                          ? Math.min(0.45 + count * 0.07, 0.9)
-                          : 0.18
+                          ? Math.min(0.7 + count * 0.04, 0.95)
+                          : 0.55
                       : 1
                   }
                   stroke={
