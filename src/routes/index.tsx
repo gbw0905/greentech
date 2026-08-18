@@ -311,9 +311,19 @@ function Dashboard() {
             </div>
           </section>
 
+          <section id="jobs" className="pt-4">
+            <SectionHeading
+              tone="var(--chart-7)"
+              kicker="Careers"
+              icon={Briefcase}
+              title="Biofuel and bioenergy jobs"
+              subtitle="Live openings across biorefineries, policy teams, trading desks and R&D labs — filtered by fuel and function, with the employers hiring right now."
+            />
+            <JobsPanel compact />
+          </section>
+
           <div className="grid gap-8 pt-4 xl:grid-cols-2 xl:items-start">
             <section id="alerts">
-              {null}
               <SectionHeading
                 tone="var(--chart-4)"
                 kicker="Email alerts"
