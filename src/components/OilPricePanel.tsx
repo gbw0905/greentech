@@ -3,7 +3,14 @@ import { useState } from "react";
 import { TrendingDown, TrendingUp } from "lucide-react";
 import { getOilPricesFn, type OilQuote } from "@/lib/oil.functions";
 
-function Chart({ q }: { q: OilQuote }) {
+const assetColor = (symbol: string) => {
+  if (symbol === "CL=F") return "var(--market-crude)";
+  if (symbol === "^GSPC") return "var(--market-equity)";
+  if (symbol === "GC=F") return "var(--market-gold)";
+  return "var(--primary)";
+};
+
+function Chart({ q, color }: { q: OilQuote; color: string }) {
   const [hover, setHover] = useState<number | null>(null);
   const w = 220;
   const h = 72;
@@ -34,7 +41,7 @@ function Chart({ q }: { q: OilQuote }) {
     })
     .join(" ");
   const up = q.change >= 0;
-  const stroke = up ? "var(--primary)" : "var(--destructive)";
+  const stroke = color;
   const active = hover ?? pts.length - 1;
   const id = `oilFill-${q.symbol.replace(/\W/g, "")}`;
   const glowId = `${id}-glow`;
@@ -54,7 +61,8 @@ function Chart({ q }: { q: OilQuote }) {
       <div className="label-mono flex items-center justify-between text-muted-foreground">
         <span>30-day trend</span>
         <span
-          className={`font-mono font-semibold tabular-nums ${periodPct >= 0 ? "text-primary" : "text-destructive"}`}
+          className="font-mono font-semibold tabular-nums"
+          style={{ color }}
         >
           {periodPct >= 0 ? "+" : ""}
           {periodPct.toFixed(2)}% 30D
@@ -158,7 +166,7 @@ function Chart({ q }: { q: OilQuote }) {
       </div>
       <div className="label-mono mt-1.5 flex items-center justify-between gap-2 rounded-md border border-border/70 bg-surface-2/70 px-2 py-1 text-muted-foreground backdrop-blur-sm">
         <span>{hover === null ? "latest close" : dateOf(pts[active]!.t)}</span>
-        <span className="font-mono font-semibold tabular-nums text-foreground">
+        <span className="font-mono font-semibold tabular-nums" style={{ color }}>
           {cur}
           {fmt(pts[active]!.c)}
         </span>
@@ -256,27 +264,28 @@ export function OilPricePanel() {
       <div className="grid min-h-0 flex-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {quotes.map((q) => {
           const up = q.change >= 0;
+          const color = assetColor(q.symbol);
           return (
             <div
               key={q.symbol}
-              className="flex flex-col space-y-1 rounded-[var(--radius)] border border-border bg-surface-2/60 p-3 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/50"
+              className="flex flex-col space-y-1 rounded-[var(--radius)] border border-border bg-surface-2/60 p-3 transition-all duration-300 hover:-translate-y-0.5"
               style={{
-                boxShadow: `inset 0 2px 0 0 ${up ? "var(--primary)" : "var(--destructive)"}`,
+                boxShadow: `inset 0 2px 0 0 ${color}`,
+                borderColor: `${color}40`,
               }}
             >
             <div className="flex items-baseline justify-between gap-2">
               <span className="text-sm font-semibold">{q.label}</span>
               <span
-                className={`label-mono inline-flex items-center gap-1 rounded-full px-2 py-0.5 ${
-                  up ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"
-                }`}
+                className="label-mono inline-flex items-center gap-1 rounded-full px-2 py-0.5"
+                style={{ backgroundColor: `${color}14`, color }}
               >
                 {up ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
                 {up ? "+" : ""}
                 {q.changePct.toFixed(2)}%
               </span>
             </div>
-            <div className="font-display text-lg font-bold tabular-nums text-gradient">
+            <div className="font-display text-lg font-bold tabular-nums" style={{ color }}>
               {q.unit === "index" ? "" : "$"}
               {q.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               <span className="ml-1 font-mono text-xs font-normal text-muted-foreground">
@@ -285,16 +294,14 @@ export function OilPricePanel() {
             </div>
             <div className="label-mono text-muted-foreground">
               1D change{" "}
-              <span
-                className={`font-mono font-semibold tabular-nums ${up ? "text-primary" : "text-destructive"}`}
-              >
+              <span className="font-mono font-semibold tabular-nums" style={{ color }}>
                 {up ? "+" : ""}
                 {q.change.toFixed(2)}
               </span>{" "}
               · <span className="font-mono tabular-nums">{q.symbol}</span>
             </div>
             <div className="min-h-0 flex-1">
-              <Chart q={q} />
+              <Chart q={q} color={color} />
             </div>
             </div>
           );

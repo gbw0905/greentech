@@ -77,6 +77,9 @@
   --color-chart-8: var(--chart-8);
   --color-chart-9: var(--chart-9);
   --color-chart-10: var(--chart-10);
+  --color-market-crude: var(--market-crude);
+  --color-market-equity: var(--market-equity);
+  --color-market-gold: var(--market-gold);
 }
 
 :root {
@@ -131,6 +134,9 @@
   --fuel-saf: oklch(0.5 0.1 300);
   --fuel-biogas: oklch(0.52 0.08 195);
   --fuel-feedstock: oklch(0.6 0.11 45);
+  --market-crude: oklch(0.35 0.09 250);
+  --market-equity: oklch(0.48 0.12 150);
+  --market-gold: oklch(0.62 0.13 85);
   --gradient-frost: linear-gradient(135deg, oklch(1 0 0), oklch(0.96 0.008 250));
   --gradient-primary: linear-gradient(120deg, var(--primary), var(--primary-glow));
   --gradient-aurora: linear-gradient(120deg, oklch(0.21 0.05 265) 0%, oklch(0.29 0.075 262) 55%, oklch(0.38 0.09 250) 100%);
@@ -196,6 +202,9 @@
   --fuel-saf: oklch(0.7 0.2 310);
   --fuel-biogas: oklch(0.72 0.18 180);
   --fuel-feedstock: oklch(0.7 0.2 45);
+  --market-crude: oklch(0.65 0.14 230);
+  --market-equity: oklch(0.72 0.18 145);
+  --market-gold: oklch(0.78 0.16 80);
   --gradient-frost: linear-gradient(135deg, oklch(0.23 0.045 264), oklch(0.27 0.05 258));
   --gradient-primary: linear-gradient(120deg, var(--primary), var(--primary-glow));
   --gradient-aurora: linear-gradient(120deg, oklch(0.19 0.04 265) 0%, oklch(0.26 0.05 262) 55%, oklch(0.33 0.06 250) 100%);
