@@ -77,37 +77,23 @@ function SectionHeading({
 }) {
   return (
     <div className="mb-5 pt-4" style={{ ["--tone" as string]: tone }}>
-      <div
-        className="h-1 w-full rounded-full"
-        style={{
-          background:
-            "linear-gradient(90deg, var(--tone), color-mix(in oklab, var(--tone) 25%, transparent))",
-        }}
-      />
-      <div className="mt-3 flex items-center gap-2">
-        <span
-          className="inline-flex size-7 items-center justify-center rounded-md"
-          style={{
-            background: "color-mix(in oklab, var(--tone) 16%, transparent)",
-            color: "var(--tone)",
-          }}
-        >
-          <Icon className="size-4" />
-        </span>
-        <span
-          className="kicker rounded-full px-2 py-0.5"
-          style={{
-            background: "color-mix(in oklab, var(--tone) 12%, transparent)",
-            color: "var(--tone)",
-          }}
-        >
+      <div className="flex items-center gap-2">
+        <Icon className="size-3.5" style={{ color: "var(--tone)" }} />
+        <span className="kicker" style={{ color: "var(--tone)" }}>
           {kicker}
         </span>
       </div>
-      <h2 className="mt-2 font-display text-2xl leading-tight font-bold text-foreground sm:text-3xl">
+      <h2 className="mt-2 font-display text-[1.75rem] leading-[1.1] font-extrabold tracking-tight text-foreground sm:text-4xl">
         {title}
       </h2>
-      <p className="mt-1.5 max-w-3xl text-sm text-muted-foreground">{subtitle}</p>
+      <p className="mt-2 max-w-3xl text-sm/relaxed text-muted-foreground">{subtitle}</p>
+      <div
+        className="mt-4 h-px w-full"
+        style={{
+          background:
+            "linear-gradient(90deg, var(--tone), color-mix(in oklab, var(--tone) 12%, transparent) 55%, transparent)",
+        }}
+      />
     </div>
   );
 }
