@@ -63,6 +63,9 @@ const NAME_ALIASES: Record<string, string> = {
   "biodiesel magazine": "biodieselmagazine.com",
   "ethanol producer magazine": "ethanolproducer.com",
   "biomass magazine": "biomassmagazine.com",
+  "european commission": "ec.europa.eu",
+  "european commission energy": "ec.europa.eu",
+  "european parliament": "europarl.europa.eu",
 };
 
 const normalise = (s: string) => s.toLowerCase().trim().replace(/^www\./, "");
