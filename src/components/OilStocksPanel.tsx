@@ -393,6 +393,7 @@ function BarChart({
 
 export function OilStocksPanel() {
   const [hover, setHover] = useState<string | null>(null);
+  const [metricKey, setMetricKey] = useState<StockMetric>("price");
   const { data, isLoading } = useQuery({
     queryKey: ["oil-stocks"],
     queryFn: () => getOilStocksFn(),
@@ -418,16 +419,39 @@ export function OilStocksPanel() {
             group's annual output capacity. Hover any row for price, daily change and capacity.
           </p>
         </div>
-        <span className="label-mono rounded-full border border-border bg-surface-2 px-3 py-1.5 text-sm text-muted-foreground">
-          {isLoading ? "Loading…" : stale ? "Last close · USD / share" : "Live · USD / share"}
-        </span>
+        <div className="flex flex-col items-end gap-2">
+          <label className="flex items-center gap-2">
+            <span className="label-mono text-muted-foreground">Measure</span>
+            <select
+              className="chart-select"
+              value={metricKey}
+              onChange={(e) => setMetricKey(e.target.value as StockMetric)}
+              aria-label="Choose the value shown in the chart"
+            >
+              {(Object.keys(STOCK_METRICS) as StockMetric[]).map((m) => (
+                <option key={m} value={m}>
+                  {STOCK_METRICS[m].label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <span className="label-mono text-muted-foreground">
+            {isLoading ? "Loading…" : stale ? "Last close" : "Live"} · {STOCK_METRICS[metricKey].badge}
+          </span>
+        </div>
       </div>
 
       {quotes.length === 0 && !isLoading ? (
         <p className="text-sm text-muted-foreground">Market data is unavailable right now.</p>
       ) : (
         <div className="min-h-0 flex-1">
-          <BarChart quotes={quotes} hover={hover} setHover={setHover} onSelect={openEntityNews} />
+          <BarChart
+            quotes={quotes}
+            hover={hover}
+            setHover={setHover}
+            onSelect={openEntityNews}
+            metricKey={metricKey}
+          />
         </div>
       )}
 
