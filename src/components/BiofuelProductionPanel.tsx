@@ -46,7 +46,7 @@ const fmt = (n: number, d = 0) =>
 
 type NewsTarget = { name: string; query: string };
 
-function BarChart({
+export function BarChart({
   items,
   unitLabel,
   decimals = 1,
@@ -125,7 +125,7 @@ function BarChart({
 
                 <div className="relative min-w-0 flex-1 py-1.5">
                   <div
-                    className="chart-bar-x h-7 rounded-r-full transition-all duration-300"
+                    className="chart-bar-x h-8 rounded-r-full transition-all duration-300"
                     style={{
                       width: `${widthPct}%`,
                       background: i.color,
