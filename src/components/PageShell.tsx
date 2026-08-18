@@ -10,7 +10,7 @@ export function PageShell({
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-30 border-b border-ink bg-ink text-ink-foreground backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[100rem] flex-wrap items-center justify-between gap-4 px-5 py-2.5 lg:px-8">
+        <div className="mx-auto flex max-w-[80rem] flex-wrap items-center justify-between gap-4 px-5 py-2.5 lg:px-8">
           <Link to="/" className="flex items-center gap-3">
             <img
               src={siteLogo}
@@ -38,7 +38,7 @@ export function PageShell({
         </div>
       </header>
 
-      <div className="mx-auto max-w-[100rem] px-5 py-6 lg:px-8 lg:py-8">
+      <div className="mx-auto max-w-[80rem] px-5 py-6 lg:px-8 lg:py-8">
         <main className="space-y-6">{children}</main>
         <footer className="mt-8 space-y-3 border-t border-border pt-6 pb-10">
           <p className="text-xs text-muted-foreground">

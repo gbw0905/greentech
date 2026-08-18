@@ -134,7 +134,7 @@ function Dashboard() {
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-30 border-b border-ink bg-ink text-ink-foreground backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[100rem] flex-wrap items-center justify-between gap-4 px-5 py-2.5 lg:px-8">
+        <div className="mx-auto flex max-w-[80rem] flex-wrap items-center justify-between gap-4 px-5 py-2.5 lg:px-8">
           <div className="flex items-center gap-3">
             <img
               src={siteLogo}
@@ -173,7 +173,7 @@ function Dashboard() {
         </div>
         <nav
           aria-label="Page sections"
-          className="mx-auto hidden max-w-[100rem] items-center gap-2 overflow-x-auto border-t border-white/10 px-5 py-2.5 lg:flex lg:px-8"
+          className="mx-auto hidden max-w-[80rem] items-center gap-2 overflow-x-auto border-t border-white/10 px-5 py-2.5 lg:flex lg:px-8"
         >
           {SECTIONS.map((s) => (
             <a
@@ -188,7 +188,7 @@ function Dashboard() {
         </nav>
       </header>
 
-      <div className="mx-auto max-w-[100rem] px-5 py-6 lg:px-8 lg:py-8">
+      <div className="mx-auto max-w-[80rem] px-5 py-6 lg:px-8 lg:py-8">
 
         <main className="space-y-10">
           <section className="rise grid gap-8 border-b border-border pb-10 lg:grid-cols-[1.15fr_minmax(0,1fr)] lg:gap-12">
