@@ -177,6 +177,7 @@ export const COUNTRIES: CountryProfile[] = [
       "red iii",
       "refueleu",
     ],
+    // EU instruments and institutions — used to attribute Brussels-level news.
     blurb:
       "RED III sets a 29% renewable transport target or 14.5% GHG intensity reduction by 2030, with ReFuelEU Aviation imposing binding SAF blending quotas on fuel suppliers.",
     mandates: [
