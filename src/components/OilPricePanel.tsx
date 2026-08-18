@@ -277,8 +277,10 @@ export function OilPricePanel() {
             <div className="flex items-baseline justify-between gap-2">
               <span className="text-sm font-semibold">{q.label}</span>
               <span
-                className="label-mono inline-flex items-center gap-1 rounded-full px-2 py-0.5"
-                style={{ backgroundColor: `${color}14`, color }}
+                className={`label-mono inline-flex items-center gap-1 rounded-full px-2 py-0.5 ${
+                  up ? "" : "bg-destructive/10 text-destructive"
+                }`}
+                style={up ? { backgroundColor: `${color}14`, color } : undefined}
               >
                 {up ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
                 {up ? "+" : ""}
@@ -294,7 +296,7 @@ export function OilPricePanel() {
             </div>
             <div className="label-mono text-muted-foreground">
               1D change{" "}
-              <span className="font-mono font-semibold tabular-nums" style={{ color }}>
+              <span className={`font-mono font-semibold tabular-nums ${up ? "" : "text-destructive"}`} style={up ? { color } : undefined}>
                 {up ? "+" : ""}
                 {q.change.toFixed(2)}
               </span>{" "}
