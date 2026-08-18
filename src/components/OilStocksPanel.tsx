@@ -36,22 +36,65 @@ const CAPACITY: Record<string, { mmboe: number; kind: string }> = {
 
 const capOf = (symbol: string) => CAPACITY[symbol] ?? { mmboe: 0, kind: "Not disclosed" };
 
+type StockMetric = "price" | "change" | "capacity";
+
+const STOCK_METRICS: Record<
+  StockMetric,
+  {
+    label: string;
+    axis: string;
+    badge: string;
+    value: (q: OilQuote) => number;
+    format: (n: number) => string;
+    tick: (n: number) => string;
+  }
+> = {
+  price: {
+    label: "Share price (USD)",
+    axis: "X AXIS · SHARE PRICE (USD PER SHARE)",
+    badge: "USD / share",
+    value: (q) => q.price,
+    format: (n) => `$${fmt(n)}`,
+    tick: (n) => `$${Math.round(n)}`,
+  },
+  change: {
+    label: "1-day change (%)",
+    axis: "X AXIS · ABSOLUTE 1-DAY CHANGE (%)",
+    badge: "% change · 1 day",
+    value: (q) => Math.abs(q.changePct),
+    format: (n) => `${fmt(n, 2)}%`,
+    tick: (n) => `${n.toFixed(1)}%`,
+  },
+  capacity: {
+    label: "Annual capacity (MMboe/yr)",
+    axis: "X AXIS · ANNUAL OUTPUT CAPACITY (MMboe / YEAR)",
+    badge: "MMboe / year",
+    value: (q) => capOf(q.symbol).mmboe,
+    format: (n) => (n > 0 ? fmt(n, 0) : "—"),
+    tick: (n) => fmt(Math.round(n), 0),
+  },
+};
+
 function BarChart({
   quotes,
   hover,
   setHover,
   onSelect,
+  metricKey,
 }: {
   quotes: OilQuote[];
   hover: string | null;
   setHover: (s: string | null) => void;
   onSelect: (t: NewsTarget) => void;
+  metricKey: StockMetric;
 }) {
   const [hoveredSymbol, setHoveredSymbol] = useState<string | null>(null);
+  const metric = STOCK_METRICS[metricKey];
 
-  const sorted = [...quotes].sort((a, b) => b.price - a.price);
-  const maxPrice = Math.max(...sorted.map((q) => q.price), 1);
-  const niceMax = Math.ceil(maxPrice / 25) * 25;
+  const sorted = [...quotes].sort((a, b) => metric.value(b) - metric.value(a));
+  const maxValue = Math.max(...sorted.map((q) => metric.value(q)), 1);
+  const step = metricKey === "price" ? 25 : metricKey === "capacity" ? 250 : 1;
+  const niceMax = Math.max(Math.ceil(maxValue / step) * step, step);
 
   // Layout — horizontal bars
   const rowH = 30;
@@ -68,7 +111,7 @@ function BarChart({
   const activeQuote = sorted.find((q) => q.symbol === (hoveredSymbol ?? hover)) ?? null;
   const anyActive = hover !== null || hoveredSymbol !== null;
 
-  const xFor = (price: number) => (price / niceMax) * chartW;
+  const xFor = (value: number) => (value / niceMax) * chartW;
   const yFor = (idx: number) => padTop + idx * (rowH + gap);
 
   return (
@@ -118,23 +161,23 @@ function BarChart({
                 x={x}
                 y={h - padBottom + 22}
                 textAnchor="middle"
-                className="font-mono text-[10px] fill-muted-foreground tabular-nums"
+                className="chart-axis fill-muted-foreground"
               >
-                ${Math.round(t * niceMax)}
+                {metric.tick(t * niceMax)}
               </text>
             </g>
           );
         })}
 
         {/* Column headers */}
-        <text x={0} y={padTop - 14} className="font-mono text-[9px] fill-muted-foreground tracking-[0.14em]">
+        <text x={0} y={padTop - 14} className="chart-axis fill-muted-foreground tracking-[0.14em]">
           Y AXIS · RANK &amp; COMPANY
         </text>
         <text
           x={w - 176}
           y={padTop - 14}
           textAnchor="end"
-          className="font-mono text-[9px] fill-muted-foreground tracking-[0.14em]"
+          className="chart-axis fill-muted-foreground tracking-[0.14em]"
         >
           CAPACITY (MMboe/yr)
         </text>
@@ -142,7 +185,7 @@ function BarChart({
           x={w}
           y={padTop - 14}
           textAnchor="end"
-          className="font-mono text-[9px] fill-muted-foreground tracking-[0.14em]"
+          className="chart-axis fill-muted-foreground tracking-[0.14em]"
         >
           PRICE · 1D
         </text>
@@ -151,16 +194,16 @@ function BarChart({
           x={labelW + chartW / 2}
           y={h - 4}
           textAnchor="middle"
-          className="font-mono text-[10px] fill-muted-foreground tracking-[0.12em]"
+          className="chart-axis fill-muted-foreground tracking-[0.12em]"
         >
-          X AXIS · SHARE PRICE (USD PER SHARE)
+          {metric.axis}
         </text>
 
         {/* Bars */}
         {sorted.map((q, idx) => {
           const active = hover === q.symbol || hoveredSymbol === q.symbol;
           const y = yFor(idx);
-          const bw = xFor(q.price);
+          const bw = xFor(metric.value(q));
           const up = q.changePct >= 0;
           const dim = anyActive && !active;
           const trackW = chartW;
@@ -238,24 +281,19 @@ function BarChart({
                 x={rankW - 10}
                 y={y + rowH / 2 + 1}
                 textAnchor="end"
-                className="font-mono text-[11px] fill-muted-foreground tabular-nums"
+                className="chart-axis fill-muted-foreground"
               >
                 {String(idx + 1).padStart(2, "0")}
               </text>
               {/* Ticker */}
-              <text
-                x={rankW}
-                y={y + rowH / 2 + 1}
-                className="font-mono text-[12px] font-bold fill-foreground"
-              >
+              <text x={rankW} y={y + rowH / 2 + 1} className="chart-value fill-foreground">
                 {q.symbol}
               </text>
               {/* Company */}
               <text
                 x={rankW + 52}
                 y={y + rowH / 2 + 1}
-                className="text-[12px] fill-muted-foreground"
-                style={{ fontFamily: "Calibri, sans-serif" }}
+                className="chart-label fill-muted-foreground"
               >
                 {q.label.length > 18 ? `${q.label.slice(0, 18)}…` : q.label}
               </text>
@@ -264,7 +302,7 @@ function BarChart({
                 x={w - 92}
                 y={y + rowH / 2 + 1}
                 textAnchor="end"
-                className="font-mono text-[12.5px] font-semibold fill-foreground tabular-nums"
+                className="chart-value fill-foreground"
               >
                 ${fmt(q.price)}
               </text>
@@ -273,7 +311,7 @@ function BarChart({
                 x={w - 176}
                 y={y + rowH / 2 + 1}
                 textAnchor="end"
-                className="font-mono text-[11px] fill-muted-foreground tabular-nums"
+                className="chart-axis fill-muted-foreground"
               >
                 {capOf(q.symbol).mmboe > 0 ? fmt(capOf(q.symbol).mmboe, 0) : "—"}
               </text>
@@ -292,7 +330,7 @@ function BarChart({
                   x={-29}
                   y={12}
                   textAnchor="middle"
-                  className="font-mono text-[10px] font-bold tabular-nums"
+                  className="chart-axis font-bold"
                   fill={
                     active
                       ? "var(--primary-foreground)"
@@ -355,6 +393,7 @@ function BarChart({
 
 export function OilStocksPanel() {
   const [hover, setHover] = useState<string | null>(null);
+  const [metricKey, setMetricKey] = useState<StockMetric>("price");
   const { data, isLoading } = useQuery({
     queryKey: ["oil-stocks"],
     queryFn: () => getOilStocksFn(),
@@ -380,16 +419,39 @@ export function OilStocksPanel() {
             group's annual output capacity. Hover any row for price, daily change and capacity.
           </p>
         </div>
-        <span className="label-mono rounded-full border border-border bg-surface-2 px-3 py-1.5 text-sm text-muted-foreground">
-          {isLoading ? "Loading…" : stale ? "Last close · USD / share" : "Live · USD / share"}
-        </span>
+        <div className="flex flex-col items-end gap-2">
+          <label className="flex items-center gap-2">
+            <span className="label-mono text-muted-foreground">Measure</span>
+            <select
+              className="chart-select"
+              value={metricKey}
+              onChange={(e) => setMetricKey(e.target.value as StockMetric)}
+              aria-label="Choose the value shown in the chart"
+            >
+              {(Object.keys(STOCK_METRICS) as StockMetric[]).map((m) => (
+                <option key={m} value={m}>
+                  {STOCK_METRICS[m].label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <span className="label-mono text-muted-foreground">
+            {isLoading ? "Loading…" : stale ? "Last close" : "Live"} · {STOCK_METRICS[metricKey].badge}
+          </span>
+        </div>
       </div>
 
       {quotes.length === 0 && !isLoading ? (
         <p className="text-sm text-muted-foreground">Market data is unavailable right now.</p>
       ) : (
         <div className="min-h-0 flex-1">
-          <BarChart quotes={quotes} hover={hover} setHover={setHover} onSelect={openEntityNews} />
+          <BarChart
+            quotes={quotes}
+            hover={hover}
+            setHover={setHover}
+            onSelect={openEntityNews}
+            metricKey={metricKey}
+          />
         </div>
       )}
 

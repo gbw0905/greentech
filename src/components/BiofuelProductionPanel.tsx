@@ -75,7 +75,7 @@ function BarChart({
             {ticks.map((t) => (
               <div key={t} className="flex flex-col items-center">
                 <div className="h-1.5 w-px bg-border" />
-                <span className="font-mono text-[10px] text-muted-foreground tabular-nums">
+                <span className="chart-axis">
                   {fmt(max * t, max * t < 100 ? decimals : 0)}
                 </span>
               </div>
@@ -115,14 +115,11 @@ function BarChart({
                 aria-label={`${i.label}: ${fmt(i.value, decimals)} ${unitLabel}`}
               >
                 <div className="w-[140px] shrink-0 text-right">
-                  <div
-                    className="truncate text-xs font-semibold leading-tight"
-                    title={i.label}
-                  >
+                  <div className="chart-label truncate" title={i.label}>
                     {i.label}
                   </div>
                   {i.sub ? (
-                    <div className="truncate text-[10px] text-muted-foreground">{i.sub}</div>
+                    <div className="chart-sub truncate">{i.sub}</div>
                   ) : null}
                 </div>
 
@@ -138,7 +135,7 @@ function BarChart({
                       opacity: hover && !active ? 0.4 : 1,
                     }}
                   />
-                  <span className="pointer-events-none absolute left-[calc(var(--w)+6px)] top-1/2 -translate-y-1/2 font-mono text-[11px] tabular-nums text-foreground"
+                  <span className="chart-value pointer-events-none absolute left-[calc(var(--w)+6px)] top-1/2 -translate-y-1/2 text-foreground"
                     style={{ "--w": `${widthPct}%` } as React.CSSProperties}
                   >
                     {fmt(i.value, i.value < 100 ? decimals : 0)}
@@ -148,17 +145,17 @@ function BarChart({
                     <div className="chart-tip pointer-events-none absolute left-[calc(var(--w)+8px)] top-1/2 z-20 w-max max-w-[200px] -translate-y-1/2 rounded-lg px-2.5 py-1.5"
                       style={{ "--w": `${widthPct}%` } as React.CSSProperties}
                     >
-                      <div className="flex items-center gap-1.5 text-[11px] font-semibold">
+                      <div className="chart-label flex items-center gap-1.5">
                         <span className="inline-block size-2 rounded-full" style={{ background: i.color }} />
                         {i.label}
                       </div>
-                      <div className="font-mono text-[11px] tabular-nums">
+                      <div className="chart-value">
                         {fmt(i.value, decimals)} <span className="text-muted-foreground">{unitLabel}</span>
                       </div>
-                      <div className="text-[10px] text-muted-foreground">
+                      <div className="chart-sub">
                         {((i.value / total) * 100).toFixed(1)}% of shown total
                       </div>
-                      {target ? <div className="text-[10px] text-primary mt-1">Click to open latest news</div> : null}
+                      {target ? <div className="chart-sub mt-1 text-primary">Click to open latest news</div> : null}
                     </div>
                   ) : null}
                 </div>
@@ -190,15 +187,47 @@ function BarChart({
   );
 }
 
+type StationMetric = "sites" | "volume" | "perSite";
+
+const STATION_METRICS: Record<
+  StationMetric,
+  { label: string; unit: string; short: string; decimals: number; value: (s: Station) => number }
+> = {
+  sites: {
+    label: "Retail sites offering biofuels",
+    unit: "retail sites offering biofuels",
+    short: "sites shown",
+    decimals: 0,
+    value: (s) => s.sites,
+  },
+  volume: {
+    label: "Biofuel volume sold (Ml/yr)",
+    unit: "million litres of biofuel sold / year",
+    short: "million litres / year shown",
+    decimals: 0,
+    value: (s) => s.volumeMnL,
+  },
+  perSite: {
+    label: "Volume per site (litres ×1000/yr)",
+    unit: "thousand litres of biofuel sold per site / year",
+    short: "avg. thousand litres per site",
+    decimals: 1,
+    value: (s) => (s.volumeMnL * 1000) / Math.max(s.sites, 1),
+  },
+};
+
 export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
-  const [stationMetric, setStationMetric] = useState<"sites" | "volume">("sites");
+  const [stationMetric, setStationMetric] = useState<StationMetric>("sites");
+  const metric = STATION_METRICS[stationMetric];
 
   const matched = STATIONS.filter((s) => fuels.length === 0 || s.fuels.some((f) => fuels.includes(f)));
-  const byVolume = stationMetric === "volume";
   const stations = (matched.length > 0 ? matched : STATIONS)
     .slice()
-    .sort((a, b) => (byVolume ? b.volumeMnL - a.volumeMnL : b.sites - a.sites));
-  const stationTotal = stations.reduce((a, s) => a + (byVolume ? s.volumeMnL : s.sites), 0) || 1;
+    .sort((a, b) => metric.value(b) - metric.value(a));
+  const stationTotal =
+    stationMetric === "perSite"
+      ? stations.reduce((a, s) => a + metric.value(s), 0) / Math.max(stations.length, 1)
+      : stations.reduce((a, s) => a + metric.value(s), 0) || 1;
   const filterNote =
     fuels.length > 0
       ? matched.length > 0
@@ -225,41 +254,41 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
             </p>
           </div>
           <div className="flex flex-col items-end gap-2">
-            <div className="flex rounded-full border border-border bg-surface-2 p-0.5">
-              {(["sites", "volume"] as const).map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => setStationMetric(m)}
-                  className={`label-mono rounded-full px-2.5 py-1 transition-colors ${
-                    stationMetric === m
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {m === "sites" ? "Sites" : "Volume"}
-                </button>
-              ))}
-            </div>
+            <label className="flex items-center gap-2">
+              <span className="label-mono text-muted-foreground">Measure</span>
+              <select
+                className="chart-select"
+                value={stationMetric}
+                onChange={(e) => setStationMetric(e.target.value as StationMetric)}
+                aria-label="Choose the value shown in the chart"
+              >
+                {(Object.keys(STATION_METRICS) as StationMetric[]).map((m) => (
+                  <option key={m} value={m}>
+                    {STATION_METRICS[m].label}
+                  </option>
+                ))}
+              </select>
+            </label>
             <div className="text-right">
               <div className="font-display text-2xl font-bold tracking-tight tabular-nums">
-                {fmt(stationTotal)}
+                {fmt(stationTotal, metric.decimals)}
               </div>
-              <div className="label-mono text-muted-foreground">
-                {byVolume ? "million litres / year shown" : "sites shown"}
-              </div>
+              <div className="label-mono text-muted-foreground">{metric.short}</div>
             </div>
           </div>
         </div>
         <BarChart
-          unitLabel={byVolume ? "million litres of biofuel sold / year" : "retail sites offering biofuels"}
+          unitLabel={metric.unit}
           yLabel="Retail fuel network"
-          decimals={0}
+          decimals={metric.decimals}
           items={stations.map((s) => ({
             key: s.name,
             label: `${s.flag} ${s.name}`,
-            sub: byVolume ? `${fmt(s.sites)} sites · ${s.note}` : `${fmt(s.volumeMnL)} Ml/yr · ${s.note}`,
-            value: byVolume ? s.volumeMnL : s.sites,
+            sub:
+              stationMetric === "sites"
+                ? `${fmt(s.volumeMnL)} Ml/yr · ${s.note}`
+                : `${fmt(s.sites)} sites · ${s.note}`,
+            value: metric.value(s),
             color: s.color,
           }))}
           onSelect={openEntityNews}

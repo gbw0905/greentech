@@ -42,10 +42,34 @@ const AIRLINES: Airline[] = [
   { code: "NZ", name: "Air New Zealand", country: "New Zealand", flag: "🇳🇿", volume: 4, share: 0.4, note: "Neste imports and domestic SAF development." },
 ];
 
+type AirlineMetric = "volume" | "share";
+
+const AIRLINE_METRICS: Record<
+  AirlineMetric,
+  { label: string; badge: string; axis: string; value: (a: Airline) => number; format: (n: number) => string }
+> = {
+  volume: {
+    label: "SAF uplift (Ml/yr)",
+    badge: "Million litres / year",
+    axis: "SAF uplift, million litres per year (bar length)",
+    value: (a) => a.volume,
+    format: (n) => `${n} ML`,
+  },
+  share: {
+    label: "SAF share of fuel burn (%)",
+    badge: "% of total jet fuel burn",
+    axis: "SAF share of total jet fuel burn, percent (bar length)",
+    value: (a) => a.share,
+    format: (n) => `${n.toFixed(2)}%`,
+  },
+};
+
 export function SafAirlinesPanel() {
   const [active, setActive] = useState<string | null>(null);
-  const sorted = [...AIRLINES].sort((a, b) => b.volume - a.volume);
-  const max = Math.max(...sorted.map((a) => a.volume));
+  const [metricKey, setMetricKey] = useState<AirlineMetric>("volume");
+  const metric = AIRLINE_METRICS[metricKey];
+  const sorted = [...AIRLINES].sort((a, b) => metric.value(b) - metric.value(a));
+  const max = Math.max(...sorted.map((a) => metric.value(a)));
   const activeRow = sorted.find((a) => a.code === active) ?? null;
 
   return (
@@ -61,9 +85,24 @@ export function SafAirlinesPanel() {
             of total fuel burn and the programme behind it.
           </p>
         </div>
-        <span className="label-mono rounded-full border border-border bg-surface-2 px-3 py-1.5 text-sm text-muted-foreground">
-          Million litres / year
-        </span>
+        <div className="flex flex-col items-end gap-2">
+          <label className="flex items-center gap-2">
+            <span className="label-mono text-muted-foreground">Measure</span>
+            <select
+              className="chart-select"
+              value={metricKey}
+              onChange={(e) => setMetricKey(e.target.value as AirlineMetric)}
+              aria-label="Choose the value shown in the chart"
+            >
+              {(Object.keys(AIRLINE_METRICS) as AirlineMetric[]).map((m) => (
+                <option key={m} value={m}>
+                  {AIRLINE_METRICS[m].label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <span className="label-mono text-muted-foreground">{metric.badge}</span>
+        </div>
       </div>
 
       <div className="relative flex-1 space-y-1.5">
@@ -88,10 +127,10 @@ export function SafAirlinesPanel() {
                 dim ? "opacity-40" : ""
               } ${isActive ? "bg-foreground/[0.05]" : idx % 2 === 0 ? "bg-foreground/[0.015]" : ""}`}
             >
-              <span className="w-6 shrink-0 font-mono text-[11px] tabular-nums text-muted-foreground">
+              <span className="chart-axis w-6 shrink-0">
                 {String(idx + 1).padStart(2, "0")}
               </span>
-              <span className="w-[9.5rem] shrink-0 truncate text-[13px] font-semibold text-foreground">
+              <span className="chart-label w-[9.5rem] shrink-0 truncate text-foreground">
                 <span className="mr-1.5">{a.flag}</span>
                 {a.name}
               </span>
@@ -99,7 +138,7 @@ export function SafAirlinesPanel() {
                 <span
                   className="chart-bar-x absolute inset-y-0 left-0 rounded-full transition-all duration-300"
                   style={{
-                    width: `${(a.volume / max) * 100}%`,
+                    width: `${Math.max((metric.value(a) / max) * 100, 1.5)}%`,
                     background: isActive
                       ? "linear-gradient(90deg, var(--accent), var(--primary))"
                       : "linear-gradient(90deg, color-mix(in oklab, var(--accent) 75%, transparent), color-mix(in oklab, var(--primary) 55%, transparent))",
@@ -110,11 +149,11 @@ export function SafAirlinesPanel() {
                   }}
                 />
               </span>
-              <span className="w-16 shrink-0 text-right font-mono text-[12.5px] font-semibold tabular-nums text-foreground">
-                {a.volume} ML
+              <span className="chart-value w-16 shrink-0 text-right text-foreground">
+                {metric.format(metric.value(a))}
               </span>
-              <span className="w-12 shrink-0 text-right font-mono text-[11px] tabular-nums text-muted-foreground">
-                {a.share.toFixed(2)}%
+              <span className="chart-axis w-12 shrink-0 text-right">
+                {metricKey === "volume" ? `${a.share.toFixed(2)}%` : `${a.volume} ML`}
               </span>
             </button>
           );
@@ -148,9 +187,11 @@ export function SafAirlinesPanel() {
 
       <div className="mt-4 space-y-2 border-t border-border pt-3">
         <div className="label-mono flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground">
-          <span>X axis: SAF uplift, million litres per year (bar length)</span>
-          <span>Y axis: airline, ranked by uplift</span>
-          <span>Right column: SAF share of total fuel burn (%)</span>
+          <span>X axis: {metric.axis}</span>
+          <span>Y axis: airline, ranked by the selected measure</span>
+          <span>
+            Right column: {metricKey === "volume" ? "SAF share of total fuel burn (%)" : "SAF uplift (Ml/yr)"}
+          </span>
         </div>
         <p className="text-xs text-muted-foreground">
           Estimates compiled from airline sustainability reports, published offtake agreements and
