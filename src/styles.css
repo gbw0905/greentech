@@ -142,6 +142,12 @@
   --gradient-aurora: linear-gradient(120deg, oklch(0.21 0.05 265) 0%, oklch(0.29 0.075 262) 55%, oklch(0.38 0.09 250) 100%);
   --shadow-frost: 0 1px 2px color-mix(in oklab, var(--foreground) 5%, transparent);
   --shadow-lift: 0 8px 24px -12px color-mix(in oklab, var(--foreground) 22%, transparent);
+  --shadow-card:
+    0 1px 1px color-mix(in oklab, var(--foreground) 4%, transparent),
+    0 6px 18px -12px color-mix(in oklab, var(--foreground) 26%, transparent);
+  --shadow-card-hover:
+    0 1px 1px color-mix(in oklab, var(--foreground) 5%, transparent),
+    0 14px 34px -18px color-mix(in oklab, var(--foreground) 34%, transparent);
   --sidebar: oklch(1 0 0);
   --sidebar-foreground: oklch(0.22 0.045 265);
   --sidebar-primary: oklch(0.31 0.075 262);
