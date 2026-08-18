@@ -71,34 +71,34 @@ export const getOilPricesFn = createServerFn({ method: "GET" }).handler(async ()
   return { quotes: merged, stale: true, asOf: cached?.at ?? Date.now() };
 });
 
-/** Twenty of the largest NYSE-listed oil & gas companies. */
+/** The twenty largest oil & gas companies worldwide, by their primary listing. */
 const OIL_STOCKS: Array<[string, string]> = [
+  ["2222.SR", "Saudi Aramco"],
   ["XOM", "ExxonMobil"],
   ["CVX", "Chevron"],
   ["SHEL", "Shell"],
   ["TTE", "TotalEnergies"],
   ["BP", "BP"],
+  ["0857.HK", "PetroChina"],
+  ["0386.HK", "Sinopec"],
+  ["0883.HK", "CNOOC"],
   ["COP", "ConocoPhillips"],
-  ["EOG", "EOG Resources"],
-  ["SLB", "SLB"],
-  ["PSX", "Phillips 66"],
-  ["MPC", "Marathon Petroleum"],
-  ["VLO", "Valero Energy"],
-  ["OXY", "Occidental Petroleum"],
   ["PBR", "Petrobras"],
   ["E", "Eni"],
   ["EQNR", "Equinor"],
+  ["RELIANCE.NS", "Reliance Industries"],
+  ["ONGC.NS", "ONGC"],
+  ["OXY", "Occidental Petroleum"],
+  ["PSX", "Phillips 66"],
+  ["MPC", "Marathon Petroleum"],
   ["SU", "Suncor Energy"],
   ["CNQ", "Canadian Natural"],
-  ["HES", "Hess"],
-  ["DVN", "Devon Energy"],
-  ["BKR", "Baker Hughes"],
 ];
 
 export const getOilStocksFn = createServerFn({ method: "GET" }).handler(async () => {
   const { cacheGet, cacheSet } = await import("./market-cache.server");
   const quotes = await Promise.all(
-    OIL_STOCKS.map(([sym, label]) => loadSymbol(sym, label, "USD / share")),
+    OIL_STOCKS.map(([sym, label]) => loadSymbol(sym, label, "per share")),
   );
   const fresh = (quotes.filter(Boolean) as OilQuote[]).sort((a, b) => b.price - a.price);
   const cached = cacheGet<OilQuote[]>("oil-stocks");
