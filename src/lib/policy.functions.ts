@@ -30,7 +30,7 @@ async function readFeed(): Promise<PolicyFeed> {
     )
     .order("published_at", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false })
-    .limit(400);
+    .limit(1000);
 
   if (error) return { updates: [], fetchedAt, error: error.message };
 
