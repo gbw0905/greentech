@@ -77,37 +77,23 @@ function SectionHeading({
 }) {
   return (
     <div className="mb-5 pt-4" style={{ ["--tone" as string]: tone }}>
-      <div
-        className="h-1 w-full rounded-full"
-        style={{
-          background:
-            "linear-gradient(90deg, var(--tone), color-mix(in oklab, var(--tone) 25%, transparent))",
-        }}
-      />
-      <div className="mt-3 flex items-center gap-2">
-        <span
-          className="inline-flex size-7 items-center justify-center rounded-md"
-          style={{
-            background: "color-mix(in oklab, var(--tone) 16%, transparent)",
-            color: "var(--tone)",
-          }}
-        >
-          <Icon className="size-4" />
-        </span>
-        <span
-          className="kicker rounded-full px-2 py-0.5"
-          style={{
-            background: "color-mix(in oklab, var(--tone) 12%, transparent)",
-            color: "var(--tone)",
-          }}
-        >
+      <div className="flex items-center gap-2" style={{ color: "var(--tone)" }}>
+        <Icon className="size-3.5" />
+        <span className="kicker">
           {kicker}
         </span>
       </div>
-      <h2 className="mt-2 font-display text-2xl leading-tight font-bold text-foreground sm:text-3xl">
+      <h2 className="mt-2 font-display text-[1.75rem] leading-[1.1] font-extrabold tracking-tight text-foreground sm:text-4xl">
         {title}
       </h2>
-      <p className="mt-1.5 max-w-3xl text-sm text-muted-foreground">{subtitle}</p>
+      <p className="mt-2 max-w-3xl text-sm/relaxed text-muted-foreground">{subtitle}</p>
+      <div
+        className="mt-4 h-px w-full"
+        style={{
+          background:
+            "linear-gradient(90deg, var(--tone), color-mix(in oklab, var(--tone) 12%, transparent) 55%, transparent)",
+        }}
+      />
     </div>
   );
 }
@@ -145,21 +131,24 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-30 border-b border-border bg-surface/95 backdrop-blur">
-        <div className="mx-auto flex max-w-[100rem] flex-wrap items-center justify-between gap-4 px-5 py-3 lg:px-8">
+      <header className="sticky top-0 z-30 border-b border-border bg-surface/85 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-[100rem] flex-wrap items-center justify-between gap-4 px-5 py-2.5 lg:px-8">
           <div className="flex items-center gap-3">
             <img
               src={siteLogo}
               alt="Global Bioenergy Watch logo: a globe with a leaf and rising data line"
               width={1024}
               height={1024}
-              className="size-10 rounded-md object-contain"
+              className="size-9 rounded-md object-contain"
             />
             <div>
-              <div className="font-display text-xl leading-none font-bold tracking-tight text-foreground sm:text-2xl">
+              <div className="font-display text-xl leading-none font-extrabold tracking-tight text-foreground sm:text-[1.4rem]">
                 Global Bioenergy Watch
               </div>
-              <div className="kicker mt-1">Independent policy & market desk</div>
+              <div className="kicker mt-1 flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full bg-accent" />
+                Independent policy &amp; market desk
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -182,19 +171,20 @@ function Dashboard() {
         </div>
         <nav
           aria-label="Page sections"
-          className="mx-auto hidden max-w-[100rem] items-center gap-2.5 overflow-x-auto border-t border-border px-5 py-2 lg:flex lg:px-8"
+          className="mx-auto hidden max-w-[100rem] items-center gap-2 overflow-x-auto border-t border-border px-5 py-2 lg:flex lg:px-8"
         >
           {SECTIONS.map((s) => (
             <a
               key={s.href}
               href={s.href}
-              className="label-mono whitespace-nowrap rounded-full px-3 py-1.5 transition-colors"
-              style={{
-                background: `color-mix(in oklab, ${s.tone} 12%, transparent)`,
-                color: s.tone,
-                border: `1px solid color-mix(in oklab, ${s.tone} 30%, transparent)`,
-              }}
+              className="label-mono group inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-border bg-surface-1 px-3.5 py-1.5 text-muted-foreground transition-all hover:-translate-y-px hover:border-transparent hover:text-foreground hover:shadow-[var(--shadow-card)]"
             >
+              <span
+                className="size-1.5 rounded-full"
+              style={{
+                  background: s.tone,
+                }}
+              />
               {s.label}
             </a>
           ))}
@@ -203,30 +193,30 @@ function Dashboard() {
 
       <div className="mx-auto max-w-[100rem] px-5 py-6 lg:px-8 lg:py-8">
 
-        <main className="space-y-6">
-          <section className="rise grid gap-8 border-b border-border pb-8 lg:grid-cols-[1.15fr_minmax(0,1fr)] lg:gap-10">
+        <main className="space-y-10">
+          <section className="rise grid gap-8 border-b border-border pb-10 lg:grid-cols-[1.15fr_minmax(0,1fr)] lg:gap-12">
             <div className="flex flex-col justify-center">
               <div className="kicker inline-flex items-center gap-2">
                 <span className="size-1.5 rounded-full bg-accent" />
                 Global biofuel intelligence
               </div>
-              <h1 className="mt-4 font-display text-4xl leading-[1.05] font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+              <h1 className="mt-4 font-display text-[2.6rem] leading-[1.02] font-extrabold tracking-[-0.03em] text-foreground sm:text-[3.4rem] lg:text-[4rem]">
                 AI powered global bioenergy outlook
               </h1>
-              <p className="mt-5 max-w-2xl text-base/relaxed text-muted-foreground">
+              <p className="mt-5 max-w-[58ch] text-base/relaxed text-muted-foreground">
                 Mandates, blending obligations and regulatory decisions across every tracked
                 jurisdiction — continuously scanned from government portals and credible media,
                 classified by country and fuel, and published as they land.
               </p>
-              <dl className="mt-7 grid grid-cols-3 gap-4 border-t border-border pt-5">
+              <dl className="mt-8 grid grid-cols-3 divide-x divide-border border-y border-border">
                 {[
                   ["Updates tracked", String(stats.total)],
                   ["Jurisdictions covered", String(stats.countries)],
                   ["Government policy items", String(stats.policy)],
                 ].map(([label, value]) => (
-                  <div key={label}>
+                  <div key={label} className="px-4 py-4 first:pl-0">
                     <dt className="kicker">{label}</dt>
-                    <dd className="mt-1 font-display text-2xl font-bold tabular-nums text-foreground sm:text-3xl">
+                    <dd className="mt-1.5 font-display text-2xl font-extrabold tabular-nums text-foreground sm:text-3xl">
                       {value}
                     </dd>
                   </div>
@@ -234,7 +224,10 @@ function Dashboard() {
               </dl>
             </div>
             <div className="flex flex-col">
-              <div className="kicker mb-2">Top 5 latest updates</div>
+              <div className="mb-3 flex items-baseline justify-between gap-3 border-b border-border pb-2">
+                <span className="kicker">Top 5 latest updates</span>
+                <span className="label-mono text-muted-foreground/70">Live</span>
+              </div>
               {topFive.length > 0 ? (
                 <div className="space-y-2">
                   {topFive.map((u, i) => (
@@ -276,7 +269,7 @@ function Dashboard() {
             <OilPricePanel />
           </section>
 
-          <section id="map" className="pt-6">
+          <section id="map" className="pt-4">
             <SectionHeading
               tone="var(--chart-3)"
               kicker="Jurisdiction map"
@@ -284,12 +277,12 @@ function Dashboard() {
               title="Policy activity by jurisdiction"
               subtitle="Government mandates and market moves side by side — including jurisdictions still developing their frameworks. Click any country to open its full profile."
             />
-            <div className="glass-panel flex w-full min-w-0 flex-col p-5">
-              <div className="mb-3 flex items-center justify-between gap-3">
+            <div className="glass-panel flex w-full min-w-0 flex-col">
+              <div className="panel-head">
                 <h3 className="label-mono text-muted-foreground">Jurisdiction map</h3>
                 <span className="label-mono text-accent">Click a country to open its profile</span>
               </div>
-              <div className="min-h-0 w-full flex-1">
+              <div className="min-h-0 w-full flex-1 p-5">
                 <WorldPolicyMap
                   counts={counts}
                   activeCountry={null}
@@ -301,7 +294,7 @@ function Dashboard() {
             </div>
           </section>
 
-          <section id="production" className="pt-6">
+          <section id="production" className="pt-4">
             <SectionHeading
               tone="var(--chart-6)"
               kicker="Supply & producers"
@@ -316,7 +309,7 @@ function Dashboard() {
             </div>
           </section>
 
-          <div className="grid gap-8 pt-6 xl:grid-cols-2 xl:items-start">
+          <div className="grid gap-8 pt-4 xl:grid-cols-2 xl:items-start">
             <section id="alerts">
               <SectionHeading
                 tone="var(--chart-4)"
@@ -340,7 +333,7 @@ function Dashboard() {
             </section>
           </div>
 
-          <section id="disclaimer" className="border-t border-border pt-6">
+          <section id="disclaimer" className="border-t border-border pt-8">
             <div className="flex items-start gap-3">
               <AlertTriangle className="mt-0.5 size-4 shrink-0 text-signal" />
               <div className="max-w-4xl">
