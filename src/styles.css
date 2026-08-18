@@ -397,6 +397,19 @@
   color: var(--muted-foreground);
 }
 
+/** Dark editorial header bar used above sections and page headings. */
+@utility ink-bar {
+  background: linear-gradient(
+    100deg,
+    var(--ink) 0%,
+    color-mix(in oklab, var(--ink) 88%, var(--primary-glow)) 100%
+  );
+  color: var(--ink-foreground);
+  border-radius: calc(var(--radius) + 4px);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
 /** Thin editorial rule. */
 @utility hairline {
   border-top: 1px solid var(--border);
