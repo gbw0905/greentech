@@ -287,13 +287,12 @@ function Dashboard() {
               title="Policy activity by jurisdiction"
               subtitle="Government mandates and market moves side by side — including jurisdictions still developing their frameworks. Click any country to open its full profile."
             />
-            <div className="grid gap-4 xl:grid-cols-[1.7fr_1fr] xl:items-start">
-            <div className="glass-panel flex min-w-0 flex-col p-5">
+            <div className="glass-panel flex w-full min-w-0 flex-col p-5">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <h3 className="label-mono text-muted-foreground">Jurisdiction map</h3>
                 <span className="label-mono text-accent">Click a country to open its profile</span>
               </div>
-              <div className="min-h-0 flex-1">
+              <div className="min-h-0 w-full flex-1">
                 <WorldPolicyMap
                   counts={counts}
                   activeCountry={null}
@@ -302,7 +301,6 @@ function Dashboard() {
                   }}
                 />
               </div>
-            </div>
             </div>
           </section>
 

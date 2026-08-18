@@ -4,7 +4,7 @@ import {
   FUEL_TYPES,
   type FuelType,
 } from "./policy-taxonomy";
-import { FEED_SOURCES } from "./policy-sources";
+import { FEED_SOURCES, backfillSources } from "./policy-sources";
 import { isTrustedOutlet } from "./policy-outlets";
 
 interface FeedItem {
@@ -69,7 +69,20 @@ function parseFeed(xml: string, fallbackSource: string): FeedItem[] {
 
 function classify(text: string) {
   const haystack = ` ${text.toLowerCase()} `;
-  const country = COUNTRIES.find((c) => c.aliases.some((a) => haystack.includes(a))) ?? null;
+  // Prefer the most specific jurisdiction: a named member state beats the EU-wide
+  // entry, and a longer alias beats an incidental short one.
+  let country: (typeof COUNTRIES)[number] | null = null;
+  let best = 0;
+  for (const c of COUNTRIES) {
+    for (const a of c.aliases) {
+      if (!haystack.includes(a)) continue;
+      const score = a.trim().length + (c.slug === "european-union" ? 0 : 2);
+      if (score > best) {
+        best = score;
+        country = c;
+      }
+    }
+  }
   const fuels: FuelType[] = FUEL_TYPES.filter((f) =>
     FUEL_KEYWORDS[f].some((k) =>
       k.length <= 4 ? new RegExp(`\\b${k}\\b`).test(haystack) : haystack.includes(k),
@@ -178,9 +191,17 @@ export interface IngestResult {
 }
 
 export async function ingestPolicyUpdates(): Promise<IngestResult> {
-  const results = await Promise.all(
-    FEED_SOURCES.map(async (f) => ({ name: f.name, items: await loadFeed(f.url, f.name) })),
-  );
+  // Live sweeps plus month-by-month backfill so the archive spans all months.
+  const sources = [...FEED_SOURCES, ...backfillSources(6)];
+  const results: { name: string; items: FeedItem[] }[] = [];
+  for (let i = 0; i < sources.length; i += 12) {
+    const batch = sources.slice(i, i + 12);
+    results.push(
+      ...(await Promise.all(
+        batch.map(async (f) => ({ name: f.name, items: await loadFeed(f.url, f.name) })),
+      )),
+    );
+  }
 
   const feedsOk = results.filter((r) => r.items.length > 0).length;
   const all = results.flatMap((r) => r.items);
@@ -259,6 +280,26 @@ export async function ingestPolicyUpdates(): Promise<IngestResult> {
     }
     purged = stale.length;
     scannedExisting = (existing ?? []).length;
+
+    // Re-attribute rows stored before the taxonomy improved.
+    const { data: unattributed } = await supabaseAdmin
+      .from("policy_updates")
+      .select("url,title,summary")
+      .is("country_slug", null)
+      .limit(1000);
+    for (const r of unattributed ?? []) {
+      const { country, fuels } = classify(`${r.title} ${r.summary ?? ""}`);
+      if (!country) continue;
+      await supabaseAdmin
+        .from("policy_updates")
+        .update({
+          country_slug: country.slug,
+          country_name: country.name,
+          region: country.region,
+          fuels,
+        })
+        .eq("url", r.url);
+    }
   }
 
   return {
@@ -266,7 +307,7 @@ export async function ingestPolicyUpdates(): Promise<IngestResult> {
     kept: rows.length,
     upserted,
     feedsOk,
-    feedsTotal: FEED_SOURCES.length,
+    feedsTotal: sources.length,
     purged,
     scannedExisting,
     purgeError,
