@@ -78,23 +78,20 @@ function SectionHeading({
   kicker: string;
 }) {
   return (
-    <div className="mb-5 pt-4" style={{ ["--tone" as string]: tone }}>
+    <div className="ink-bar mb-6 px-5 py-5 sm:px-7 sm:py-6" style={{ ["--tone" as string]: tone }}>
       <div className="flex items-center gap-2" style={{ color: "var(--tone)" }}>
         <Icon className="size-3.5" />
-        <span className="kicker">
+        <span className="kicker" style={{ color: "var(--tone)" }}>
           {kicker}
         </span>
       </div>
-      <h2 className="mt-2 font-display text-[1.75rem] leading-[1.1] font-extrabold tracking-tight text-foreground sm:text-4xl">
+      <h2 className="mt-2 font-display text-[1.75rem] leading-[1.1] font-extrabold tracking-tight text-ink-foreground sm:text-4xl">
         {title}
       </h2>
-      <p className="mt-2 max-w-3xl text-sm/relaxed text-muted-foreground">{subtitle}</p>
+      <p className="mt-2 max-w-3xl text-sm/relaxed text-ink-muted">{subtitle}</p>
       <div
-        className="mt-4 h-px w-full"
-        style={{
-          background:
-            "linear-gradient(90deg, var(--tone), color-mix(in oklab, var(--tone) 12%, transparent) 55%, transparent)",
-        }}
+        className="mt-4 h-0.5 w-24 rounded-full"
+        style={{ background: "var(--tone)" }}
       />
     </div>
   );
