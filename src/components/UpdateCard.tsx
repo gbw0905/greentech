@@ -30,11 +30,11 @@ export function UpdateCard({
   const host = hostOf(update.url);
   return (
     <article
-      className={`glass-panel lift group relative overflow-hidden ${compact ? "p-3 pl-4" : "p-5 pl-6"}`}
+      className={`glass-panel lift group relative overflow-hidden ${compact ? "p-2.5 pl-3.5" : "p-5 pl-6"}`}
       style={{ borderLeftColor: REGION_ACCENT[update.region], borderLeftWidth: 3 }}
     >
       <div
-        className={`label-mono flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground ${compact ? "text-[11px]" : ""}`}
+        className={`label-mono flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-muted-foreground ${compact ? "text-[11px]" : ""}`}
       >
         <span
           className={`rounded-full font-semibold tracking-[0.14em] uppercase ${compact ? "px-1.5 py-0" : "px-2 py-0.5"}`}
@@ -59,7 +59,7 @@ export function UpdateCard({
             <Link
               to="/countries/$slug"
               params={{ slug: update.countrySlug }}
-              className="inline-flex items-center gap-1.5 text-foreground underline-offset-4 hover:underline"
+              className="inline-flex items-center gap-1 text-foreground underline-offset-4 hover:underline"
             >
               <span aria-hidden>{flagFor(update.countrySlug)}</span>
               {update.countryName}
@@ -68,7 +68,9 @@ export function UpdateCard({
         )}
       </div>
 
-      <h3 className={`leading-snug font-semibold ${compact ? "mt-1 text-base" : "mt-2 text-lg"}`}>
+      <h3
+        className={`font-semibold leading-tight ${compact ? "mt-1 text-[15px]" : "mt-2 text-lg leading-snug"}`}
+      >
         <a
           href={update.url}
           target="_blank"
@@ -82,16 +84,12 @@ export function UpdateCard({
         </a>
       </h3>
 
-      {update.summary && (
-        <p
-          className={`text-muted-foreground ${compact ? "mt-1 line-clamp-2 text-xs" : "mt-2 line-clamp-3 text-sm"}`}
-        >
-          {update.summary}
-        </p>
+      {update.summary && !compact && (
+        <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{update.summary}</p>
       )}
 
       {update.fuels.length > 0 && (
-        <div className={`flex flex-wrap items-center gap-1.5 ${compact ? "mt-1.5" : "mt-3"}`}>
+        <div className={`flex flex-wrap items-center gap-1.5 ${compact ? "mt-1" : "mt-3"}`}>
           {update.fuels.map((f) => (
             <span
               key={f}
