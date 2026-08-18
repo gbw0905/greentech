@@ -7,6 +7,36 @@ export interface FeedSource {
 const news = (q: string): string =>
   `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en-US&gl=US&ceid=US:en`;
 
+/**
+ * Month-by-month backfill sweeps. Google News caps a single query's results, so
+ * one query per month per theme is how the archive builds real history instead
+ * of only the current fortnight.
+ */
+const MONTHLY_THEMES = [
+  "biofuel policy mandate",
+  "ethanol blending mandate government",
+  "biodiesel mandate policy",
+  "sustainable aviation fuel mandate policy",
+  "renewable fuel standard EPA rule",
+  "European Union RED III ReFuelEU biofuels",
+  "biofuel market prices demand supply",
+];
+
+/** Rolling six-month window, matching the 180-day retention in the ingest job. */
+export function backfillSources(months = 6): FeedSource[] {
+  const out: FeedSource[] = [];
+  const now = new Date();
+  for (let i = 0; i < months; i += 1) {
+    const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i + 1, 1));
+    const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
+    const range = `after:${start.toISOString().slice(0, 10)} before:${end.toISOString().slice(0, 10)}`;
+    for (const theme of MONTHLY_THEMES) {
+      out.push({ name: "Google News", url: news(`${theme} ${range}`) });
+    }
+  }
+  return out;
+}
+
 export const FEED_SOURCES: FeedSource[] = [
   // Topic sweeps
   { name: "Google News", url: news("biofuel policy mandate when:14d") },
