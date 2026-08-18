@@ -43,7 +43,7 @@ export function PageShell({
             type. Verify against primary legislation before use in compliance decisions.
           </p>
           <p className="text-xs font-semibold text-foreground">
-            © {new Date().getFullYear()} All rights reserved —{" "}
+            © 2026 All rights reserved — Global Bioenergy Watch —{" "}
             <a
               href="https://www.linkedin.com/in/asifulalam0905024/"
               target="_blank"
