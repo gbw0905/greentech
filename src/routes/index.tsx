@@ -78,7 +78,10 @@ function SectionHeading({
   kicker: string;
 }) {
   return (
-    <div className="ink-bar mb-6 px-5 py-5 sm:px-7 sm:py-6" style={{ ["--tone" as string]: tone }}>
+    <div
+      className="ink-bar mb-6 px-5 py-5 sm:px-7 sm:py-6"
+      style={{ ["--tone" as string]: `color-mix(in oklab, ${tone} 62%, white)` }}
+    >
       <div className="flex items-center gap-2" style={{ color: "var(--tone)" }}>
         <Icon className="size-3.5" />
         <span className="kicker" style={{ color: "var(--tone)" }}>
@@ -178,12 +181,15 @@ function Dashboard() {
               href={s.href}
               className="label-mono group inline-flex items-center gap-2 whitespace-nowrap rounded-full px-3.5 py-1.5 font-bold transition-all hover:-translate-y-px"
               style={{
-                background: `color-mix(in oklab, ${s.tone} 26%, transparent)`,
-                color: `color-mix(in oklab, ${s.tone} 55%, white)`,
-                border: `1px solid color-mix(in oklab, ${s.tone} 55%, transparent)`,
+                background: `color-mix(in oklab, ${s.tone} 30%, transparent)`,
+                color: `color-mix(in oklab, ${s.tone} 40%, white)`,
+                border: `1px solid color-mix(in oklab, ${s.tone} 65%, transparent)`,
               }}
             >
-              <span className="size-1.5 rounded-full" style={{ background: s.tone }} />
+              <span
+                className="size-1.5 rounded-full"
+                style={{ background: `color-mix(in oklab, ${s.tone} 60%, white)` }}
+              />
               {s.label}
             </a>
           ))}
