@@ -267,6 +267,53 @@
   text-transform: uppercase;
 }
 
+/* ---- Unified chart typography ---------------------------------------- */
+/* Every graph uses the same three sizes so no panel looks bigger/smaller. */
+@utility chart-label {
+  font-size: 0.75rem; /* 12px */
+  line-height: 1.15;
+  font-weight: 600;
+}
+
+@utility chart-sub {
+  font-size: 0.6875rem; /* 11px */
+  line-height: 1.2;
+  color: var(--muted-foreground);
+}
+
+@utility chart-value {
+  font-family: var(--font-mono);
+  font-size: 0.75rem; /* 12px */
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+@utility chart-axis {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem; /* 11px */
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-foreground);
+}
+
+@utility chart-select {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  padding: 0.375rem 1.75rem 0.375rem 0.75rem;
+  color: var(--foreground);
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--muted-foreground) 50%),
+    linear-gradient(135deg, var(--muted-foreground) 50%, transparent 50%);
+  background-position: right 0.85rem center, right 0.6rem center;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
 @utility glass-panel {
   background: var(--surface);
   border: 1px solid var(--border);
