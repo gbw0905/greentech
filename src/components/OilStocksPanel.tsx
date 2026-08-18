@@ -412,11 +412,13 @@ export function OilStocksPanel() {
         <div className="max-w-2xl">
           <h3 className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-foreground sm:text-xl">
             <Building2 className="size-5 text-primary" />
-            Top 20 oil companies by NYSE stock price
+            Top 20 global oil companies
           </h3>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            Live share price of the largest NYSE-listed oil &amp; gas majors, shown next to each
-            group's annual output capacity. Hover any row for price, daily change and capacity.
+            The world's twenty largest oil &amp; gas companies — national and international majors
+            across the US, Europe, the Middle East, Asia and Latin America — with live share
+            prices from their primary listing and annual output capacity. Hover any row for
+            price, daily change and capacity.
           </p>
         </div>
         <div className="flex flex-col items-end gap-2">
