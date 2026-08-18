@@ -204,7 +204,7 @@ function Dashboard() {
       <div className="mx-auto max-w-[100rem] px-5 py-6 lg:px-8 lg:py-8">
 
         <main className="space-y-6">
-          <section className="rise grid gap-8 border-b border-border pb-8 lg:grid-cols-[1.15fr_1fr] lg:gap-12">
+          <section className="rise grid gap-8 border-b border-border pb-8 lg:grid-cols-[1.15fr_minmax(0,1fr)] lg:gap-10">
             <div className="flex flex-col justify-center">
               <div className="kicker inline-flex items-center gap-2">
                 <span className="size-1.5 rounded-full bg-accent" />
@@ -234,11 +234,21 @@ function Dashboard() {
               </dl>
             </div>
             <div className="flex flex-col">
-              <div className="kicker mb-3">Top 5 latest updates</div>
+              <div className="kicker mb-2">Top 5 latest updates</div>
               {topFive.length > 0 ? (
-                <div className="space-y-3">
-                  {topFive.map((u) => (
-                    <UpdateCard key={u.id} update={u} />
+                <div className="space-y-2">
+                  {topFive.map((u, i) => (
+                    <div key={u.id} className="flex items-start gap-2">
+                      <span
+                        className="label-mono mt-3 shrink-0 text-xs font-bold tabular-nums text-muted-foreground/70"
+                        aria-hidden="true"
+                      >
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <UpdateCard update={u} compact />
+                      </div>
+                    </div>
                   ))}
                 </div>
               ) : (
