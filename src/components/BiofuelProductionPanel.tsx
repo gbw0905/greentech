@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Fuel, Users } from "lucide-react";
+import { Fuel } from "lucide-react";
 import type { FuelType } from "@/lib/policy-taxonomy";
-import { openEntityNews, type NewsTarget } from "@/lib/open-news";
+import { openEntityNews } from "@/lib/open-news";
 
 type Station = {
   name: string;
@@ -44,47 +44,7 @@ const STATIONS: Station[] = [
 const fmt = (n: number, d = 0) =>
   n.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
 
-type Mix = Partial<Record<FuelType, number>>;
-type Entity = { name: string; flag: string; color: string; mix: Mix };
-const sumMix = (mix: Mix, fuels: FuelType[]) =>
-  Object.entries(mix).reduce(
-    (a, [f, v]) => (fuels.length === 0 || fuels.includes(f as FuelType) ? a + (v ?? 0) : a),
-    0,
-  );
-
-/** Largest biofuel consuming markets — billion litres per year (all liquid biofuels). */
-const CONSUMERS: Entity[] = [
-  { name: "United States", flag: "🇺🇸", color: "var(--primary)", mix: { Ethanol: 55, Biodiesel: 6, "Renewable Diesel": 5 } },
-  { name: "Brazil", flag: "🇧🇷", color: "var(--accent)", mix: { Ethanol: 33, Biodiesel: 6 } },
-  { name: "Indonesia", flag: "🇮🇩", color: "var(--signal)", mix: { Biodiesel: 12.5, Ethanol: 0.5 } },
-  { name: "European Union", flag: "🇪🇺", color: "var(--primary-glow)", mix: { Biodiesel: 6, Ethanol: 4, "Renewable Diesel": 2, Biogas: 3 } },
-  { name: "China", flag: "🇨🇳", color: "var(--muted-foreground)", mix: { Ethanol: 4, Biodiesel: 1, Biogas: 1 } },
-  { name: "India", flag: "🇮🇳", color: "var(--primary)", mix: { Ethanol: 4.8, Biodiesel: 0.2 } },
-];
-
-/** Largest corporate biofuel producers/offtakers — billion litres per year (all liquid biofuels). */
-const COMPANIES: Entity[] = [
-  { name: "POET", flag: "🇺🇸", color: "var(--primary)", mix: { Ethanol: 12 } },
-  { name: "ADM", flag: "🇺🇸", color: "var(--accent)", mix: { Ethanol: 8, Biodiesel: 1 } },
-  { name: "Valero / Diamond Green", flag: "🇺🇸", color: "var(--signal)", mix: { Ethanol: 5.5, "Renewable Diesel": 2.5 } },
-  { name: "Raízen", flag: "🇧🇷", color: "var(--primary-glow)", mix: { Ethanol: 6 } },
-  { name: "Neste", flag: "🇫🇮", color: "var(--muted-foreground)", mix: { "Renewable Diesel": 4.7, SAF: 0.8 } },
-  { name: "Green Plains", flag: "🇺🇸", color: "var(--primary)", mix: { Ethanol: 4 } },
-  { name: "Flint Hills Resources", flag: "🇺🇸", color: "var(--accent)", mix: { Ethanol: 3.6 } },
-  { name: "Marathon Petroleum", flag: "🇺🇸", color: "var(--signal)", mix: { Ethanol: 3.4, "Renewable Diesel": 1.5 } },
-  { name: "Cargill", flag: "🇺🇸", color: "var(--primary-glow)", mix: { Ethanol: 2.5, Biodiesel: 1.2 } },
-  { name: "Wilmar International", flag: "🇸🇬", color: "var(--muted-foreground)", mix: { Biodiesel: 3.2 } },
-  { name: "Musim Mas", flag: "🇮🇩", color: "var(--primary)", mix: { Biodiesel: 2.4 } },
-  { name: "Sinar Mas / Golden Agri", flag: "🇮🇩", color: "var(--accent)", mix: { Biodiesel: 2.2 } },
-  { name: "Louis Dreyfus Company", flag: "🇳🇱", color: "var(--signal)", mix: { Biodiesel: 1.6, Ethanol: 0.8 } },
-  { name: "Bunge", flag: "🇺🇸", color: "var(--primary-glow)", mix: { Biodiesel: 1.8 } },
-  { name: "Eni Enilive", flag: "🇮🇹", color: "var(--muted-foreground)", mix: { "Renewable Diesel": 1.5, SAF: 0.3 } },
-  { name: "TotalEnergies", flag: "🇫🇷", color: "var(--primary)", mix: { "Renewable Diesel": 1.2, SAF: 0.3 } },
-  { name: "Repsol", flag: "🇪🇸", color: "var(--accent)", mix: { "Renewable Diesel": 0.9, SAF: 0.25 } },
-  { name: "Chevron REG", flag: "🇺🇸", color: "var(--signal)", mix: { Biodiesel: 1.7, "Renewable Diesel": 0.8 } },
-  { name: "Darling / Diamond Green", flag: "🇺🇸", color: "var(--primary-glow)", mix: { "Renewable Diesel": 2.4 } },
-  { name: "BP Bunge Bioenergia", flag: "🇧🇷", color: "var(--muted-foreground)", mix: { Ethanol: 2.1 } },
-];
+type NewsTarget = { name: string; query: string };
 
 function BarChart({
   items,
@@ -97,7 +57,7 @@ function BarChart({
   items: { key: string; label: string; sub?: string; value: number; color: string }[];
   unitLabel: string;
   decimals?: number;
-  news?: Record<string, { name: string; query: string }>;
+  news?: Record<string, NewsTarget>;
   onSelect?: (t: NewsTarget) => void;
   yLabel?: string;
 }) {
@@ -231,7 +191,6 @@ function BarChart({
 }
 
 export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
-  const [userView, setUserView] = useState<"countries" | "companies">("countries");
   const [stationMetric, setStationMetric] = useState<"sites" | "volume">("sites");
 
   const matched = STATIONS.filter((s) => fuels.length === 0 || s.fuels.some((f) => fuels.includes(f)));
@@ -240,13 +199,6 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
     .slice()
     .sort((a, b) => (byVolume ? b.volumeMnL - a.volumeMnL : b.sites - a.sites));
   const stationTotal = stations.reduce((a, s) => a + (byVolume ? s.volumeMnL : s.sites), 0) || 1;
-
-  const mixFuels = fuels;
-  const users = (userView === "countries" ? CONSUMERS : COMPANIES)
-    .map((e) => ({ ...e, annualBnL: sumMix(e.mix, mixFuels) }))
-    .filter((e) => e.annualBnL > 0)
-    .sort((a, b) => b.annualBnL - a.annualBnL);
-  const usersTotal = users.reduce((a, c) => a + c.annualBnL, 0) || 1;
   const filterNote =
     fuels.length > 0
       ? matched.length > 0
@@ -255,9 +207,9 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
       : null;
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+    <div className="space-y-4">
       {filterNote ? (
-        <div className="label-mono lg:col-span-2 rounded-full border border-border bg-surface-2 px-3 py-1.5 text-muted-foreground">
+        <div className="label-mono rounded-full border border-border bg-surface-2 px-3 py-1.5 text-muted-foreground">
           {filterNote}
         </div>
       ) : null}
@@ -290,12 +242,12 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
               ))}
             </div>
             <div className="text-right">
-            <div className="font-display text-2xl font-bold tracking-tight tabular-nums">
-              {fmt(stationTotal)}
-            </div>
-            <div className="label-mono text-muted-foreground">
-              {byVolume ? "million litres / year shown" : "sites shown"}
-            </div>
+              <div className="font-display text-2xl font-bold tracking-tight tabular-nums">
+                {fmt(stationTotal)}
+              </div>
+              <div className="label-mono text-muted-foreground">
+                {byVolume ? "million litres / year shown" : "sites shown"}
+              </div>
             </div>
           </div>
         </div>
@@ -320,60 +272,6 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
         />
         <p className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
           Approximate site counts from company retail disclosures and national blending programmes. Click any bar to open the latest news for that network.
-        </p>
-      </div>
-
-      <div className="glass-panel rise p-5">
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-          <h3 className="flex items-center gap-2 font-display text-base font-bold tracking-tight text-foreground sm:text-lg">
-            <Users className="size-4 text-accent" />
-            Global top biofuel users
-          </h3>
-          <div className="flex rounded-full border border-border bg-surface-2 p-0.5">
-            {(["countries", "companies"] as const).map((v) => (
-              <button
-                key={v}
-                type="button"
-                onClick={() => setUserView(v)}
-                className={`label-mono rounded-full px-2.5 py-1 transition-colors ${
-                  userView === v
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {v === "countries" ? "Countries" : "Companies"}
-              </button>
-            ))}
-          </div>
-        </div>
-        {users.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No matching users for this fuel filter.</p>
-        ) : (
-        <BarChart
-          unitLabel={
-            userView === "countries"
-              ? "billion litres / year consumed"
-              : "billion litres / year (corporate capacity)"
-          }
-          yLabel={userView === "countries" ? "Country / market" : "Company"}
-          items={users.map((c) => ({
-            key: c.name,
-            label: `${c.flag} ${c.name}`,
-            sub: `${((c.annualBnL / usersTotal) * 100).toFixed(0)}% of shown`,
-            value: c.annualBnL,
-            color: c.color,
-          }))}
-          onSelect={openEntityNews}
-          news={Object.fromEntries(
-            users.map((c) => [
-              c.name,
-              { name: c.name, query: `"${c.name}" biofuel OR renewable OR clean energy` },
-            ])
-          )}
-        />
-        )}
-        <p className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
-          Top consumers and producers by annual liquid biofuel volume. Click any bar to open its latest global news. Source: IEA/EIA estimates and company reports.
         </p>
       </div>
     </div>
