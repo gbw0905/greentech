@@ -117,7 +117,7 @@ export function WorldPolicyMap({
     <div className="flex h-full flex-col">
       <div
         ref={containerRef}
-        className="relative min-h-0 flex-1 cursor-grab overflow-hidden rounded-[var(--radius)] border border-border bg-surface-2/40 active:cursor-grabbing"
+        className="relative min-h-[320px] w-full flex-1 cursor-grab overflow-hidden rounded-[var(--radius)] border border-border bg-surface-2/40 aspect-[16/9] sm:aspect-[2/1] xl:aspect-[21/9] active:cursor-grabbing"
         style={{ touchAction: "none" }}
         onPointerDown={(e) => {
           drag.current = { px: e.clientX, py: e.clientY, ox: view.x, oy: view.y };
