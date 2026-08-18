@@ -97,8 +97,8 @@ function BarChart({
   const niceMax = Math.max(Math.ceil(maxValue / step) * step, step);
 
   // Layout — horizontal bars
-  const rowH = 30;
-  const gap = 10;
+  const rowH = 38;
+  const gap = 12;
   const rankW = 28;
   const labelW = 210; // rank + ticker + company
   const valueW = 256; // capacity + price + change badge
@@ -412,7 +412,7 @@ export function OilStocksPanel() {
         <div className="max-w-2xl">
           <h3 className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-foreground sm:text-xl">
             <Building2 className="size-5 text-primary" />
-            Top 20 global oil companies
+            Top global oil companies
           </h3>
           <p className="mt-1.5 text-sm text-muted-foreground">
             The world's twenty largest oil &amp; gas companies — national and international majors

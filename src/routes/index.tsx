@@ -11,6 +11,7 @@ import { OilPricePanel } from "@/components/OilPricePanel";
 import { OilStocksPanel } from "@/components/OilStocksPanel";
 import { BiofuelProductionPanel } from "@/components/BiofuelProductionPanel";
 import { SafAirlinesPanel } from "@/components/SafAirlinesPanel";
+import { CarriersPanel } from "@/components/CarriersPanel";
 import { AlertSignup } from "@/components/AlertSignup";
 import { JobsPanel } from "@/components/JobsPanel";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
@@ -300,9 +301,10 @@ function Dashboard() {
               subtitle="Retail networks selling biofuels worldwide and the largest users of each fuel."
             />
             <BiofuelProductionPanel fuels={[]} />
-            <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2 xl:items-start">
+            <div className="mt-4 space-y-4">
               <OilStocksPanel />
               <SafAirlinesPanel />
+              <CarriersPanel />
             </div>
           </section>
 
