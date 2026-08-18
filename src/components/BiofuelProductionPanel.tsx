@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Fuel } from "lucide-react";
-import type { FuelType } from "@/lib.policy-taxonomy";
+import type { FuelType } from "@/lib/policy-taxonomy";
 import { openEntityNews } from "@/lib/open-news";
 
 type Station = {
