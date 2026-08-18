@@ -187,15 +187,47 @@ function BarChart({
   );
 }
 
+type StationMetric = "sites" | "volume" | "perSite";
+
+const STATION_METRICS: Record<
+  StationMetric,
+  { label: string; unit: string; short: string; decimals: number; value: (s: Station) => number }
+> = {
+  sites: {
+    label: "Retail sites offering biofuels",
+    unit: "retail sites offering biofuels",
+    short: "sites shown",
+    decimals: 0,
+    value: (s) => s.sites,
+  },
+  volume: {
+    label: "Biofuel volume sold (Ml/yr)",
+    unit: "million litres of biofuel sold / year",
+    short: "million litres / year shown",
+    decimals: 0,
+    value: (s) => s.volumeMnL,
+  },
+  perSite: {
+    label: "Volume per site (litres ×1000/yr)",
+    unit: "thousand litres of biofuel sold per site / year",
+    short: "avg. thousand litres per site",
+    decimals: 1,
+    value: (s) => (s.volumeMnL * 1000) / Math.max(s.sites, 1),
+  },
+};
+
 export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
-  const [stationMetric, setStationMetric] = useState<"sites" | "volume">("sites");
+  const [stationMetric, setStationMetric] = useState<StationMetric>("sites");
+  const metric = STATION_METRICS[stationMetric];
 
   const matched = STATIONS.filter((s) => fuels.length === 0 || s.fuels.some((f) => fuels.includes(f)));
-  const byVolume = stationMetric === "volume";
   const stations = (matched.length > 0 ? matched : STATIONS)
     .slice()
-    .sort((a, b) => (byVolume ? b.volumeMnL - a.volumeMnL : b.sites - a.sites));
-  const stationTotal = stations.reduce((a, s) => a + (byVolume ? s.volumeMnL : s.sites), 0) || 1;
+    .sort((a, b) => metric.value(b) - metric.value(a));
+  const stationTotal =
+    stationMetric === "perSite"
+      ? stations.reduce((a, s) => a + metric.value(s), 0) / Math.max(stations.length, 1)
+      : stations.reduce((a, s) => a + metric.value(s), 0) || 1;
   const filterNote =
     fuels.length > 0
       ? matched.length > 0
@@ -222,41 +254,41 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
             </p>
           </div>
           <div className="flex flex-col items-end gap-2">
-            <div className="flex rounded-full border border-border bg-surface-2 p-0.5">
-              {(["sites", "volume"] as const).map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => setStationMetric(m)}
-                  className={`label-mono rounded-full px-2.5 py-1 transition-colors ${
-                    stationMetric === m
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {m === "sites" ? "Sites" : "Volume"}
-                </button>
-              ))}
-            </div>
+            <label className="flex items-center gap-2">
+              <span className="label-mono text-muted-foreground">Measure</span>
+              <select
+                className="chart-select"
+                value={stationMetric}
+                onChange={(e) => setStationMetric(e.target.value as StationMetric)}
+                aria-label="Choose the value shown in the chart"
+              >
+                {(Object.keys(STATION_METRICS) as StationMetric[]).map((m) => (
+                  <option key={m} value={m}>
+                    {STATION_METRICS[m].label}
+                  </option>
+                ))}
+              </select>
+            </label>
             <div className="text-right">
               <div className="font-display text-2xl font-bold tracking-tight tabular-nums">
-                {fmt(stationTotal)}
+                {fmt(stationTotal, metric.decimals)}
               </div>
-              <div className="label-mono text-muted-foreground">
-                {byVolume ? "million litres / year shown" : "sites shown"}
-              </div>
+              <div className="label-mono text-muted-foreground">{metric.short}</div>
             </div>
           </div>
         </div>
         <BarChart
-          unitLabel={byVolume ? "million litres of biofuel sold / year" : "retail sites offering biofuels"}
+          unitLabel={metric.unit}
           yLabel="Retail fuel network"
-          decimals={0}
+          decimals={metric.decimals}
           items={stations.map((s) => ({
             key: s.name,
             label: `${s.flag} ${s.name}`,
-            sub: byVolume ? `${fmt(s.sites)} sites · ${s.note}` : `${fmt(s.volumeMnL)} Ml/yr · ${s.note}`,
-            value: byVolume ? s.volumeMnL : s.sites,
+            sub:
+              stationMetric === "sites"
+                ? `${fmt(s.volumeMnL)} Ml/yr · ${s.note}`
+                : `${fmt(s.sites)} sites · ${s.note}`,
+            value: metric.value(s),
             color: s.color,
           }))}
           onSelect={openEntityNews}
