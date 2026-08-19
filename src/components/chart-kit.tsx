@@ -264,13 +264,20 @@ export function ChartHeat({
   format,
   news,
   onSelect,
+  measureLabel,
+  measureHelp,
 }: {
   items: ChartItem[];
   unitLabel: string;
   format: (n: number) => string;
   news?: Record<string, NewsTarget>;
   onSelect?: (t: NewsTarget) => void;
+  /** Name of the currently selected dropdown measure, e.g. "SAF uplift (Ml/yr)". */
+  measureLabel?: string;
+  /** Plain-language explanation of what that measure means. */
+  measureHelp?: string;
 }) {
+  const [hover, setHover] = useState<{ key: string; x: number; y: number } | null>(null);
   const values = items.map((i) => i.value);
   const max = Math.max(...values, 1);
   const min = Math.min(...values, 0);
@@ -293,10 +300,14 @@ export function ChartHeat({
     h: t.h * 100,
   }));
   const byKey = new Map(sorted.map((i) => [i.key, i]));
+  const hovered = hover ? byKey.get(hover.key) : null;
 
   return (
     <div>
-      <div className="relative h-[26rem] w-full overflow-hidden rounded-sm border border-border/60 bg-border/40 sm:h-[30rem]">
+      <div
+        className="relative h-[26rem] w-full overflow-hidden rounded-sm border border-border/60 bg-border/40 sm:h-[30rem]"
+        onMouseLeave={() => setHover(null)}
+      >
         {tiles.map((tile) => {
           const item = byKey.get(tile.key)!;
           const target = news?.[item.key];
@@ -320,6 +331,10 @@ export function ChartHeat({
               }
               title={`${item.label}${item.sub ? ` — ${item.sub}` : ""}: ${format(item.value)} ${unitLabel}${item.meta ? ` · ${item.meta}` : ""}`}
               aria-label={`${item.label}: ${format(item.value)} ${unitLabel}`}
+              onMouseMove={(e) => {
+                const box = e.currentTarget.parentElement!.getBoundingClientRect();
+                setHover({ key: tile.key, x: e.clientX - box.left, y: e.clientY - box.top });
+              }}
               className={`absolute flex flex-col justify-between overflow-hidden p-1.5 text-white outline-hidden ring-inset transition-[filter] hover:brightness-110 focus-visible:ring-2 focus-visible:ring-white ${
                 target ? "cursor-pointer" : ""
               }`}
@@ -366,6 +381,38 @@ export function ChartHeat({
             </div>
           );
         })}
+
+        {hover && hovered ? (
+          <div
+            className="pointer-events-none absolute z-20 w-64 max-w-[85%] rounded-sm border border-border bg-card p-3 shadow-lg"
+            style={{
+              left: `min(${hover.x + 14}px, calc(100% - 17rem))`,
+              top: `min(${hover.y + 14}px, calc(100% - 9rem))`,
+            }}
+          >
+            <div className="chart-label text-foreground">{hovered.label}</div>
+            {hovered.sub ? (
+              <div className="chart-sub mt-0.5 text-muted-foreground">{hovered.sub}</div>
+            ) : null}
+            <div className="mt-2 border-t border-border/60 pt-2">
+              <div className="chart-sub uppercase tracking-wide text-muted-foreground">
+                {measureLabel ?? "Measure"}
+              </div>
+              <div className="chart-value text-foreground">
+                {format(hovered.value)}
+                <span className="chart-sub ml-1 font-normal text-muted-foreground">{unitLabel}</span>
+              </div>
+              {measureHelp ? (
+                <p className="chart-sub mt-1 leading-snug text-muted-foreground">{measureHelp}</p>
+              ) : null}
+              {hovered.meta ? (
+                <div className="chart-sub mt-1 font-mono tabular-nums text-muted-foreground">
+                  {hovered.meta}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <div className="chart-axis mt-3 flex flex-wrap items-center gap-2">
