@@ -304,6 +304,22 @@ export function ChartHeat({
 
   return (
     <div>
+      <div className="mb-3 rounded-sm border border-border/60 bg-muted/40 p-2.5">
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+          <span className="chart-sub uppercase tracking-wide text-muted-foreground">
+            Measure shown
+          </span>
+          <span className="chart-label text-foreground">{measureLabel ?? "Measure"}</span>
+          <span className="chart-sub text-muted-foreground">— unit: {unitLabel}</span>
+        </div>
+        {measureHelp ? (
+          <p className="chart-sub mt-1 leading-snug text-muted-foreground">{measureHelp}</p>
+        ) : null}
+        <p className="chart-sub mt-1 leading-snug text-muted-foreground">
+          Tile size and colour both scale with the value ({format(min)} – {format(max)}{" "}
+          {unitLabel}). Hover a tile for its own figures.
+        </p>
+      </div>
       <div
         className="relative h-[26rem] w-full overflow-hidden rounded-sm border border-border/60 bg-border/40 sm:h-[30rem]"
         onMouseLeave={() => setHover(null)}
