@@ -14,6 +14,7 @@ import { SafAirlinesPanel } from "@/components/SafAirlinesPanel";
 import { CarriersPanel } from "@/components/CarriersPanel";
 import { AlertSignup } from "@/components/AlertSignup";
 import { JobsPanel } from "@/components/JobsPanel";
+import { TrafficPanel } from "@/components/TrafficPanel";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
 
 const feedQuery = queryOptions({
@@ -333,6 +334,8 @@ function Dashboard() {
               <AlertSignup />
             </section>
           </div>
+
+          <TrafficPanel />
 
           <section id="disclaimer">
             <SectionHeading

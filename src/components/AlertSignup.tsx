@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { BellRing, Check, Loader2, MapPin, Fuel } from "lucide-react";
+import { BellRing, Check, Loader2, MapPin, Fuel, ChevronDown, X } from "lucide-react";
 import {
   COUNTRIES,
   FUEL_TYPES,
@@ -10,6 +10,100 @@ import {
   type FuelType,
 } from "@/lib/policy-taxonomy";
 import { subscribeToAlerts } from "@/lib/alerts.functions";
+
+function MultiSelectDropdown({
+  label,
+  icon: Icon,
+  options,
+  selected,
+  onChange,
+  renderLabel,
+}: {
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  options: { value: string; label: React.ReactNode }[];
+  selected: string[];
+  onChange: (values: string[]) => void;
+  renderLabel: (count: number) => string;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    if (open) document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
+  const toggle = (value: string) => {
+    onChange(
+      selected.includes(value)
+        ? selected.filter((v) => v !== value)
+        : [...selected, value]
+    );
+  };
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between gap-2 rounded-md border border-border bg-background px-3 py-2.5 text-sm transition-colors hover:border-primary"
+      >
+        <span className="flex items-center gap-2">
+          <Icon className="size-4 text-primary" />
+          <span className="font-medium text-foreground">{label}</span>
+        </span>
+        <span className="flex items-center gap-2 text-xs text-muted-foreground">
+          {renderLabel(selected.length)}
+          <ChevronDown className={`size-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
+        </span>
+      </button>
+
+      {open && (
+        <div className="absolute z-20 mt-1 max-h-[260px] w-full overflow-y-auto rounded-md border border-border bg-background shadow-lg">
+          <div className="sticky top-0 border-b border-border bg-background px-3 py-2">
+            <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                className="size-4 rounded border-border"
+                checked={selected.length === options.length}
+                onChange={(e) =>
+                  onChange(e.target.checked ? options.map((o) => o.value) : [])
+                }
+              />
+              <span className="font-medium text-foreground">Select all</span>
+            </label>
+          </div>
+          {options.map((o) => {
+            const active = selected.includes(o.value);
+            return (
+              <label
+                key={o.value}
+                className={`flex cursor-pointer items-center gap-2 px-3 py-2 text-sm transition-colors hover:bg-muted ${
+                  active ? "bg-primary/5" : ""
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  className="size-4 rounded border-border"
+                  checked={active}
+                  onChange={() => toggle(o.value)}
+                />
+                <span className="flex-1 text-foreground">{o.label}</span>
+                {active && <Check className="size-3.5 text-primary" />}
+              </label>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function AlertSignup() {
   const subscribe = useServerFn(subscribeToAlerts);
@@ -24,22 +118,28 @@ export function AlertSignup() {
 
   const status = mutation.data?.status;
 
-  const toggleCountry = (slug: string) => {
-    setCountries((prev) =>
-      prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]
-    );
-  };
+  const countryOptions = COUNTRIES.map((c: { slug: string; name: string }) => ({
+    value: c.slug,
+    label: (
+      <span className="flex items-center gap-2">
+        <span>{COUNTRY_FLAG[c.slug]}</span>
+        <span>{c.name}</span>
+      </span>
+    ),
+  }));
 
-  const toggleFuel = (fuel: FuelType) => {
-    setFuels((prev) =>
-      prev.includes(fuel) ? prev.filter((f) => f !== fuel) : [...prev, fuel]
-    );
-  };
-
-  const selectedCountryLabel =
-    countries.length === 0
-      ? "All jurisdictions"
-      : `${countries.length} jurisdiction${countries.length === 1 ? "" : "s"}`;
+  const fuelOptions = FUEL_TYPES.map((f: FuelType) => ({
+    value: f,
+    label: (
+      <span className="flex items-center gap-2">
+        <span
+          className="size-2.5 rounded-full"
+          style={{ backgroundColor: FUEL_ACCENT[f] }}
+        />
+        <span>{f}</span>
+      </span>
+    ),
+  }));
 
   return (
     <div className="glass-panel rise overflow-hidden">
@@ -62,87 +162,80 @@ export function AlertSignup() {
       </div>
 
       <div className="p-5 sm:p-6">
-        {/* Country coverage */}
-        <div className="mb-5">
-          <div className="mb-2.5 flex items-center gap-2">
-            <MapPin className="size-4 text-primary" />
-            <span className="label-mono text-foreground">Jurisdictions</span>
-            <span className="ml-auto text-xs text-muted-foreground">
-              {selectedCountryLabel}
-            </span>
-          </div>
-          <div className="max-h-[280px] overflow-y-auto rounded-md border border-border bg-surface-1 p-2">
-            <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-              {COUNTRIES.map((c) => {
-                const active = countries.includes(c.slug);
-                return (
-                  <button
-                    key={c.slug}
-                    type="button"
-                    onClick={() => toggleCountry(c.slug)}
-                    aria-pressed={active}
-                    className={`flex items-center gap-2 rounded-md border px-2.5 py-1.5 text-left text-sm transition-all ${
-                      active
-                        ? "border-primary bg-primary/10 font-medium text-primary shadow-sm"
-                        : "border-transparent bg-surface text-foreground hover:border-primary/30 hover:bg-primary/5"
-                    }`}
-                  >
-                    <span className="text-base leading-none">{COUNTRY_FLAG[c.slug]}</span>
-                    <span className="flex-1 truncate">{c.name}</span>
-                    {active ? (
-                      <Check className="size-3.5 shrink-0 text-primary" />
-                    ) : (
-                      <span className="size-3.5 shrink-0 rounded-full border border-border" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+        {/* Compact filters */}
+        <div className="mb-5 grid gap-3 sm:grid-cols-2">
+          <MultiSelectDropdown
+            label="Jurisdictions"
+            icon={MapPin}
+            options={countryOptions}
+            selected={countries}
+            onChange={setCountries}
+            renderLabel={(count) =>
+              count === 0 ? "All jurisdictions" : `${count} selected`
+            }
+          />
+          <MultiSelectDropdown
+            label="Fuel types"
+            icon={Fuel}
+            options={fuelOptions}
+            selected={fuels}
+            onChange={(values) => setFuels(values as FuelType[])}
+            renderLabel={(count) =>
+              count === 0 ? "All fuels" : `${count} selected`
+            }
+          />
         </div>
 
-        {/* Fuel coverage */}
-        <div className="mb-5">
-          <div className="mb-2.5 flex items-center gap-2">
-            <Fuel className="size-4 text-primary" />
-            <span className="label-mono text-foreground">Fuel types</span>
-            <span className="ml-auto text-xs text-muted-foreground">
-              {fuels.length === 0 ? "All fuels" : `${fuels.length} selected`}
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {FUEL_TYPES.map((f) => {
-              const active = fuels.includes(f);
-              const accent = FUEL_ACCENT[f];
+        {/* Active chips */}
+        {(countries.length > 0 || fuels.length > 0) && (
+          <div className="mb-5 flex flex-wrap gap-2">
+            {countries.map((slug) => {
+              const c = COUNTRIES.find((x: { slug: string; name: string }) => x.slug === slug);
               return (
-                <button
-                  key={f}
-                  type="button"
-                  onClick={() => toggleFuel(f)}
-                  aria-pressed={active}
-                  className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-all"
-                  style={{
-                    borderColor: active ? accent : "var(--border)",
-                    backgroundColor: active
-                      ? `color-mix(in oklab, ${accent} 15%, transparent)`
-                      : `color-mix(in oklab, ${accent} 8%, transparent)`,
-                    color: active ? `color-mix(in oklab, ${accent} 55%, var(--foreground))` : "var(--foreground)",
-                  }}
+                <span
+                  key={slug}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary"
                 >
-                  {active ? (
-                    <Check className="size-3.5" style={{ color: accent }} />
-                  ) : (
-                    <span
-                      className="size-2.5 rounded-full"
-                      style={{ backgroundColor: accent }}
-                    />
-                  )}
-                  {f}
-                </button>
+                  <span>{COUNTRY_FLAG[slug]}</span>
+                  {c?.name}
+                  <button
+                    type="button"
+                    onClick={() => setCountries((prev) => prev.filter((s) => s !== slug))}
+                    className="rounded-full hover:bg-primary/20"
+                    aria-label={`Remove ${c?.name}`}
+                  >
+                    <X className="size-3" />
+                  </button>
+                </span>
               );
             })}
+            {fuels.map((fuel) => (
+              <span
+                key={fuel}
+                className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium"
+                style={{
+                  borderColor: FUEL_ACCENT[fuel],
+                  backgroundColor: `color-mix(in oklab, ${FUEL_ACCENT[fuel]} 15%, transparent)`,
+                  color: `color-mix(in oklab, ${FUEL_ACCENT[fuel]} 55%, var(--foreground))`,
+                }}
+              >
+                <span
+                  className="size-2 rounded-full"
+                  style={{ backgroundColor: FUEL_ACCENT[fuel] }}
+                />
+                {fuel}
+                <button
+                  type="button"
+                  onClick={() => setFuels((prev) => prev.filter((f) => f !== fuel))}
+                  className="rounded-full hover:bg-black/5"
+                  aria-label={`Remove ${fuel}`}
+                >
+                  <X className="size-3" />
+                </button>
+              </span>
+            ))}
           </div>
-        </div>
+        )}
 
         {/* Email form */}
         <form
