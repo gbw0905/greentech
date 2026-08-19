@@ -118,7 +118,7 @@ export function AlertSignup() {
 
   const status = mutation.data?.status;
 
-  const countryOptions = COUNTRIES.map((c) => ({
+  const countryOptions = COUNTRIES.map((c: { slug: string; name: string }) => ({
     value: c.slug,
     label: (
       <span className="flex items-center gap-2">
@@ -128,7 +128,7 @@ export function AlertSignup() {
     ),
   }));
 
-  const fuelOptions = FUEL_TYPES.map((f) => ({
+  const fuelOptions = FUEL_TYPES.map((f: FuelType) => ({
     value: f,
     label: (
       <span className="flex items-center gap-2">
@@ -190,7 +190,7 @@ export function AlertSignup() {
         {(countries.length > 0 || fuels.length > 0) && (
           <div className="mb-5 flex flex-wrap gap-2">
             {countries.map((slug) => {
-              const c = COUNTRIES.find((x) => x.slug === slug);
+              const c = COUNTRIES.find((x: { slug: string; name: string }) => x.slug === slug);
               return (
                 <span
                   key={slug}
