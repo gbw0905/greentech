@@ -187,67 +187,38 @@ function Dashboard() {
         </nav>
       </header>
 
-      <div className="mx-auto max-w-[80rem] px-5 py-6 lg:px-8 lg:py-8">
+      <div className="mx-auto max-w-[80rem] px-5 py-5 lg:px-8 lg:py-6">
 
-        <main className="space-y-10">
-          <section className="ink-bar grid gap-8 overflow-hidden px-5 py-10 sm:px-8 sm:py-12 lg:grid-cols-[1.25fr_minmax(0,1fr)] lg:items-center lg:gap-10 lg:py-14">
-            <div>
+        <main className="space-y-8">
+          <section className="grid gap-5 lg:grid-cols-[1.1fr_minmax(0,1fr)] lg:items-stretch">
+            <div className="ink-bar flex flex-col justify-center px-6 py-7 sm:px-8 sm:py-9">
               <div className="kicker inline-flex items-center gap-2 text-ink-muted">
                 <span className="size-1.5 rounded-full bg-accent" />
                 Live policy &amp; market intelligence
               </div>
-              <h1 className="mt-4 font-display text-[2.1rem] leading-[1.05] font-extrabold tracking-[-0.03em] text-ink-foreground sm:text-[2.8rem] lg:text-[3.2rem]">
+              <h1 className="mt-2 font-display text-[1.65rem] leading-[1.05] font-extrabold tracking-[-0.03em] text-ink-foreground sm:text-[2.1rem] lg:text-[2.35rem]">
                 AI powered global bioenergy outlook
               </h1>
-              <p className="mt-5 max-w-[58ch] text-sm/relaxed text-ink-muted sm:text-base/relaxed">
-                Mandates, blending targets and incentives across every major jurisdiction —
-                scanned continuously, classified by fuel and country, and summarised for the
-                desk.
+              <p className="mt-2 max-w-[60ch] text-sm/relaxed text-ink-muted">
+                Mandates, blending targets and incentives across every major jurisdiction — scanned continuously, classified by fuel and country.
               </p>
-            </div>
-            <div className="flex items-center justify-center lg:justify-end">
-              <img
-                src={siteLogo}
-                alt="Global Bioenergy Watch logo: a globe with a leaf and rising data line"
-                width={1024}
-                height={1024}
-                className="size-32 rounded-md object-contain opacity-90 sm:size-40 lg:size-44"
-              />
-            </div>
-          </section>
-
-          <section className="rise grid gap-8 border-b border-border pb-10 lg:grid-cols-[1.15fr_minmax(0,1fr)] lg:gap-12">
-            <div className="flex flex-col justify-center">
-              <div className="kicker inline-flex items-center gap-2">
-                <span className="size-1.5 rounded-full bg-accent" />
-                Global biofuel intelligence
-              </div>
-              <h2 className="mt-4 font-display text-[2rem] leading-[1.05] font-extrabold tracking-[-0.03em] text-foreground sm:text-[2.5rem]">
-                The desk behind the outlook
-              </h2>
-              <p className="mt-5 max-w-[64ch] text-base/relaxed text-muted-foreground">
-                A real-time intelligence desk for biofuel policy, supply chains and benchmark
-                markets. We track mandates, blending targets, tax incentives and regulatory shifts
-                across every major jurisdiction — from the U.S. IRA and EU ReFuelEU to emerging SAF
-                frameworks in Asia-Pacific — then synthesise them into a single, searchable outlook
-                so analysts, traders and policymakers can act on what matters first.
-              </p>
-              <dl className="mt-8 grid grid-cols-3 divide-x divide-border border-y border-border">
+              <dl className="mt-auto grid grid-cols-3 gap-4 border-t border-white/10 pt-4">
                 {[
-                  ["Updates tracked", String(stats.total)],
-                  ["Jurisdictions covered", String(stats.countries)],
-                  ["Government policy items", String(stats.policy)],
+                  ["Updates", String(stats.total)],
+                  ["Jurisdictions", String(stats.countries)],
+                  ["Policy items", String(stats.policy)],
                 ].map(([label, value]) => (
-                  <div key={label} className="px-4 py-4 first:pl-0">
-                    <dt className="kicker">{label}</dt>
-                    <dd className="mt-1.5 font-display text-2xl font-extrabold tabular-nums text-foreground sm:text-3xl">
+                  <div key={label}>
+                    <dt className="kicker text-ink-muted">{label}</dt>
+                    <dd className="mt-1 font-display text-xl font-extrabold tabular-nums text-ink-foreground sm:text-2xl">
                       {value}
                     </dd>
                   </div>
                 ))}
               </dl>
             </div>
-            <div className="flex flex-col">
+
+            <div className="glass-panel flex flex-col p-4 sm:p-5">
               <div className="mb-3 flex items-baseline justify-between gap-3 border-b border-border pb-2">
                 <span className="kicker">Top 5 latest updates</span>
                 <span className="label-mono text-muted-foreground/70">Live</span>
@@ -269,7 +240,7 @@ function Dashboard() {
                   ))}
                 </div>
               ) : (
-                <div className="glass-panel p-6 text-sm text-muted-foreground">
+                <div className="p-4 text-sm text-muted-foreground">
                   {busy ? "Scanning global sources…" : "No updates available yet."}
                 </div>
               )}
