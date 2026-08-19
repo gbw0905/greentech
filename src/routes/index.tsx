@@ -143,9 +143,14 @@ function Dashboard() {
               className="size-9 rounded-md object-contain"
             />
             <div>
-              <div className="font-display text-xl leading-none font-extrabold tracking-tight text-ink-foreground sm:text-[1.4rem]">
+              <a
+                href="https://www.linkedin.com/company/global-bioenergy-watch/?viewAsMember=true"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-display text-xl leading-none font-extrabold tracking-tight text-ink-foreground transition-colors hover:text-primary-glow sm:text-[1.4rem]"
+              >
                 Global Bioenergy Watch
-              </div>
+              </a>
               <div className="kicker mt-1 flex items-center gap-1.5 text-ink-muted">
                 <span className="size-1.5 rounded-full bg-accent" />
                 Independent policy &amp; market desk

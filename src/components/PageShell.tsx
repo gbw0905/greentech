@@ -11,24 +11,31 @@ export function PageShell({
     <div className="min-h-screen">
       <header className="sticky top-0 z-30 border-b border-ink bg-ink text-ink-foreground backdrop-blur-xl">
         <div className="mx-auto flex max-w-[80rem] flex-wrap items-center justify-between gap-4 px-5 py-2.5 lg:px-8">
-          <Link to="/" className="flex items-center gap-3">
-            <img
-              src={siteLogo}
-              alt="Global Bioenergy Watch logo: a globe with a leaf and rising data line"
-              width={1024}
-              height={1024}
-              className="size-9 rounded-md object-contain"
-            />
+          <div className="flex items-center gap-3">
+            <Link to="/">
+              <img
+                src={siteLogo}
+                alt="Global Bioenergy Watch logo: a globe with a leaf and rising data line"
+                width={1024}
+                height={1024}
+                className="size-9 rounded-md object-contain"
+              />
+            </Link>
             <div>
-              <div className="font-display text-xl leading-none font-extrabold tracking-tight text-ink-foreground sm:text-[1.4rem]">
+              <a
+                href="https://www.linkedin.com/company/global-bioenergy-watch/?viewAsMember=true"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-display text-xl leading-none font-extrabold tracking-tight text-ink-foreground transition-colors hover:text-primary-glow sm:text-[1.4rem]"
+              >
                 Global Bioenergy Watch
-              </div>
+              </a>
               <div className="kicker mt-1 flex items-center gap-1.5 text-ink-muted">
                 <span className="size-1.5 rounded-full bg-accent" />
                 Independent policy &amp; market desk
               </div>
             </div>
-          </Link>
+          </div>
           <Link
             to="/"
             className="label-mono inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-2 font-bold text-ink-foreground transition-all hover:-translate-y-px hover:bg-white/20"
