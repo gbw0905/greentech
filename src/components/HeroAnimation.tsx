@@ -127,7 +127,7 @@ export function HeroAnimation() {
                 <stop offset="100%" stopColor="currentColor" stopOpacity="1" />
               </linearGradient>
             </defs>
-            <g className="text-accent" color="currentColor">
+            <g className="text-accent">
               <circle
                 cx="100"
                 cy="100"
