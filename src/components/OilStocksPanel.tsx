@@ -170,22 +170,26 @@ function BarChart({
         })}
 
         {/* Column headers */}
-        <text x={0} y={padTop - 14} className="chart-axis fill-muted-foreground tracking-[0.14em]">
+        <text
+          x={0}
+          y={padTop - 16}
+          className="font-sans text-[0.6875rem] font-semibold tracking-[0.12em] fill-muted-foreground"
+        >
           Y AXIS · RANK &amp; COMPANY
         </text>
         <text
           x={w - 176}
-          y={padTop - 14}
+          y={padTop - 16}
           textAnchor="end"
-          className="chart-axis fill-muted-foreground tracking-[0.14em]"
+          className="font-sans text-[0.6875rem] font-semibold tracking-[0.12em] fill-muted-foreground"
         >
           CAPACITY (MMboe/yr)
         </text>
         <text
           x={w}
-          y={padTop - 14}
+          y={padTop - 16}
           textAnchor="end"
-          className="chart-axis fill-muted-foreground tracking-[0.14em]"
+          className="font-sans text-[0.6875rem] font-semibold tracking-[0.12em] fill-muted-foreground"
         >
           PRICE · 1D
         </text>
@@ -194,7 +198,7 @@ function BarChart({
           x={labelW + chartW / 2}
           y={h - 4}
           textAnchor="middle"
-          className="chart-axis fill-muted-foreground tracking-[0.12em]"
+          className="font-sans text-[0.6875rem] font-semibold tracking-[0.1em] fill-muted-foreground"
         >
           {metric.axis}
         </text>
