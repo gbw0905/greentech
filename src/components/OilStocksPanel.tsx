@@ -299,11 +299,11 @@ function BarChart({
               </text>
               {/* Company */}
               <text
-                x={rankW + 56}
+                x={rankW + 74}
                 y={y + rowH / 2 + 1}
                 className="font-sans text-[0.75rem] font-medium fill-muted-foreground"
               >
-                {q.label.length > 20 ? `${q.label.slice(0, 20)}…` : q.label}
+                {q.label.length > 18 ? `${q.label.slice(0, 18)}…` : q.label}
               </text>
               {/* Price */}
               <text
