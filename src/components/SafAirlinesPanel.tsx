@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Plane } from "lucide-react";
 import { openEntityNews } from "@/lib/open-news";
 import { ChartHeat, ChartPanel, chartFmt as fmt } from "@/components/chart-kit";
+import { ChartFilterBar, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
 import { AIRLINE_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
@@ -78,7 +79,11 @@ export function SafAirlinesPanel() {
   const metric = AIRLINE_METRICS[metricKey];
   const valueOf = (a: Airline) =>
     metricKey === "price" ? (get(AIRLINE_TICKERS[a.code])?.price ?? 0) : metric.value(a);
-  const sorted = [...AIRLINES].sort((a, b) => valueOf(b) - valueOf(a));
+  const f = useChartFilter(AIRLINES, {
+    text: (a) => `${a.name} ${a.code} ${a.country} ${a.note}`,
+    facetA: (a) => a.country,
+  });
+  const sorted = [...f.filtered].sort((a, b) => valueOf(b) - valueOf(a));
 
   return (
     <ChartPanel
@@ -91,8 +96,23 @@ export function SafAirlinesPanel() {
         label: AIRLINE_METRICS[m].label,
       }))}
       onMetricChange={(v) => setMetricKey(v as AirlineMetric)}
+      filters={
+        <ChartFilterBar
+          query={f.query}
+          onQueryChange={f.setQuery}
+          placeholder="Search airlines…"
+          selects={[
+            { label: "Country", value: f.a, options: f.optionsA, onChange: f.setA, allLabel: "All countries" },
+          ]}
+          shown={sorted.length}
+          total={AIRLINES.length}
+        />
+      }
       footnote="Estimates from airline sustainability reports, offtake announcements and regulatory disclosures. Click any row for the latest SAF news for that carrier."
     >
+      {sorted.length === 0 ? (
+        <p className="text-sm text-muted-foreground">No airlines match those filters.</p>
+      ) : (
       <ChartHeat
         unitLabel={metric.unit}
         format={(n: number) => fmt(n, metric.decimals)}
@@ -113,6 +133,7 @@ export function SafAirlinesPanel() {
           ]),
         )}
       />
+      )}
     </ChartPanel>
   );
 }
