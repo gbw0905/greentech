@@ -324,21 +324,21 @@ function BarChart({
                 {capOf(q.symbol).mmboe > 0 ? fmt(capOf(q.symbol).mmboe, 0) : "—"}
               </text>
               {/* Change badge */}
-              <g transform={`translate(${w}, ${y + rowH / 2 - 8})`}>
+              <g transform={`translate(${w}, ${y + rowH / 2 - 9})`}>
                 <rect
-                  x={-58}
+                  x={-60}
                   y={0}
-                  width={58}
-                  height={16}
-                  rx={3}
+                  width={60}
+                  height={18}
+                  rx={4}
                   fill={up ? "var(--primary)" : "var(--destructive)"}
                   opacity={active ? 1 : 0.14}
                 />
                 <text
-                  x={-29}
-                  y={12}
+                  x={-30}
+                  y={13}
                   textAnchor="middle"
-                  className="chart-axis font-bold"
+                  className="font-mono text-[0.6875rem] font-bold tabular-nums"
                   fill={
                     active
                       ? "var(--primary-foreground)"
