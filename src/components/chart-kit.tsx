@@ -163,6 +163,94 @@ export function ChartBars({
 }
 
 /** Identical frame (title, blurb, measure select, footnote) for every graph. */
+export function ChartHeat({
+  items,
+  unitLabel,
+  format,
+  news,
+  onSelect,
+}: {
+  items: ChartItem[];
+  unitLabel: string;
+  format: (n: number) => string;
+  news?: Record<string, NewsTarget>;
+  onSelect?: (t: NewsTarget) => void;
+}) {
+  const values = items.map((i) => i.value);
+  const max = Math.max(...values, 1);
+  const min = Math.min(...values, 0);
+  const span = max - min || 1;
+  const intensity = (v: number) => 0.12 + ((v - min) / span) * 0.88;
+
+  return (
+    <div>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-5">
+        {items.map((item) => {
+          const target = news?.[item.key];
+          const a = intensity(item.value);
+          return (
+            <div
+              key={item.key}
+              role={target ? "button" : undefined}
+              tabIndex={target ? 0 : -1}
+              onClick={target ? () => onSelect?.(target) : undefined}
+              onKeyDown={
+                target
+                  ? (e) => {
+                      if (e.key === "Enter" || e.key === " ") onSelect?.(target);
+                    }
+                  : undefined
+              }
+              title={`${item.label}: ${format(item.value)} ${unitLabel}`}
+              aria-label={`${item.label}: ${format(item.value)} ${unitLabel}`}
+              className={`rounded-sm border border-border/60 p-2.5 transition-transform hover:-translate-y-0.5 ${
+                target ? "cursor-pointer" : ""
+              }`}
+              style={{
+                backgroundColor: `color-mix(in srgb, var(--chart-2) ${Math.round(a * 100)}%, var(--surface-2))`,
+              }}
+            >
+              <div className="chart-label truncate text-foreground" title={item.label}>
+                {item.label}
+              </div>
+              {item.sub ? <div className="chart-sub truncate">{item.sub}</div> : null}
+              <div className="chart-value mt-1.5 text-foreground">{format(item.value)}</div>
+              {item.meta ? (
+                <div
+                  className={`chart-sub font-mono tabular-nums ${
+                    item.tone === "up"
+                      ? "text-primary"
+                      : item.tone === "down"
+                        ? "text-destructive"
+                        : ""
+                  }`}
+                >
+                  {item.meta}
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="chart-axis mt-3 flex flex-wrap items-center gap-2">
+        <span>{format(min)}</span>
+        <span
+          className="h-2 w-28 rounded-sm border border-border/60"
+          style={{
+            background:
+              "linear-gradient(to right, color-mix(in srgb, var(--chart-2) 12%, var(--surface-2)), var(--chart-2))",
+          }}
+          aria-hidden
+        />
+        <span>{format(max)}</span>
+        <span className="ml-1">Colour scale: {unitLabel}</span>
+      </div>
+    </div>
+  );
+}
+
+/** Identical frame (title, blurb, measure select, footnote) for every graph. */
 export function ChartPanel({
   icon: Icon,
   title,
