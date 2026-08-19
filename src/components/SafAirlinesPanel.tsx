@@ -51,23 +51,26 @@ type AirlineMetric = "volume" | "share" | "price";
 
 const AIRLINE_METRICS: Record<
   AirlineMetric,
-  { label: string; unit: string; decimals: number; value: (a: Airline) => number }
+  { label: string; unit: string; help: string; decimals: number; value: (a: Airline) => number }
 > = {
   volume: {
     label: "SAF uplift (Ml/yr)",
     unit: "million litres of SAF uplifted / year",
+    help: "Estimated sustainable aviation fuel the carrier actually uplifts into its aircraft each year, in million litres. Bigger tiles mean more SAF burned in absolute terms.",
     decimals: 0,
     value: (a) => a.volume,
   },
   share: {
     label: "SAF share of fuel burn (%)",
     unit: "% of total jet fuel burn from SAF",
+    help: "Share of the airline's total jet fuel burn that is SAF. A small airline can rank high here even with modest volumes, because it measures intensity rather than scale.",
     decimals: 2,
     value: (a) => a.share,
   },
   price: {
     label: "Share price (listing currency)",
     unit: "share price, primary listing currency",
+    help: "Latest traded share price on the carrier's primary listing, in that exchange's currency. State-owned or private carriers have no listing and sit at the end.",
     decimals: 2,
     value: () => 0,
   },
@@ -115,6 +118,8 @@ export function SafAirlinesPanel() {
       ) : (
       <ChartHeat
         unitLabel={metric.unit}
+        measureLabel={metric.label}
+        measureHelp={metric.help}
         format={(n: number) => fmt(n, metric.decimals)}
         items={sorted.map((a) => ({
           key: a.code,

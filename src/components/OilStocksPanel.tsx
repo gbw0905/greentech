@@ -46,6 +46,7 @@ const STOCK_METRICS: Record<
   {
     label: string;
     unit: string;
+    help: string;
     decimals: number;
     value: (q: OilQuote) => number;
   }
@@ -53,18 +54,21 @@ const STOCK_METRICS: Record<
   price: {
     label: "Share price (listing currency)",
     unit: "share price, primary listing currency",
+    help: "The latest traded share price on the company's primary stock exchange, shown in that exchange's currency. Bigger, redder tiles mean a higher price per share — not a bigger company.",
     decimals: 2,
     value: (q) => q.price,
   },
   change: {
     label: "1-day change (%)",
     unit: "absolute 1-day price change, %",
+    help: "How far the share price moved since the previous close, as a percentage. Tile size uses the size of the move; the figure under the name shows its direction (+ up, − down).",
     decimals: 2,
     value: (q) => Math.abs(q.changePct),
   },
   capacity: {
     label: "Annual capacity (MMboe/yr)",
     unit: "annual output capacity, million barrels of oil equivalent / year",
+    help: "Approximate yearly output in million barrels of oil equivalent — upstream production for producers, crude throughput for refiners. Bigger tiles mean more barrels moved per year.",
     decimals: 0,
     value: (q) => capOf(q.symbol).mmboe,
   },
@@ -121,6 +125,8 @@ export function OilStocksPanel() {
       ) : (
         <ChartHeat
           unitLabel={metric.unit}
+          measureLabel={metric.label}
+          measureHelp={metric.help}
           format={(n) => chartFmt(n, metric.decimals)}
           items={sorted.map((q) => ({
             key: q.symbol,
