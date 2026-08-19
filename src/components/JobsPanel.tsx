@@ -6,6 +6,7 @@ import {
   JOB_CATEGORIES,
   type JobCategory,
 } from "@/lib/jobs";
+import { logoForDomain } from "@/lib/entity-logos";
 
 export function JobsPanel({ compact = false }: { compact?: boolean }) {
   const [category, setCategory] = useState<JobCategory | null>(null);
@@ -76,7 +77,9 @@ export function JobsPanel({ compact = false }: { compact?: boolean }) {
           <span className="label-mono text-accent">{query}</span>
         </div>
         <div className="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-3">
-          {JOB_BOARDS.map((b) => (
+          {JOB_BOARDS.map((b) => {
+            const logo = logoForDomain(b.domain, 64);
+            return (
             <a
               key={b.name}
               href={b.url(query)}
@@ -85,12 +88,33 @@ export function JobsPanel({ compact = false }: { compact?: boolean }) {
               className="group rounded-lg border border-border bg-surface-1 p-4 transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)]"
             >
               <div className="flex items-center justify-between gap-2">
-                <span className="font-display text-sm font-bold text-foreground">{b.name}</span>
+                <span className="flex min-w-0 items-center gap-2">
+                  <span className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded border border-border bg-white">
+                    {logo ? (
+                      <img
+                        src={logo}
+                        alt=""
+                        width={28}
+                        height={28}
+                        loading="lazy"
+                        className="size-full object-contain p-0.5"
+                      />
+                    ) : (
+                      <span className="label-mono text-[0.6rem] text-muted-foreground">
+                        {b.name.slice(0, 2).toUpperCase()}
+                      </span>
+                    )}
+                  </span>
+                  <span className="truncate font-display text-sm font-bold text-foreground">
+                    {b.name}
+                  </span>
+                </span>
                 <ExternalLink className="size-3.5 text-muted-foreground transition-colors group-hover:text-primary" />
               </div>
               <p className="mt-1 text-xs text-muted-foreground">{b.note}</p>
             </a>
-          ))}
+            );
+          })}
         </div>
       </div>
 

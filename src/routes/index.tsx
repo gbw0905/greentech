@@ -349,19 +349,31 @@ function Dashboard() {
               {[
                 {
                   h: "Sourcing",
+                  tone: "var(--chart-2)",
                   b: "Items are collected from official government and regulatory portals, intergovernmental agencies, and established energy trade and financial press. Sources outside that set are excluded.",
                 },
                 {
                   h: "AI processing",
+                  tone: "var(--chart-4)",
                   b: "An automated language model classifies each item by jurisdiction, fuel type and category, and drafts the summary shown. Summaries are generated, not editorially reviewed line by line.",
                 },
                 {
                   h: "Limitations & use",
+                  tone: "var(--chart-8)",
                   b: "Automated summaries can contain errors, omissions or outdated figures. Always verify against the original source and the governing legislation before relying on an item for compliance, trading or investment decisions.",
                 },
               ].map((c) => (
-                <div key={c.h} className="glass-panel p-5">
-                  <h3 className="font-display text-base font-bold text-foreground">{c.h}</h3>
+                <div
+                  key={c.h}
+                  className="glass-panel border-t-4 p-5"
+                  style={{
+                    borderTopColor: c.tone,
+                    background: `color-mix(in oklab, ${c.tone} 7%, white)`,
+                  }}
+                >
+                  <h3 className="font-display text-base font-bold" style={{ color: c.tone }}>
+                    {c.h}
+                  </h3>
                   <p className="mt-2 text-sm/relaxed text-muted-foreground">{c.b}</p>
                 </div>
               ))}
