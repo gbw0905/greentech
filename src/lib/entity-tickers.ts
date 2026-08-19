@@ -1,0 +1,100 @@
+/**
+ * Primary-listing tickers for the companies shown in the entity charts.
+ * `null` means the operator is state-owned, private, or a subsidiary with no
+ * separate listing.
+ */
+export const AIRLINE_TICKERS: Record<string, string | null> = {
+  UA: "UAL",
+  "AF/KL": "AF.PA",
+  LH: "LHA.DE",
+  "BA/IAG": "IAG.L",
+  DL: "DAL",
+  SQ: "C6L.SI",
+  AA: "AAL",
+  QF: "QAN.AX",
+  JL: "9201.T",
+  EK: null,
+  AC: "AC.TO",
+  CX: "0293.HK",
+  KE: "003490.KS",
+  "AZ/ITA": null,
+  IB: null,
+  SK: null,
+  LX: null,
+  AS: "ALK",
+  WN: "LUV",
+  NZ: "AIR.NZ",
+};
+
+export const CARRIER_TICKERS: Record<string, string | null> = {
+  Maersk: "MAERSK-B.CO",
+  "CMA CGM": null,
+  MSC: null,
+  "Hapag-Lloyd": "HLAG.DE",
+  "ONE (Ocean Network Express)": null,
+  Evergreen: "2603.TW",
+  HMM: "011200.KS",
+  "Wallenius Wilhelmsen": "WAWI.OL",
+  "NYK Line": "9101.T",
+  "Cosco Shipping": "1919.HK",
+  ZIM: "ZIM",
+  "Stena Line": null,
+  UPS: "UPS",
+  "FedEx Freight": "FDX",
+  "DHL / Deutsche Post": "DHL.DE",
+  "Ryder System": "R",
+  "Schneider National": "SNDR",
+  "J.B. Hunt": "JBHT",
+  DSV: "DSV.CO",
+  Girteka: null,
+  XPO: "XPO",
+  "Kuehne+Nagel": "KNIN.SW",
+  "Waste Management": "WM",
+  "Republic Services": "RSG",
+  "Union Pacific": "UNP",
+  "BNSF Railway": "BRK-B",
+  "Canadian National (CN)": "CNI",
+  "Canadian Pacific Kansas City": "CP",
+  CSX: "CSX",
+  "Norfolk Southern": "NSC",
+  "Deutsche Bahn Cargo": null,
+  "SNCF Fret": null,
+  Aurizon: "AZJ.AX",
+  "Rio Tinto Rail": "RIO",
+  "Indian Railways (diesel fleet)": null,
+  Amtrak: null,
+};
+
+export const STATION_TICKERS: Record<string, string | null> = {
+  "Petrobras BR": "VBBR3.SA",
+  Ipiranga: "UGPA3.SA",
+  "Raízen / Shell Brazil": "RAIZ4.SA",
+  "Indian Oil": "IOC.NS",
+  Sinopec: "0386.HK",
+  Pertamina: null,
+  "Casey's": "CASY",
+  Sheetz: null,
+  "Kwik Trip": null,
+  Preem: null,
+  "Neste retail": "NESTE.HE",
+  TotalEnergies: "TTE",
+  "Circle K Europe": "ATD.TO",
+  OMV: "OMV.VI",
+  "Shell US": "SHEL",
+  Repsol: "REP.MC",
+  "Certas / Shell UK": "SHEL",
+  "Clean Energy Fuels": "CLNE",
+  "Bharat Petroleum": "BPCL.NS",
+  YPF: "YPF",
+};
+
+/** Every ticker the entity-quote feed needs to fetch. */
+export const ALL_ENTITY_TICKERS: string[] = Array.from(
+  new Set(
+    [
+      ...Object.values(AIRLINE_TICKERS),
+      ...Object.values(CARRIER_TICKERS),
+      ...Object.values(STATION_TICKERS),
+    ].filter((t): t is string => Boolean(t)),
+  ),
+);
