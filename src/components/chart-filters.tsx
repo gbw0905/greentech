@@ -30,8 +30,8 @@ export function ChartFilterBar({
   const dirty = query.trim().length > 0 || selects.some((s) => s.value !== "");
 
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-sm border border-border bg-surface-2/60 p-2">
-      <div className="relative min-w-0 flex-1 sm:max-w-xs">
+    <div className="flex flex-col gap-2 rounded-sm border border-border bg-surface-2/60 p-2 sm:flex-row sm:flex-wrap sm:items-center">
+      <div className="relative w-full min-w-0 sm:max-w-xs sm:flex-1">
         <Search className="pointer-events-none absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
         <input
           type="search"
@@ -43,11 +43,12 @@ export function ChartFilterBar({
         />
       </div>
 
+      <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:w-auto sm:flex-1">
       {selects.map((s) => (
-        <label key={s.label} className="flex min-w-0 items-center gap-1.5">
+        <label key={s.label} className="flex min-w-0 flex-1 items-center gap-1.5 sm:flex-none">
           <span className="label-mono shrink-0 text-muted-foreground">{s.label}</span>
           <select
-            className="chart-select min-w-0"
+            className="chart-select w-full min-w-0 sm:w-auto"
             value={s.value}
             aria-label={`Filter by ${s.label.toLowerCase()}`}
             onChange={(e) => s.onChange(e.target.value)}
@@ -62,7 +63,7 @@ export function ChartFilterBar({
         </label>
       ))}
 
-      <span className="label-mono ml-auto text-muted-foreground">
+      <span className="label-mono ml-auto shrink-0 text-muted-foreground">
         {shown} / {total}
       </span>
 
@@ -73,12 +74,13 @@ export function ChartFilterBar({
             onQueryChange("");
             selects.forEach((s) => s.onChange(""));
           }}
-          className="label-mono inline-flex items-center gap-1 rounded-sm border border-border px-2 py-1 text-muted-foreground transition-colors hover:bg-surface-2"
+          className="label-mono inline-flex shrink-0 items-center gap-1 rounded-sm border border-border px-2 py-1 text-muted-foreground transition-colors hover:bg-surface-2"
         >
           <X className="size-3" />
           Clear
         </button>
       ) : null}
+      </div>
     </div>
   );
 }
