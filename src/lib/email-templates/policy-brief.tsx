@@ -105,7 +105,7 @@ const PolicyBrief = ({
 export const template = {
   component: PolicyBrief,
   subject: (data: Record<string, any>) =>
-    `${data['title'] || 'Bioenergy policy brief'} — Global Bioenergy Watch`,
+    `Global Bioenergy Market and Policy Updates — ${data['dateLabel'] || new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}`,
   displayName: 'AI policy brief',
   previewData: {
     title: 'Brazil raises the mandatory ethanol blend to E30',

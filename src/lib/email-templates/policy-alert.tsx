@@ -76,10 +76,8 @@ const PolicyAlert = ({ dateLabel = '', items = [] }: Props) => (
 
 export const template = {
   component: PolicyAlert,
-  subject: (data: Record<string, any>) => {
-    const n = Array.isArray(data['items']) ? data['items'].length : 0
-    return `${n} new bioenergy policy update${n === 1 ? '' : 's'} — Global Bioenergy Watch`
-  },
+  subject: (data: Record<string, any>) =>
+    `Global Bioenergy Market and Policy Updates — ${data['dateLabel'] || new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}`,
   displayName: 'Policy update alert',
   previewData: {
     dateLabel: 'Saturday, 8 August 2026',
