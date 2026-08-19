@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Plane } from "lucide-react";
 import { openEntityNews } from "@/lib/open-news";
 import { ChartBars, ChartPanel, chartFmt as fmt } from "@/components/chart-kit";
+import { AIRLINE_TICKERS } from "@/lib/entity-tickers";
+import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 
 type Airline = {
   code: string;
@@ -43,7 +45,7 @@ const AIRLINES: Airline[] = [
   { code: "NZ", name: "Air New Zealand", country: "New Zealand", flag: "🇳🇿", volume: 4, share: 0.4, note: "Neste imports and domestic SAF development." },
 ];
 
-type AirlineMetric = "volume" | "share";
+type AirlineMetric = "volume" | "share" | "price";
 
 const AIRLINE_METRICS: Record<
   AirlineMetric,
@@ -61,12 +63,21 @@ const AIRLINE_METRICS: Record<
     decimals: 2,
     value: (a) => a.share,
   },
+  price: {
+    label: "Share price (listing currency)",
+    unit: "share price, primary listing currency",
+    decimals: 2,
+    value: () => 0,
+  },
 };
 
 export function SafAirlinesPanel() {
   const [metricKey, setMetricKey] = useState<AirlineMetric>("volume");
+  const { get } = useEntityQuotes();
   const metric = AIRLINE_METRICS[metricKey];
-  const sorted = [...AIRLINES].sort((a, b) => metric.value(b) - metric.value(a));
+  const valueOf = (a: Airline) =>
+    metricKey === "price" ? (get(AIRLINE_TICKERS[a.code])?.price ?? 0) : metric.value(a);
+  const sorted = [...AIRLINES].sort((a, b) => valueOf(b) - valueOf(a));
 
   return (
     <ChartPanel
@@ -84,14 +95,15 @@ export function SafAirlinesPanel() {
       <ChartBars
         unitLabel={metric.unit}
         yLabel="Airline"
-        metaHeader="SAF share"
+        metaHeader="Share price"
         format={(n) => fmt(n, metric.decimals)}
         items={sorted.map((a) => ({
           key: a.code,
           label: a.name,
           sub: a.note,
-          value: metric.value(a),
-          meta: `${a.share.toFixed(2)}% burn`,
+          value: valueOf(a),
+          meta: priceMeta(get(AIRLINE_TICKERS[a.code])),
+          tone: priceTone(get(AIRLINE_TICKERS[a.code])),
         }))}
         onSelect={openEntityNews}
         news={Object.fromEntries(
