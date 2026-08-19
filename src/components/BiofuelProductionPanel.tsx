@@ -94,14 +94,17 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
       <ChartBars
         unitLabel={metric.unit}
         yLabel="Retail fuel network"
-        metaHeader="Sites"
+        metaHeader={stationMetric === "sites" ? "Volume" : "Sites"}
         format={(n) => fmt(n, metric.decimals)}
         items={stations.map((s) => ({
           key: s.name,
           label: s.name,
           sub: s.note,
           value: metric.value(s),
-          meta: `${fmt(s.sites)} sites`,
+          meta:
+            stationMetric === "sites"
+              ? `${fmt(s.volumeMnL)} Ml/yr`
+              : `${fmt(s.sites)} sites`,
         }))}
         onSelect={openEntityNews}
         news={Object.fromEntries(
