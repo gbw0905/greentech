@@ -6,6 +6,7 @@ import { entityLogoByName } from "@/lib/entity-logos";
 import { openEntityNews } from "@/lib/open-news";
 import { CARRIER_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
+import { ExportCsvButton } from "@/components/ExportCsvButton";
 
 type Carrier = {
   name: string;
@@ -97,6 +98,7 @@ function CarrierChart({
   yLabel,
   newsSuffix,
   footnote,
+  exportName,
 }: {
   title: string;
   blurb: string;
@@ -105,6 +107,7 @@ function CarrierChart({
   yLabel: string;
   newsSuffix: string;
   footnote: string;
+  exportName: string;
 }) {
   const [metricKey, setMetricKey] = useState<Metric>("volume");
   const { get } = useEntityQuotes();
@@ -128,6 +131,39 @@ function CarrierChart({
         label: METRICS[m].label,
       }))}
       onMetricChange={(v) => setMetricKey(v as Metric)}
+      actions={
+        <ExportCsvButton
+          disabled={rows.length === 0}
+          build={() => ({
+            title,
+            filename: exportName,
+            note: `Measure shown: ${metric.label}`,
+            header: [
+              yLabel,
+              "Country",
+              "Biofuel volume used (Ml/yr)",
+              "Biofuel share of fuel burn (%)",
+              "Ticker",
+              "Share price",
+              "1-day change %",
+              "Note",
+            ],
+            rows: rows.map((c) => {
+              const q = get(CARRIER_TICKERS[c.name]);
+              return [
+                c.name,
+                c.country,
+                c.volumeMnL,
+                c.share,
+                CARRIER_TICKERS[c.name] ?? "",
+                q ? q.price.toFixed(2) : "",
+                q ? q.changePct.toFixed(2) : "",
+                c.note,
+              ];
+            }),
+          })}
+        />
+      }
       filters={
         <ChartFilterBar
           query={f.query}
@@ -178,6 +214,7 @@ export function CarriersPanel() {
         blurb="Container lines, ro-ro and ferry operators bunkering bio-blends, biomethane and green methanol."
         data={SHIPPING}
         yLabel="Shipping carrier"
+        exportName="shipping-carriers-biofuel"
         newsSuffix="biofuel OR bio-bunker OR green methanol shipping"
         footnote="Indicative annual bio-bunker volumes from carrier sustainability reports, FuelEU Maritime filings and bunkering disclosures. Click any bar for the latest news."
       />
@@ -187,6 +224,7 @@ export function CarriersPanel() {
         blurb="Road freight and logistics fleets running renewable diesel, HVO100, biodiesel blends and renewable natural gas."
         data={TRUCKING}
         yLabel="Trucking carrier"
+        exportName="trucking-carriers-biofuel"
         newsSuffix="renewable diesel OR HVO OR renewable natural gas fleet"
         footnote="Indicative annual renewable fuel volumes from fleet sustainability reports and low-carbon fuel programme filings. Click any bar for the latest news."
       />
@@ -196,6 +234,7 @@ export function CarriersPanel() {
         blurb="Freight and passenger railroads blending renewable diesel, HVO100 and biodiesel in diesel locomotive fleets."
         data={RAIL}
         yLabel="Rail carrier"
+        exportName="rail-carriers-biofuel"
         newsSuffix="renewable diesel OR biodiesel locomotive rail"
         footnote="Indicative annual biofuel volumes from railroad sustainability disclosures and national rail decarbonisation programmes. Click any bar for the latest news."
       />

@@ -6,6 +6,7 @@ import { ChartFilterBar, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
 import { AIRLINE_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
+import { ExportCsvButton } from "@/components/ExportCsvButton";
 
 type Airline = {
   code: string;
@@ -99,6 +100,41 @@ export function SafAirlinesPanel() {
         label: AIRLINE_METRICS[m].label,
       }))}
       onMetricChange={(v) => setMetricKey(v as AirlineMetric)}
+      actions={
+        <ExportCsvButton
+          disabled={sorted.length === 0}
+          build={() => ({
+            title: "Top airlines using SAF globally",
+            filename: "saf-airlines",
+            note: `Measure shown: ${metric.label}`,
+            header: [
+              "Airline",
+              "Code",
+              "Country",
+              "SAF uplift (Ml/yr)",
+              "SAF share of fuel burn (%)",
+              "Ticker",
+              "Share price",
+              "1-day change %",
+              "Note",
+            ],
+            rows: sorted.map((a) => {
+              const q = get(AIRLINE_TICKERS[a.code]);
+              return [
+                a.name,
+                a.code,
+                a.country,
+                a.volume,
+                a.share,
+                AIRLINE_TICKERS[a.code] ?? "",
+                q ? q.price.toFixed(2) : "",
+                q ? q.changePct.toFixed(2) : "",
+                a.note,
+              ];
+            }),
+          })}
+        />
+      }
       filters={
         <ChartFilterBar
           query={f.query}
