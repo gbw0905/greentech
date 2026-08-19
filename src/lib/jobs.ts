@@ -70,6 +70,7 @@ export const EMPLOYERS: Employer[] = [
 export interface JobBoard {
   name: string;
   note: string;
+  domain: string;
   url: (q: string) => string;
 }
 
@@ -77,31 +78,37 @@ export const JOB_BOARDS: JobBoard[] = [
   {
     name: "LinkedIn Jobs",
     note: "Largest pool of bioenergy roles worldwide",
+    domain: "linkedin.com",
     url: (q) => `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(q)}`,
   },
   {
     name: "Indeed",
     note: "Plant, operations and technician openings",
+    domain: "indeed.com",
     url: (q) => `https://www.indeed.com/jobs?q=${encodeURIComponent(q)}`,
   },
   {
     name: "Google Jobs",
     note: "Aggregated listings across employer sites",
+    domain: "google.com",
     url: (q) => `https://www.google.com/search?q=${encodeURIComponent(`${q} jobs`)}&ibp=htl;jobs`,
   },
   {
     name: "Climatebase",
     note: "Climate and clean-energy focused board",
+    domain: "climatebase.org",
     url: (q) => `https://climatebase.org/jobs?query=${encodeURIComponent(q)}`,
   },
   {
     name: "EURES (EU)",
     note: "European public employment network",
+    domain: "europa.eu",
     url: (q) => `https://europa.eu/eures/portal/jv-se/search?keywords=${encodeURIComponent(q)}&lang=en`,
   },
   {
     name: "UN / IRENA careers",
     note: "Policy and multilateral bioenergy roles",
+    domain: "irena.org",
     url: (q) => `https://www.google.com/search?q=${encodeURIComponent(`${q} site:irena.org OR site:careers.un.org`)}`,
   },
 ];

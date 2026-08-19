@@ -126,3 +126,8 @@ export function entityLogoByName(name: string, size = 96): string | undefined {
 export function entityLogo(ticker: string, size = 96): string | undefined {
   return build(ENTITY_DOMAINS[ticker], size);
 }
+
+/** Logo.dev image URL for an explicit brand domain. */
+export function logoForDomain(domain: string, size = 64): string | undefined {
+  return build(domain, size);
+}
