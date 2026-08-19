@@ -191,26 +191,26 @@ function Dashboard() {
 
         <main className="space-y-8">
           <section className="grid items-start gap-5 lg:grid-cols-[1.1fr_minmax(0,1fr)]">
-            <div className="ink-bar px-6 py-6 sm:px-8 sm:py-7">
-              <div className="kicker inline-flex items-center gap-2 text-ink-muted">
+            <div className="rounded-lg border border-border bg-white px-6 py-6 shadow-sm sm:px-8 sm:py-7">
+              <div className="kicker inline-flex items-center gap-2 text-muted-foreground">
                 <span className="size-1.5 rounded-full bg-accent" />
                 Live policy &amp; market intelligence
               </div>
-              <h1 className="mt-2 font-display text-[1.65rem] leading-[1.05] font-extrabold tracking-[-0.03em] text-ink-foreground sm:text-[2.1rem] lg:text-[2.35rem]">
+              <h1 className="mt-2 font-display text-[1.65rem] leading-[1.05] font-extrabold tracking-[-0.03em] text-foreground sm:text-[2.1rem] lg:text-[2.35rem]">
                 AI powered global bioenergy outlook
               </h1>
-              <p className="mt-2 max-w-[72ch] text-sm/relaxed text-ink-muted">
+              <p className="mt-2 max-w-[72ch] text-sm/relaxed text-muted-foreground">
                 Global Bioenergy Watch scans official government sources, regulators, intergovernmental agencies and credible energy media worldwide, then uses AI to classify and summarise every biofuel policy and market update by jurisdiction, fuel type and relevance. Track mandates, blending targets, tax credits and SAF incentives across ethanol, biodiesel, renewable diesel and sustainable aviation fuel in one live dashboard. Click any country on the jurisdiction map to see its full policy profile, latest news and market context. The desk refreshes continuously so analysts, traders, researchers and investors can monitor the global bioenergy outlook without chasing headlines across dozens of sites.
               </p>
-              <dl className="mt-5 grid grid-cols-3 gap-4 border-t border-white/10 pt-4">
+              <dl className="mt-5 grid grid-cols-3 gap-4 border-t border-border pt-4">
                 {[
                   ["Updates", String(stats.total)],
                   ["Jurisdictions", String(stats.countries)],
                   ["Policy items", String(stats.policy)],
                 ].map(([label, value]) => (
                   <div key={label}>
-                    <dt className="kicker text-ink-muted">{label}</dt>
-                    <dd className="mt-1 font-display text-xl font-extrabold tabular-nums text-ink-foreground sm:text-2xl">
+                    <dt className="kicker text-muted-foreground">{label}</dt>
+                    <dd className="mt-1 font-display text-xl font-extrabold tabular-nums text-foreground sm:text-2xl">
                       {value}
                     </dd>
                   </div>
@@ -218,7 +218,7 @@ function Dashboard() {
               </dl>
             </div>
 
-            <div className="glass-panel flex flex-col p-4">
+            <div className="flex flex-col rounded-lg border border-border bg-white p-4 shadow-sm">
               <div className="mb-2.5 flex items-baseline justify-between gap-3 border-b border-border pb-2">
                 <span className="kicker">Top 5 latest updates</span>
                 <span className="label-mono text-muted-foreground/70">Live</span>
