@@ -443,6 +443,7 @@ export function ChartPanel({
   status,
   footnote,
   filters,
+  actions,
   children,
 }: {
   icon: LucideIcon;
@@ -454,6 +455,8 @@ export function ChartPanel({
   onMetricChange?: (v: string) => void;
   status?: string;
   footnote?: string;
+  /** Optional buttons (e.g. export) rendered in the header. */
+  actions?: React.ReactNode;
   /** Optional filter/search bar rendered between the header and the chart. */
   filters?: React.ReactNode;
   children: React.ReactNode;
@@ -468,9 +471,10 @@ export function ChartPanel({
           </h3>
           <p className="mt-1.5 text-sm text-muted-foreground">{blurb}</p>
         </div>
-        {metricOptions ? (
+        {metricOptions || actions ? (
           <div className="flex w-full min-w-0 flex-col gap-1.5 sm:w-auto sm:items-end">
-            <label className="flex min-w-0 items-center gap-2">
+            {metricOptions ? (
+            <label className="flex min-w-0 w-full items-center gap-2">
               <span className="label-mono shrink-0 text-muted-foreground">{metricLabel}</span>
               <select
                 className="chart-select min-w-0 max-w-full flex-1 sm:flex-none border-ink bg-ink text-ink-foreground"
@@ -485,6 +489,8 @@ export function ChartPanel({
                 ))}
               </select>
             </label>
+            ) : null}
+            {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
             {status ? <span className="label-mono text-muted-foreground">{status}</span> : null}
           </div>
         ) : null}
