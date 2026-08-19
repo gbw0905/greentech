@@ -3,6 +3,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Building2 } from "lucide-react";
 import { getOilStocksFn, type OilQuote } from "@/lib/oil.functions";
 import { openEntityNews } from "@/lib/open-news";
+import { entityLogo } from "@/lib/entity-logos";
 import { ChartHeat, ChartPanel, chartFmt } from "@/components/chart-kit";
 
 const fmt = (n: number, d = 2) =>
@@ -109,6 +110,7 @@ export function OilStocksPanel() {
             label: q.label,
             sub: `${q.symbol.replace(/\.[A-Z]+$/, "")} · ${chartFmt(q.price, 2)}`,
             value: metric.value(q),
+            logo: entityLogo(q.symbol),
             meta: `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%`,
             tone: q.changePct >= 0 ? ("up" as const) : ("down" as const),
           }))}
