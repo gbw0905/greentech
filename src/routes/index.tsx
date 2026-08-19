@@ -199,8 +199,8 @@ function Dashboard() {
               <h1 className="mt-2 font-display text-[1.65rem] leading-[1.05] font-extrabold tracking-[-0.03em] text-ink-foreground sm:text-[2.1rem] lg:text-[2.35rem]">
                 AI powered global bioenergy outlook
               </h1>
-              <p className="mt-2 max-w-[60ch] text-sm/relaxed text-ink-muted">
-                Mandates, blending targets and incentives across every major jurisdiction — scanned continuously, classified by fuel and country.
+              <p className="mt-2 max-w-[72ch] text-sm/relaxed text-ink-muted">
+                Global Bioenergy Watch scans official government sources, regulators, intergovernmental agencies and credible energy media worldwide, then uses AI to classify and summarise every biofuel policy and market update by jurisdiction, fuel type and relevance. Track mandates, blending targets, tax credits and SAF incentives across ethanol, biodiesel, renewable diesel and sustainable aviation fuel in one live dashboard. Click any country on the jurisdiction map to see its full policy profile, latest news and market context. The desk refreshes continuously so analysts, traders, researchers and investors can monitor the global bioenergy outlook without chasing headlines across dozens of sites.
               </p>
               <dl className="mt-5 grid grid-cols-3 gap-4 border-t border-white/10 pt-4">
                 {[
