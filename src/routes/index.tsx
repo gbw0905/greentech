@@ -218,17 +218,17 @@ function Dashboard() {
               </dl>
             </div>
 
-            <div className="glass-panel flex flex-col p-4 sm:p-5">
-              <div className="mb-3 flex items-baseline justify-between gap-3 border-b border-border pb-2">
+            <div className="glass-panel flex flex-col p-4">
+              <div className="mb-2.5 flex items-baseline justify-between gap-3 border-b border-border pb-2">
                 <span className="kicker">Top 5 latest updates</span>
                 <span className="label-mono text-muted-foreground/70">Live</span>
               </div>
               {topFive.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {topFive.map((u, i) => (
                     <div key={u.id} className="flex items-start gap-2">
                       <span
-                        className="label-mono mt-3 shrink-0 text-xs font-bold tabular-nums text-muted-foreground/70"
+                        className="label-mono mt-2.5 shrink-0 text-xs font-bold tabular-nums text-muted-foreground/70"
                         aria-hidden="true"
                       >
                         {String(i + 1).padStart(2, "0")}
