@@ -5,6 +5,7 @@ import { getOilStocksFn, type OilQuote } from "@/lib/oil.functions";
 import { openEntityNews } from "@/lib/open-news";
 import { entityLogo } from "@/lib/entity-logos";
 import { ChartHeat, ChartPanel, chartFmt } from "@/components/chart-kit";
+import { ChartFilterBar, useChartFilter } from "@/components/chart-filters";
 
 const fmt = (n: number, d = 2) =>
   n.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -83,7 +84,11 @@ export function OilStocksPanel() {
   const metric = STOCK_METRICS[metricKey];
   const quotes: OilQuote[] = data?.quotes ?? [];
   const stale = data?.stale ?? false;
-  const sorted = [...quotes].sort((a, b) => metric.value(b) - metric.value(a));
+  const f = useChartFilter(quotes, {
+    text: (q) => `${q.label} ${q.symbol}`,
+    facetA: (q) => capOf(q.symbol).kind,
+  });
+  const sorted = [...f.filtered].sort((a, b) => metric.value(b) - metric.value(a));
 
   return (
     <ChartPanel
@@ -96,6 +101,18 @@ export function OilStocksPanel() {
         label: STOCK_METRICS[m].label,
       }))}
       onMetricChange={(v) => setMetricKey(v as StockMetric)}
+      filters={
+        <ChartFilterBar
+          query={f.query}
+          onQueryChange={f.setQuery}
+          placeholder="Search companies or tickers…"
+          selects={[
+            { label: "Type", value: f.a, options: f.optionsA, onChange: f.setA, allLabel: "All types" },
+          ]}
+          shown={sorted.length}
+          total={quotes.length}
+        />
+      }
       status={isLoading ? "Loading" : stale ? "Last close" : "Live"}
       footnote="Capacity is approximate annual output in million barrels of oil equivalent per year (upstream production, or crude throughput for refiners). Prices refresh every five minutes and are quoted in each company's primary listing currency. Click any row for that company's latest news."
     >

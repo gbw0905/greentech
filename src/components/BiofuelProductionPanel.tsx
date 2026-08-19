@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Fuel } from "lucide-react";
 import { ChartHeat, ChartPanel, chartFmt as fmt } from "@/components/chart-kit";
+import { ChartFilterBar, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
 import type { FuelType } from "@/lib/policy-taxonomy";
 import { openEntityNews } from "@/lib/open-news";
@@ -86,7 +87,13 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
     stationMetric === "price" ? (get(STATION_TICKERS[s.name])?.price ?? 0) : metric.value(s);
 
   const matched = STATIONS.filter((s) => fuels.length === 0 || s.fuels.some((f) => fuels.includes(f)));
-  const stations = (matched.length > 0 ? matched : STATIONS)
+  const base = matched.length > 0 ? matched : STATIONS;
+  const f = useChartFilter(base, {
+    text: (s) => `${s.name} ${s.country} ${s.note} ${s.fuels.join(" ")}`,
+    facetA: (s) => s.country,
+    facetB: (s) => s.fuels as string[],
+  });
+  const stations = f.filtered
     .slice()
     .sort((a, b) => valueOf(b) - valueOf(a));
 
@@ -101,8 +108,24 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
         label: STATION_METRICS[m].label,
       }))}
       onMetricChange={(v) => setStationMetric(v as StationMetric)}
+      filters={
+        <ChartFilterBar
+          query={f.query}
+          onQueryChange={f.setQuery}
+          placeholder="Search networks…"
+          selects={[
+            { label: "Country", value: f.a, options: f.optionsA, onChange: f.setA, allLabel: "All countries" },
+            { label: "Fuel", value: f.b, options: f.optionsB, onChange: f.setB, allLabel: "All fuels" },
+          ]}
+          shown={stations.length}
+          total={base.length}
+        />
+      }
       footnote="Approximate site counts from company retail disclosures and national blending programmes. Click any row to open the latest news for that network."
     >
+      {stations.length === 0 ? (
+        <p className="text-sm text-muted-foreground">No networks match those filters.</p>
+      ) : (
       <ChartHeat
         unitLabel={metric.unit}
         format={(n: number) => fmt(n, metric.decimals)}
@@ -123,6 +146,7 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
           ])
         )}
       />
+      )}
     </ChartPanel>
   );
 }

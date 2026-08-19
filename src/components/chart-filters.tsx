@@ -1,0 +1,129 @@
+import { useMemo, useState } from "react";
+import { Search, X } from "lucide-react";
+
+export type SelectFilter = {
+  /** Short label, e.g. "Country" */
+  label: string;
+  value: string;
+  options: string[];
+  onChange: (v: string) => void;
+  /** Label used for the "no filter" option. */
+  allLabel?: string;
+};
+
+/** Shared search + dropdown filter bar used above every treemap. */
+export function ChartFilterBar({
+  query,
+  onQueryChange,
+  placeholder = "Search companies…",
+  selects = [],
+  shown,
+  total,
+}: {
+  query: string;
+  onQueryChange: (v: string) => void;
+  placeholder?: string;
+  selects?: SelectFilter[];
+  shown: number;
+  total: number;
+}) {
+  const dirty = query.trim().length > 0 || selects.some((s) => s.value !== "");
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-sm border border-border bg-surface-2/60 p-2">
+      <div className="relative min-w-0 flex-1 sm:max-w-xs">
+        <Search className="pointer-events-none absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => onQueryChange(e.target.value)}
+          placeholder={placeholder}
+          aria-label={placeholder}
+          className="chart-select w-full pl-7"
+        />
+      </div>
+
+      {selects.map((s) => (
+        <label key={s.label} className="flex min-w-0 items-center gap-1.5">
+          <span className="label-mono shrink-0 text-muted-foreground">{s.label}</span>
+          <select
+            className="chart-select min-w-0"
+            value={s.value}
+            aria-label={`Filter by ${s.label.toLowerCase()}`}
+            onChange={(e) => s.onChange(e.target.value)}
+          >
+            <option value="">{s.allLabel ?? `All ${s.label.toLowerCase()}s`}</option>
+            {s.options.map((o) => (
+              <option key={o} value={o}>
+                {o}
+              </option>
+            ))}
+          </select>
+        </label>
+      ))}
+
+      <span className="label-mono ml-auto text-muted-foreground">
+        {shown} / {total}
+      </span>
+
+      {dirty ? (
+        <button
+          type="button"
+          onClick={() => {
+            onQueryChange("");
+            selects.forEach((s) => s.onChange(""));
+          }}
+          className="label-mono inline-flex items-center gap-1 rounded-sm border border-border px-2 py-1 text-muted-foreground transition-colors hover:bg-surface-2"
+        >
+          <X className="size-3" />
+          Clear
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+/** Local search + up-to-two dropdown filters over any row list. */
+export function useChartFilter<T>(
+  rows: T[],
+  opts: {
+    /** Free-text haystack for each row. */
+    text: (row: T) => string;
+    /** Optional first facet (usually country). */
+    facetA?: (row: T) => string | string[] | undefined;
+    /** Optional second facet (usually fuel category). */
+    facetB?: (row: T) => string | string[] | undefined;
+  },
+) {
+  const [query, setQuery] = useState("");
+  const [a, setA] = useState("");
+  const [b, setB] = useState("");
+
+  const list = (v: string | string[] | undefined) =>
+    v === undefined ? [] : Array.isArray(v) ? v : [v];
+
+  const optionsA = useMemo(
+    () =>
+      opts.facetA
+        ? [...new Set(rows.flatMap((r) => list(opts.facetA!(r))))].filter(Boolean).sort()
+        : [],
+    [rows, opts.facetA],
+  );
+  const optionsB = useMemo(
+    () =>
+      opts.facetB
+        ? [...new Set(rows.flatMap((r) => list(opts.facetB!(r))))].filter(Boolean).sort()
+        : [],
+    [rows, opts.facetB],
+  );
+
+  const q = query.trim().toLowerCase();
+  const filtered = rows.filter((r) => {
+    if (q && !opts.text(r).toLowerCase().includes(q)) return false;
+    if (a && opts.facetA && !list(opts.facetA(r)).includes(a)) return false;
+    if (b && opts.facetB && !list(opts.facetB(r)).includes(b)) return false;
+    return true;
+  });
+
+  return { query, setQuery, a, setA, b, setB, optionsA, optionsB, filtered };
+}

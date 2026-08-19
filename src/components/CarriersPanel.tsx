@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Ship, Truck, TrainFront } from "lucide-react";
 import { ChartHeat, ChartPanel, chartFmt as fmt } from "@/components/chart-kit";
+import { ChartFilterBar, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
 import { openEntityNews } from "@/lib/open-news";
 import { CARRIER_TICKERS } from "@/lib/entity-tickers";
@@ -107,7 +108,11 @@ function CarrierChart({
   const metric = METRICS[metricKey];
   const valueOf = (c: Carrier) =>
     metricKey === "price" ? (get(CARRIER_TICKERS[c.name])?.price ?? 0) : metric.value(c);
-  const rows = data.slice().sort((a, b) => valueOf(b) - valueOf(a));
+  const f = useChartFilter(data, {
+    text: (c) => `${c.name} ${c.country} ${c.note}`,
+    facetA: (c) => c.country,
+  });
+  const rows = f.filtered.slice().sort((a, b) => valueOf(b) - valueOf(a));
 
   return (
     <ChartPanel
@@ -120,8 +125,23 @@ function CarrierChart({
         label: METRICS[m].label,
       }))}
       onMetricChange={(v) => setMetricKey(v as Metric)}
+      filters={
+        <ChartFilterBar
+          query={f.query}
+          onQueryChange={f.setQuery}
+          placeholder="Search carriers…"
+          selects={[
+            { label: "Country", value: f.a, options: f.optionsA, onChange: f.setA, allLabel: "All countries" },
+          ]}
+          shown={rows.length}
+          total={data.length}
+        />
+      }
       footnote={footnote}
     >
+      {rows.length === 0 ? (
+        <p className="text-sm text-muted-foreground">No carriers match those filters.</p>
+      ) : (
       <ChartHeat
         unitLabel={metric.unit}
         format={(n: number) => fmt(n, metric.decimals)}
@@ -139,6 +159,7 @@ function CarrierChart({
           rows.map((c) => [c.name, { name: c.name, query: `"${c.name}" ${newsSuffix}` }]),
         )}
       />
+      )}
     </ChartPanel>
   );
 }
