@@ -18,7 +18,7 @@ export type ChartItem = {
   /** Optional tone for the value text: default | up | down. */
   tone?: "default" | "up" | "down";
   /** Optional brand logo URL, rendered in heat-map tiles. */
-  logo?: string;
+  logo?: string | undefined;
 };
 
 /** Small brand mark rendered inside a heat-map tile. */
