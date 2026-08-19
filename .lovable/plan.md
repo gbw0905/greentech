@@ -1,31 +1,21 @@
-# Make the oil companies chart look professional
-
-The current block reads as a decorative infographic, not market data: bars are thick rounded "blobs" with gradients and glow, rows are ~50px tall with big empty gaps, share prices in different currencies (INR, HKD, USD) are shown with a `$` sign and ranked against each other, and there is a wide dead column between the bars and the numbers.
+# Heat map for oil companies + live stock prices on the other charts
 
 ## What changes
 
-**Rebuild it as a financial data table, not a bar picture.**
+**Top global oil companies** becomes a heat map instead of a bar list: a grid of tiles, one per company, where tile colour intensity encodes the selected measure (share price, 1-day change, annual capacity). Each tile shows the company name, ticker, price and 1-day change. Positive/negative days keep the existing green/red treatment for the change measure. Clicking a tile still opens that company's latest news, and the measure dropdown, status ("Live"/"Last close") and footnote stay as they are.
 
-- Tight rows (~34px), hairline separators, no gradient/glow/rounded blobs. A single flat 8px bar in one accent tone sitting behind or beside the label, used as a reference cue only.
-- Columns, left to right: rank, company name, ticker + exchange (small, muted), listing currency price, 1-day change, annual capacity.
-- All numbers right-aligned, mono tabular, same size. Labels in the sans face at one consistent size. No more mismatched font scales.
-- Remove the empty gutter: the bar track spans the space it actually needs, numbers sit flush right.
+**Every other entity chart** (SAF airlines, shipping/trucking/rail carriers, fuel-station networks) gains a live stock price:
+- Each listed company is mapped to its primary-listing ticker.
+- The right-hand secondary line under the bar value shows the live price and 1-day change, coloured green/red.
+- A new "Share price" option is added to each chart's measure dropdown so the bars themselves can be ranked by price.
+- Companies with no public listing (state-owned, private, or subsidiaries such as Emirates, Girteka, Indian Railways, Pertamina, Indian Oil retail arms) show "Private / state-owned" instead of a price and are ranked last when sorting by price.
 
-**Fix the misleading ranking.**
-
-- Default sort becomes annual output capacity (comparable across companies), not share price.
-- Share price shows its real currency symbol per listing (INR, HKD, USD, GBp, etc.), never a blanket `$`.
-- The Measure dropdown keeps price / 1-day change / capacity, but sorting follows the chosen measure and the axis label matches it.
-
-**Header and framing.**
-
-- Shorter, tighter intro line instead of the three-line paragraph.
-- Column headers become a real header row (uppercase, small, muted) instead of floating SVG text like "Y AXIS · RANK & COMPANY".
-
-**Same treatment applied to the neighbouring panels** so the page reads consistently: fuel stations, SAF airlines and carriers get the same row height, bar weight, and number alignment. The broken flag glyphs showing as empty boxes in the fuel-station rows get replaced with plain country codes.
+Prices refresh on the same five-minute cycle as the existing market data, and fall back to the last known good values when the feed is unavailable.
 
 ## Technical notes
 
-- `src/components/OilStocksPanel.tsx`: replace the SVG bar chart with an HTML table/grid layout (SVG text is what causes the inconsistent font rendering); add a currency map keyed by symbol; sort by the active measure.
-- `src/components/BiofuelProductionPanel.tsx`, `SafAirlinesPanel.tsx`, `CarriersPanel.tsx`: align row height, bar style, and numeric alignment to the same shared classes in `src/styles.css`.
-- No data-source or backend changes.
+- Add a generic `getEntityQuotesFn` server function (same Yahoo Finance loader and `market-cache.server` fallback already used by `oil.functions.ts`) that takes no input and returns quotes for the combined airline/carrier/station ticker set, cached server-side.
+- Add ticker maps next to each dataset (`SafAirlinesPanel`, `CarriersPanel`, `BiofuelProductionPanel`), keyed by entity name.
+- Add a `ChartHeat` component to `src/components/chart-kit.tsx` so the heat map shares the panel frame, fonts, formatter and news-click behaviour with the bar charts; `OilStocksPanel` switches from `ChartBars` to `ChartHeat`.
+- Heat colour uses existing chart tokens (light-to-deep primary ramp) rather than hardcoded colours, with a small legend strip under the grid.
+- Responsive: 2 columns on mobile, 4 on tablet, 5 on desktop.
