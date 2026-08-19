@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Ship, Truck, TrainFront } from "lucide-react";
-import { BarChart } from "@/components/BiofuelProductionPanel";
+import { ChartBars, ChartPanel, chartFmt as fmt } from "@/components/chart-kit";
 import { openEntityNews } from "@/lib/open-news";
 
 type Carrier = {
@@ -61,25 +61,20 @@ const RAIL: Carrier[] = [
 
 type Metric = "volume" | "share";
 
-const METRICS: Record<Metric, { label: string; unit: string; short: string; decimals: number; value: (c: Carrier) => number }> = {
+const METRICS: Record<Metric, { label: string; unit: string; decimals: number; value: (c: Carrier) => number }> = {
   volume: {
     label: "Biofuel volume used (Ml/yr)",
     unit: "million litres of biofuel used / year",
-    short: "million litres / year shown",
     decimals: 0,
     value: (c) => c.volumeMnL,
   },
   share: {
     label: "Biofuel share of fuel burn (%)",
     unit: "% of total fuel burn from biofuels",
-    short: "average biofuel share",
     decimals: 1,
     value: (c) => c.share,
   },
 };
-
-const fmt = (n: number, d = 0) =>
-  n.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
 
 function CarrierChart({
   title,
@@ -101,68 +96,38 @@ function CarrierChart({
   const [metricKey, setMetricKey] = useState<Metric>("volume");
   const metric = METRICS[metricKey];
   const rows = data.slice().sort((a, b) => metric.value(b) - metric.value(a));
-  const headline =
-    metricKey === "share"
-      ? rows.reduce((a, c) => a + metric.value(c), 0) / Math.max(rows.length, 1)
-      : rows.reduce((a, c) => a + metric.value(c), 0);
 
   return (
-    <div className="glass-panel rise p-5">
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-        <div className="max-w-2xl">
-          <h3 className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-foreground sm:text-xl">
-            <Icon className="size-5 text-primary" />
-            {title}
-          </h3>
-          <p className="mt-1.5 text-sm text-muted-foreground">{blurb}</p>
-        </div>
-        <div className="flex flex-col items-end gap-2">
-          <label className="flex items-center gap-2">
-            <span className="label-mono text-muted-foreground">Measure</span>
-            <select
-              className="chart-select"
-              value={metricKey}
-              onChange={(e) => setMetricKey(e.target.value as Metric)}
-              aria-label={`Choose the value shown in the ${title} chart`}
-            >
-              {(Object.keys(METRICS) as Metric[]).map((m) => (
-                <option key={m} value={m}>
-                  {METRICS[m].label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div className="text-right">
-            <div className="font-display text-2xl font-bold tracking-tight tabular-nums">
-              {fmt(headline, metric.decimals)}
-            </div>
-            <div className="label-mono text-muted-foreground">{metric.short}</div>
-          </div>
-        </div>
-      </div>
-
-      <BarChart
+    <ChartPanel
+      icon={Icon}
+      title={title}
+      blurb={blurb}
+      metricValue={metricKey}
+      metricOptions={(Object.keys(METRICS) as Metric[]).map((m) => ({
+        value: m,
+        label: METRICS[m].label,
+      }))}
+      onMetricChange={(v) => setMetricKey(v as Metric)}
+      footnote={footnote}
+    >
+      <ChartBars
         unitLabel={metric.unit}
         yLabel={yLabel}
-        decimals={metric.decimals}
+        metaHeader="Share"
+        format={(n) => fmt(n, metric.decimals)}
         items={rows.map((c) => ({
           key: c.name,
-          label: `${c.flag} ${c.name}`,
-          sub:
-            metricKey === "volume"
-              ? `${c.share.toFixed(1)}% of fuel burn · ${c.note}`
-              : `${fmt(c.volumeMnL)} Ml/yr · ${c.note}`,
+          label: c.name,
+          sub: c.note,
           value: metric.value(c),
-          color: "var(--primary)",
+          meta: `${c.share.toFixed(1)}% burn`,
         }))}
         onSelect={openEntityNews}
         news={Object.fromEntries(
           rows.map((c) => [c.name, { name: c.name, query: `"${c.name}" ${newsSuffix}` }]),
         )}
       />
-
-      <p className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">{footnote}</p>
-    </div>
+    </ChartPanel>
   );
 }
 
