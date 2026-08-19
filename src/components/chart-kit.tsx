@@ -19,6 +19,22 @@ export type ChartItem = {
   tone?: "default" | "up" | "down";
 };
 
+/** Small brand mark rendered inside a heat-map tile. */
+function TileLogo({ src, alt, size }: { src: string; alt: string; size: number }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return null;
+  return (
+    <img
+      src={src}
+      alt={`${alt} logo`}
+      loading="lazy"
+      onError={() => setFailed(true)}
+      className="shrink-0 rounded-sm bg-white/90 object-contain p-0.5 shadow-sm"
+      style={{ width: size, height: size }}
+    />
+  );
+}
+
 /**
  * The single bar chart used by every panel: identical row height, bar colour,
  * fonts, gridlines and axis labels so no two graphs look different.
