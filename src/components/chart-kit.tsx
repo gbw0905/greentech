@@ -197,11 +197,11 @@ export function ChartPanel({
           <p className="mt-1.5 text-sm text-muted-foreground">{blurb}</p>
         </div>
         {metricOptions ? (
-          <div className="flex flex-col items-end gap-1.5">
-            <label className="flex items-center gap-2">
-              <span className="label-mono text-muted-foreground">{metricLabel}</span>
+          <div className="flex w-full min-w-0 flex-col gap-1.5 sm:w-auto sm:items-end">
+            <label className="flex min-w-0 items-center gap-2">
+              <span className="label-mono shrink-0 text-muted-foreground">{metricLabel}</span>
               <select
-                className="chart-select"
+                className="chart-select min-w-0 max-w-full flex-1 sm:flex-none"
                 value={metricValue}
                 onChange={(e) => onMetricChange?.(e.target.value)}
                 aria-label={`Choose the value shown in the ${title} chart`}
