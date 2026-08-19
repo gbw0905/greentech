@@ -190,7 +190,32 @@ function Dashboard() {
       <div className="mx-auto max-w-[80rem] px-5 py-6 lg:px-8 lg:py-8">
 
         <main className="space-y-10">
-          <HeroAnimation />
+          <section className="ink-bar grid gap-8 overflow-hidden px-5 py-10 sm:px-8 sm:py-12 lg:grid-cols-[1.25fr_minmax(0,1fr)] lg:items-center lg:gap-10 lg:py-14">
+            <div>
+              <div className="kicker inline-flex items-center gap-2 text-ink-muted">
+                <span className="size-1.5 rounded-full bg-accent" />
+                Live policy &amp; market intelligence
+              </div>
+              <h1 className="mt-4 font-display text-[2.1rem] leading-[1.05] font-extrabold tracking-[-0.03em] text-ink-foreground sm:text-[2.8rem] lg:text-[3.2rem]">
+                AI powered global bioenergy outlook
+              </h1>
+              <p className="mt-5 max-w-[58ch] text-sm/relaxed text-ink-muted sm:text-base/relaxed">
+                Mandates, blending targets and incentives across every major jurisdiction —
+                scanned continuously, classified by fuel and country, and summarised for the
+                desk.
+              </p>
+            </div>
+            <div className="flex items-center justify-center lg:justify-end">
+              <img
+                src={siteLogo}
+                alt="Global Bioenergy Watch logo: a globe with a leaf and rising data line"
+                width={1024}
+                height={1024}
+                className="size-32 rounded-md object-contain opacity-90 sm:size-40 lg:size-44"
+              />
+            </div>
+          </section>
+
           <section className="rise grid gap-8 border-b border-border pb-10 lg:grid-cols-[1.15fr_minmax(0,1fr)] lg:gap-12">
             <div className="flex flex-col justify-center">
               <div className="kicker inline-flex items-center gap-2">
