@@ -186,7 +186,8 @@ export function HeroAnimation() {
               <path
                 d="M18 138 L46 122 L70 130 L96 96 L122 108 L146 68 L182 52"
                 fill="none"
-                stroke="url(#hero-line)"
+                stroke="currentColor"
+                strokeOpacity="0.95"
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
