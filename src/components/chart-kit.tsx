@@ -395,6 +395,7 @@ export function ChartPanel({
   onMetricChange,
   status,
   footnote,
+  filters,
   children,
 }: {
   icon: LucideIcon;
@@ -406,6 +407,8 @@ export function ChartPanel({
   onMetricChange?: (v: string) => void;
   status?: string;
   footnote?: string;
+  /** Optional filter/search bar rendered between the header and the chart. */
+  filters?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
@@ -439,6 +442,8 @@ export function ChartPanel({
           </div>
         ) : null}
       </div>
+
+      {filters ? <div className="mb-4">{filters}</div> : null}
 
       <div className="min-h-0 flex-1">{children}</div>
 
