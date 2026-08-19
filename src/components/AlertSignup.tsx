@@ -8,7 +8,7 @@ import {
   FUEL_ACCENT,
   COUNTRY_FLAG,
   type FuelType,
-} from "@/lib(policy-taxonomy";
+} from "@/lib/policy-taxonomy";
 import { subscribeToAlerts } from "@/lib/alerts.functions";
 
 function MultiSelectDropdown({
