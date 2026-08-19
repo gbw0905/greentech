@@ -13,7 +13,6 @@ import { BiofuelProductionPanel } from "@/components/BiofuelProductionPanel";
 import { SafAirlinesPanel } from "@/components/SafAirlinesPanel";
 import { CarriersPanel } from "@/components/CarriersPanel";
 import { AlertSignup } from "@/components/AlertSignup";
-import { HeroAnimation } from "@/components/HeroAnimation";
 import { JobsPanel } from "@/components/JobsPanel";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
 
