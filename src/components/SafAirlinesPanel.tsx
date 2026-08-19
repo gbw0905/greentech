@@ -93,16 +93,15 @@ export function SafAirlinesPanel() {
       onMetricChange={(v) => setMetricKey(v as AirlineMetric)}
       footnote="Estimates from airline sustainability reports, offtake announcements and regulatory disclosures. Click any row for the latest SAF news for that carrier."
     >
-      <ChartBars
+      <ChartHeat
         unitLabel={metric.unit}
-        yLabel="Airline"
-        metaHeader="Share price"
-        format={(n) => fmt(n, metric.decimals)}
+        format={(n: number) => fmt(n, metric.decimals)}
         items={sorted.map((a) => ({
           key: a.code,
           label: a.name,
           sub: a.note,
           value: valueOf(a),
+          logo: entityLogoByName(a.name),
           meta: priceMeta(get(AIRLINE_TICKERS[a.code])),
           tone: priceTone(get(AIRLINE_TICKERS[a.code])),
         }))}
