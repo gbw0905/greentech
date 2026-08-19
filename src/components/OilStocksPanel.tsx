@@ -281,28 +281,32 @@ function BarChart({
                 x={rankW - 10}
                 y={y + rowH / 2 + 1}
                 textAnchor="end"
-                className="chart-axis fill-muted-foreground"
+                className="font-sans text-[0.6875rem] font-semibold tabular-nums fill-muted-foreground"
               >
                 {String(idx + 1).padStart(2, "0")}
               </text>
               {/* Ticker */}
-              <text x={rankW} y={y + rowH / 2 + 1} className="chart-value fill-foreground">
+              <text
+                x={rankW}
+                y={y + rowH / 2 + 1}
+                className="font-sans text-[0.75rem] font-bold tabular-nums tracking-tight fill-foreground"
+              >
                 {q.symbol}
               </text>
               {/* Company */}
               <text
-                x={rankW + 52}
+                x={rankW + 56}
                 y={y + rowH / 2 + 1}
-                className="chart-label fill-muted-foreground"
+                className="font-sans text-[0.75rem] font-medium fill-muted-foreground"
               >
-                {q.label.length > 18 ? `${q.label.slice(0, 18)}…` : q.label}
+                {q.label.length > 20 ? `${q.label.slice(0, 20)}…` : q.label}
               </text>
               {/* Price */}
               <text
                 x={w - 92}
                 y={y + rowH / 2 + 1}
                 textAnchor="end"
-                className="chart-value fill-foreground"
+                className="font-mono text-[0.75rem] font-semibold tabular-nums fill-foreground"
               >
                 ${fmt(q.price)}
               </text>
@@ -311,7 +315,7 @@ function BarChart({
                 x={w - 176}
                 y={y + rowH / 2 + 1}
                 textAnchor="end"
-                className="chart-axis fill-muted-foreground"
+                className="font-mono text-[0.75rem] font-semibold tabular-nums fill-muted-foreground"
               >
                 {capOf(q.symbol).mmboe > 0 ? fmt(capOf(q.symbol).mmboe, 0) : "—"}
               </text>
