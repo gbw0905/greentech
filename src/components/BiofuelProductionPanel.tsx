@@ -112,6 +112,43 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
         label: STATION_METRICS[m].label,
       }))}
       onMetricChange={(v) => setStationMetric(v as StationMetric)}
+      actions={
+        <ExportCsvButton
+          disabled={stations.length === 0}
+          build={() => ({
+            title: "Top global fuel stations selling biofuels",
+            filename: "biofuel-station-networks",
+            note: `Measure shown: ${metric.label}`,
+            header: [
+              "Network",
+              "Country",
+              "Retail sites offering biofuels",
+              "Biofuel volume sold (Ml/yr)",
+              "Volume per site (litres x1000/yr)",
+              "Fuels",
+              "Ticker",
+              "Share price",
+              "1-day change %",
+              "Note",
+            ],
+            rows: stations.map((s) => {
+              const q = get(STATION_TICKERS[s.name]);
+              return [
+                s.name,
+                s.country,
+                s.sites,
+                s.volumeMnL,
+                ((s.volumeMnL * 1000) / Math.max(s.sites, 1)).toFixed(1),
+                s.fuels.join(" / "),
+                STATION_TICKERS[s.name] ?? "",
+                q ? q.price.toFixed(2) : "",
+                q ? q.changePct.toFixed(2) : "",
+                s.note,
+              ];
+            }),
+          })}
+        />
+      }
       filters={
         <ChartFilterBar
           query={f.query}
