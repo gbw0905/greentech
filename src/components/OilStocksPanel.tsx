@@ -97,14 +97,14 @@ function BarChart({
   const niceMax = Math.max(Math.ceil(maxValue / step) * step, step);
 
   // Layout — horizontal bars
-  const rowH = 38;
+  const rowH = 42;
   const gap = 12;
-  const rankW = 28;
-  const labelW = 210; // rank + ticker + company
+  const rankW = 34;
+  const labelW = 274; // rank + ticker + company
   const valueW = 256; // capacity + price + change badge
   const w = 860;
-  const padTop = 30;
-  const padBottom = 52;
+  const padTop = 34;
+  const padBottom = 56;
   const chartW = w - labelW - valueW;
   const h = padTop + sorted.length * (rowH + gap) - gap + padBottom;
 
@@ -170,22 +170,26 @@ function BarChart({
         })}
 
         {/* Column headers */}
-        <text x={0} y={padTop - 14} className="chart-axis fill-muted-foreground tracking-[0.14em]">
+        <text
+          x={0}
+          y={padTop - 16}
+          className="font-sans text-[0.6875rem] font-semibold tracking-[0.12em] fill-muted-foreground"
+        >
           Y AXIS · RANK &amp; COMPANY
         </text>
         <text
           x={w - 176}
-          y={padTop - 14}
+          y={padTop - 16}
           textAnchor="end"
-          className="chart-axis fill-muted-foreground tracking-[0.14em]"
+          className="font-sans text-[0.6875rem] font-semibold tracking-[0.12em] fill-muted-foreground"
         >
           CAPACITY (MMboe/yr)
         </text>
         <text
           x={w}
-          y={padTop - 14}
+          y={padTop - 16}
           textAnchor="end"
-          className="chart-axis fill-muted-foreground tracking-[0.14em]"
+          className="font-sans text-[0.6875rem] font-semibold tracking-[0.12em] fill-muted-foreground"
         >
           PRICE · 1D
         </text>
@@ -194,7 +198,7 @@ function BarChart({
           x={labelW + chartW / 2}
           y={h - 4}
           textAnchor="middle"
-          className="chart-axis fill-muted-foreground tracking-[0.12em]"
+          className="font-sans text-[0.6875rem] font-semibold tracking-[0.1em] fill-muted-foreground"
         >
           {metric.axis}
         </text>
@@ -281,19 +285,23 @@ function BarChart({
                 x={rankW - 10}
                 y={y + rowH / 2 + 1}
                 textAnchor="end"
-                className="chart-axis fill-muted-foreground"
+                className="font-sans text-[0.6875rem] font-semibold tabular-nums fill-muted-foreground"
               >
                 {String(idx + 1).padStart(2, "0")}
               </text>
               {/* Ticker */}
-              <text x={rankW} y={y + rowH / 2 + 1} className="chart-value fill-foreground">
-                {q.symbol}
+              <text
+                x={rankW}
+                y={y + rowH / 2 + 1}
+                className="font-sans text-[0.75rem] font-bold tabular-nums tracking-tight fill-foreground"
+              >
+                {q.symbol.length > 8 ? q.symbol.replace(/\.[^.]+$/, "") : q.symbol}
               </text>
               {/* Company */}
               <text
-                x={rankW + 52}
+                x={rankW + 92}
                 y={y + rowH / 2 + 1}
-                className="chart-label fill-muted-foreground"
+                className="font-sans text-[0.75rem] font-medium fill-muted-foreground"
               >
                 {q.label.length > 18 ? `${q.label.slice(0, 18)}…` : q.label}
               </text>
@@ -302,7 +310,7 @@ function BarChart({
                 x={w - 92}
                 y={y + rowH / 2 + 1}
                 textAnchor="end"
-                className="chart-value fill-foreground"
+                className="font-mono text-[0.75rem] font-semibold tabular-nums fill-foreground"
               >
                 ${fmt(q.price)}
               </text>
@@ -311,26 +319,26 @@ function BarChart({
                 x={w - 176}
                 y={y + rowH / 2 + 1}
                 textAnchor="end"
-                className="chart-axis fill-muted-foreground"
+                className="font-mono text-[0.75rem] font-semibold tabular-nums fill-muted-foreground"
               >
                 {capOf(q.symbol).mmboe > 0 ? fmt(capOf(q.symbol).mmboe, 0) : "—"}
               </text>
               {/* Change badge */}
-              <g transform={`translate(${w}, ${y + rowH / 2 - 8})`}>
+              <g transform={`translate(${w}, ${y + rowH / 2 - 9})`}>
                 <rect
-                  x={-58}
+                  x={-60}
                   y={0}
-                  width={58}
-                  height={16}
-                  rx={3}
+                  width={60}
+                  height={18}
+                  rx={4}
                   fill={up ? "var(--primary)" : "var(--destructive)"}
                   opacity={active ? 1 : 0.14}
                 />
                 <text
-                  x={-29}
-                  y={12}
+                  x={-30}
+                  y={13}
                   textAnchor="middle"
-                  className="chart-axis font-bold"
+                  className="font-mono text-[0.6875rem] font-bold tabular-nums"
                   fill={
                     active
                       ? "var(--primary-foreground)"
