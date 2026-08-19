@@ -190,8 +190,8 @@ function Dashboard() {
       <div className="mx-auto max-w-[80rem] px-5 py-5 lg:px-8 lg:py-6">
 
         <main className="space-y-8">
-          <section className="grid gap-5 lg:grid-cols-[1.1fr_minmax(0,1fr)] lg:items-stretch">
-            <div className="ink-bar flex flex-col justify-center px-6 py-7 sm:px-8 sm:py-9">
+          <section className="grid items-start gap-5 lg:grid-cols-[1.1fr_minmax(0,1fr)]">
+            <div className="ink-bar px-6 py-6 sm:px-8 sm:py-7">
               <div className="kicker inline-flex items-center gap-2 text-ink-muted">
                 <span className="size-1.5 rounded-full bg-accent" />
                 Live policy &amp; market intelligence
@@ -202,7 +202,7 @@ function Dashboard() {
               <p className="mt-2 max-w-[60ch] text-sm/relaxed text-ink-muted">
                 Mandates, blending targets and incentives across every major jurisdiction — scanned continuously, classified by fuel and country.
               </p>
-              <dl className="mt-auto grid grid-cols-3 gap-4 border-t border-white/10 pt-4">
+              <dl className="mt-5 grid grid-cols-3 gap-4 border-t border-white/10 pt-4">
                 {[
                   ["Updates", String(stats.total)],
                   ["Jurisdictions", String(stats.countries)],
