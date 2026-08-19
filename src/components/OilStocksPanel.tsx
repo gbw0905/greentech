@@ -6,7 +6,7 @@ import { openEntityNews } from "@/lib/open-news";
 import { entityLogo } from "@/lib/entity-logos";
 import { ChartHeat, ChartPanel, chartFmt } from "@/components/chart-kit";
 import { ChartFilterBar, useChartFilter } from "@/components/chart-filters";
-import { downloadBrandedCsv, downloadBrandedExcel, type BrandedExport } from "@/lib/branded-export";
+import { downloadBrandedCsv, type BrandedExport } from "@/lib/branded-export";
 
 const fmt = (n: number, d = 2) =>
   n.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
