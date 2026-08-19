@@ -197,12 +197,18 @@ function squarify(values: { key: string; value: number }[], W = 100, H = 100): T
     const short = Math.min(w, h);
     const row: typeof items = [];
     let rowArea = 0;
+    // Worst aspect ratio of the row if it also contained `extra` area.
     const worst = (extra: number) => {
-      const area = rowArea + extra;
-      const side = area / short;
-      const maxA = Math.max(...row.map((r) => r.area), extra);
-      const minA = Math.min(...row.map((r) => r.area), extra);
-      return Math.max((side * side) / minA || Infinity, maxA / (side * side));
+      const areas = extra > 0 ? [...row.map((r) => r.area), extra] : row.map((r) => r.area);
+      const total2 = areas.reduce((s, a) => s + a, 0);
+      if (!total2 || !areas.length) return Infinity;
+      const thickness = total2 / short;
+      let bad = 0;
+      for (const a of areas) {
+        const len = a / thickness;
+        bad = Math.max(bad, Math.max(thickness / len, len / thickness));
+      }
+      return bad;
     };
     while (i < items.length) {
       const next = items[i]!;
