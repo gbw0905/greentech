@@ -6,7 +6,7 @@ import { openEntityNews } from "@/lib/open-news";
 import { entityLogo } from "@/lib/entity-logos";
 import { ChartHeat, ChartPanel, chartFmt } from "@/components/chart-kit";
 import { ChartFilterBar, useChartFilter } from "@/components/chart-filters";
-import { downloadBrandedCsv, downloadBrandedExcel, type BrandedExport } from "@/lib/branded-export";
+import { downloadBrandedCsv, type BrandedExport } from "@/lib/branded-export";
 
 const fmt = (n: number, d = 2) =>
   n.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -139,26 +139,15 @@ export function OilStocksPanel() {
       }))}
       onMetricChange={(v) => setMetricKey(v as StockMetric)}
       actions={
-        <div className="inline-flex items-center gap-1.5">
-          <button
-            type="button"
-            onClick={() => downloadBrandedCsv(oilExport(sorted))}
-            disabled={sorted.length === 0}
-            className="inline-flex items-center gap-1.5 border border-ink bg-ink px-2.5 py-1.5 text-xs font-semibold text-ink-foreground transition-opacity hover:opacity-85 disabled:opacity-40"
-          >
-            <Download className="size-3.5" />
-            Export CSV
-          </button>
-          <button
-            type="button"
-            onClick={() => void downloadBrandedExcel(oilExport(sorted))}
-            disabled={sorted.length === 0}
-            className="inline-flex items-center gap-1.5 border border-ink bg-transparent px-2.5 py-1.5 text-xs font-semibold text-ink transition-colors hover:bg-ink hover:text-ink-foreground disabled:opacity-40"
-          >
-            <Download className="size-3.5" />
-            Excel + logo
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => downloadBrandedCsv(oilExport(sorted))}
+          disabled={sorted.length === 0}
+          className="inline-flex items-center gap-1.5 border border-ink bg-ink px-2.5 py-1.5 text-xs font-semibold text-ink-foreground transition-opacity hover:opacity-85 disabled:opacity-40"
+        >
+          <Download className="size-3.5" />
+          Export CSV
+        </button>
       }
       filters={
         <ChartFilterBar
