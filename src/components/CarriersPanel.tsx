@@ -65,22 +65,25 @@ const RAIL: Carrier[] = [
 
 type Metric = "volume" | "share" | "price";
 
-const METRICS: Record<Metric, { label: string; unit: string; decimals: number; value: (c: Carrier) => number }> = {
+const METRICS: Record<Metric, { label: string; unit: string; help: string; decimals: number; value: (c: Carrier) => number }> = {
   volume: {
     label: "Biofuel volume used (Ml/yr)",
     unit: "million litres of biofuel used / year",
+    help: "Estimated biofuel the operator consumes each year, in million litres. Bigger tiles mean more biofuel burned in absolute terms across the fleet.",
     decimals: 0,
     value: (c) => c.volumeMnL,
   },
   share: {
     label: "Biofuel share of fuel burn (%)",
     unit: "% of total fuel burn from biofuels",
+    help: "Share of the operator's total fuel burn met by biofuels. A smaller fleet can rank high here — it measures intensity of use, not scale.",
     decimals: 1,
     value: (c) => c.share,
   },
   price: {
     label: "Share price (listing currency)",
     unit: "share price, primary listing currency",
+    help: "Latest traded share price on the operator's primary listing, in that exchange's currency. State-owned or private operators have no listing and sit at the end.",
     decimals: 2,
     value: () => 0,
   },
@@ -144,6 +147,8 @@ function CarrierChart({
       ) : (
       <ChartHeat
         unitLabel={metric.unit}
+        measureLabel={metric.label}
+        measureHelp={metric.help}
         format={(n: number) => fmt(n, metric.decimals)}
         items={rows.map((c) => ({
           key: c.name,

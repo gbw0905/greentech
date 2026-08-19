@@ -51,29 +51,33 @@ type StationMetric = "sites" | "volume" | "perSite" | "price";
 
 const STATION_METRICS: Record<
   StationMetric,
-  { label: string; unit: string; decimals: number; value: (s: Station) => number }
+  { label: string; unit: string; help: string; decimals: number; value: (s: Station) => number }
 > = {
   sites: {
     label: "Retail sites offering biofuels",
     unit: "retail sites offering biofuels",
+    help: "Number of forecourts in the network that sell at least one biofuel blend (ethanol, biodiesel, renewable diesel or renewable gas). Bigger tiles mean wider pump coverage.",
     decimals: 0,
     value: (s) => s.sites,
   },
   volume: {
     label: "Biofuel volume sold (Ml/yr)",
     unit: "million litres of biofuel sold / year",
+    help: "Estimated biofuel volume sold across the whole network each year, in million litres. This measures total throughput, not how many stations there are.",
     decimals: 0,
     value: (s) => s.volumeMnL,
   },
   perSite: {
     label: "Volume per site (litres x1000/yr)",
     unit: "thousand litres of biofuel sold per site / year",
+    help: "Average biofuel sold per station per year (thousand litres) — volume divided by sites. It shows how intensively each forecourt sells biofuel, regardless of network size.",
     decimals: 1,
     value: (s) => (s.volumeMnL * 1000) / Math.max(s.sites, 1),
   },
   price: {
     label: "Share price (listing currency)",
     unit: "share price, primary listing currency",
+    help: "Latest traded share price of the parent company on its primary listing, in that exchange's currency. State-owned or private networks have no listing and sit at the end.",
     decimals: 2,
     value: () => 0,
   },
@@ -128,6 +132,8 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
       ) : (
       <ChartHeat
         unitLabel={metric.unit}
+        measureLabel={metric.label}
+        measureHelp={metric.help}
         format={(n: number) => fmt(n, metric.decimals)}
         items={stations.map((s) => ({
           key: s.name,
