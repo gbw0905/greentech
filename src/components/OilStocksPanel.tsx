@@ -295,7 +295,7 @@ function BarChart({
                 y={y + rowH / 2 + 1}
                 className="font-sans text-[0.75rem] font-bold tabular-nums tracking-tight fill-foreground"
               >
-                {q.symbol}
+                {q.symbol.length > 8 ? q.symbol.replace(/\.[^.]+$/, "") : q.symbol}
               </text>
               {/* Company */}
               <text
