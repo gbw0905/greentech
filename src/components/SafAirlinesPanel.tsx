@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Plane } from "lucide-react";
-import { openEntityNews, type NewsTarget } from "@/lib/open-news";
+import { openEntityNews } from "@/lib/open-news";
+import { ChartBars, ChartPanel, chartFmt as fmt } from "@/components/chart-kit";
 
 type Airline = {
   code: string;
@@ -46,166 +47,60 @@ type AirlineMetric = "volume" | "share";
 
 const AIRLINE_METRICS: Record<
   AirlineMetric,
-  { label: string; badge: string; axis: string; value: (a: Airline) => number; format: (n: number) => string }
+  { label: string; unit: string; decimals: number; value: (a: Airline) => number }
 > = {
   volume: {
     label: "SAF uplift (Ml/yr)",
-    badge: "Million litres / year",
-    axis: "SAF uplift, million litres per year (bar length)",
+    unit: "million litres of SAF uplifted / year",
+    decimals: 0,
     value: (a) => a.volume,
-    format: (n) => `${n} ML`,
   },
   share: {
     label: "SAF share of fuel burn (%)",
-    badge: "% of total jet fuel burn",
-    axis: "SAF share of total jet fuel burn, percent (bar length)",
+    unit: "% of total jet fuel burn from SAF",
+    decimals: 2,
     value: (a) => a.share,
-    format: (n) => `${n.toFixed(2)}%`,
   },
 };
 
 export function SafAirlinesPanel() {
-  const [active, setActive] = useState<string | null>(null);
   const [metricKey, setMetricKey] = useState<AirlineMetric>("volume");
   const metric = AIRLINE_METRICS[metricKey];
   const sorted = [...AIRLINES].sort((a, b) => metric.value(b) - metric.value(a));
-  const max = Math.max(...sorted.map((a) => metric.value(a)));
-  const activeRow = sorted.find((a) => a.code === active) ?? null;
 
   return (
-    <div className="glass-panel rise flex h-full flex-col p-5">
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div className="max-w-2xl">
-          <h3 className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-foreground sm:text-xl">
-            <Plane className="size-5 text-accent" />
-            Top airlines using SAF globally
-          </h3>
-          <p className="mt-1.5 text-sm text-muted-foreground">
-            Indicative annual sustainable aviation fuel uplift by carrier. Hover a row for SAF share
-            of total fuel burn and the programme behind it.
-          </p>
-        </div>
-        <div className="flex flex-col items-end gap-2">
-          <label className="flex items-center gap-2">
-            <span className="label-mono text-muted-foreground">Measure</span>
-            <select
-              className="chart-select"
-              value={metricKey}
-              onChange={(e) => setMetricKey(e.target.value as AirlineMetric)}
-              aria-label="Choose the value shown in the chart"
-            >
-              {(Object.keys(AIRLINE_METRICS) as AirlineMetric[]).map((m) => (
-                <option key={m} value={m}>
-                  {AIRLINE_METRICS[m].label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <span className="label-mono text-muted-foreground">{metric.badge}</span>
-        </div>
-      </div>
-
-      <div className="relative flex-1 space-y-1.5">
-        {sorted.map((a, idx) => {
-          const isActive = active === a.code;
-          const dim = active !== null && !isActive;
-          return (
-            <button
-              key={a.code}
-              type="button"
-              onClick={() =>
-                openEntityNews({
-                  name: a.name,
-                  query: `${a.name} sustainable aviation fuel OR SAF`,
-                })
-              }
-              onMouseEnter={() => setActive(a.code)}
-              onMouseLeave={() => setActive(null)}
-              onFocus={() => setActive(a.code)}
-              onBlur={() => setActive(null)}
-              className={`flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-all duration-200 hover:bg-foreground/[0.05] ${
-                dim ? "opacity-40" : ""
-              } ${isActive ? "bg-foreground/[0.05]" : idx % 2 === 0 ? "bg-foreground/[0.015]" : ""}`}
-            >
-              <span className="chart-axis w-6 shrink-0">
-                {String(idx + 1).padStart(2, "0")}
-              </span>
-              <span className="chart-label w-[9.5rem] shrink-0 truncate text-foreground">
-                <span className="mr-1.5">{a.flag}</span>
-                {a.name}
-              </span>
-              <span className="relative h-3.5 min-w-0 flex-1 overflow-hidden rounded-full bg-surface-2 ring-1 ring-inset ring-border/60">
-                <span
-                  className="chart-bar-x absolute inset-y-0 left-0 rounded-full transition-all duration-300"
-                  style={{
-                    width: `${Math.max((metric.value(a) / max) * 100, 1.5)}%`,
-                    background: isActive
-                      ? "linear-gradient(90deg, var(--accent), var(--primary))"
-                      : "linear-gradient(90deg, color-mix(in oklab, var(--accent) 75%, transparent), color-mix(in oklab, var(--primary) 55%, transparent))",
-                    boxShadow: isActive
-                      ? "0 0 12px color-mix(in oklab, var(--accent) 60%, transparent)"
-                      : undefined,
-                    animationDelay: `${idx * 25}ms`,
-                  }}
-                />
-              </span>
-              <span className="chart-value w-16 shrink-0 text-right text-foreground">
-                {metric.format(metric.value(a))}
-              </span>
-              <span className="chart-axis w-12 shrink-0 text-right">
-                {metricKey === "volume" ? `${a.share.toFixed(2)}%` : `${a.volume} ML`}
-              </span>
-            </button>
-          );
-        })}
-
-        {activeRow && (
-          <div className="chart-tip pointer-events-none absolute left-1/2 top-0 z-20 w-max max-w-[300px] -translate-x-1/2 rounded-xl px-4 py-3">
-            <div className="mb-2 flex items-center gap-2 border-b border-border pb-2">
-              <span className="font-display text-base font-bold text-foreground">
-                {activeRow.flag} {activeRow.name}
-              </span>
-            </div>
-            <div className="grid grid-cols-2 gap-x-5 gap-y-1.5 text-sm">
-              <span className="text-muted-foreground">Home market</span>
-              <span className="text-right font-semibold text-foreground">{activeRow.country}</span>
-              <span className="text-muted-foreground">SAF uplift</span>
-              <span className="text-right font-mono font-semibold text-foreground">
-                {activeRow.volume} ML/yr
-              </span>
-              <span className="text-muted-foreground">SAF share</span>
-              <span className="text-right font-mono font-semibold text-accent">
-                {activeRow.share.toFixed(2)}%
-              </span>
-            </div>
-            <p className="mt-2 border-t border-border pt-2 text-xs text-muted-foreground">
-              {activeRow.note}
-            </p>
-          </div>
+    <ChartPanel
+      icon={Plane}
+      title="Top airlines using SAF globally"
+      blurb="Indicative annual sustainable aviation fuel uplift by carrier, with SAF share of total fuel burn."
+      metricValue={metricKey}
+      metricOptions={(Object.keys(AIRLINE_METRICS) as AirlineMetric[]).map((m) => ({
+        value: m,
+        label: AIRLINE_METRICS[m].label,
+      }))}
+      onMetricChange={(v) => setMetricKey(v as AirlineMetric)}
+      footnote="Estimates from airline sustainability reports, offtake announcements and regulatory disclosures. Click any row for the latest SAF news for that carrier."
+    >
+      <ChartBars
+        unitLabel={metric.unit}
+        yLabel="Airline"
+        metaHeader="SAF share"
+        format={(n) => fmt(n, metric.decimals)}
+        items={sorted.map((a) => ({
+          key: a.code,
+          label: a.name,
+          sub: a.note,
+          value: metric.value(a),
+          meta: `${a.share.toFixed(2)}% burn`,
+        }))}
+        onSelect={openEntityNews}
+        news={Object.fromEntries(
+          sorted.map((a) => [
+            a.code,
+            { name: a.name, query: `${a.name} sustainable aviation fuel OR SAF` },
+          ]),
         )}
-      </div>
-
-      <div className="mt-4 space-y-2 border-t border-border pt-3">
-        <div className="label-mono flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground">
-          <span>X axis: {metric.axis}</span>
-          <span>Y axis: airline, ranked by the selected measure</span>
-          <span>
-            Right column: {metricKey === "volume" ? "SAF share of total fuel burn (%)" : "SAF uplift (Ml/yr)"}
-          </span>
-        </div>
-        <p className="text-xs text-muted-foreground">
-          Estimates compiled from airline sustainability reports, published offtake agreements and
-          national SAF mandates. Click any airline to open its latest SAF news. Cross-verify
-          against primary disclosures before use.
-        </p>
-        <div className="rounded-lg border border-border/60 bg-surface-2/50 p-2.5">
-          <p className="text-xs font-semibold text-foreground">Note</p>
-          <p className="text-xs text-muted-foreground">
-            SAF demand from international carriers is driven by ReFuelEU, UK, US and Singapore mandates.
-            Airlines with the largest offtake portfolios typically operate under the strictest blending rules.
-          </p>
-        </div>
-      </div>
-    </div>
+      />
+    </ChartPanel>
   );
 }
