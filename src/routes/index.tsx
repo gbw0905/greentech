@@ -13,6 +13,7 @@ import { BiofuelProductionPanel } from "@/components/BiofuelProductionPanel";
 import { SafAirlinesPanel } from "@/components/SafAirlinesPanel";
 import { CarriersPanel } from "@/components/CarriersPanel";
 import { AlertSignup } from "@/components/AlertSignup";
+import { HeroAnimation } from "@/components/HeroAnimation";
 import { JobsPanel } from "@/components/JobsPanel";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
 
@@ -190,15 +191,16 @@ function Dashboard() {
       <div className="mx-auto max-w-[80rem] px-5 py-6 lg:px-8 lg:py-8">
 
         <main className="space-y-10">
+          <HeroAnimation />
           <section className="rise grid gap-8 border-b border-border pb-10 lg:grid-cols-[1.15fr_minmax(0,1fr)] lg:gap-12">
             <div className="flex flex-col justify-center">
               <div className="kicker inline-flex items-center gap-2">
                 <span className="size-1.5 rounded-full bg-accent" />
                 Global biofuel intelligence
               </div>
-              <h1 className="mt-4 font-display text-[2.6rem] leading-[1.02] font-extrabold tracking-[-0.03em] text-foreground sm:text-[3.4rem] lg:text-[4rem]">
-                AI powered global bioenergy outlook
-              </h1>
+              <h2 className="mt-4 font-display text-[2rem] leading-[1.05] font-extrabold tracking-[-0.03em] text-foreground sm:text-[2.5rem]">
+                The desk behind the outlook
+              </h2>
               <p className="mt-5 max-w-[64ch] text-base/relaxed text-muted-foreground">
                 A real-time intelligence desk for biofuel policy, supply chains and benchmark
                 markets. We track mandates, blending targets, tax incentives and regulatory shifts
