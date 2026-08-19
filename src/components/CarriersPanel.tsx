@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Ship, Truck, TrainFront } from "lucide-react";
 import { ChartBars, ChartPanel, chartFmt as fmt } from "@/components/chart-kit";
 import { openEntityNews } from "@/lib/open-news";
+import { CARRIER_TICKERS } from "@/lib/entity-tickers";
+import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 
 type Carrier = {
   name: string;
@@ -59,7 +61,7 @@ const RAIL: Carrier[] = [
   { name: "Amtrak", country: "United States", flag: "🇺🇸", volumeMnL: 35, share: 6.5, note: "Renewable diesel on long-distance diesel routes" },
 ];
 
-type Metric = "volume" | "share";
+type Metric = "volume" | "share" | "price";
 
 const METRICS: Record<Metric, { label: string; unit: string; decimals: number; value: (c: Carrier) => number }> = {
   volume: {
@@ -73,6 +75,12 @@ const METRICS: Record<Metric, { label: string; unit: string; decimals: number; v
     unit: "% of total fuel burn from biofuels",
     decimals: 1,
     value: (c) => c.share,
+  },
+  price: {
+    label: "Share price (listing currency)",
+    unit: "share price, primary listing currency",
+    decimals: 2,
+    value: () => 0,
   },
 };
 
@@ -94,8 +102,11 @@ function CarrierChart({
   footnote: string;
 }) {
   const [metricKey, setMetricKey] = useState<Metric>("volume");
+  const { get } = useEntityQuotes();
   const metric = METRICS[metricKey];
-  const rows = data.slice().sort((a, b) => metric.value(b) - metric.value(a));
+  const valueOf = (c: Carrier) =>
+    metricKey === "price" ? (get(CARRIER_TICKERS[c.name])?.price ?? 0) : metric.value(c);
+  const rows = data.slice().sort((a, b) => valueOf(b) - valueOf(a));
 
   return (
     <ChartPanel
@@ -113,14 +124,15 @@ function CarrierChart({
       <ChartBars
         unitLabel={metric.unit}
         yLabel={yLabel}
-        metaHeader="Share"
+        metaHeader="Share price"
         format={(n) => fmt(n, metric.decimals)}
         items={rows.map((c) => ({
           key: c.name,
           label: c.name,
           sub: c.note,
-          value: metric.value(c),
-          meta: `${c.share.toFixed(1)}% burn`,
+          value: valueOf(c),
+          meta: priceMeta(get(CARRIER_TICKERS[c.name])),
+          tone: priceTone(get(CARRIER_TICKERS[c.name])),
         }))}
         onSelect={openEntityNews}
         news={Object.fromEntries(
