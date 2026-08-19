@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Plane } from "lucide-react";
 import { openEntityNews } from "@/lib/open-news";
-import { ChartBars, ChartPanel, chartFmt as fmt } from "@/components/chart-kit";
+import { ChartHeat, ChartPanel, chartFmt as fmt } from "@/components/chart-kit";
+import { entityLogoByName } from "@/lib/entity-logos";
 import { AIRLINE_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 
