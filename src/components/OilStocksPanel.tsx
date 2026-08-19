@@ -3,7 +3,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Building2 } from "lucide-react";
 import { getOilStocksFn, type OilQuote } from "@/lib/oil.functions";
 import { openEntityNews } from "@/lib/open-news";
-import { ChartBars, ChartPanel, chartFmt } from "@/components/chart-kit";
+import { ChartHeat, ChartPanel, chartFmt } from "@/components/chart-kit";
 
 const fmt = (n: number, d = 2) =>
   n.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -101,10 +101,8 @@ export function OilStocksPanel() {
       {sorted.length === 0 && !isLoading ? (
         <p className="text-sm text-muted-foreground">Market data is unavailable right now.</p>
       ) : (
-        <ChartBars
+        <ChartHeat
           unitLabel={metric.unit}
-          yLabel="Oil and gas company"
-          metaHeader="1-day"
           format={(n) => chartFmt(n, metric.decimals)}
           items={sorted.map((q) => ({
             key: q.symbol,

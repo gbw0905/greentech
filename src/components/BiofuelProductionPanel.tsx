@@ -3,6 +3,8 @@ import { Fuel } from "lucide-react";
 import { ChartBars, ChartPanel, chartFmt as fmt } from "@/components/chart-kit";
 import type { FuelType } from "@/lib/policy-taxonomy";
 import { openEntityNews } from "@/lib/open-news";
+import { STATION_TICKERS } from "@/lib/entity-tickers";
+import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 
 type Station = {
   name: string;
@@ -43,7 +45,7 @@ const STATIONS: Station[] = [
 ];
 
 
-type StationMetric = "sites" | "volume" | "perSite";
+type StationMetric = "sites" | "volume" | "perSite" | "price";
 
 const STATION_METRICS: Record<
   StationMetric,
@@ -67,16 +69,25 @@ const STATION_METRICS: Record<
     decimals: 1,
     value: (s) => (s.volumeMnL * 1000) / Math.max(s.sites, 1),
   },
+  price: {
+    label: "Share price (listing currency)",
+    unit: "share price, primary listing currency",
+    decimals: 2,
+    value: () => 0,
+  },
 };
 
 export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
   const [stationMetric, setStationMetric] = useState<StationMetric>("sites");
+  const { get } = useEntityQuotes();
   const metric = STATION_METRICS[stationMetric];
+  const valueOf = (s: Station) =>
+    stationMetric === "price" ? (get(STATION_TICKERS[s.name])?.price ?? 0) : metric.value(s);
 
   const matched = STATIONS.filter((s) => fuels.length === 0 || s.fuels.some((f) => fuels.includes(f)));
   const stations = (matched.length > 0 ? matched : STATIONS)
     .slice()
-    .sort((a, b) => metric.value(b) - metric.value(a));
+    .sort((a, b) => valueOf(b) - valueOf(a));
 
   return (
     <ChartPanel
@@ -94,17 +105,15 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
       <ChartBars
         unitLabel={metric.unit}
         yLabel="Retail fuel network"
-        metaHeader={stationMetric === "sites" ? "Volume" : "Sites"}
+        metaHeader="Share price"
         format={(n) => fmt(n, metric.decimals)}
         items={stations.map((s) => ({
           key: s.name,
           label: s.name,
           sub: s.note,
-          value: metric.value(s),
-          meta:
-            stationMetric === "sites"
-              ? `${fmt(s.volumeMnL)} Ml/yr`
-              : `${fmt(s.sites)} sites`,
+          value: valueOf(s),
+          meta: priceMeta(get(STATION_TICKERS[s.name])),
+          tone: priceTone(get(STATION_TICKERS[s.name])),
         }))}
         onSelect={openEntityNews}
         news={Object.fromEntries(
