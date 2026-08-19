@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { Building2 } from "lucide-react";
+import { Building2, Download } from "lucide-react";
 import { getOilStocksFn, type OilQuote } from "@/lib/oil.functions";
 import { openEntityNews } from "@/lib/open-news";
 import { entityLogo } from "@/lib/entity-logos";
@@ -38,6 +38,45 @@ const CAPACITY: Record<string, { mmboe: number; kind: string }> = {
 };
 
 const capOf = (symbol: string) => CAPACITY[symbol] ?? { mmboe: 0, kind: "Not disclosed" };
+
+const csvCell = (v: string | number) => {
+  const s = String(v);
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+};
+
+function downloadOilCsv(rows: OilQuote[]) {
+  const header = [
+    "Company",
+    "Ticker",
+    "Share price",
+    "Currency",
+    "Previous close",
+    "1-day change",
+    "1-day change %",
+    "Annual capacity (MMboe/yr)",
+    "Capacity type",
+  ];
+  const body = rows.map((q) => [
+    q.label,
+    q.symbol,
+    q.price.toFixed(2),
+    q.currency,
+    q.prevClose.toFixed(2),
+    q.change.toFixed(2),
+    q.changePct.toFixed(2),
+    capOf(q.symbol).mmboe || "",
+    capOf(q.symbol).kind,
+  ]);
+  const csv = [header, ...body].map((r) => r.map(csvCell).join(",")).join("\r\n");
+  const url = URL.createObjectURL(new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `global-oil-companies-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
 
 type StockMetric = "price" | "change" | "capacity";
 
@@ -105,6 +144,17 @@ export function OilStocksPanel() {
         label: STOCK_METRICS[m].label,
       }))}
       onMetricChange={(v) => setMetricKey(v as StockMetric)}
+      actions={
+        <button
+          type="button"
+          onClick={() => downloadOilCsv(sorted)}
+          disabled={sorted.length === 0}
+          className="inline-flex items-center gap-1.5 border border-ink bg-ink px-2.5 py-1.5 text-xs font-semibold text-ink-foreground transition-opacity hover:opacity-85 disabled:opacity-40"
+        >
+          <Download className="size-3.5" />
+          Export CSV
+        </button>
+      }
       filters={
         <ChartFilterBar
           query={f.query}
