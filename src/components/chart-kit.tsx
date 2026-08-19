@@ -162,6 +162,25 @@ export function ChartBars({
   );
 }
 
+/** Blue -> cyan -> green -> yellow -> red RGB ramp, t in [0,1]. */
+const RGB_STOPS: Array<[number, number, number]> = [
+  [37, 99, 235],
+  [6, 182, 212],
+  [34, 197, 94],
+  [250, 204, 21],
+  [239, 68, 68],
+];
+
+export function heatColor(t: number) {
+  const x = Math.min(Math.max(t, 0), 1) * (RGB_STOPS.length - 1);
+  const i = Math.min(Math.floor(x), RGB_STOPS.length - 2);
+  const f = x - i;
+  const a = RGB_STOPS[i]!;
+  const b = RGB_STOPS[i + 1]!;
+  const c = a.map((v, k) => Math.round(v + (b[k]! - v) * f));
+  return `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
+}
+
 /** Identical frame (title, blurb, measure select, footnote) for every graph. */
 export function ChartHeat({
   items,
@@ -180,14 +199,18 @@ export function ChartHeat({
   const max = Math.max(...values, 1);
   const min = Math.min(...values, 0);
   const span = max - min || 1;
-  const intensity = (v: number) => 0.12 + ((v - min) / span) * 0.88;
+  const norm = (v: number) => (v - min) / span;
 
   return (
     <div>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-5">
+      <div className="flex flex-wrap gap-2">
         {items.map((item) => {
           const target = news?.[item.key];
-          const a = intensity(item.value);
+          const t = norm(item.value);
+          // Tile area scales with the value: bigger value, bigger tile.
+          const scale = Math.sqrt(Math.max(t, 0.04));
+          const basis = 16 + scale * 22; // % of row width
+          const height = 76 + scale * 76; // px
           return (
             <div
               key={item.key}
@@ -203,31 +226,29 @@ export function ChartHeat({
               }
               title={`${item.label}: ${format(item.value)} ${unitLabel}`}
               aria-label={`${item.label}: ${format(item.value)} ${unitLabel}`}
-              className={`rounded-sm border border-border/60 p-2.5 transition-transform hover:-translate-y-0.5 ${
+              className={`flex min-w-[9rem] flex-col justify-between rounded-sm border border-border/60 p-2.5 text-white transition-transform hover:-translate-y-0.5 ${
                 target ? "cursor-pointer" : ""
               }`}
               style={{
-                backgroundColor: `color-mix(in srgb, var(--chart-2) ${Math.round(a * 100)}%, var(--surface-2))`,
+                backgroundColor: heatColor(t),
+                flex: `1 1 ${basis}%`,
+                minHeight: `${height}px`,
               }}
             >
-              <div className="chart-label truncate text-foreground" title={item.label}>
-                {item.label}
-              </div>
-              {item.sub ? <div className="chart-sub truncate">{item.sub}</div> : null}
-              <div className="chart-value mt-1.5 text-foreground">{format(item.value)}</div>
-              {item.meta ? (
-                <div
-                  className={`chart-sub font-mono tabular-nums ${
-                    item.tone === "up"
-                      ? "text-primary"
-                      : item.tone === "down"
-                        ? "text-destructive"
-                        : ""
-                  }`}
-                >
-                  {item.meta}
+              <div>
+                <div className="chart-label truncate" title={item.label}>
+                  {item.label}
                 </div>
-              ) : null}
+                {item.sub ? (
+                  <div className="chart-sub truncate text-white/80">{item.sub}</div>
+                ) : null}
+              </div>
+              <div>
+                <div className="chart-value">{format(item.value)}</div>
+                {item.meta ? (
+                  <div className="chart-sub font-mono tabular-nums text-white/85">{item.meta}</div>
+                ) : null}
+              </div>
             </div>
           );
         })}
@@ -238,13 +259,12 @@ export function ChartHeat({
         <span
           className="h-2 w-28 rounded-sm border border-border/60"
           style={{
-            background:
-              "linear-gradient(to right, color-mix(in srgb, var(--chart-2) 12%, var(--surface-2)), var(--chart-2))",
+            background: `linear-gradient(to right, ${heatColor(0)}, ${heatColor(0.25)}, ${heatColor(0.5)}, ${heatColor(0.75)}, ${heatColor(1)})`,
           }}
           aria-hidden
         />
         <span>{format(max)}</span>
-        <span className="ml-1">Colour scale: {unitLabel}</span>
+        <span className="ml-1">Colour and tile size: {unitLabel}</span>
       </div>
     </div>
   );
