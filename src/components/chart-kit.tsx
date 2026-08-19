@@ -283,8 +283,8 @@ export function ChartHeat({
           const item = byKey.get(tile.key)!;
           const target = news?.[item.key];
           const t = norm(item.value);
-          const big = tile.w > 14 && tile.h > 14;
-          const mid = tile.w > 9 && tile.h > 9;
+          const big = tile.w > 6.5 && tile.h > 20;
+          const mid = tile.w > 4 && tile.h > 11;
           return (
             <div
               key={tile.key}
