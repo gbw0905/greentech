@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Activity, Eye, Users, TrendingUp } from "lucide-react";
+import { Eye, Users, TrendingUp } from "lucide-react";
 import { fetchTrafficStats } from "@/lib/traffic";
 import { Counter } from "@/components/Counter";
 
@@ -76,7 +76,6 @@ export function TrafficPanel() {
   };
 
   const tiles = [
-    { label: "Reading now", value: stats.live_now, icon: Activity },
     { label: "Views today", value: stats.views_today, icon: Eye },
     { label: "Unique visitors", value: stats.unique_visitors, icon: Users },
     { label: "Total views", value: stats.total_views, icon: TrendingUp },
@@ -92,7 +91,7 @@ export function TrafficPanel() {
         </span>
       </div>
 
-      <div className="grid grid-cols-2 divide-x divide-y divide-border sm:grid-cols-4 sm:divide-y-0">
+      <div className="grid grid-cols-3 divide-x divide-y divide-border sm:grid-cols-3 sm:divide-y-0">
         {tiles.map(({ label, value, icon: Icon }) => (
           <div key={label} className="px-5 py-4">
             <div className="label-mono flex items-center gap-1.5 text-muted-foreground">
