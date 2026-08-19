@@ -99,8 +99,8 @@ function BarChart({
   // Layout — horizontal bars
   const rowH = 42;
   const gap = 12;
-  const rankW = 32;
-  const labelW = 230; // rank + ticker + company
+  const rankW = 34;
+  const labelW = 252; // rank + ticker + company
   const valueW = 256; // capacity + price + change badge
   const w = 860;
   const padTop = 34;
