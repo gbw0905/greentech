@@ -71,31 +71,33 @@ export function AlertSignup() {
               {selectedCountryLabel}
             </span>
           </div>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {COUNTRIES.map((c) => {
-              const active = countries.includes(c.slug);
-              return (
-                <button
-                  key={c.slug}
-                  type="button"
-                  onClick={() => toggleCountry(c.slug)}
-                  aria-pressed={active}
-                  className={`flex items-center gap-2 rounded-md border px-3 py-2 text-left text-sm transition-all ${
-                    active
-                      ? "border-primary bg-primary/10 font-medium text-primary shadow-sm"
-                      : "border-border bg-surface-1 text-foreground hover:border-primary/40 hover:bg-primary/5"
-                  }`}
-                >
-                  <span className="text-base leading-none">{COUNTRY_FLAG[c.slug]}</span>
-                  <span className="flex-1 truncate">{c.name}</span>
-                  {active ? (
-                    <Check className="size-3.5 shrink-0 text-primary" />
-                  ) : (
-                    <span className="size-3.5 shrink-0 rounded-full border border-border" />
-                  )}
-                </button>
-              );
-            })}
+          <div className="max-h-[280px] overflow-y-auto rounded-md border border-border bg-surface-1 p-2">
+            <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+              {COUNTRIES.map((c) => {
+                const active = countries.includes(c.slug);
+                return (
+                  <button
+                    key={c.slug}
+                    type="button"
+                    onClick={() => toggleCountry(c.slug)}
+                    aria-pressed={active}
+                    className={`flex items-center gap-2 rounded-md border px-2.5 py-1.5 text-left text-sm transition-all ${
+                      active
+                        ? "border-primary bg-primary/10 font-medium text-primary shadow-sm"
+                        : "border-transparent bg-surface text-foreground hover:border-primary/30 hover:bg-primary/5"
+                    }`}
+                  >
+                    <span className="text-base leading-none">{COUNTRY_FLAG[c.slug]}</span>
+                    <span className="flex-1 truncate">{c.name}</span>
+                    {active ? (
+                      <Check className="size-3.5 shrink-0 text-primary" />
+                    ) : (
+                      <span className="size-3.5 shrink-0 rounded-full border border-border" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
