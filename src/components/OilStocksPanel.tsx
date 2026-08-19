@@ -6,6 +6,7 @@ import { openEntityNews } from "@/lib/open-news";
 import { entityLogo } from "@/lib/entity-logos";
 import { ChartHeat, ChartPanel, chartFmt } from "@/components/chart-kit";
 import { ChartFilterBar, useChartFilter } from "@/components/chart-filters";
+import { downloadBrandedCsv, downloadBrandedExcel, type BrandedExport } from "@/lib/branded-export";
 
 const fmt = (n: number, d = 2) =>
   n.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -39,12 +40,7 @@ const CAPACITY: Record<string, { mmboe: number; kind: string }> = {
 
 const capOf = (symbol: string) => CAPACITY[symbol] ?? { mmboe: 0, kind: "Not disclosed" };
 
-const csvCell = (v: string | number) => {
-  const s = String(v);
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-};
-
-function downloadOilCsv(rows: OilQuote[]) {
+function oilExport(rows: OilQuote[]): BrandedExport {
   const header = [
     "Company",
     "Ticker",
@@ -67,15 +63,13 @@ function downloadOilCsv(rows: OilQuote[]) {
     capOf(q.symbol).mmboe || "",
     capOf(q.symbol).kind,
   ]);
-  const csv = [header, ...body].map((r) => r.map(csvCell).join(",")).join("\r\n");
-  const url = URL.createObjectURL(new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" }));
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `global-oil-companies-${new Date().toISOString().slice(0, 10)}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
+  return {
+    title: "Top global oil companies — share price & output capacity",
+    filename: "global-oil-companies",
+    header,
+    rows: body,
+    note: "Source: Global Bioenergy Watch. Prices via public market data; capacity approximate.",
+  };
 }
 
 type StockMetric = "price" | "change" | "capacity";
