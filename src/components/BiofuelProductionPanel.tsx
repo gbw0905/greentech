@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Fuel } from "lucide-react";
-import { ChartBars, ChartPanel, chartFmt as fmt } from "@/components/chart-kit";
+import { ChartHeat, ChartPanel, chartFmt as fmt } from "@/components/chart-kit";
+import { entityLogoByName } from "@/lib/entity-logos";
 import type { FuelType } from "@/lib/policy-taxonomy";
 import { openEntityNews } from "@/lib/open-news";
 import { STATION_TICKERS } from "@/lib/entity-tickers";
@@ -102,16 +103,15 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
       onMetricChange={(v) => setStationMetric(v as StationMetric)}
       footnote="Approximate site counts from company retail disclosures and national blending programmes. Click any row to open the latest news for that network."
     >
-      <ChartBars
+      <ChartHeat
         unitLabel={metric.unit}
-        yLabel="Retail fuel network"
-        metaHeader="Share price"
-        format={(n) => fmt(n, metric.decimals)}
+        format={(n: number) => fmt(n, metric.decimals)}
         items={stations.map((s) => ({
           key: s.name,
           label: s.name,
           sub: s.note,
           value: valueOf(s),
+          logo: entityLogoByName(s.name),
           meta: priceMeta(get(STATION_TICKERS[s.name])),
           tone: priceTone(get(STATION_TICKERS[s.name])),
         }))}

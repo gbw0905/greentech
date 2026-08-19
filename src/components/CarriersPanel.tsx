@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Ship, Truck, TrainFront } from "lucide-react";
-import { ChartBars, ChartPanel, chartFmt as fmt } from "@/components/chart-kit";
+import { ChartHeat, ChartPanel, chartFmt as fmt } from "@/components/chart-kit";
+import { entityLogoByName } from "@/lib/entity-logos";
 import { openEntityNews } from "@/lib/open-news";
 import { CARRIER_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
@@ -121,16 +122,15 @@ function CarrierChart({
       onMetricChange={(v) => setMetricKey(v as Metric)}
       footnote={footnote}
     >
-      <ChartBars
+      <ChartHeat
         unitLabel={metric.unit}
-        yLabel={yLabel}
-        metaHeader="Share price"
-        format={(n) => fmt(n, metric.decimals)}
+        format={(n: number) => fmt(n, metric.decimals)}
         items={rows.map((c) => ({
           key: c.name,
           label: c.name,
           sub: c.note,
           value: valueOf(c),
+          logo: entityLogoByName(c.name),
           meta: priceMeta(get(CARRIER_TICKERS[c.name])),
           tone: priceTone(get(CARRIER_TICKERS[c.name])),
         }))}
