@@ -21,7 +21,7 @@ export function useEntityQuotes() {
 
 export const priceMeta = (q: { price: number; changePct: number } | null) =>
   q
-    ? `${q.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} · ${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%`
+    ? `${q.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%`
     : "Private / state-owned";
 
 export const priceTone = (q: { changePct: number } | null) =>
