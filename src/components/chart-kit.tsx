@@ -47,20 +47,23 @@ export function ChartBars({
   return (
     <div>
       {/* header row: axis ticks */}
-      <div className="flex items-end gap-3 pb-1">
-        <div className="w-[13.5rem] shrink-0">
+      <div className="flex items-end gap-2 pb-1 sm:gap-3">
+        <div className="w-[7.5rem] shrink-0 sm:w-[13.5rem]">
           <span className="chart-axis uppercase tracking-[0.1em]">{yLabel}</span>
         </div>
         <div className="relative h-4 min-w-0 flex-1">
           <div className="pointer-events-none absolute inset-0 flex justify-between">
             {ticks.map((t) => (
-              <span key={t} className="chart-axis">
+              <span
+                key={t}
+                className={`chart-axis ${t !== 0 && t !== 1 ? "hidden sm:inline" : ""}`}
+              >
                 {format(max * t)}
               </span>
             ))}
           </div>
         </div>
-        <div className="w-[5.5rem] shrink-0 text-right">
+        <div className="w-[4rem] shrink-0 text-right sm:w-[5.5rem]">
           <span className="chart-axis uppercase tracking-[0.1em]">{metaHeader ?? ""}</span>
         </div>
       </div>
@@ -68,7 +71,7 @@ export function ChartBars({
       <div className="relative">
         {/* gridlines */}
         <div
-          className="pointer-events-none absolute inset-y-0 left-[13.5rem] right-[6.25rem] flex justify-between"
+          className="pointer-events-none absolute inset-y-0 left-[8.25rem] right-[4.75rem] flex justify-between sm:left-[14.25rem] sm:right-[6.25rem]"
           aria-hidden
         >
           {ticks.map((t) => (
@@ -96,12 +99,12 @@ export function ChartBars({
                 }
                 onMouseEnter={() => setHover(item.key)}
                 onMouseLeave={() => setHover((h) => (h === item.key ? null : h))}
-                className={`flex items-center gap-3 border-b border-border/40 py-1.5 transition-colors ${
+                className={`flex items-center gap-2 sm:gap-3 border-b border-border/40 py-1.5 transition-colors ${
                   target ? "cursor-pointer" : ""
                 } ${active ? "bg-foreground/[0.04]" : ""}`}
                 aria-label={`${item.label}: ${format(item.value)} ${unitLabel}`}
               >
-                <div className="flex w-[13.5rem] shrink-0 items-baseline gap-2">
+                <div className="flex w-[7.5rem] shrink-0 items-baseline gap-2 sm:w-[13.5rem]">
                   <span className="chart-axis w-5 shrink-0 text-right">
                     {String(idx + 1).padStart(2, "0")}
                   </span>
@@ -129,7 +132,7 @@ export function ChartBars({
                   </div>
                 </div>
 
-                <div className="w-[5.5rem] shrink-0 text-right">
+                <div className="w-[4rem] shrink-0 text-right sm:w-[5.5rem]">
                   <div className="chart-value text-foreground">{format(item.value)}</div>
                   {item.meta ? (
                     <div
@@ -194,11 +197,11 @@ export function ChartPanel({
           <p className="mt-1.5 text-sm text-muted-foreground">{blurb}</p>
         </div>
         {metricOptions ? (
-          <div className="flex flex-col items-end gap-1.5">
-            <label className="flex items-center gap-2">
-              <span className="label-mono text-muted-foreground">{metricLabel}</span>
+          <div className="flex w-full min-w-0 flex-col gap-1.5 sm:w-auto sm:items-end">
+            <label className="flex min-w-0 items-center gap-2">
+              <span className="label-mono shrink-0 text-muted-foreground">{metricLabel}</span>
               <select
-                className="chart-select"
+                className="chart-select min-w-0 max-w-full flex-1 sm:flex-none"
                 value={metricValue}
                 onChange={(e) => onMetricChange?.(e.target.value)}
                 aria-label={`Choose the value shown in the ${title} chart`}
