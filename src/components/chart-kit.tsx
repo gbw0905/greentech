@@ -181,7 +181,65 @@ export function heatColor(t: number) {
   return `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
 }
 
-/** Identical frame (title, blurb, measure select, footnote) for every graph. */
+/** Squarified treemap layout (Bruls/Huizing/van Wijk) in 0..100 percent space. */
+type Tile = { key: string; x: number; y: number; w: number; h: number };
+
+function squarify(values: { key: string; value: number }[], W = 100, H = 100): Tile[] {
+  const total = values.reduce((s, v) => s + v.value, 0) || 1;
+  const items = values.map((v) => ({ key: v.key, area: (v.value / total) * W * H }));
+  const out: Tile[] = [];
+  let x = 0,
+    y = 0,
+    w = W,
+    h = H;
+  let i = 0;
+  while (i < items.length) {
+    const short = Math.min(w, h);
+    const row: typeof items = [];
+    let rowArea = 0;
+    // Worst aspect ratio of the row if it also contained `extra` area.
+    const worst = (extra: number) => {
+      const areas = extra > 0 ? [...row.map((r) => r.area), extra] : row.map((r) => r.area);
+      const total2 = areas.reduce((s, a) => s + a, 0);
+      if (!total2 || !areas.length) return Infinity;
+      const thickness = total2 / short;
+      let bad = 0;
+      for (const a of areas) {
+        const len = a / thickness;
+        bad = Math.max(bad, Math.max(thickness / len, len / thickness));
+      }
+      return bad;
+    };
+    while (i < items.length) {
+      const next = items[i]!;
+      if (row.length && worst(next.area) > worst(0)) break;
+      row.push(next);
+      rowArea += next.area;
+      i += 1;
+    }
+    const side = rowArea / short;
+    let offset = 0;
+    for (const r of row) {
+      const len = (r.area / rowArea) * short;
+      if (w >= h) {
+        out.push({ key: r.key, x, y: y + offset, w: side, h: len });
+      } else {
+        out.push({ key: r.key, x: x + offset, y, w: len, h: side });
+      }
+      offset += len;
+    }
+    if (w >= h) {
+      x += side;
+      w -= side;
+    } else {
+      y += side;
+      h -= side;
+    }
+  }
+  return out;
+}
+
+/** NYSE-style treemap: tile area = value share, colour = RGB heat scale. */
 export function ChartHeat({
   items,
   unitLabel,
@@ -200,20 +258,36 @@ export function ChartHeat({
   const min = Math.min(...values, 0);
   const span = max - min || 1;
   const norm = (v: number) => (v - min) / span;
+  // Sort largest first; treemaps require descending input.
+  const sorted = [...items].sort((a, b) => b.value - a.value);
+  const floor = Math.max(max * 0.05, 0.0001); // keep tiny entities legible
+  // Lay out in aspect-correct space (container is ~2.6:1) then scale to percent.
+  const ASPECT = 2.6;
+  const tiles = squarify(
+    sorted.map((i) => ({ key: i.key, value: Math.max(i.value, floor) })),
+    ASPECT,
+    1,
+  ).map((t) => ({
+    ...t,
+    x: (t.x / ASPECT) * 100,
+    w: (t.w / ASPECT) * 100,
+    y: t.y * 100,
+    h: t.h * 100,
+  }));
+  const byKey = new Map(sorted.map((i) => [i.key, i]));
 
   return (
     <div>
-      <div className="flex flex-wrap gap-2">
-        {items.map((item) => {
+      <div className="relative h-[26rem] w-full overflow-hidden rounded-sm border border-border/60 bg-border/40 sm:h-[30rem]">
+        {tiles.map((tile) => {
+          const item = byKey.get(tile.key)!;
           const target = news?.[item.key];
           const t = norm(item.value);
-          // Tile area scales with the value: bigger value, bigger tile.
-          const scale = Math.sqrt(Math.max(t, 0.04));
-          const basis = 16 + scale * 22; // % of row width
-          const height = 76 + scale * 76; // px
+          const big = tile.w > 6.5 && tile.h > 20;
+          const mid = tile.w > 4 && tile.h > 11;
           return (
             <div
-              key={item.key}
+              key={tile.key}
               role={target ? "button" : undefined}
               tabIndex={target ? 0 : -1}
               onClick={target ? () => onSelect?.(target) : undefined}
@@ -224,31 +298,46 @@ export function ChartHeat({
                     }
                   : undefined
               }
-              title={`${item.label}: ${format(item.value)} ${unitLabel}`}
+              title={`${item.label}${item.sub ? ` — ${item.sub}` : ""}: ${format(item.value)} ${unitLabel}${item.meta ? ` · ${item.meta}` : ""}`}
               aria-label={`${item.label}: ${format(item.value)} ${unitLabel}`}
-              className={`flex min-w-[9rem] flex-col justify-between rounded-sm border border-border/60 p-2.5 text-white transition-transform hover:-translate-y-0.5 ${
+              className={`absolute flex flex-col justify-between overflow-hidden p-1.5 text-white outline-hidden ring-inset transition-[filter] hover:brightness-110 focus-visible:ring-2 focus-visible:ring-white ${
                 target ? "cursor-pointer" : ""
               }`}
               style={{
+                left: `${tile.x}%`,
+                top: `${tile.y}%`,
+                width: `${tile.w}%`,
+                height: `${tile.h}%`,
                 backgroundColor: heatColor(t),
-                flex: `1 1 ${basis}%`,
-                minHeight: `${height}px`,
+                boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.22)",
               }}
             >
-              <div>
-                <div className="chart-label truncate" title={item.label}>
+              <div className="min-w-0">
+                <div
+                  className="chart-label truncate leading-tight"
+                  style={{ fontSize: big ? "0.8rem" : "0.68rem" }}
+                >
                   {item.label}
                 </div>
-                {item.sub ? (
+                {big && item.sub ? (
                   <div className="chart-sub truncate text-white/80">{item.sub}</div>
                 ) : null}
               </div>
-              <div>
-                <div className="chart-value">{format(item.value)}</div>
-                {item.meta ? (
-                  <div className="chart-sub font-mono tabular-nums text-white/85">{item.meta}</div>
-                ) : null}
-              </div>
+              {mid ? (
+                <div className="min-w-0">
+                  <div
+                    className="chart-value truncate"
+                    style={{ fontSize: big ? "0.95rem" : "0.7rem" }}
+                  >
+                    {format(item.value)}
+                  </div>
+                  {big && item.meta ? (
+                    <div className="chart-sub truncate font-mono tabular-nums text-white/85">
+                      {item.meta}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           );
         })}
