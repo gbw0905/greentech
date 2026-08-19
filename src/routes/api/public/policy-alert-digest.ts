@@ -1,11 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { sendTemplateEmail } from "@/lib/email-templates/send-email";
 
-/** Digest of new policy updates, sent to confirmed alert subscribers by cadence. */
-async function run({ request }: { request: Request }) {
-  const cadenceParam = new URL(request.url).searchParams.get("cadence") ?? "daily";
-  const cadence = cadenceParam === "weekly" ? "weekly" : "daily";
-  const windowMs = cadence === "weekly" ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
+/** Daily digest of new policy updates, sent to confirmed alert subscribers. */
+async function run() {
+  const windowMs = 24 * 60 * 60 * 1000;
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const since = new Date(Date.now() - windowMs).toISOString();
 
@@ -21,8 +19,8 @@ async function run({ request }: { request: Request }) {
 
   const { data: subs, error: subErr } = await supabaseAdmin
     .from("alert_subscribers")
-    .select("id,email,fuels,countries,cadence")
-    .eq("cadence", cadence)
+    .select("id,email,fuels,countries")
+    .eq("cadence", "daily")
     .not("confirmed_at", "is", null);
 
   if (subErr) return Response.json({ error: subErr.message }, { status: 500 });
@@ -76,27 +74,20 @@ async function run({ request }: { request: Request }) {
     try {
       const result = await sendTemplateEmail("policy-alert", sub.email, {
         templateData: { dateLabel, items },
-        idempotencyKey: `policy-alert-${cadence}-${sub.id}-${dayKey}`,
+        idempotencyKey: `policy-alert-daily-${sub.id}-${dayKey}`,
       });
       if (result.sent) {
         sent++;
         await supabaseAdmin
           .from("alert_subscribers")
-          .update(
-            cadence === "weekly"
-              ? {
-                  last_sent_at: new Date().toISOString(),
-                  last_weekly_sent_at: new Date().toISOString(),
-                }
-              : { last_sent_at: new Date().toISOString() },
-          )
+          .update({ last_sent_at: new Date().toISOString() })
           .eq("id", sub.id);
         await supabaseAdmin.from("brief_sends").upsert(
           matched.map((u) => ({
             email: sub.email,
             update_id: u.id,
             subscriber_id: sub.id,
-            cadence,
+            cadence: "daily",
             sent_at: new Date().toISOString(),
           })),
           { onConflict: "email,update_id" },
@@ -110,7 +101,7 @@ async function run({ request }: { request: Request }) {
     }
   }
 
-  return Response.json({ ok: true, cadence, sent, skipped, updates: updates.length });
+  return Response.json({ ok: true, cadence: "daily", sent, skipped, updates: updates.length });
 }
 
 export const Route = createFileRoute("/api/public/policy-alert-digest")({

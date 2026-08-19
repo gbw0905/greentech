@@ -6,7 +6,6 @@ const subscribeSchema = z.object({
   email: z.string().trim().email().max(255),
   fuels: z.array(z.string().max(40)).max(12).default([]),
   countries: z.array(z.string().max(60)).max(40).default([]),
-  cadence: z.enum(["instant", "daily", "weekly"]).default("daily"),
 });
 
 export const subscribeToAlerts = createServerFn({ method: "POST" })
@@ -18,7 +17,7 @@ export const subscribeToAlerts = createServerFn({ method: "POST" })
     const { data: row, error } = await supabaseAdmin
       .from("alert_subscribers")
       .upsert(
-        { email, fuels: data.fuels, countries: data.countries, cadence: data.cadence },
+        { email, fuels: data.fuels, countries: data.countries, cadence: "daily" },
         { onConflict: "email" },
       )
       .select("id, confirm_token, confirmed_at")

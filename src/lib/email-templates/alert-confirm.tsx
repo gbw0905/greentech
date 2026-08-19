@@ -41,8 +41,8 @@ const AlertConfirm = ({ confirmUrl = '#', fuels = [], countries = [] }: Props) =
       <Container style={container}>
         <Heading style={heading}>Confirm your policy alerts</Heading>
         <Text style={text}>
-          You asked to receive a daily email whenever new bioenergy policy updates land on Global
-          Bioenergy Watch. Confirm the address to start receiving them.
+          You asked to receive a daily AI-written brief whenever new bioenergy policy or market
+          updates land on Global Bioenergy Watch. Confirm the address to start receiving them.
         </Text>
         <Text style={text}>
           Coverage:{' '}
