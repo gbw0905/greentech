@@ -97,14 +97,14 @@ function BarChart({
   const niceMax = Math.max(Math.ceil(maxValue / step) * step, step);
 
   // Layout — horizontal bars
-  const rowH = 38;
+  const rowH = 42;
   const gap = 12;
-  const rankW = 28;
-  const labelW = 210; // rank + ticker + company
+  const rankW = 32;
+  const labelW = 230; // rank + ticker + company
   const valueW = 256; // capacity + price + change badge
   const w = 860;
-  const padTop = 30;
-  const padBottom = 52;
+  const padTop = 34;
+  const padBottom = 56;
   const chartW = w - labelW - valueW;
   const h = padTop + sorted.length * (rowH + gap) - gap + padBottom;
 
