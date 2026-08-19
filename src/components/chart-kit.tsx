@@ -17,7 +17,25 @@ export type ChartItem = {
   meta?: string;
   /** Optional tone for the value text: default | up | down. */
   tone?: "default" | "up" | "down";
+  /** Optional brand logo URL, rendered in heat-map tiles. */
+  logo?: string | undefined;
 };
+
+/** Small brand mark rendered inside a heat-map tile. */
+function TileLogo({ src, alt, size }: { src: string; alt: string; size: number }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return null;
+  return (
+    <img
+      src={src}
+      alt={`${alt} logo`}
+      loading="lazy"
+      onError={() => setFailed(true)}
+      className="shrink-0 rounded-sm bg-white/90 object-contain p-0.5 shadow-sm"
+      style={{ width: size, height: size }}
+    />
+  );
+}
 
 /**
  * The single bar chart used by every panel: identical row height, bar colour,
@@ -285,6 +303,8 @@ export function ChartHeat({
           const t = norm(item.value);
           const big = tile.w > 6.5 && tile.h > 20;
           const mid = tile.w > 4 && tile.h > 11;
+          const logoSize = big ? 26 : 16;
+          const showLogo = Boolean(item.logo) && tile.w > 3.2 && tile.h > 9;
           return (
             <div
               key={tile.key}
@@ -312,16 +332,21 @@ export function ChartHeat({
                 boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.22)",
               }}
             >
-              <div className="min-w-0">
-                <div
-                  className="chart-label truncate leading-tight"
-                  style={{ fontSize: big ? "0.8rem" : "0.68rem" }}
-                >
-                  {item.label}
-                </div>
-                {big && item.sub ? (
-                  <div className="chart-sub truncate text-white/80">{item.sub}</div>
+              <div className="flex min-w-0 items-start gap-1.5">
+                {showLogo ? (
+                  <TileLogo src={item.logo!} alt={item.label} size={logoSize} />
                 ) : null}
+                <div className="min-w-0">
+                  <div
+                    className="chart-label truncate leading-tight"
+                    style={{ fontSize: big ? "0.8rem" : "0.68rem" }}
+                  >
+                    {item.label}
+                  </div>
+                  {big && item.sub ? (
+                    <div className="chart-sub truncate text-white/80">{item.sub}</div>
+                  ) : null}
+                </div>
               </div>
               {mid ? (
                 <div className="min-w-0">
