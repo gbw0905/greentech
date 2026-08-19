@@ -37,14 +37,7 @@ export function UpdateCard({
         className={`label-mono flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-muted-foreground ${compact ? "text-[11px]" : ""}`}
       >
         <span
-          className={`rounded-full font-semibold tracking-[0.14em] uppercase ${compact ? "px-1.5 py-0" : "px-2 py-0.5"}`}
-          style={{
-            background:
-              update.category === "market"
-                ? "color-mix(in oklch, var(--accent) 22%, transparent)"
-                : "color-mix(in oklch, var(--primary) 22%, transparent)",
-            color: update.category === "market" ? "var(--accent-foreground)" : "var(--primary)",
-          }}
+          className={`rounded-full font-semibold tracking-[0.14em] uppercase ${compact ? "px-1.5 py-0" : "px-2 py-0.5"} ${update.category === "market" ? "bg-blue-100 text-blue-700" : "bg-red-100 text-red-700"}`}
         >
           {update.category === "market" ? "Market" : "Policy"}
         </span>
