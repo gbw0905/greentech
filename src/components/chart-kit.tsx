@@ -255,7 +255,19 @@ export function ChartHeat({
   // Sort largest first; treemaps require descending input.
   const sorted = [...items].sort((a, b) => b.value - a.value);
   const floor = Math.max(max * 0.05, 0.0001); // keep tiny entities legible
-  const tiles = squarify(sorted.map((i) => ({ key: i.key, value: Math.max(i.value, floor) })));
+  // Lay out in aspect-correct space (container is ~2.6:1) then scale to percent.
+  const ASPECT = 2.6;
+  const tiles = squarify(
+    sorted.map((i) => ({ key: i.key, value: Math.max(i.value, floor) })),
+    ASPECT,
+    1,
+  ).map((t) => ({
+    ...t,
+    x: (t.x / ASPECT) * 100,
+    w: (t.w / ASPECT) * 100,
+    y: t.y * 100,
+    h: t.h * 100,
+  }));
   const byKey = new Map(sorted.map((i) => [i.key, i]));
 
   return (
