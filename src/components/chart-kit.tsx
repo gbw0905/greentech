@@ -426,7 +426,7 @@ export function ChartPanel({
             <label className="flex min-w-0 items-center gap-2">
               <span className="label-mono shrink-0 text-muted-foreground">{metricLabel}</span>
               <select
-                className="chart-select min-w-0 max-w-full flex-1 sm:flex-none"
+                className="chart-select min-w-0 max-w-full flex-1 sm:flex-none border-ink bg-ink text-ink-foreground"
                 value={metricValue}
                 onChange={(e) => onMetricChange?.(e.target.value)}
                 aria-label={`Choose the value shown in the ${title} chart`}
