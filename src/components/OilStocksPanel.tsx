@@ -299,7 +299,7 @@ function BarChart({
               </text>
               {/* Company */}
               <text
-                x={rankW + 74}
+                x={rankW + 92}
                 y={y + rowH / 2 + 1}
                 className="font-sans text-[0.75rem] font-medium fill-muted-foreground"
               >
