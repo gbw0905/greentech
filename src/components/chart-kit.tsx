@@ -130,18 +130,20 @@ export function ChartBars({
                 </div>
 
                 <div className="w-[5.5rem] shrink-0 text-right">
-                  <div
-                    className={`chart-value ${
-                      item.tone === "up"
-                        ? "text-primary"
-                        : item.tone === "down"
-                          ? "text-destructive"
-                          : "text-foreground"
-                    }`}
-                  >
-                    {format(item.value)}
-                  </div>
-                  {item.meta ? <div className="chart-sub">{item.meta}</div> : null}
+                  <div className="chart-value text-foreground">{format(item.value)}</div>
+                  {item.meta ? (
+                    <div
+                      className={`chart-sub font-mono tabular-nums ${
+                        item.tone === "up"
+                          ? "text-primary"
+                          : item.tone === "down"
+                            ? "text-destructive"
+                            : ""
+                      }`}
+                    >
+                      {item.meta}
+                    </div>
+                  ) : null}
                 </div>
               </div>
             );
