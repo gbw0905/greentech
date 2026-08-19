@@ -139,15 +139,26 @@ export function OilStocksPanel() {
       }))}
       onMetricChange={(v) => setMetricKey(v as StockMetric)}
       actions={
-        <button
-          type="button"
-          onClick={() => downloadOilCsv(sorted)}
-          disabled={sorted.length === 0}
-          className="inline-flex items-center gap-1.5 border border-ink bg-ink px-2.5 py-1.5 text-xs font-semibold text-ink-foreground transition-opacity hover:opacity-85 disabled:opacity-40"
-        >
-          <Download className="size-3.5" />
-          Export CSV
-        </button>
+        <div className="inline-flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => downloadBrandedCsv(oilExport(sorted))}
+            disabled={sorted.length === 0}
+            className="inline-flex items-center gap-1.5 border border-ink bg-ink px-2.5 py-1.5 text-xs font-semibold text-ink-foreground transition-opacity hover:opacity-85 disabled:opacity-40"
+          >
+            <Download className="size-3.5" />
+            Export CSV
+          </button>
+          <button
+            type="button"
+            onClick={() => void downloadBrandedExcel(oilExport(sorted))}
+            disabled={sorted.length === 0}
+            className="inline-flex items-center gap-1.5 border border-ink bg-transparent px-2.5 py-1.5 text-xs font-semibold text-ink transition-colors hover:bg-ink hover:text-ink-foreground disabled:opacity-40"
+          >
+            <Download className="size-3.5" />
+            Excel + logo
+          </button>
+        </div>
       }
       filters={
         <ChartFilterBar
