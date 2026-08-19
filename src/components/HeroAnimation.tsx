@@ -64,7 +64,7 @@ export function HeroAnimation() {
       </div>
 
       <div className="relative grid gap-8 px-5 py-10 sm:px-8 sm:py-12 lg:grid-cols-[1.25fr_minmax(0,1fr)] lg:items-center lg:gap-10 lg:py-14">
-        <div>
+        <div className="min-w-0">
           <div
             className="kicker inline-flex items-center gap-2 text-ink-muted"
             style={{ animation: "hero-word .7s cubic-bezier(.22,1,.36,1) both" }}
@@ -73,7 +73,7 @@ export function HeroAnimation() {
             Live policy &amp; market intelligence
           </div>
 
-          <h1 className="mt-4 font-display text-[2.4rem] leading-[1.03] font-extrabold tracking-[-0.03em] text-ink-foreground sm:text-[3.2rem] lg:text-[3.6rem]">
+          <h1 className="mt-4 font-display text-[2.1rem] leading-[1.05] font-extrabold tracking-[-0.03em] text-ink-foreground sm:text-[2.8rem] lg:text-[3rem]">
             {WORDS.map((w, i) => (
               <span
                 key={w}
@@ -119,7 +119,7 @@ export function HeroAnimation() {
         </div>
 
         {/* animated globe + sparkline */}
-        <div className="relative mx-auto w-full max-w-[22rem]">
+        <div className="relative mx-auto w-full min-w-0 max-w-[20rem]">
           <svg viewBox="0 0 200 200" className="w-full" role="img" aria-label="Animated globe tracking global bioenergy policy signals">
             <defs>
               <linearGradient id="hero-line" x1="0" y1="0" x2="1" y2="0">
