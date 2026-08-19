@@ -109,7 +109,7 @@ const DailyFlyer = ({ dateLabel = '', items = [] }: Props) => (
 export const template = {
   component: DailyFlyer,
   subject: (data: Record<string, any>) =>
-    `Daily flyer — top ${Array.isArray(data['items']) ? data['items'].length : 10} bioenergy policy headlines`,
+    `Global Bioenergy Market and Policy Updates — ${data['dateLabel'] || new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}`,
   displayName: 'Daily headlines flyer',
   previewData: {
     dateLabel: 'Wednesday, 12 August 2026',
