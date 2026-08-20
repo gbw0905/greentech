@@ -181,6 +181,7 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
           logo: entityLogoByName(s.name),
           meta: priceMeta(get(STATION_TICKERS[s.name])),
           tone: priceTone(get(STATION_TICKERS[s.name])),
+          changePct: get(STATION_TICKERS[s.name])?.changePct,
         }))}
         onSelect={openEntityNews}
         news={Object.fromEntries(
