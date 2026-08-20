@@ -609,13 +609,13 @@ export function ChartPanel({
           {actions}
           {assistant
             ? isValidElement(assistant)
-              ? cloneElement(assistant as ReactElement<any>, { portalTarget: panelRef.current })
+              ? cloneElement(assistant as ReactElement<any>, { portalTarget: panelNode })
               : assistant
             : null}
         </div>
       ) : null}
 
-      <div ref={panelRef} className="relative" />
+      <div ref={setPanelNode} className="relative" />
 
       <div className="min-h-0 flex-1">{children}</div>
 
