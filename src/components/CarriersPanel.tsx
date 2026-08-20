@@ -1,12 +1,7 @@
 import { useState } from "react";
 import { Ship, Truck, TrainFront } from "lucide-react";
 import { ChartHeat, ChartPanel, chartFmt as fmt } from "@/components/chart-kit";
-import {
-  ChartFilterBar,
-  countryFilterOptions,
-  useChartFilter,
-  useTopLimit,
-} from "@/components/chart-filters";
+import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
 import { openEntityNews } from "@/lib/open-news";
 import { CARRIER_TICKERS } from "@/lib/entity-tickers";
