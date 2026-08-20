@@ -78,15 +78,12 @@ export function ChartSummaryAssistant({
   }
 
   return (
-    <div className="mt-4 border-t border-border pt-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs text-muted-foreground">
-          Summary assistant — a full analyst write-up of the rows and measure currently shown.
-        </p>
-        <button
+    <>
+      <button
           type="button"
           onClick={run}
           disabled={disabled || loading}
+          title="Write a full analyst summary of the rows and measure currently shown"
           className="inline-flex items-center gap-1.5 border border-ink bg-ink px-2.5 py-1.5 text-xs font-semibold text-ink-foreground transition-opacity hover:opacity-85 disabled:opacity-40"
         >
           {loading ? (
@@ -94,12 +91,11 @@ export function ChartSummaryAssistant({
           ) : (
             <Sparkles className="size-3.5" />
           )}
-          {loading ? "Writing…" : "Summarise this chart"}
-        </button>
-      </div>
+        {loading ? "Writing…" : "Summarise"}
+      </button>
 
       {open ? (
-        <div className="mt-3 rounded-sm border border-border bg-surface-2/60 p-3">
+        <div className="mt-1 w-full basis-full rounded-sm border border-border bg-background p-3">
           {context ? (
             <p className="label-mono mb-2 text-muted-foreground">
               {context.measureLabel} · {context.filterLabel} · {context.shown} of {context.total}{" "}
@@ -183,6 +179,6 @@ export function ChartSummaryAssistant({
           ) : null}
         </div>
       ) : null}
-    </div>
+    </>
   );
 }
