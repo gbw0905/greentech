@@ -2,7 +2,12 @@ import { useState } from "react";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { Fuel } from "lucide-react";
 import { ChartHeat, ChartPanel, chartFmt as fmt } from "@/components/chart-kit";
-import { ChartFilterBar, useChartFilter } from "@/components/chart-filters";
+import {
+  ChartFilterBar,
+  countryFilterOptions,
+  useChartFilter,
+  useTopLimit,
+} from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
 import type { FuelType } from "@/lib/policy-taxonomy";
 import { openEntityNews } from "@/lib/open-news";
@@ -98,9 +103,9 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
     facetA: (s) => s.country,
     facetB: (s) => s.fuels as string[],
   });
-  const stations = f.filtered
-    .slice()
-    .sort((a, b) => valueOf(b) - valueOf(a));
+  const limiter = useTopLimit();
+  const ranked = f.filtered.slice().sort((a, b) => valueOf(b) - valueOf(a));
+  const stations = ranked.slice(0, limiter.limit);
 
   return (
     <ChartPanel
@@ -113,9 +118,12 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
         label: STATION_METRICS[m].label,
       }))}
       onMetricChange={(v) => setStationMetric(v as StationMetric)}
+      limitValue={limiter.value}
+      limitOptions={limiter.options}
+      onLimitChange={limiter.setValue}
       actions={
         <ExportCsvButton
-          disabled={stations.length === 0}
+          disabled={ranked.length === 0}
           build={() => ({
             title: "Top global fuel stations selling biofuels",
             filename: "biofuel-station-networks",
@@ -132,7 +140,7 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
               "1-day change %",
               "Note",
             ],
-            rows: stations.map((s) => {
+            rows: ranked.map((s) => {
               const q = get(STATION_TICKERS[s.name]);
               return [
                 s.name,
@@ -156,17 +164,27 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
           onQueryChange={f.setQuery}
           placeholder="Search networks…"
           selects={[
-            { label: "Country", value: f.a, options: f.optionsA, onChange: f.setA, allLabel: "All countries" },
+            {
+              label: "Country",
+              value: f.a,
+              options: countryFilterOptions(base.map((s) => s.country)),
+              onChange: f.setA,
+              allLabel: "All countries",
+            },
             { label: "Fuel", value: f.b, options: f.optionsB, onChange: f.setB, allLabel: "All fuels" },
           ]}
           shown={stations.length}
           total={base.length}
+          matched={ranked.length}
         />
       }
       footnote="Approximate site counts from company retail disclosures and national blending programmes. Click any row to open the latest news for that network."
     >
       {stations.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No networks match those filters.</p>
+        <p className="text-sm text-muted-foreground">
+          No listed station networks for this filter — open that country's profile page for its
+          policy and market updates.
+        </p>
       ) : (
       <ChartHeat
         unitLabel={metric.unit}
