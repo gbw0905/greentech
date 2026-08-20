@@ -1,15 +1,46 @@
 import { useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
+import { COUNTRIES, COUNTRY_FLAG } from "@/lib/policy-taxonomy";
+
+export type ChartFilterOption = {
+  value: string;
+  label: string;
+  /** Optional <optgroup> heading. */
+  group?: string;
+};
 
 export type SelectFilter = {
   /** Short label, e.g. "Country" */
   label: string;
   value: string;
-  options: string[];
+  options: (string | ChartFilterOption)[];
   onChange: (v: string) => void;
   /** Label used for the "no filter" option. */
   allLabel?: string;
 };
+
+/** Every jurisdiction the tracker follows, by display name. */
+export const TRACKED_COUNTRIES: string[] = COUNTRIES.map((c) => c.name);
+
+const flagByName = new Map(COUNTRIES.map((c) => [c.name, COUNTRY_FLAG[c.slug] ?? "🌐"]));
+
+/**
+ * Country dropdown options: every tracked jurisdiction plus every country that
+ * appears in the panel's own dataset. Jurisdictions with no listed entity are
+ * kept, grouped separately so the user still sees they are tracked.
+ */
+export function countryFilterOptions(dataCountries: string[]): ChartFilterOption[] {
+  const present = new Set(dataCountries.filter(Boolean));
+  const all = [...new Set([...present, ...TRACKED_COUNTRIES])].sort((a, b) => a.localeCompare(b));
+  return all.map((name) => ({
+    value: name,
+    label: `${flagByName.get(name) ?? "🌐"} ${name}`,
+    group: present.has(name) ? "Listed entities" : "No listed entities",
+  }));
+}
+
+const asOption = (o: string | ChartFilterOption): ChartFilterOption =>
+  typeof o === "string" ? { value: o, label: o } : o;
 
 /** Shared search + dropdown filter bar used above every treemap. */
 export function ChartFilterBar({
@@ -44,7 +75,10 @@ export function ChartFilterBar({
       </div>
 
       <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:w-auto sm:flex-1">
-      {selects.map((s) => (
+      {selects.map((s) => {
+        const opts = s.options.map(asOption);
+        const groups = [...new Set(opts.map((o) => o.group ?? ""))];
+        return (
         <label key={s.label} className="flex min-w-0 flex-1 items-center gap-1.5 sm:flex-none">
           <span className="label-mono shrink-0 text-muted-foreground">{s.label}</span>
           <select
@@ -54,14 +88,27 @@ export function ChartFilterBar({
             onChange={(e) => s.onChange(e.target.value)}
           >
             <option value="">{s.allLabel ?? `All ${s.label.toLowerCase()}s`}</option>
-            {s.options.map((o) => (
-              <option key={o} value={o}>
-                {o}
-              </option>
-            ))}
+            {groups.length === 1 && !groups[0]
+              ? opts.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))
+              : groups.map((g) => (
+                  <optgroup key={g || "other"} label={g || "Other"}>
+                    {opts
+                      .filter((o) => (o.group ?? "") === g)
+                      .map((o) => (
+                        <option key={o.value} value={o.value}>
+                          {o.label}
+                        </option>
+                      ))}
+                  </optgroup>
+                ))}
           </select>
         </label>
-      ))}
+        );
+      })}
 
       <span className="label-mono ml-auto shrink-0 text-muted-foreground">
         {shown} / {total}
