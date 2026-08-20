@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
+import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 import { Fuel } from "lucide-react";
 import { ChartHeat, ChartPanel, chartFmt as fmt } from "@/components/chart-kit";
 import {
@@ -179,6 +180,33 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
         />
       }
       footnote="Approximate site counts from company retail disclosures and national blending programmes. Click any row to open the latest news for that network."
+      assistant={
+        <ChartSummaryAssistant
+          disabled={stations.length === 0}
+          build={() => ({
+            panel: "Top global fuel stations selling biofuels",
+            measureLabel: metric.label,
+            unit: metric.unit,
+            filterLabel: [
+              f.a || "All countries",
+              f.b || "All fuels",
+              f.query ? `search "${f.query}"` : "",
+              limiter.value === "all" ? "All rows" : `Top ${limiter.limit}`,
+            ]
+              .filter(Boolean)
+              .join(" · "),
+            shown: stations.length,
+            total: base.length,
+            rows: stations.map((s) => ({
+              label: s.name,
+              sub: `${s.country} · ${s.note}`,
+              value: valueOf(s),
+              price: get(STATION_TICKERS[s.name])?.price,
+              changePct: get(STATION_TICKERS[s.name])?.changePct,
+            })),
+          })}
+        />
+      }
     >
       {stations.length === 0 ? (
         <p className="text-sm text-muted-foreground">

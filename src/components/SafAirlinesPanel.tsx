@@ -12,6 +12,7 @@ import { entityLogoByName } from "@/lib/entity-logos";
 import { AIRLINE_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
+import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 
 type Airline = {
   code: string;
@@ -162,6 +163,32 @@ export function SafAirlinesPanel() {
           shown={sorted.length}
           total={AIRLINES.length}
           matched={ranked.length}
+        />
+      }
+      assistant={
+        <ChartSummaryAssistant
+          disabled={sorted.length === 0}
+          build={() => ({
+            panel: "Top airlines using SAF globally",
+            measureLabel: metric.label,
+            unit: metric.unit,
+            filterLabel: [
+              f.a || "All countries",
+              f.query ? `search "${f.query}"` : "",
+              limiter.value === "all" ? "All rows" : `Top ${limiter.limit}`,
+            ]
+              .filter(Boolean)
+              .join(" · "),
+            shown: sorted.length,
+            total: AIRLINES.length,
+            rows: sorted.map((a) => ({
+              label: a.name,
+              sub: `${a.country} · ${a.note}`,
+              value: valueOf(a),
+              price: get(AIRLINE_TICKERS[a.code])?.price,
+              changePct: get(AIRLINE_TICKERS[a.code])?.changePct,
+            })),
+          })}
         />
       }
       footnote="Estimates from airline sustainability reports, offtake announcements and regulatory disclosures. Click any row for the latest SAF news for that carrier."

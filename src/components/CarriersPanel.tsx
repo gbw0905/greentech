@@ -12,6 +12,7 @@ import { openEntityNews } from "@/lib/open-news";
 import { CARRIER_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
+import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 
 type Carrier = {
   name: string;
@@ -194,6 +195,32 @@ function CarrierChart({
         />
       }
       footnote={footnote}
+      assistant={
+        <ChartSummaryAssistant
+          disabled={rows.length === 0}
+          build={() => ({
+            panel: title,
+            measureLabel: metric.label,
+            unit: metric.unit,
+            filterLabel: [
+              f.a || "All countries",
+              f.query ? `search "${f.query}"` : "",
+              limiter.value === "all" ? "All rows" : `Top ${limiter.limit}`,
+            ]
+              .filter(Boolean)
+              .join(" · "),
+            shown: rows.length,
+            total: data.length,
+            rows: rows.map((c) => ({
+              label: c.name,
+              sub: `${c.country} · ${c.note}`,
+              value: valueOf(c),
+              price: get(CARRIER_TICKERS[c.name])?.price,
+              changePct: get(CARRIER_TICKERS[c.name])?.changePct,
+            })),
+          })}
+        />
+      }
     >
       {rows.length === 0 ? (
         <p className="text-sm text-muted-foreground">
