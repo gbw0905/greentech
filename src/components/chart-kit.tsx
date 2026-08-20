@@ -526,6 +526,7 @@ export function ChartPanel({
   footnote,
   filters,
   actions,
+  assistant,
   children,
 }: {
   icon: LucideIcon;
@@ -543,6 +544,8 @@ export function ChartPanel({
   footnote?: string;
   /** Optional buttons (e.g. export) rendered in the header. */
   actions?: React.ReactNode;
+  /** Optional AI summary assistant rendered under the chart. */
+  assistant?: React.ReactNode;
   /** Optional filter/search bar rendered between the header and the chart. */
   filters?: React.ReactNode;
   children: React.ReactNode;
@@ -602,6 +605,8 @@ export function ChartPanel({
       {filters ? <div className="mb-4">{filters}</div> : null}
 
       <div className="min-h-0 flex-1">{children}</div>
+
+      {assistant}
 
       {footnote ? (
         <p className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">{footnote}</p>

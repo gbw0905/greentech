@@ -12,6 +12,7 @@ import {
   useTopLimit,
 } from "@/components/chart-filters";
 import { downloadBrandedCsv, type BrandedExport } from "@/lib/branded-export";
+import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 
 const fmt = (n: number, d = 2) =>
   n.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -207,6 +208,33 @@ export function OilStocksPanel() {
         />
       }
       status={isLoading ? "Loading" : stale ? "Last close" : "Live"}
+      assistant={
+        <ChartSummaryAssistant
+          disabled={sorted.length === 0}
+          build={() => ({
+            panel: "Top global oil companies",
+            measureLabel: metric.label,
+            unit: metric.unit,
+            filterLabel: [
+              f.a || "All countries",
+              f.b || "All types",
+              f.query ? `search "${f.query}"` : "",
+              limiter.value === "all" ? "All rows" : `Top ${limiter.limit}`,
+            ]
+              .filter(Boolean)
+              .join(" · "),
+            shown: sorted.length,
+            total: quotes.length,
+            rows: sorted.map((q) => ({
+              label: q.label,
+              sub: `${countryOf(q.symbol)} · ${capOf(q.symbol).kind}`,
+              value: metric.value(q),
+              price: q.price,
+              changePct: q.changePct,
+            })),
+          })}
+        />
+      }
       footnote="Capacity is approximate annual output in million barrels of oil equivalent per year (upstream production, or crude throughput for refiners). Prices refresh every five minutes and are quoted in each company's primary listing currency. Click any row for that company's latest news."
     >
       {sorted.length === 0 && !isLoading ? (

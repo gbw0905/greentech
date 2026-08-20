@@ -4,6 +4,7 @@ import { template as alertConfirmTemplate } from './alert-confirm'
 import { template as policyAlertTemplate } from './policy-alert'
 import { template as policyBriefTemplate } from './policy-brief'
 import { template as dailyFlyerTemplate } from './daily-flyer'
+import { template as chartSummaryTemplate } from './chart-summary'
 
 export interface TemplateEntry {
   component: ComponentType<any>
@@ -28,4 +29,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'policy-alert': policyAlertTemplate,
   'policy-brief': policyBriefTemplate,
   'daily-flyer': dailyFlyerTemplate,
+  'chart-summary': chartSummaryTemplate,
 }
