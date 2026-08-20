@@ -17,6 +17,8 @@ export type ChartItem = {
   meta?: string;
   /** Optional tone for the value text: default | up | down. */
   tone?: "default" | "up" | "down";
+  /** Optional 1-day price move in percent, used for the trend layer. */
+  changePct?: number | undefined;
   /** Optional brand logo URL, rendered in heat-map tiles. */
   logo?: string | undefined;
 };
