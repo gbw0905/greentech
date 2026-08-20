@@ -185,6 +185,7 @@ function CarrierChart({
         unitLabel={metric.unit}
         measureLabel={metric.label}
         measureHelp={metric.help}
+        indexLabel="Listed freight carriers index"
         format={(n: number) => fmt(n, metric.decimals)}
         items={rows.map((c) => ({
           key: c.name,

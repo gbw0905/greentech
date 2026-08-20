@@ -171,6 +171,7 @@ export function OilStocksPanel() {
           unitLabel={metric.unit}
           measureLabel={metric.label}
           measureHelp={metric.help}
+          indexLabel="NYSE / global energy majors index"
           format={(n) => chartFmt(n, metric.decimals)}
           items={sorted.map((q) => ({
             key: q.symbol,

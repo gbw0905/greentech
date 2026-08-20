@@ -156,6 +156,7 @@ export function SafAirlinesPanel() {
         unitLabel={metric.unit}
         measureLabel={metric.label}
         measureHelp={metric.help}
+        indexLabel="Global listed airlines index"
         format={(n: number) => fmt(n, metric.decimals)}
         items={sorted.map((a) => ({
           key: a.code,
