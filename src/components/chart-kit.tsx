@@ -552,17 +552,25 @@ export function ChartPanel({
 }) {
   return (
     <div className="glass-panel rise flex h-full flex-col p-5">
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-        <div className="max-w-2xl">
+      <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+        <div className="max-w-3xl">
           <h3 className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-foreground">
             <Icon className="size-5 text-primary" />
             {title}
           </h3>
           <p className="mt-1.5 text-sm text-muted-foreground">{blurb}</p>
         </div>
-        {metricOptions || limitOptions || actions ? (
-          <div className="flex w-full min-w-0 flex-col gap-1.5 sm:w-auto sm:items-end">
-            {metricOptions ? (
+        {status ? <span className="label-mono text-muted-foreground">{status}</span> : null}
+      </div>
+
+      {metricOptions || limitOptions || actions || filters || assistant ? (
+        <div className="mb-4 flex flex-col gap-2 rounded-sm border border-border bg-surface-2/60 p-2 sm:flex-row sm:flex-wrap sm:items-center">
+          {filters
+            ? React.isValidElement(filters)
+              ? React.cloneElement(filters as React.ReactElement<any>, { bare: true })
+              : filters
+            : null}
+          {metricOptions ? (
             <label className="flex min-w-0 w-full items-center gap-2">
               <span className="label-mono shrink-0 text-muted-foreground">{metricLabel}</span>
               <select
@@ -578,8 +586,8 @@ export function ChartPanel({
                 ))}
               </select>
             </label>
-            ) : null}
-            {limitOptions ? (
+          ) : null}
+          {limitOptions ? (
               <label className="flex min-w-0 w-full items-center gap-2">
                 <span className="label-mono shrink-0 text-muted-foreground">Show</span>
                 <select
@@ -595,18 +603,13 @@ export function ChartPanel({
                   ))}
                 </select>
               </label>
-            ) : null}
-            {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
-            {status ? <span className="label-mono text-muted-foreground">{status}</span> : null}
-          </div>
-        ) : null}
-      </div>
-
-      {filters ? <div className="mb-4">{filters}</div> : null}
+          ) : null}
+          {actions}
+          {assistant}
+        </div>
+      ) : null}
 
       <div className="min-h-0 flex-1">{children}</div>
-
-      {assistant}
 
       {footnote ? (
         <p className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">{footnote}</p>
