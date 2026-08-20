@@ -519,6 +519,9 @@ export function ChartPanel({
   metricValue,
   metricOptions,
   onMetricChange,
+  limitValue,
+  limitOptions,
+  onLimitChange,
   status,
   footnote,
   filters,
@@ -532,6 +535,10 @@ export function ChartPanel({
   metricValue?: string;
   metricOptions?: { value: string; label: string }[];
   onMetricChange?: (v: string) => void;
+  /** Optional "how many entities to show" control, e.g. Top 10 / Top 20 / All. */
+  limitValue?: string;
+  limitOptions?: { value: string; label: string }[];
+  onLimitChange?: (v: string) => void;
   status?: string;
   footnote?: string;
   /** Optional buttons (e.g. export) rendered in the header. */
@@ -550,7 +557,7 @@ export function ChartPanel({
           </h3>
           <p className="mt-1.5 text-sm text-muted-foreground">{blurb}</p>
         </div>
-        {metricOptions || actions ? (
+        {metricOptions || limitOptions || actions ? (
           <div className="flex w-full min-w-0 flex-col gap-1.5 sm:w-auto sm:items-end">
             {metricOptions ? (
             <label className="flex min-w-0 w-full items-center gap-2">
@@ -568,6 +575,23 @@ export function ChartPanel({
                 ))}
               </select>
             </label>
+            ) : null}
+            {limitOptions ? (
+              <label className="flex min-w-0 w-full items-center gap-2">
+                <span className="label-mono shrink-0 text-muted-foreground">Show</span>
+                <select
+                  className="chart-select min-w-0 max-w-full flex-1 sm:flex-none border-ink bg-ink text-ink-foreground"
+                  value={limitValue}
+                  onChange={(e) => onLimitChange?.(e.target.value)}
+                  aria-label={`Choose how many entities the ${title} chart shows`}
+                >
+                  {limitOptions.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
             ) : null}
             {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
             {status ? <span className="label-mono text-muted-foreground">{status}</span> : null}
