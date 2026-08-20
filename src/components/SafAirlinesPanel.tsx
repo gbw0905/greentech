@@ -2,7 +2,12 @@ import { useState } from "react";
 import { Plane } from "lucide-react";
 import { openEntityNews } from "@/lib/open-news";
 import { ChartHeat, ChartPanel, chartFmt as fmt } from "@/components/chart-kit";
-import { ChartFilterBar, useChartFilter } from "@/components/chart-filters";
+import {
+  ChartFilterBar,
+  countryFilterOptions,
+  useChartFilter,
+  useTopLimit,
+} from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
 import { AIRLINE_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
@@ -87,7 +92,9 @@ export function SafAirlinesPanel() {
     text: (a) => `${a.name} ${a.code} ${a.country} ${a.note}`,
     facetA: (a) => a.country,
   });
-  const sorted = [...f.filtered].sort((a, b) => valueOf(b) - valueOf(a));
+  const limiter = useTopLimit();
+  const ranked = [...f.filtered].sort((a, b) => valueOf(b) - valueOf(a));
+  const sorted = ranked.slice(0, limiter.limit);
 
   return (
     <ChartPanel
@@ -100,9 +107,12 @@ export function SafAirlinesPanel() {
         label: AIRLINE_METRICS[m].label,
       }))}
       onMetricChange={(v) => setMetricKey(v as AirlineMetric)}
+      limitValue={limiter.value}
+      limitOptions={limiter.options}
+      onLimitChange={limiter.setValue}
       actions={
         <ExportCsvButton
-          disabled={sorted.length === 0}
+          disabled={ranked.length === 0}
           build={() => ({
             title: "Top airlines using SAF globally",
             filename: "saf-airlines",
@@ -118,7 +128,7 @@ export function SafAirlinesPanel() {
               "1-day change %",
               "Note",
             ],
-            rows: sorted.map((a) => {
+            rows: ranked.map((a) => {
               const q = get(AIRLINE_TICKERS[a.code]);
               return [
                 a.name,
@@ -141,16 +151,26 @@ export function SafAirlinesPanel() {
           onQueryChange={f.setQuery}
           placeholder="Search airlines…"
           selects={[
-            { label: "Country", value: f.a, options: f.optionsA, onChange: f.setA, allLabel: "All countries" },
+            {
+              label: "Country",
+              value: f.a,
+              options: countryFilterOptions(AIRLINES.map((a) => a.country)),
+              onChange: f.setA,
+              allLabel: "All countries",
+            },
           ]}
           shown={sorted.length}
           total={AIRLINES.length}
+          matched={ranked.length}
         />
       }
       footnote="Estimates from airline sustainability reports, offtake announcements and regulatory disclosures. Click any row for the latest SAF news for that carrier."
     >
       {sorted.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No airlines match those filters.</p>
+        <p className="text-sm text-muted-foreground">
+          No listed airlines for this filter — open that country's profile page for its policy and
+          market updates.
+        </p>
       ) : (
       <ChartHeat
         unitLabel={metric.unit}
