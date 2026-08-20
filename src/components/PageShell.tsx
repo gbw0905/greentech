@@ -10,27 +10,27 @@ export function PageShell({
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-30 border-b border-ink bg-ink text-ink-foreground backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[80rem] flex-wrap items-center justify-between gap-4 px-5 py-2.5 lg:px-8">
-          <div className="flex items-center gap-3">
-            <Link to="/">
+        <div className="mx-auto flex max-w-[80rem] items-center justify-between gap-2 px-4 py-2 sm:gap-4 sm:px-5 sm:py-2.5 lg:px-8">
+          <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+            <Link to="/" className="shrink-0">
               <img
                 src={siteLogo}
                 alt="Global Bioenergy Watch logo: a globe with a leaf and rising data line"
                 width={1024}
                 height={1024}
-                className="size-9 rounded-md object-contain"
+                className="size-8 rounded-md object-contain sm:size-9"
               />
             </Link>
-            <div>
+            <div className="min-w-0">
               <a
                 href="https://www.linkedin.com/company/global-bioenergy-watch/?viewAsMember=true"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-display text-xl leading-none font-extrabold tracking-tight text-ink-foreground transition-colors hover:text-primary-glow sm:text-[1.4rem]"
+                className="block truncate font-display text-base leading-none font-extrabold tracking-tight text-ink-foreground transition-colors hover:text-primary-glow sm:text-xl lg:text-[1.4rem]"
               >
                 Global Bioenergy Watch
               </a>
-              <div className="kicker mt-1 flex items-center gap-1.5 text-ink-muted">
+              <div className="kicker mt-1 hidden items-center gap-1.5 text-ink-muted sm:flex">
                 <span className="size-1.5 rounded-full bg-accent" />
                 Independent policy &amp; market desk
               </div>
@@ -38,9 +38,11 @@ export function PageShell({
           </div>
           <Link
             to="/"
-            className="label-mono inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-2 font-bold text-ink-foreground transition-all hover:-translate-y-px hover:bg-white/20"
+            className="label-mono inline-flex shrink-0 items-center gap-2 rounded-full border border-white/20 bg-white/10 px-2.5 py-1.5 font-bold text-ink-foreground transition-all hover:-translate-y-px hover:bg-white/20 sm:px-3.5 sm:py-2"
           >
-            <ArrowLeft className="size-3.5" /> Back to dashboard
+            <ArrowLeft className="size-3.5" />
+            <span className="hidden sm:inline">Back to dashboard</span>
+            <span className="sm:hidden">Back</span>
           </Link>
         </div>
       </header>
