@@ -153,9 +153,8 @@ export function OilStocksPanel() {
     facetA: (q) => countryOf(q.symbol),
     facetB: (q) => capOf(q.symbol).kind,
   });
-  const limiter = useTopLimit();
   const ranked = [...f.filtered].sort((a, b) => metric.value(b) - metric.value(a));
-  const sorted = ranked.slice(0, limiter.limit);
+  const sorted = ranked.slice(0, 10);
 
   return (
     <ChartPanel
@@ -168,9 +167,6 @@ export function OilStocksPanel() {
         label: STOCK_METRICS[m].label,
       }))}
       onMetricChange={(v) => setMetricKey(v as StockMetric)}
-      limitValue={limiter.value}
-      limitOptions={limiter.options}
-      onLimitChange={limiter.setValue}
       actions={
         <button
           type="button"
