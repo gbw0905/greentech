@@ -136,6 +136,14 @@ export function ChartFilterBar({
         </button>
       ) : null}
       </div>
+    </>
+  );
+
+  if (bare) return content;
+
+  return (
+    <div className="flex flex-col gap-2 rounded-sm border border-border bg-surface-2/60 p-2 sm:flex-row sm:flex-wrap sm:items-center">
+      {content}
     </div>
   );
 }
