@@ -99,9 +99,8 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
     facetA: (s) => s.country,
     facetB: (s) => s.fuels as string[],
   });
-  const limiter = useTopLimit();
   const ranked = f.filtered.slice().sort((a, b) => valueOf(b) - valueOf(a));
-  const stations = ranked.slice(0, limiter.limit);
+  const stations = ranked.slice(0, 10);
 
   return (
     <ChartPanel
@@ -114,9 +113,6 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
         label: STATION_METRICS[m].label,
       }))}
       onMetricChange={(v) => setStationMetric(v as StationMetric)}
-      limitValue={limiter.value}
-      limitOptions={limiter.options}
-      onLimitChange={limiter.setValue}
       actions={
         <ExportCsvButton
           disabled={ranked.length === 0}
