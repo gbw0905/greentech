@@ -622,6 +622,20 @@ export function ChartPanel({
       {footnote ? (
         <p className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">{footnote}</p>
       ) : null}
+
+      {title ? (
+        <details className="mt-2 text-xs text-muted-foreground">
+          <summary className="label-mono cursor-pointer text-foreground">
+            Data sources &amp; references
+          </summary>
+          <ul className="mt-2 list-disc space-y-1 pl-4">
+            {sourcesFor(title).map((s) => (
+              <li key={s}>{s}</li>
+            ))}
+          </ul>
+          <p className="mt-2">{REFERENCE_NOTE}</p>
+        </details>
+      ) : null}
     </div>
   );
 }
