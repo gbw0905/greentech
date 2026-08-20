@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { Ship, Truck, TrainFront } from "lucide-react";
 import { ChartHeat, ChartPanel, chartFmt as fmt } from "@/components/chart-kit";
-import { ChartFilterBar, useChartFilter } from "@/components/chart-filters";
+import {
+  ChartFilterBar,
+  countryFilterOptions,
+  useChartFilter,
+  useTopLimit,
+} from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
 import { openEntityNews } from "@/lib/open-news";
 import { CARRIER_TICKERS } from "@/lib/entity-tickers";
@@ -118,7 +123,9 @@ function CarrierChart({
     text: (c) => `${c.name} ${c.country} ${c.note}`,
     facetA: (c) => c.country,
   });
-  const rows = f.filtered.slice().sort((a, b) => valueOf(b) - valueOf(a));
+  const limiter = useTopLimit();
+  const ranked = f.filtered.slice().sort((a, b) => valueOf(b) - valueOf(a));
+  const rows = ranked.slice(0, limiter.limit);
 
   return (
     <ChartPanel
@@ -131,9 +138,12 @@ function CarrierChart({
         label: METRICS[m].label,
       }))}
       onMetricChange={(v) => setMetricKey(v as Metric)}
+      limitValue={limiter.value}
+      limitOptions={limiter.options}
+      onLimitChange={limiter.setValue}
       actions={
         <ExportCsvButton
-          disabled={rows.length === 0}
+          disabled={ranked.length === 0}
           build={() => ({
             title,
             filename: exportName,
@@ -148,7 +158,7 @@ function CarrierChart({
               "1-day change %",
               "Note",
             ],
-            rows: rows.map((c) => {
+            rows: ranked.map((c) => {
               const q = get(CARRIER_TICKERS[c.name]);
               return [
                 c.name,
@@ -170,10 +180,17 @@ function CarrierChart({
           onQueryChange={f.setQuery}
           placeholder="Search carriers…"
           selects={[
-            { label: "Country", value: f.a, options: f.optionsA, onChange: f.setA, allLabel: "All countries" },
+            {
+              label: "Country",
+              value: f.a,
+              options: countryFilterOptions(data.map((c) => c.country)),
+              onChange: f.setA,
+              allLabel: "All countries",
+            },
           ]}
           shown={rows.length}
           total={data.length}
+          matched={ranked.length}
         />
       }
       footnote={footnote}
