@@ -1,12 +1,7 @@
 import { useState } from "react";
 import { Ship, Truck, TrainFront } from "lucide-react";
 import { ChartHeat, ChartPanel, chartFmt as fmt } from "@/components/chart-kit";
-import {
-  ChartFilterBar,
-  countryFilterOptions,
-  useChartFilter,
-  useTopLimit,
-} from "@/components/chart-filters";
+import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
 import { openEntityNews } from "@/lib/open-news";
 import { CARRIER_TICKERS } from "@/lib/entity-tickers";
@@ -124,9 +119,8 @@ function CarrierChart({
     text: (c) => `${c.name} ${c.country} ${c.note}`,
     facetA: (c) => c.country,
   });
-  const limiter = useTopLimit();
   const ranked = f.filtered.slice().sort((a, b) => valueOf(b) - valueOf(a));
-  const rows = ranked.slice(0, limiter.limit);
+  const rows = ranked.slice(0, 10);
 
   return (
     <ChartPanel
@@ -139,9 +133,6 @@ function CarrierChart({
         label: METRICS[m].label,
       }))}
       onMetricChange={(v) => setMetricKey(v as Metric)}
-      limitValue={limiter.value}
-      limitOptions={limiter.options}
-      onLimitChange={limiter.setValue}
       actions={
         <ExportCsvButton
           disabled={ranked.length === 0}
@@ -202,11 +193,7 @@ function CarrierChart({
             panel: title,
             measureLabel: metric.label,
             unit: metric.unit,
-            filterLabel: [
-              f.a || "All countries",
-              f.query ? `search "${f.query}"` : "",
-              limiter.value === "all" ? "All rows" : `Top ${limiter.limit}`,
-            ]
+            filterLabel: [f.a || "All countries", f.query ? `search "${f.query}"` : ""]
               .filter(Boolean)
               .join(" · "),
             shown: rows.length,

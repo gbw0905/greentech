@@ -2,12 +2,7 @@ import { useState } from "react";
 import { Plane } from "lucide-react";
 import { openEntityNews } from "@/lib/open-news";
 import { ChartHeat, ChartPanel, chartFmt as fmt } from "@/components/chart-kit";
-import {
-  ChartFilterBar,
-  countryFilterOptions,
-  useChartFilter,
-  useTopLimit,
-} from "@/components/chart-filters";
+import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
 import { AIRLINE_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
@@ -93,9 +88,8 @@ export function SafAirlinesPanel() {
     text: (a) => `${a.name} ${a.code} ${a.country} ${a.note}`,
     facetA: (a) => a.country,
   });
-  const limiter = useTopLimit();
   const ranked = [...f.filtered].sort((a, b) => valueOf(b) - valueOf(a));
-  const sorted = ranked.slice(0, limiter.limit);
+  const sorted = ranked.slice(0, 10);
 
   return (
     <ChartPanel
@@ -108,9 +102,6 @@ export function SafAirlinesPanel() {
         label: AIRLINE_METRICS[m].label,
       }))}
       onMetricChange={(v) => setMetricKey(v as AirlineMetric)}
-      limitValue={limiter.value}
-      limitOptions={limiter.options}
-      onLimitChange={limiter.setValue}
       actions={
         <ExportCsvButton
           disabled={ranked.length === 0}
@@ -172,11 +163,7 @@ export function SafAirlinesPanel() {
             panel: "Top airlines using SAF globally",
             measureLabel: metric.label,
             unit: metric.unit,
-            filterLabel: [
-              f.a || "All countries",
-              f.query ? `search "${f.query}"` : "",
-              limiter.value === "all" ? "All rows" : `Top ${limiter.limit}`,
-            ]
+            filterLabel: [f.a || "All countries", f.query ? `search "${f.query}"` : ""]
               .filter(Boolean)
               .join(" · "),
             shown: sorted.length,

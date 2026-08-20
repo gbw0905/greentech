@@ -5,12 +5,7 @@ import { getOilStocksFn, type OilQuote } from "@/lib/oil.functions";
 import { openEntityNews } from "@/lib/open-news";
 import { entityLogo } from "@/lib/entity-logos";
 import { ChartHeat, ChartPanel, chartFmt } from "@/components/chart-kit";
-import {
-  ChartFilterBar,
-  countryFilterOptions,
-  useChartFilter,
-  useTopLimit,
-} from "@/components/chart-filters";
+import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { downloadBrandedCsv, type BrandedExport } from "@/lib/branded-export";
 import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 
@@ -158,9 +153,8 @@ export function OilStocksPanel() {
     facetA: (q) => countryOf(q.symbol),
     facetB: (q) => capOf(q.symbol).kind,
   });
-  const limiter = useTopLimit();
   const ranked = [...f.filtered].sort((a, b) => metric.value(b) - metric.value(a));
-  const sorted = ranked.slice(0, limiter.limit);
+  const sorted = ranked.slice(0, 10);
 
   return (
     <ChartPanel
@@ -173,9 +167,6 @@ export function OilStocksPanel() {
         label: STOCK_METRICS[m].label,
       }))}
       onMetricChange={(v) => setMetricKey(v as StockMetric)}
-      limitValue={limiter.value}
-      limitOptions={limiter.options}
-      onLimitChange={limiter.setValue}
       actions={
         <button
           type="button"
@@ -215,12 +206,7 @@ export function OilStocksPanel() {
             panel: "Top global oil companies",
             measureLabel: metric.label,
             unit: metric.unit,
-            filterLabel: [
-              f.a || "All countries",
-              f.b || "All types",
-              f.query ? `search "${f.query}"` : "",
-              limiter.value === "all" ? "All rows" : `Top ${limiter.limit}`,
-            ]
+            filterLabel: [f.a || "All countries", f.b || "All types", f.query ? `search "${f.query}"` : ""]
               .filter(Boolean)
               .join(" · "),
             shown: sorted.length,

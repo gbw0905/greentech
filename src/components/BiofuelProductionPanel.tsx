@@ -3,12 +3,7 @@ import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 import { Fuel } from "lucide-react";
 import { ChartHeat, ChartPanel, chartFmt as fmt } from "@/components/chart-kit";
-import {
-  ChartFilterBar,
-  countryFilterOptions,
-  useChartFilter,
-  useTopLimit,
-} from "@/components/chart-filters";
+import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
 import type { FuelType } from "@/lib/policy-taxonomy";
 import { openEntityNews } from "@/lib/open-news";
@@ -104,9 +99,8 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
     facetA: (s) => s.country,
     facetB: (s) => s.fuels as string[],
   });
-  const limiter = useTopLimit();
   const ranked = f.filtered.slice().sort((a, b) => valueOf(b) - valueOf(a));
-  const stations = ranked.slice(0, limiter.limit);
+  const stations = ranked.slice(0, 10);
 
   return (
     <ChartPanel
@@ -119,9 +113,6 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
         label: STATION_METRICS[m].label,
       }))}
       onMetricChange={(v) => setStationMetric(v as StationMetric)}
-      limitValue={limiter.value}
-      limitOptions={limiter.options}
-      onLimitChange={limiter.setValue}
       actions={
         <ExportCsvButton
           disabled={ranked.length === 0}
@@ -187,12 +178,7 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
             panel: "Top global fuel stations selling biofuels",
             measureLabel: metric.label,
             unit: metric.unit,
-            filterLabel: [
-              f.a || "All countries",
-              f.b || "All fuels",
-              f.query ? `search "${f.query}"` : "",
-              limiter.value === "all" ? "All rows" : `Top ${limiter.limit}`,
-            ]
+            filterLabel: [f.a || "All countries", f.b || "All fuels", f.query ? `search "${f.query}"` : ""]
               .filter(Boolean)
               .join(" · "),
             shown: stations.length,
