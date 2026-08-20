@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { Check, Copy, Loader2, Mail, RefreshCw, Sparkles } from "lucide-react";
 import { emailChartSummaryFn, summariseChartFn } from "@/lib/chart-summary.functions";
 import type { SummaryRow } from "@/lib/chart-summary.server";
