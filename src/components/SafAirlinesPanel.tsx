@@ -88,9 +88,8 @@ export function SafAirlinesPanel() {
     text: (a) => `${a.name} ${a.code} ${a.country} ${a.note}`,
     facetA: (a) => a.country,
   });
-  const limiter = useTopLimit();
   const ranked = [...f.filtered].sort((a, b) => valueOf(b) - valueOf(a));
-  const sorted = ranked.slice(0, limiter.limit);
+  const sorted = ranked.slice(0, 10);
 
   return (
     <ChartPanel
@@ -103,9 +102,6 @@ export function SafAirlinesPanel() {
         label: AIRLINE_METRICS[m].label,
       }))}
       onMetricChange={(v) => setMetricKey(v as AirlineMetric)}
-      limitValue={limiter.value}
-      limitOptions={limiter.options}
-      onLimitChange={limiter.setValue}
       actions={
         <ExportCsvButton
           disabled={ranked.length === 0}
