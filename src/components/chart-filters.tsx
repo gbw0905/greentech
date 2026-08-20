@@ -140,7 +140,7 @@ export function ChartFilterBar({
   if (bare) return content;
 
   return (
-    <div className="flex flex-col gap-2 rounded-sm border border-border bg-surface-2/60 p-2 sm:flex-row sm:flex-wrap sm:items-center">
+    <div className="flex items-center gap-2 overflow-x-auto rounded-sm border border-border bg-surface-2/60 p-2 whitespace-nowrap">
       {content}
     </div>
   );
