@@ -119,9 +119,8 @@ function CarrierChart({
     text: (c) => `${c.name} ${c.country} ${c.note}`,
     facetA: (c) => c.country,
   });
-  const limiter = useTopLimit();
   const ranked = f.filtered.slice().sort((a, b) => valueOf(b) - valueOf(a));
-  const rows = ranked.slice(0, limiter.limit);
+  const rows = ranked.slice(0, 10);
 
   return (
     <ChartPanel
@@ -134,9 +133,6 @@ function CarrierChart({
         label: METRICS[m].label,
       }))}
       onMetricChange={(v) => setMetricKey(v as Metric)}
-      limitValue={limiter.value}
-      limitOptions={limiter.options}
-      onLimitChange={limiter.setValue}
       actions={
         <ExportCsvButton
           disabled={ranked.length === 0}
