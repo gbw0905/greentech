@@ -50,6 +50,7 @@ export function ChartFilterBar({
   selects = [],
   shown,
   total,
+  matched,
 }: {
   query: string;
   onQueryChange: (v: string) => void;
@@ -57,6 +58,8 @@ export function ChartFilterBar({
   selects?: SelectFilter[];
   shown: number;
   total: number;
+  /** Rows matching the filters before the Top-N limit is applied. */
+  matched?: number;
 }) {
   const dirty = query.trim().length > 0 || selects.some((s) => s.value !== "");
 
@@ -111,7 +114,9 @@ export function ChartFilterBar({
       })}
 
       <span className="label-mono ml-auto shrink-0 text-muted-foreground">
-        {shown} / {total}
+        {typeof matched === "number" && matched !== shown
+          ? `showing ${shown} of ${matched} matches`
+          : `${shown} / ${total}`}
       </span>
 
       {dirty ? (
