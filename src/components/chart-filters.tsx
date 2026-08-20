@@ -149,6 +149,32 @@ export function useChartFilter<T>(
     facetB?: (row: T) => string | string[] | undefined;
   },
 ) {
+  return useChartFilterImpl(rows, opts);
+}
+
+/** Top-N limiter shared by every treemap panel. */
+export function useTopLimit(initial = "10") {
+  const [value, setValue] = useState(initial);
+  const limit = value === "all" ? Infinity : Number(value);
+  const options = [
+    { value: "10", label: "Top 10 leaders" },
+    { value: "20", label: "Top 20" },
+    { value: "all", label: "All entities" },
+  ];
+  return { value, setValue, limit, options };
+}
+
+function useChartFilterImpl<T>(
+  rows: T[],
+  opts: {
+    /** Free-text haystack for each row. */
+    text: (row: T) => string;
+    /** Optional first facet (usually country). */
+    facetA?: (row: T) => string | string[] | undefined;
+    /** Optional second facet (usually fuel category). */
+    facetB?: (row: T) => string | string[] | undefined;
+  },
+) {
   const [query, setQuery] = useState("");
   const [a, setA] = useState("");
   const [b, setB] = useState("");
