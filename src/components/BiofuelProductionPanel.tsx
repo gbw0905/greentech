@@ -172,7 +172,7 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
         unitLabel={metric.unit}
         measureLabel={metric.label}
         measureHelp={metric.help}
-        indexLabel="Listed fuel retailers &amp; producers index"
+        indexLabel="Listed fuel retailers & producers index"
         format={(n: number) => fmt(n, metric.decimals)}
         items={stations.map((s) => ({
           key: s.name,
