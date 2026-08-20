@@ -196,7 +196,10 @@ function CarrierChart({
       footnote={footnote}
     >
       {rows.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No carriers match those filters.</p>
+        <p className="text-sm text-muted-foreground">
+          No listed carriers for this filter — open that country's profile page for its policy and
+          market updates.
+        </p>
       ) : (
       <ChartHeat
         unitLabel={metric.unit}
