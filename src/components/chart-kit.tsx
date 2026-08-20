@@ -1,4 +1,4 @@
-import { cloneElement, isValidElement, useState } from "react";
+import { cloneElement, isValidElement, useRef, useState } from "react";
 import type { ReactElement } from "react";
 import type { LucideIcon } from "lucide-react";
 import type { NewsTarget } from "@/lib/open-news";
