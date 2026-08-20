@@ -1,5 +1,7 @@
 // Server-only: builds analyst summaries of a heat map's current view.
 
+import { sourcesFor } from "./data-sources";
+
 const MODEL = "google/gemini-3.7-flash";
 
 export interface SummaryRow {
@@ -42,8 +44,15 @@ function prompt(r: SummaryRequest) {
     table,
     "",
     "Cover: who leads and by how much, the gap to the rest of the field, notable laggards, the 1-day market trend across the listed names (advancers vs decliners, best and worst movers), any country or category concentration visible in the data, and what an analyst should watch next.",
+    "",
+    "Data sources behind these figures (reference them naturally where relevant, e.g. when noting where capacity or price figures come from):",
+    sourcesFor(r.panel)
+      .map((s) => `- ${s}`)
+      .join("\n"),
+    "",
     "Rules: plain prose, no markdown headings, no bullet points, no preamble, 350-450 words.",
     "Use only the figures given above. Do not invent numbers, dates, deals or quotes.",
+    "End with one short closing sentence stating that figures are compiled by Global Bioenergy Watch from the sources listed and should be cross-verified.",
   ].join("\n");
 }
 
