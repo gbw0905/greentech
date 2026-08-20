@@ -475,6 +475,17 @@ export function ChartHeat({
                   {hovered.meta}
                 </div>
               ) : null}
+              {typeof hovered.changePct === "number" ? (
+                <div
+                  className={`chart-sub mt-1 font-mono tabular-nums ${
+                    hovered.changePct >= 0 ? "text-primary" : "text-destructive"
+                  }`}
+                >
+                  {hovered.changePct >= 0 ? "▲" : "▼"} {pct(hovered.changePct)} today
+                  {" · "}
+                  {hovered.changePct >= 0 ? "rising" : "falling"} vs previous close
+                </div>
+              ) : null}
             </div>
           </div>
         ) : null}
