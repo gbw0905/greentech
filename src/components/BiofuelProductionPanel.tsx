@@ -178,12 +178,7 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
             panel: "Top global fuel stations selling biofuels",
             measureLabel: metric.label,
             unit: metric.unit,
-            filterLabel: [
-              f.a || "All countries",
-              f.b || "All fuels",
-              f.query ? `search "${f.query}"` : "",
-              limiter.value === "all" ? "All rows" : `Top ${limiter.limit}`,
-            ]
+            filterLabel: [f.a || "All countries", f.b || "All fuels", f.query ? `search "${f.query}"` : ""]
               .filter(Boolean)
               .join(" · "),
             shown: stations.length,
