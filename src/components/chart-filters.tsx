@@ -51,6 +51,7 @@ export function ChartFilterBar({
   shown,
   total,
   matched,
+  bare = false,
 }: {
   query: string;
   onQueryChange: (v: string) => void;
@@ -60,11 +61,13 @@ export function ChartFilterBar({
   total: number;
   /** Rows matching the filters before the Top-N limit is applied. */
   matched?: number;
+  /** Render without its own boxed wrapper, so it can sit inside a shared toolbar. */
+  bare?: boolean;
 }) {
   const dirty = query.trim().length > 0 || selects.some((s) => s.value !== "");
 
-  return (
-    <div className="flex flex-col gap-2 rounded-sm border border-border bg-surface-2/60 p-2 sm:flex-row sm:flex-wrap sm:items-center">
+  const content = (
+    <>
       <div className="relative w-full min-w-0 sm:max-w-xs sm:flex-1">
         <Search className="pointer-events-none absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
         <input
@@ -133,6 +136,14 @@ export function ChartFilterBar({
         </button>
       ) : null}
       </div>
+    </>
+  );
+
+  if (bare) return content;
+
+  return (
+    <div className="flex flex-col gap-2 rounded-sm border border-border bg-surface-2/60 p-2 sm:flex-row sm:flex-wrap sm:items-center">
+      {content}
     </div>
   );
 }
