@@ -68,7 +68,7 @@ export function ChartFilterBar({
 
   const content = (
     <>
-      <div className="relative w-full min-w-0 sm:max-w-xs sm:flex-1">
+      <div className="relative w-44 shrink-0">
         <Search className="pointer-events-none absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
         <input
           type="search"
@@ -80,46 +80,45 @@ export function ChartFilterBar({
         />
       </div>
 
-      <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:w-auto sm:flex-1">
       {selects.map((s) => {
         const opts = s.options.map(asOption);
         const groups = [...new Set(opts.map((o) => o.group ?? ""))];
         return (
-        <label key={s.label} className="flex min-w-0 flex-1 items-center gap-1.5 sm:flex-none">
-          <span className="label-mono shrink-0 text-muted-foreground">{s.label}</span>
-          <select
-            className="chart-select w-full min-w-0 sm:w-auto"
-            value={s.value}
-            aria-label={`Filter by ${s.label.toLowerCase()}`}
-            onChange={(e) => s.onChange(e.target.value)}
-          >
-            <option value="">{s.allLabel ?? `All ${s.label.toLowerCase()}s`}</option>
-            {groups.length === 1 && !groups[0]
-              ? opts.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))
-              : groups.map((g) => (
-                  <optgroup key={g || "other"} label={g || "Other"}>
-                    {opts
-                      .filter((o) => (o.group ?? "") === g)
-                      .map((o) => (
-                        <option key={o.value} value={o.value}>
-                          {o.label}
-                        </option>
-                      ))}
-                  </optgroup>
-                ))}
-          </select>
-        </label>
+          <label key={s.label} className="flex shrink-0 items-center gap-1.5">
+            <span className="label-mono text-muted-foreground">{s.label}</span>
+            <select
+              className="chart-select w-36"
+              value={s.value}
+              aria-label={`Filter by ${s.label.toLowerCase()}`}
+              onChange={(e) => s.onChange(e.target.value)}
+            >
+              <option value="">{s.allLabel ?? `All ${s.label.toLowerCase()}s`}</option>
+              {groups.length === 1 && !groups[0]
+                ? opts.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))
+                : groups.map((g) => (
+                    <optgroup key={g || "other"} label={g || "Other"}>
+                      {opts
+                        .filter((o) => (o.group ?? "") === g)
+                        .map((o) => (
+                          <option key={o.value} value={o.value}>
+                            {o.label}
+                          </option>
+                        ))}
+                    </optgroup>
+                  ))}
+            </select>
+          </label>
         );
       })}
 
-      <span className="label-mono ml-auto shrink-0 text-muted-foreground">
+      <span className="label-mono shrink-0 text-muted-foreground">
         {typeof matched === "number" && matched !== shown
-          ? `showing ${shown} of ${matched} matches`
-          : `${shown} / ${total}`}
+          ? `${shown}/${matched}`
+          : `${shown}/${total}`}
       </span>
 
       {dirty ? (
@@ -135,7 +134,6 @@ export function ChartFilterBar({
           Clear
         </button>
       ) : null}
-      </div>
     </>
   );
 
