@@ -577,7 +577,7 @@ export function ChartPanel({
             <label className="flex shrink-0 items-center gap-1.5">
               <span className="label-mono text-muted-foreground">{metricLabel}</span>
               <select
-                className="chart-select border-ink bg-ink text-ink-foreground"
+                className="chart-select"
                 value={metricValue}
                 onChange={(e) => onMetricChange?.(e.target.value)}
                 aria-label={`Choose the value shown in the ${title} chart`}
@@ -594,7 +594,7 @@ export function ChartPanel({
             <label className="flex shrink-0 items-center gap-1.5">
               <span className="label-mono text-muted-foreground">Show</span>
               <select
-                className="chart-select border-ink bg-ink text-ink-foreground"
+                className="chart-select"
                 value={limitValue}
                 onChange={(e) => onLimitChange?.(e.target.value)}
                 aria-label={`Choose how many entities the ${title} chart shows`}
