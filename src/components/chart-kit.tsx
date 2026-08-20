@@ -566,7 +566,7 @@ export function ChartPanel({
       </div>
 
       {metricOptions || limitOptions || actions || filters || assistant ? (
-        <div className="mb-4 flex items-center gap-2 overflow-x-auto rounded-sm border border-border bg-surface-2/60 p-2 whitespace-nowrap">
+        <div className="mb-2 flex items-center gap-2 overflow-x-auto rounded-sm border border-border bg-surface-2/60 p-2 whitespace-nowrap">
           {filters
             ? isValidElement(filters)
               ? cloneElement(filters as ReactElement<any>, { bare: true })
@@ -607,9 +607,15 @@ export function ChartPanel({
             </label>
           ) : null}
           {actions}
-          {assistant}
+          {assistant
+            ? isValidElement(assistant)
+              ? cloneElement(assistant as ReactElement<any>, { portalTarget: panelRef.current })
+              : assistant
+            : null}
         </div>
       ) : null}
+
+      <div ref={panelRef} className="relative" />
 
       <div className="min-h-0 flex-1">{children}</div>
 
