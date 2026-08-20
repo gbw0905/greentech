@@ -1,4 +1,5 @@
 import logoUrl from "@/assets/logo.png";
+import { REFERENCE_NOTE, sourcesFor } from "@/lib/data-sources";
 
 const SITE = "Global Bioenergy Watch";
 const SITE_URL = "https://www.globalbioenergywatch.org";
@@ -43,11 +44,14 @@ export type BrandedExport = {
   header: string[];
   rows: (string | number)[][];
   note?: string;
+  /** Overrides the default reference list for this panel. */
+  sources?: string[];
 };
 
 /** CSV with a branded text banner on top (CSV cannot hold images). */
 export function downloadBrandedCsv(x: BrandedExport) {
   const stamp = new Date().toISOString().slice(0, 10);
+  const refs = x.sources ?? sourcesFor(x.title);
   const banner = [
     [SITE],
     [x.title],
@@ -56,7 +60,8 @@ export function downloadBrandedCsv(x: BrandedExport) {
     ...(x.note ? [[x.note]] : []),
     [],
   ];
-  const csv = [...banner, x.header, ...x.rows]
+  const footer = [[], ["Data sources & references"], ...refs.map((r) => [r]), [REFERENCE_NOTE]];
+  const csv = [...banner, x.header, ...x.rows, ...footer]
     .map((r) => r.map(cell).join(","))
     .join("\r\n");
   save(new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" }), `${x.filename}-${stamp}.csv`);
@@ -67,6 +72,7 @@ export async function downloadBrandedExcel(x: BrandedExport) {
   const stamp = new Date().toISOString().slice(0, 10);
   const src = await logoDataUri();
   const cols = x.header.length;
+  const refs = x.sources ?? sourcesFor(x.title);
   const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">
 <head><meta charset="utf-8" /></head>
 <body>
@@ -79,6 +85,10 @@ ${x.note ? `<tr><td colspan="${cols}">${esc(x.note)}</td></tr>` : ""}
 <tr><td colspan="${cols}"></td></tr>
 <tr>${x.header.map((h) => `<th style="background:#0b1f3a;color:#fff;text-align:left">${esc(h)}</th>`).join("")}</tr>
 ${x.rows.map((r) => `<tr>${r.map((c) => `<td>${esc(c)}</td>`).join("")}</tr>`).join("")}
+<tr><td colspan="${cols}"></td></tr>
+<tr><td colspan="${cols}" style="font-weight:bold">Data sources &amp; references</td></tr>
+${refs.map((r) => `<tr><td colspan="${cols}">${esc(r)}</td></tr>`).join("")}
+<tr><td colspan="${cols}">${esc(REFERENCE_NOTE)}</td></tr>
 </table>
 </body></html>`;
   save(new Blob([html], { type: "application/vnd.ms-excel;charset=utf-8;" }), `${x.filename}-${stamp}.xls`);
