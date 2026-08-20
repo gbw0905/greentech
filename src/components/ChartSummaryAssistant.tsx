@@ -18,9 +18,12 @@ export type ChartSummaryPayload = {
 export function ChartSummaryAssistant({
   build,
   disabled,
+  portalTarget,
 }: {
   build: () => ChartSummaryPayload;
   disabled?: boolean;
+  /** When supplied, the results panel is rendered into this DOM node instead of inline. */
+  portalTarget?: HTMLElement | null;
 }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
