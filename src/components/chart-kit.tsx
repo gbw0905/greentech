@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { cloneElement, isValidElement, useState } from "react";
+import type { ReactElement } from "react";
 import type { LucideIcon } from "lucide-react";
 import type { NewsTarget } from "@/lib/open-news";
 
@@ -566,8 +567,8 @@ export function ChartPanel({
       {metricOptions || limitOptions || actions || filters || assistant ? (
         <div className="mb-4 flex flex-col gap-2 rounded-sm border border-border bg-surface-2/60 p-2 sm:flex-row sm:flex-wrap sm:items-center">
           {filters
-            ? React.isValidElement(filters)
-              ? React.cloneElement(filters as React.ReactElement<any>, { bare: true })
+            ? isValidElement(filters)
+              ? cloneElement(filters as ReactElement<any>, { bare: true })
               : filters
             : null}
           {metricOptions ? (
