@@ -18,6 +18,8 @@ interface Props {
   filterLabel?: string
   summary?: string
   dateLabel?: string
+  sources?: string[]
+  referenceNote?: string
 }
 
 const main = { backgroundColor: '#ffffff', fontFamily: 'Calibri, Carlito, Segoe UI, Arial, sans-serif' }
@@ -56,6 +58,8 @@ const ChartSummary = ({
   filterLabel = 'All entities',
   summary = '',
   dateLabel = '',
+  sources = [],
+  referenceNote = '',
 }: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
@@ -78,6 +82,15 @@ const ChartSummary = ({
               {para}
             </Text>
           ))}
+
+        <Hr />
+        <Text style={sectionLabel}>Data sources &amp; references</Text>
+        {sources.map((s, i) => (
+          <Text key={i} style={{ ...text, margin: '0 0 8px' }}>
+            • {s}
+          </Text>
+        ))}
+        {referenceNote ? <Text style={foot}>{referenceNote}</Text> : null}
 
         <Hr />
         <Link style={link} href="https://www.globalbioenergywatch.org">
@@ -104,5 +117,11 @@ export const template = {
     dateLabel: 'Thu, 20 Aug 2026',
     summary:
       'Saudi Aramco dominates the ranking on annual output capacity, with several times the volume of the next largest producer.\n\nAcross the listed names the one-day move was modest, with advancers slightly outnumbering decliners.',
+    sources: [
+      'Annual output capacity (MMboe/yr): company annual reports and 20-F/10-K filings.',
+      'Live share prices: Yahoo Finance delayed market data.',
+    ],
+    referenceNote:
+      'Figures are estimates compiled by Global Bioenergy Watch and may lag official filings — always cross-verify against the primary sources listed.',
   },
 } satisfies TemplateEntry
