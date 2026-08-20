@@ -551,6 +551,7 @@ export function ChartPanel({
   filters?: React.ReactNode;
   children: React.ReactNode;
 }) {
+  const panelRef = useRef<HTMLDivElement | null>(null);
   return (
     <div className="glass-panel rise flex h-full flex-col p-5">
       <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
