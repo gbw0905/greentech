@@ -551,6 +551,7 @@ export function ChartPanel({
   filters?: React.ReactNode;
   children: React.ReactNode;
 }) {
+  const [panelNode, setPanelNode] = useState<HTMLDivElement | null>(null);
   return (
     <div className="glass-panel rise flex h-full flex-col p-5">
       <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
@@ -565,17 +566,17 @@ export function ChartPanel({
       </div>
 
       {metricOptions || limitOptions || actions || filters || assistant ? (
-        <div className="mb-4 flex flex-col gap-2 rounded-sm border border-border bg-surface-2/60 p-2 sm:flex-row sm:flex-wrap sm:items-center">
+        <div className="mb-2 flex items-center gap-2 overflow-x-auto rounded-sm border border-border bg-surface-2/60 p-2 whitespace-nowrap">
           {filters
             ? isValidElement(filters)
               ? cloneElement(filters as ReactElement<any>, { bare: true })
               : filters
             : null}
           {metricOptions ? (
-            <label className="flex min-w-0 w-full items-center gap-2">
-              <span className="label-mono shrink-0 text-muted-foreground">{metricLabel}</span>
+            <label className="flex shrink-0 items-center gap-1.5">
+              <span className="label-mono text-muted-foreground">{metricLabel}</span>
               <select
-                className="chart-select min-w-0 max-w-full flex-1 sm:flex-none border-ink bg-ink text-ink-foreground"
+                className="chart-select border-ink bg-ink text-ink-foreground"
                 value={metricValue}
                 onChange={(e) => onMetricChange?.(e.target.value)}
                 aria-label={`Choose the value shown in the ${title} chart`}
@@ -589,26 +590,32 @@ export function ChartPanel({
             </label>
           ) : null}
           {limitOptions ? (
-              <label className="flex min-w-0 w-full items-center gap-2">
-                <span className="label-mono shrink-0 text-muted-foreground">Show</span>
-                <select
-                  className="chart-select min-w-0 max-w-full flex-1 sm:flex-none border-ink bg-ink text-ink-foreground"
-                  value={limitValue}
-                  onChange={(e) => onLimitChange?.(e.target.value)}
-                  aria-label={`Choose how many entities the ${title} chart shows`}
-                >
-                  {limitOptions.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
+            <label className="flex shrink-0 items-center gap-1.5">
+              <span className="label-mono text-muted-foreground">Show</span>
+              <select
+                className="chart-select border-ink bg-ink text-ink-foreground"
+                value={limitValue}
+                onChange={(e) => onLimitChange?.(e.target.value)}
+                aria-label={`Choose how many entities the ${title} chart shows`}
+              >
+                {limitOptions.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </label>
           ) : null}
           {actions}
-          {assistant}
+          {assistant
+            ? isValidElement(assistant)
+              ? cloneElement(assistant as ReactElement<any>, { portalTarget: panelNode })
+              : assistant
+            : null}
         </div>
       ) : null}
+
+      <div ref={setPanelNode} className="relative" />
 
       <div className="min-h-0 flex-1">{children}</div>
 
