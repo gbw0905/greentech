@@ -180,6 +180,7 @@ export function OilStocksPanel() {
             logo: entityLogo(q.symbol),
             meta: `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%`,
             tone: q.changePct >= 0 ? ("up" as const) : ("down" as const),
+            changePct: q.changePct,
           }))}
           onSelect={openEntityNews}
           news={Object.fromEntries(

@@ -165,6 +165,7 @@ export function SafAirlinesPanel() {
           logo: entityLogoByName(a.name),
           meta: priceMeta(get(AIRLINE_TICKERS[a.code])),
           tone: priceTone(get(AIRLINE_TICKERS[a.code])),
+          changePct: get(AIRLINE_TICKERS[a.code])?.changePct,
         }))}
         onSelect={openEntityNews}
         news={Object.fromEntries(

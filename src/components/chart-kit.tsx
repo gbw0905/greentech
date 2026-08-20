@@ -17,6 +17,8 @@ export type ChartItem = {
   meta?: string;
   /** Optional tone for the value text: default | up | down. */
   tone?: "default" | "up" | "down";
+  /** Optional 1-day price move in percent, used for the trend layer. */
+  changePct?: number | undefined;
   /** Optional brand logo URL, rendered in heat-map tiles. */
   logo?: string | undefined;
 };
@@ -302,8 +304,46 @@ export function ChartHeat({
   const byKey = new Map(sorted.map((i) => [i.key, i]));
   const hovered = hover ? byKey.get(hover.key) : null;
 
+  // Market trend layer: derived from the live 1-day moves attached to items.
+  const moves = items
+    .map((i) => i.changePct)
+    .filter((c): c is number => typeof c === "number" && Number.isFinite(c));
+  const up = moves.filter((c) => c > 0).length;
+  const down = moves.filter((c) => c < 0).length;
+  const avg = moves.length ? moves.reduce((s, c) => s + c, 0) / moves.length : 0;
+  const pct = (n: number) => `${n >= 0 ? "+" : ""}${n.toFixed(2)}%`;
+  const best = items
+    .filter((i) => typeof i.changePct === "number")
+    .sort((a, b) => (b.changePct ?? 0) - (a.changePct ?? 0));
+
   return (
     <div>
+      {moves.length ? (
+        <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-sm border border-border/60 bg-card p-2.5">
+          <span className="chart-sub uppercase tracking-wide text-muted-foreground">
+            Market trend (1-day)
+          </span>
+          <span
+            className={`chart-value ${avg >= 0 ? "text-primary" : "text-destructive"}`}
+            title="Average 1-day share price move across the listed entities shown"
+          >
+            {avg >= 0 ? "▲" : "▼"} {pct(avg)} avg
+          </span>
+          <span className="chart-sub text-muted-foreground">
+            <span className="text-primary">▲ {up} advancing</span>
+            {" · "}
+            <span className="text-destructive">▼ {down} declining</span>
+            {" · "}
+            {moves.length} listed
+          </span>
+          {best.length ? (
+            <span className="chart-sub text-muted-foreground">
+              Top: {best[0]!.label} {pct(best[0]!.changePct ?? 0)} · Worst:{" "}
+              {best[best.length - 1]!.label} {pct(best[best.length - 1]!.changePct ?? 0)}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
       <div className="mb-3 rounded-sm border border-border/60 bg-muted/40 p-2.5">
         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
           <span className="chart-sub uppercase tracking-wide text-muted-foreground">
@@ -378,6 +418,15 @@ export function ChartHeat({
                     <div className="chart-sub truncate text-white/80">{item.sub}</div>
                   ) : null}
                 </div>
+                {typeof item.changePct === "number" && mid ? (
+                  <span
+                    className="ml-auto shrink-0 rounded-sm bg-black/25 px-1 font-mono text-[0.6rem] leading-4 tabular-nums text-white"
+                    title={`1-day move: ${pct(item.changePct)}`}
+                  >
+                    {item.changePct >= 0 ? "▲" : "▼"}
+                    {big ? ` ${pct(item.changePct)}` : ""}
+                  </span>
+                ) : null}
               </div>
               {mid ? (
                 <div className="min-w-0">
@@ -424,6 +473,17 @@ export function ChartHeat({
               {hovered.meta ? (
                 <div className="chart-sub mt-1 font-mono tabular-nums text-muted-foreground">
                   {hovered.meta}
+                </div>
+              ) : null}
+              {typeof hovered.changePct === "number" ? (
+                <div
+                  className={`chart-sub mt-1 font-mono tabular-nums ${
+                    hovered.changePct >= 0 ? "text-primary" : "text-destructive"
+                  }`}
+                >
+                  {hovered.changePct >= 0 ? "▲" : "▼"} {pct(hovered.changePct)} today
+                  {" · "}
+                  {hovered.changePct >= 0 ? "rising" : "falling"} vs previous close
                 </div>
               ) : null}
             </div>

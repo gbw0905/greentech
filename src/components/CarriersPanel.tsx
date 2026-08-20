@@ -194,6 +194,7 @@ function CarrierChart({
           logo: entityLogoByName(c.name),
           meta: priceMeta(get(CARRIER_TICKERS[c.name])),
           tone: priceTone(get(CARRIER_TICKERS[c.name])),
+          changePct: get(CARRIER_TICKERS[c.name])?.changePct,
         }))}
         onSelect={openEntityNews}
         news={Object.fromEntries(
