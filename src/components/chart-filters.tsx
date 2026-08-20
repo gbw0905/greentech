@@ -68,7 +68,7 @@ export function ChartFilterBar({
 
   const content = (
     <>
-      <div className="relative w-44 shrink-0">
+      <div className="relative w-full shrink-0 sm:w-44">
         <Search className="pointer-events-none absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
         <input
           type="search"
@@ -84,10 +84,10 @@ export function ChartFilterBar({
         const opts = s.options.map(asOption);
         const groups = [...new Set(opts.map((o) => o.group ?? ""))];
         return (
-          <label key={s.label} className="flex shrink-0 items-center gap-1.5">
-            <span className="label-mono text-muted-foreground">{s.label}</span>
+          <label key={s.label} className="flex w-full shrink-0 items-center gap-1.5 sm:w-auto">
+            <span className="label-mono shrink-0 text-muted-foreground">{s.label}</span>
             <select
-              className="chart-select w-36"
+              className="chart-select min-w-0 flex-1 sm:w-36 sm:flex-none"
               value={s.value}
               aria-label={`Filter by ${s.label.toLowerCase()}`}
               onChange={(e) => s.onChange(e.target.value)}
@@ -140,7 +140,7 @@ export function ChartFilterBar({
   if (bare) return content;
 
   return (
-    <div className="flex items-center gap-2 overflow-x-auto rounded-sm border border-border bg-surface-2/60 p-2 whitespace-nowrap">
+    <div className="flex flex-wrap items-center gap-2 rounded-sm border border-border bg-surface-2/60 p-2 sm:flex-nowrap sm:overflow-x-auto sm:whitespace-nowrap">
       {content}
     </div>
   );

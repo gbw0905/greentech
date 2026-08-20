@@ -1,6 +1,7 @@
 import { cloneElement, isValidElement, useState } from "react";
 import type { ReactElement } from "react";
 import { REFERENCE_NOTE, sourcesFor } from "@/lib/data-sources";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { LucideIcon } from "lucide-react";
 import type { NewsTarget } from "@/lib/open-news";
 
@@ -285,6 +286,7 @@ export function ChartHeat({
   indexLabel?: string;
 }) {
   const [hover, setHover] = useState<{ key: string; x: number; y: number } | null>(null);
+  const isMobile = useIsMobile();
   const values = items.map((i) => i.value);
   const max = Math.max(...values, 1);
   const min = Math.min(...values, 0);
@@ -293,8 +295,10 @@ export function ChartHeat({
   // Sort largest first; treemaps require descending input.
   const sorted = [...items].sort((a, b) => b.value - a.value);
   const floor = Math.max(max * 0.05, 0.0001); // keep tiny entities legible
-  // Lay out in aspect-correct space (container is ~2.6:1) then scale to percent.
-  const ASPECT = 2.6;
+  // Lay out in aspect-correct space then scale to percent. Desktop containers
+  // are wide (~2.6:1); phones are portrait (~0.8:1), which keeps tiles wide
+  // enough for labels and values instead of thin clipped columns.
+  const ASPECT = isMobile ? 0.8 : 2.6;
   const tiles = squarify(
     sorted.map((i) => ({ key: i.key, value: Math.max(i.value, floor) })),
     ASPECT,
@@ -306,6 +310,9 @@ export function ChartHeat({
     y: t.y * 100,
     h: t.h * 100,
   }));
+  // Compact figures (4.7K, 1.2M) keep small tiles readable on narrow screens.
+  const compactFmt = (n: number) =>
+    Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 1 }).format(n);
   const byKey = new Map(sorted.map((i) => [i.key, i]));
   const hovered = hover ? byKey.get(hover.key) : null;
 
@@ -366,17 +373,17 @@ export function ChartHeat({
         </p>
       </div>
       <div
-        className="relative h-[26rem] w-full overflow-hidden rounded-sm border border-border/60 bg-border/40 sm:h-[30rem]"
+        className="relative h-[28rem] w-full overflow-hidden rounded-sm border border-border/60 bg-border/40 sm:h-[30rem]"
         onMouseLeave={() => setHover(null)}
       >
         {tiles.map((tile) => {
           const item = byKey.get(tile.key)!;
           const target = news?.[item.key];
           const t = norm(item.value);
-          const big = tile.w > 6.5 && tile.h > 20;
-          const mid = tile.w > 4 && tile.h > 11;
+          const big = tile.w > 6.5 && tile.h > (isMobile ? 14 : 20);
+          const mid = tile.w > 4 && tile.h > (isMobile ? 7 : 11);
           const logoSize = big ? 26 : 16;
-          const showLogo = Boolean(item.logo) && tile.w > 3.2 && tile.h > 9;
+          const showLogo = Boolean(item.logo) && tile.w > 3.2 && tile.h > (isMobile ? 6 : 9);
           return (
             <div
               key={tile.key}
@@ -439,7 +446,7 @@ export function ChartHeat({
                     className="chart-value truncate"
                     style={{ fontSize: big ? "0.95rem" : "0.7rem" }}
                   >
-                    {format(item.value)}
+                    {big ? format(item.value) : compactFmt(item.value)}
                   </div>
                   {big && item.meta ? (
                     <div className="chart-sub truncate font-mono tabular-nums text-white/85">
@@ -567,17 +574,17 @@ export function ChartPanel({
       </div>
 
       {metricOptions || limitOptions || actions || filters || assistant ? (
-        <div className="mb-2 flex items-center gap-2 overflow-x-auto rounded-sm border border-border bg-surface-2/60 p-2 whitespace-nowrap">
+        <div className="mb-2 flex flex-wrap items-center gap-2 rounded-sm border border-border bg-surface-2/60 p-2 sm:flex-nowrap sm:overflow-x-auto sm:whitespace-nowrap">
           {filters
             ? isValidElement(filters)
               ? cloneElement(filters as ReactElement<any>, { bare: true })
               : filters
             : null}
           {metricOptions ? (
-            <label className="flex shrink-0 items-center gap-1.5">
-              <span className="label-mono text-muted-foreground">{metricLabel}</span>
+            <label className="flex w-full shrink-0 items-center gap-1.5 sm:w-auto">
+              <span className="label-mono shrink-0 text-muted-foreground">{metricLabel}</span>
               <select
-                className="chart-select"
+                className="chart-select min-w-0 flex-1 sm:w-auto sm:flex-none"
                 value={metricValue}
                 onChange={(e) => onMetricChange?.(e.target.value)}
                 aria-label={`Choose the value shown in the ${title} chart`}
@@ -591,10 +598,10 @@ export function ChartPanel({
             </label>
           ) : null}
           {limitOptions ? (
-            <label className="flex shrink-0 items-center gap-1.5">
-              <span className="label-mono text-muted-foreground">Show</span>
+            <label className="flex w-full shrink-0 items-center gap-1.5 sm:w-auto">
+              <span className="label-mono shrink-0 text-muted-foreground">Show</span>
               <select
-                className="chart-select"
+                className="chart-select min-w-0 flex-1 sm:w-auto sm:flex-none"
                 value={limitValue}
                 onChange={(e) => onLimitChange?.(e.target.value)}
                 aria-label={`Choose how many entities the ${title} chart shows`}

@@ -134,31 +134,31 @@ function Dashboard() {
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-30 border-b border-ink bg-ink text-ink-foreground backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[80rem] flex-wrap items-center justify-between gap-4 px-5 py-2.5 lg:px-8">
-          <div className="flex items-center gap-3">
+        <div className="mx-auto flex max-w-[80rem] items-center justify-between gap-2 px-4 py-2 sm:gap-4 sm:px-5 sm:py-2.5 lg:px-8">
+          <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
             <img
               src={siteLogo}
               alt="Global Bioenergy Watch logo: a globe with a leaf and rising data line"
               width={1024}
               height={1024}
-              className="size-9 rounded-md object-contain"
+              className="size-8 shrink-0 rounded-md object-contain sm:size-9"
             />
-            <div>
+            <div className="min-w-0">
               <a
                 href="https://www.linkedin.com/company/global-bioenergy-watch/?viewAsMember=true"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-display text-xl leading-none font-extrabold tracking-tight text-ink-foreground transition-colors hover:text-primary-glow sm:text-[1.4rem]"
+                className="block truncate font-display text-base leading-none font-extrabold tracking-tight text-ink-foreground transition-colors hover:text-primary-glow sm:text-xl lg:text-[1.4rem]"
               >
                 Global Bioenergy Watch
               </a>
-              <div className="kicker mt-1 flex items-center gap-1.5 text-ink-muted">
+              <div className="kicker mt-1 hidden items-center gap-1.5 text-ink-muted sm:flex">
                 <span className="size-1.5 rounded-full bg-accent" />
                 Independent policy &amp; market desk
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex shrink-0 items-center gap-4">
             <div className="hidden text-right sm:block">
               <div className="label-mono text-ink-muted">Last scan</div>
               <div className="font-mono text-xs">
@@ -169,7 +169,7 @@ function Dashboard() {
               type="button"
               onClick={() => rescan.mutate()}
               disabled={busy}
-              className="label-mono inline-flex items-center gap-2 rounded-md bg-accent px-3.5 py-2 font-bold text-accent-foreground transition-colors hover:opacity-90 disabled:opacity-60"
+              className="label-mono inline-flex items-center gap-2 rounded-md bg-accent px-3 py-1.5 font-bold text-accent-foreground transition-colors hover:opacity-90 disabled:opacity-60 sm:px-3.5 sm:py-2"
             >
               <RefreshCw className={`size-3.5 ${busy ? "animate-spin" : ""}`} />
               Rescan
@@ -178,13 +178,13 @@ function Dashboard() {
         </div>
         <nav
           aria-label="Page sections"
-          className="mx-auto hidden max-w-[80rem] items-center gap-2 overflow-x-auto border-t border-white/10 px-5 py-2.5 lg:flex lg:px-8"
+          className="mx-auto flex max-w-[80rem] items-center gap-2 overflow-x-auto border-t border-white/10 px-4 py-2 sm:px-5 sm:py-2.5 lg:px-8"
         >
           {SECTIONS.map((s) => (
             <a
               key={s.href}
               href={s.href}
-              className="label-mono group inline-flex items-center gap-2 whitespace-nowrap rounded-sm px-4 py-2 text-xs font-bold text-white shadow-sm transition-all hover:-translate-y-px hover:brightness-110"
+              className="label-mono group inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-sm px-3 py-1.5 text-xs font-bold text-white shadow-sm transition-all hover:-translate-y-px hover:brightness-110 sm:px-4 sm:py-2"
               style={{ background: s.tone }}
             >
               {s.label}
@@ -208,14 +208,16 @@ function Dashboard() {
               <p className="mt-2 max-w-[72ch] text-sm/relaxed text-muted-foreground">
                 Global Bioenergy Watch scans official government sources, regulators, intergovernmental agencies and credible energy media worldwide, then uses AI to classify and summarise every biofuel policy and market update by jurisdiction, fuel type and relevance. Track mandates, blending targets, tax credits and SAF incentives across ethanol, biodiesel, renewable diesel and sustainable aviation fuel in one live dashboard. Click any country on the jurisdiction map to see its full policy profile, latest news and market context. The desk refreshes continuously so analysts, traders, researchers and investors can monitor the global bioenergy outlook without chasing headlines across dozens of sites.
               </p>
-              <dl className="mt-5 grid grid-cols-3 gap-4 border-t border-border pt-4">
+              <dl className="mt-5 grid grid-cols-3 gap-2 border-t border-border pt-4 sm:gap-4">
                 {[
                   ["Updates", String(stats.total)],
                   ["Jurisdictions", String(stats.countries)],
                   ["Policy items", String(stats.policy)],
                 ].map(([label, value]) => (
-                  <div key={label}>
-                    <dt className="kicker text-muted-foreground">{label}</dt>
+                  <div key={label} className="min-w-0">
+                    <dt className="font-mono text-[0.58rem] leading-tight uppercase break-words tracking-[0.08em] text-muted-foreground sm:text-[0.6875rem] sm:tracking-[0.18em]">
+                      {label}
+                    </dt>
                     <dd className="mt-1 font-display text-xl font-extrabold tabular-nums text-foreground sm:text-2xl">
                       {value}
                     </dd>
