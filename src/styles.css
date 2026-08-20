@@ -327,6 +327,16 @@
   }
 }
 
+/* Text inputs reuse the dark pill look but must not show the select chevron. */
+input.chart-select {
+  background-image: none;
+  cursor: text;
+  &::placeholder {
+    color: var(--ink-muted);
+    opacity: 0.9;
+  }
+}
+
 @utility glass-panel {
   background: var(--surface);
   border: 1px solid var(--border);
