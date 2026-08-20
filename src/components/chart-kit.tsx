@@ -268,6 +268,7 @@ export function ChartHeat({
   onSelect,
   measureLabel,
   measureHelp,
+  indexLabel,
 }: {
   items: ChartItem[];
   unitLabel: string;
@@ -278,6 +279,8 @@ export function ChartHeat({
   measureLabel?: string;
   /** Plain-language explanation of what that measure means. */
   measureHelp?: string;
+  /** Name of the market index / benchmark the listed entities belong to. */
+  indexLabel?: string;
 }) {
   const [hover, setHover] = useState<{ key: string; x: number; y: number } | null>(null);
   const values = items.map((i) => i.value);
@@ -321,7 +324,7 @@ export function ChartHeat({
       {moves.length ? (
         <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-sm border border-border/60 bg-card p-2.5">
           <span className="chart-sub uppercase tracking-wide text-muted-foreground">
-            Market trend (1-day)
+            {indexLabel ? `${indexLabel} · 1-day` : "Market trend (1-day)"}
           </span>
           <span
             className={`chart-value ${avg >= 0 ? "text-primary" : "text-destructive"}`}
