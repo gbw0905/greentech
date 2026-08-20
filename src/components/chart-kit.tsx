@@ -418,6 +418,15 @@ export function ChartHeat({
                     <div className="chart-sub truncate text-white/80">{item.sub}</div>
                   ) : null}
                 </div>
+                {typeof item.changePct === "number" && mid ? (
+                  <span
+                    className="ml-auto shrink-0 rounded-sm bg-black/25 px-1 font-mono text-[0.6rem] leading-4 tabular-nums text-white"
+                    title={`1-day move: ${pct(item.changePct)}`}
+                  >
+                    {item.changePct >= 0 ? "▲" : "▼"}
+                    {big ? ` ${pct(item.changePct)}` : ""}
+                  </span>
+                ) : null}
               </div>
               {mid ? (
                 <div className="min-w-0">
