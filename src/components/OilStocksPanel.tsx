@@ -5,7 +5,12 @@ import { getOilStocksFn, type OilQuote } from "@/lib/oil.functions";
 import { openEntityNews } from "@/lib/open-news";
 import { entityLogo } from "@/lib/entity-logos";
 import { ChartHeat, ChartPanel, chartFmt } from "@/components/chart-kit";
-import { ChartFilterBar, useChartFilter } from "@/components/chart-filters";
+import {
+  ChartFilterBar,
+  countryFilterOptions,
+  useChartFilter,
+  useTopLimit,
+} from "@/components/chart-filters";
 import { downloadBrandedCsv, type BrandedExport } from "@/lib/branded-export";
 
 const fmt = (n: number, d = 2) =>
@@ -39,6 +44,32 @@ const CAPACITY: Record<string, { mmboe: number; kind: string }> = {
 };
 
 const capOf = (symbol: string) => CAPACITY[symbol] ?? { mmboe: 0, kind: "Not disclosed" };
+
+/** Home jurisdiction of each listed major, used by the country filter. */
+const COMPANY_COUNTRY: Record<string, string> = {
+  "2222.SR": "Saudi Arabia",
+  XOM: "United States",
+  CVX: "United States",
+  SHEL: "United Kingdom",
+  TTE: "France",
+  BP: "United Kingdom",
+  "0857.HK": "China",
+  "0386.HK": "China",
+  "0883.HK": "China",
+  COP: "United States",
+  PSX: "United States",
+  MPC: "United States",
+  OXY: "United States",
+  PBR: "Brazil",
+  E: "Italy",
+  EQNR: "Norway",
+  "RELIANCE.NS": "India",
+  "ONGC.NS": "India",
+  SU: "Canada",
+  CNQ: "Canada",
+};
+
+const countryOf = (symbol: string) => COMPANY_COUNTRY[symbol] ?? "Other";
 
 function oilExport(rows: OilQuote[]): BrandedExport {
   const header = [
@@ -122,10 +153,13 @@ export function OilStocksPanel() {
   const quotes: OilQuote[] = data?.quotes ?? [];
   const stale = data?.stale ?? false;
   const f = useChartFilter(quotes, {
-    text: (q) => `${q.label} ${q.symbol}`,
-    facetA: (q) => capOf(q.symbol).kind,
+    text: (q) => `${q.label} ${q.symbol} ${countryOf(q.symbol)}`,
+    facetA: (q) => countryOf(q.symbol),
+    facetB: (q) => capOf(q.symbol).kind,
   });
-  const sorted = [...f.filtered].sort((a, b) => metric.value(b) - metric.value(a));
+  const limiter = useTopLimit();
+  const ranked = [...f.filtered].sort((a, b) => metric.value(b) - metric.value(a));
+  const sorted = ranked.slice(0, limiter.limit);
 
   return (
     <ChartPanel
@@ -138,11 +172,14 @@ export function OilStocksPanel() {
         label: STOCK_METRICS[m].label,
       }))}
       onMetricChange={(v) => setMetricKey(v as StockMetric)}
+      limitValue={limiter.value}
+      limitOptions={limiter.options}
+      onLimitChange={limiter.setValue}
       actions={
         <button
           type="button"
-          onClick={() => downloadBrandedCsv(oilExport(sorted))}
-          disabled={sorted.length === 0}
+          onClick={() => downloadBrandedCsv(oilExport(ranked))}
+          disabled={ranked.length === 0}
           className="inline-flex items-center gap-1.5 border border-ink bg-ink px-2.5 py-1.5 text-xs font-semibold text-ink-foreground transition-opacity hover:opacity-85 disabled:opacity-40"
         >
           <Download className="size-3.5" />
@@ -155,17 +192,29 @@ export function OilStocksPanel() {
           onQueryChange={f.setQuery}
           placeholder="Search companies or tickers…"
           selects={[
-            { label: "Type", value: f.a, options: f.optionsA, onChange: f.setA, allLabel: "All types" },
+            {
+              label: "Country",
+              value: f.a,
+              options: countryFilterOptions(quotes.map((q) => countryOf(q.symbol))),
+              onChange: f.setA,
+              allLabel: "All countries",
+            },
+            { label: "Type", value: f.b, options: f.optionsB, onChange: f.setB, allLabel: "All types" },
           ]}
           shown={sorted.length}
           total={quotes.length}
+          matched={ranked.length}
         />
       }
       status={isLoading ? "Loading" : stale ? "Last close" : "Live"}
       footnote="Capacity is approximate annual output in million barrels of oil equivalent per year (upstream production, or crude throughput for refiners). Prices refresh every five minutes and are quoted in each company's primary listing currency. Click any row for that company's latest news."
     >
       {sorted.length === 0 && !isLoading ? (
-        <p className="text-sm text-muted-foreground">Market data is unavailable right now.</p>
+        <p className="text-sm text-muted-foreground">
+          {quotes.length === 0
+            ? "Market data is unavailable right now."
+            : "No listed oil companies for this filter — open that country's profile page for its policy and market updates."}
+        </p>
       ) : (
         <ChartHeat
           unitLabel={metric.unit}
