@@ -238,7 +238,7 @@ function Dashboard() {
                       <span className="flex items-center font-mono text-sm font-bold text-muted-foreground/50 tabular-nums">
                         {String(i + 1).padStart(2, "0")}
                       </span>
-                      <UpdateCard update={update} compact className="my-1.5 flex-1 border-none bg-transparent p-0 shadow-none" />
+                      <UpdateCard update={update} compact />
                     </li>
                   ))}
                 </ol>
