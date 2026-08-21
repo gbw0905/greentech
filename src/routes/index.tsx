@@ -4,8 +4,7 @@ import { useMemo } from "react";
 import { RefreshCw, AlertTriangle, Map, Factory, TrendingUp, BellRing, Briefcase, Linkedin } from "lucide-react";
 import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
 import siteLogo from "@/assets/logo.png";
-import { formatDate } from "@/components/UpdateCard";
-import { TopUpdatesTicker } from "@/components/TopUpdatesTicker";
+import { UpdateCard, formatDate } from "@/components/UpdateCard";
 import { WorldPolicyMap } from "@/components/WorldPolicyMap";
 
 import { OilPricePanel } from "@/components/OilPricePanel";
@@ -233,7 +232,16 @@ function Dashboard() {
                 <span className="label-mono text-muted-foreground/70">Live</span>
               </div>
               {topFive.length > 0 ? (
-                <TopUpdatesTicker updates={topFive} />
+                <ol className="flex flex-1 flex-col divide-y divide-border">
+                  {topFive.map((update, i) => (
+                    <li key={update.id} className="flex flex-1 items-stretch gap-3">
+                      <span className="flex items-center font-mono text-sm font-bold text-muted-foreground/50 tabular-nums">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <UpdateCard update={update} compact />
+                    </li>
+                  ))}
+                </ol>
               ) : (
                 <div className="p-4 text-sm text-muted-foreground">
                   {busy ? "Scanning global sources…" : "No updates available yet."}
