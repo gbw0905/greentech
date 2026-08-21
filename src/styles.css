@@ -591,3 +591,15 @@ input.chart-select {
     transition-duration: 0.001ms !important;
   }
 }
+
+/** Fade-and-rise used when the hero news ticker advances. */
+@keyframes news-cycle {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

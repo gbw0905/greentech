@@ -4,7 +4,8 @@ import { useMemo } from "react";
 import { RefreshCw, AlertTriangle, Map, Factory, TrendingUp, BellRing, Briefcase, Linkedin } from "lucide-react";
 import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
 import siteLogo from "@/assets/logo.png";
-import { formatDate, UpdateCard } from "@/components/UpdateCard";
+import { formatDate } from "@/components/UpdateCard";
+import { TopUpdatesTicker } from "@/components/TopUpdatesTicker";
 import { WorldPolicyMap } from "@/components/WorldPolicyMap";
 
 import { OilPricePanel } from "@/components/OilPricePanel";
@@ -196,8 +197,8 @@ function Dashboard() {
       <div className="mx-auto max-w-[80rem] px-5 py-5 lg:px-8 lg:py-6">
 
         <main className="space-y-8">
-          <section className="grid items-start gap-5 lg:grid-cols-[1.1fr_minmax(0,1fr)]">
-            <div className="rounded-lg border border-border bg-white px-6 py-6 shadow-sm sm:px-8 sm:py-7">
+          <section className="grid items-stretch gap-5 lg:grid-cols-[1.1fr_minmax(0,1fr)]">
+            <div className="h-full rounded-lg border border-border bg-white px-6 py-6 shadow-sm sm:px-8 sm:py-7">
               <div className="kicker inline-flex items-center gap-2 text-muted-foreground">
                 <span className="size-1.5 rounded-full bg-accent" />
                 Live policy &amp; market intelligence
@@ -232,21 +233,7 @@ function Dashboard() {
                 <span className="label-mono text-muted-foreground/70">Live</span>
               </div>
               {topFive.length > 0 ? (
-                <div className="space-y-1.5">
-                  {topFive.map((u, i) => (
-                    <div key={u.id} className="flex items-start gap-2">
-                      <span
-                        className="label-mono mt-2.5 shrink-0 text-xs font-bold tabular-nums text-muted-foreground/70"
-                        aria-hidden="true"
-                      >
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <UpdateCard update={u} compact />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <TopUpdatesTicker updates={topFive} />
               ) : (
                 <div className="p-4 text-sm text-muted-foreground">
                   {busy ? "Scanning global sources…" : "No updates available yet."}
