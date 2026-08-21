@@ -4,7 +4,8 @@ import { useMemo } from "react";
 import { RefreshCw, AlertTriangle, Map, Factory, TrendingUp, BellRing, Briefcase, Linkedin } from "lucide-react";
 import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
 import siteLogo from "@/assets/logo.png";
-import { formatDate, UpdateCard } from "@/components/UpdateCard";
+import { formatDate } from "@/components/UpdateCard";
+import { TopUpdatesTicker } from "@/components/TopUpdatesTicker";
 import { WorldPolicyMap } from "@/components/WorldPolicyMap";
 
 import { OilPricePanel } from "@/components/OilPricePanel";
