@@ -232,21 +232,7 @@ function Dashboard() {
                 <span className="label-mono text-muted-foreground/70">Live</span>
               </div>
               {topFive.length > 0 ? (
-                <div className="space-y-1.5">
-                  {topFive.map((u, i) => (
-                    <div key={u.id} className="flex items-start gap-2">
-                      <span
-                        className="label-mono mt-2.5 shrink-0 text-xs font-bold tabular-nums text-muted-foreground/70"
-                        aria-hidden="true"
-                      >
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <UpdateCard update={u} compact />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <TopUpdatesTicker updates={topFive} />
               ) : (
                 <div className="p-4 text-sm text-muted-foreground">
                   {busy ? "Scanning global sources…" : "No updates available yet."}
