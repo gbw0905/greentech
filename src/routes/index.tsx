@@ -178,13 +178,13 @@ function Dashboard() {
         </div>
         <nav
           aria-label="Page sections"
-          className="mx-auto flex max-w-[80rem] items-center gap-2 overflow-x-auto border-t border-white/10 px-4 py-2 sm:px-5 sm:py-2.5 lg:px-8"
+          className="mx-auto flex max-w-[80rem] items-stretch gap-2 overflow-x-auto border-t border-white/10 px-4 py-2 sm:px-5 sm:py-2.5 lg:px-8"
         >
           {SECTIONS.map((s) => (
             <a
               key={s.href}
               href={s.href}
-              className="label-mono group inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-sm px-3 py-1.5 text-xs font-bold text-white shadow-sm transition-all hover:-translate-y-px hover:brightness-110 sm:px-4 sm:py-2"
+              className="label-mono group inline-flex min-w-max flex-1 items-center justify-center gap-2 text-center whitespace-nowrap rounded-sm px-3 py-1.5 text-xs font-bold text-white shadow-sm transition-all hover:-translate-y-px hover:brightness-110 sm:px-4 sm:py-2"
               style={{ background: s.tone }}
             >
               {s.label}
