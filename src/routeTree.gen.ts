@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as JobsRouteImport } from './routes/jobs'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as ProfilesRouteImport } from './routes/profiles'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TimelineRouteImport } from './routes/timeline'
 import { Route as VideosRouteImport } from './routes/videos'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
@@ -46,6 +47,11 @@ const McpRoute = McpRouteImport.update({
 const ProfilesRoute = ProfilesRouteImport.update({
   id: '/profiles',
   path: '/profiles',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TimelineRoute = TimelineRouteImport.update({
@@ -132,6 +138,7 @@ export interface FileRoutesByFullPath {
   '/jobs': typeof JobsRoute
   '/mcp': typeof McpRoute
   '/profiles': typeof ProfilesRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/timeline': typeof TimelineRoute
   '/videos': typeof VideosRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -152,6 +159,7 @@ export interface FileRoutesByTo {
   '/jobs': typeof JobsRoute
   '/mcp': typeof McpRoute
   '/profiles': typeof ProfilesRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/timeline': typeof TimelineRoute
   '/videos': typeof VideosRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -173,6 +181,7 @@ export interface FileRoutesById {
   '/jobs': typeof JobsRoute
   '/mcp': typeof McpRoute
   '/profiles': typeof ProfilesRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/timeline': typeof TimelineRoute
   '/videos': typeof VideosRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -195,6 +204,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/mcp'
     | '/profiles'
+    | '/sitemap.xml'
     | '/timeline'
     | '/videos'
     | '/.mcp/list-tools'
@@ -215,6 +225,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/mcp'
     | '/profiles'
+    | '/sitemap.xml'
     | '/timeline'
     | '/videos'
     | '/.mcp/list-tools'
@@ -235,6 +246,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/mcp'
     | '/profiles'
+    | '/sitemap.xml'
     | '/timeline'
     | '/videos'
     | '/.mcp/list-tools'
@@ -256,6 +268,7 @@ export interface RootRouteChildren {
   JobsRoute: typeof JobsRoute
   McpRoute: typeof McpRoute
   ProfilesRoute: typeof ProfilesRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TimelineRoute: typeof TimelineRoute
   VideosRoute: typeof VideosRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
@@ -300,6 +313,13 @@ declare module '@tanstack/react-router' {
       path: '/profiles'
       fullPath: '/profiles'
       preLoaderRoute: typeof ProfilesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/timeline': {
@@ -408,6 +428,7 @@ const rootRouteChildren: RootRouteChildren = {
   JobsRoute: JobsRoute,
   McpRoute: McpRoute,
   ProfilesRoute: ProfilesRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   TimelineRoute: TimelineRoute,
   VideosRoute: VideosRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
