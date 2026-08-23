@@ -80,6 +80,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "Global Bioenergy Watch" },
       { name: "description", content: "Worldwide biofuel and bioenergy policy tracker." },
       { name: "author", content: "Global Bioenergy Watch" },
+      { name: "google-site-verification", content: "kk1yedKT7BHoNWBTFpeMTp_j7INL7XAT6U2QS4AfQj8" },
       { property: "og:title", content: "Global Bioenergy Watch" },
       { property: "og:description", content: "Worldwide biofuel and bioenergy policy tracker." },
       { property: "og:type", content: "website" },
