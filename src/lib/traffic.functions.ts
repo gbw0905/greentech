@@ -1,15 +1,16 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-const visitInput = z.object({
-  path: z.string().max(200),
-  visitorId: z.string().min(1).max(64),
-  referrer: z.string().max(200).optional(),
-});
-
 export const recordVisitFn = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => visitInput.parse(input))
+  .inputValidator((input: unknown) => input as Record<string, unknown>)
   .handler(async ({ data }) => {
+    const parsed = z
+      .object({
+        path: z.string().max(200),
+        visitorId: z.string().min(1).max(64),
+        referrer: z.string().max(200).optional(),
+      })
+      .parse(data);
     const { getRequestHeader } = await import("@tanstack/react-start/server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const country =
@@ -17,9 +18,9 @@ export const recordVisitFn = createServerFn({ method: "POST" })
       (getRequestHeader("x-vercel-ip-country" as never) as string | undefined) ??
       undefined;
     await supabaseAdmin.rpc("record_visit", {
-      _path: data.path,
-      _visitor_id: data.visitorId,
-      ...(data.referrer ? { _referrer: data.referrer } : {}),
+      _path: parsed.path,
+      _visitor_id: parsed.visitorId,
+      ...(parsed.referrer ? { _referrer: parsed.referrer } : {}),
       ...(country ? { _country: country } : {}),
     } as never);
     return { ok: true };
