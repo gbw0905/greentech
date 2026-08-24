@@ -143,6 +143,51 @@ export type Database = {
         }
         Relationships: []
       }
+      linkedin_org_connections: {
+        Row: {
+          access_token: string
+          access_token_expires_at: string
+          connected_at: string
+          id: boolean
+          org_id: string | null
+          org_name: string | null
+          person_name: string | null
+          person_urn: string | null
+          refresh_token: string | null
+          refresh_token_expires_at: string | null
+          scope: string | null
+          updated_at: string
+        }
+        Insert: {
+          access_token: string
+          access_token_expires_at: string
+          connected_at?: string
+          id?: boolean
+          org_id?: string | null
+          org_name?: string | null
+          person_name?: string | null
+          person_urn?: string | null
+          refresh_token?: string | null
+          refresh_token_expires_at?: string | null
+          scope?: string | null
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string
+          access_token_expires_at?: string
+          connected_at?: string
+          id?: boolean
+          org_id?: string | null
+          org_name?: string | null
+          person_name?: string | null
+          person_urn?: string | null
+          refresh_token?: string | null
+          refresh_token_expires_at?: string | null
+          scope?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       linkedin_settings: {
         Row: {
           company_org_id: string
