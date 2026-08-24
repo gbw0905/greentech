@@ -43,10 +43,10 @@ const TITLE = "LinkedIn posting settings | Global Bioenergy Watch";
 
 export const Route = createFileRoute("/settings/linkedin")({
   validateSearch: (search: Record<string, unknown>) => ({
-    org: typeof search.org === "string" ? search.org : undefined,
-    orgName: typeof search.orgName === "string" ? search.orgName : undefined,
-    person: typeof search.person === "string" ? search.person : undefined,
-    detail: typeof search.detail === "string" ? search.detail : undefined,
+    org: typeof search["org"] === "string" ? (search["org"] as string) : undefined,
+    orgName: typeof search["orgName"] === "string" ? (search["orgName"] as string) : undefined,
+    person: typeof search["person"] === "string" ? (search["person"] as string) : undefined,
+    detail: typeof search["detail"] === "string" ? (search["detail"] as string) : undefined,
   }),
   head: () => ({
     meta: [
