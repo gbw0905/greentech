@@ -143,6 +143,30 @@ export type Database = {
         }
         Relationships: []
       }
+      linkedin_settings: {
+        Row: {
+          company_org_id: string
+          company_page_url: string
+          id: boolean
+          posting_mode: string
+          updated_at: string
+        }
+        Insert: {
+          company_org_id?: string
+          company_page_url?: string
+          id?: boolean
+          posting_mode?: string
+          updated_at?: string
+        }
+        Update: {
+          company_org_id?: string
+          company_page_url?: string
+          id?: boolean
+          posting_mode?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       policy_updates: {
         Row: {
           ai_brief: string | null
