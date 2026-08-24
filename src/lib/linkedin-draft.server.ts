@@ -145,18 +145,31 @@ export async function createAndEmailDraft(recipient: string): Promise<DraftResul
   if (items.length === 0) throw new Error("No policy updates available to compose a post");
   const postText = await composePost(items);
 
-  let tokenHash: string;
   let tokenForEmail: string | null = null;
-  if (existingRow) {
-    // Keep the already-emailed token valid when refreshing the draft text.
-    tokenHash = existingRow.publish_token_hash;
+  if (existingRow?.emailed_at) {
+    // Draft already delivered: refresh content, keep the emailed token valid.
     await db
       .from("linkedin_drafts")
       .update({ post_text: postText, items: items as unknown as Json })
       .eq("id", existingRow.id);
+    return { ok: true, emailed: false, suppressed: false, items: items.length };
+  }
+
+  // First attempt (or a retry after a failed/suppressed send): mint a fresh
+  // single-use token. Only the hash is stored; the raw token lives solely in
+  // the email link.
+  tokenForEmail = randomBytes(24).toString("hex");
+  const tokenHash = hashToken(tokenForEmail);
+  if (existingRow) {
+    await db
+      .from("linkedin_drafts")
+      .update({
+        post_text: postText,
+        items: items as unknown as Json,
+        publish_token_hash: tokenHash,
+      })
+      .eq("id", existingRow.id);
   } else {
-    tokenForEmail = randomBytes(24).toString("hex");
-    tokenHash = hashToken(tokenForEmail);
     const { error } = await db.from("linkedin_drafts").insert({
       day_key: dayKey,
       post_text: postText,
@@ -164,11 +177,6 @@ export async function createAndEmailDraft(recipient: string): Promise<DraftResul
       publish_token_hash: tokenHash,
     });
     if (error) throw new Error(error.message);
-  }
-
-  // Email is sent once per day (the token is only known on first creation).
-  if (!tokenForEmail || existingRow?.emailed_at) {
-    return { ok: true, emailed: false, suppressed: false, items: items.length };
   }
 
   const dateLabel = new Date().toLocaleDateString("en-GB", {
