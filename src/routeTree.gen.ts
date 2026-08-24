@@ -31,6 +31,7 @@ import { Route as ApiPublicInstantBriefAlertsRouteImport } from './routes/api/pu
 import { Route as ApiPublicLinkedinPublishRouteImport } from './routes/api/public/linkedin-publish'
 import { Route as ApiPublicPolicyAlertDigestRouteImport } from './routes/api/public/policy-alert-digest'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
+import { Route as ApiPublicLinkedinOauthCallbackRouteImport } from './routes/api/public/linkedin/oauth/callback'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -152,6 +153,12 @@ const LovableEmailTransactionalPreviewRoute =
     path: '/lovable/email/transactional/preview',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicLinkedinOauthCallbackRoute =
+  ApiPublicLinkedinOauthCallbackRouteImport.update({
+    id: '/api/public/linkedin/oauth/callback',
+    path: '/api/public/linkedin/oauth/callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -176,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/api/public/linkedin-publish': typeof ApiPublicLinkedinPublishRoute
   '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/api/public/linkedin/oauth/callback': typeof ApiPublicLinkedinOauthCallbackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -200,6 +208,7 @@ export interface FileRoutesByTo {
   '/api/public/linkedin-publish': typeof ApiPublicLinkedinPublishRoute
   '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/api/public/linkedin/oauth/callback': typeof ApiPublicLinkedinOauthCallbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -225,6 +234,7 @@ export interface FileRoutesById {
   '/api/public/linkedin-publish': typeof ApiPublicLinkedinPublishRoute
   '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/api/public/linkedin/oauth/callback': typeof ApiPublicLinkedinOauthCallbackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -251,6 +261,7 @@ export interface FileRouteTypes {
     | '/api/public/linkedin-publish'
     | '/api/public/policy-alert-digest'
     | '/lovable/email/transactional/preview'
+    | '/api/public/linkedin/oauth/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -275,6 +286,7 @@ export interface FileRouteTypes {
     | '/api/public/linkedin-publish'
     | '/api/public/policy-alert-digest'
     | '/lovable/email/transactional/preview'
+    | '/api/public/linkedin/oauth/callback'
   id:
     | '__root__'
     | '/'
@@ -299,6 +311,7 @@ export interface FileRouteTypes {
     | '/api/public/linkedin-publish'
     | '/api/public/policy-alert-digest'
     | '/lovable/email/transactional/preview'
+    | '/api/public/linkedin/oauth/callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -324,6 +337,7 @@ export interface RootRouteChildren {
   ApiPublicLinkedinPublishRoute: typeof ApiPublicLinkedinPublishRoute
   ApiPublicPolicyAlertDigestRoute: typeof ApiPublicPolicyAlertDigestRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
+  ApiPublicLinkedinOauthCallbackRoute: typeof ApiPublicLinkedinOauthCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -482,6 +496,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/linkedin/oauth/callback': {
+      id: '/api/public/linkedin/oauth/callback'
+      path: '/api/public/linkedin/oauth/callback'
+      fullPath: '/api/public/linkedin/oauth/callback'
+      preLoaderRoute: typeof ApiPublicLinkedinOauthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -509,6 +530,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicLinkedinPublishRoute: ApiPublicLinkedinPublishRoute,
   ApiPublicPolicyAlertDigestRoute: ApiPublicPolicyAlertDigestRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
+  ApiPublicLinkedinOauthCallbackRoute: ApiPublicLinkedinOauthCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

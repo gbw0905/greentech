@@ -55,9 +55,23 @@ export const Route = createFileRoute("/api/public/linkedin-publish")({
           );
         }
 
+        // Describe the real destination: direct company-page posting when the
+        // custom OAuth app is connected, personal profile + mention otherwise.
+        const { getLinkedInSettings } = await import("@/lib/linkedin-settings.server");
+        const { getOrgConnectionStatus } = await import("@/lib/linkedin-org-oauth.server");
+        const settings = await getLinkedInSettings();
+        const orgConn =
+          settings.postingMode === "company_page" ? await getOrgConnectionStatus() : null;
+
+        const destinationNote = orgConn?.connected
+          ? `Confirming publishes this exact text <strong>directly to the ${escapeHtml(orgConn.orgName ?? "Global Bioenergy Watch")} company page</strong>, using your custom LinkedIn app (organization posting permission).`
+          : settings.postingMode === "company_page"
+            ? `Company-page posting is selected but the custom LinkedIn app is not connected, so this will fall back to your <strong>personal LinkedIn profile</strong> with the company page tagged. Connect the custom app in <a href="/settings/linkedin">settings</a> to post directly to the page.`
+            : `Confirming publishes this exact text to your <strong>personal LinkedIn profile</strong> with the Global Bioenergy Watch page tagged as a mention.`;
+
         return page(
           "Confirm publication",
-          `<p><strong>Review today's post before it goes live</strong> (draft of ${escapeHtml(draft.dayKey)}):</p><div class="post">${escapeHtml(draft.postText)}</div><p class="note">Confirming publishes this exact text to your <strong>personal LinkedIn profile</strong>. LinkedIn has not granted company-page posting permission to this connection — to use the Global Bioenergy Watch page, copy the text above and paste it there instead.</p><form method="POST" action="/api/public/linkedin-publish"><input type="hidden" name="token" value="${escapeHtml(token)}"><button type="submit">Confirm — publish to LinkedIn</button></form>`,
+          `<p><strong>Review today's post before it goes live</strong> (draft of ${escapeHtml(draft.dayKey)}):</p><div class="post">${escapeHtml(draft.postText)}</div><p class="note">${destinationNote}</p><form method="POST" action="/api/public/linkedin-publish"><input type="hidden" name="token" value="${escapeHtml(token)}"><button type="submit">Confirm — publish to LinkedIn</button></form>`,
         );
       },
 
@@ -76,9 +90,15 @@ export const Route = createFileRoute("/api/public/linkedin-publish")({
 
         if (result.ok) {
           const urn = escapeHtml(result.urn);
+          const where =
+            result.via === "organization"
+              ? "Published directly to the Global Bioenergy Watch company page."
+              : result.via === "personal"
+                ? "Published to your personal LinkedIn profile with the company page tagged."
+                : "";
           return page(
             result.already ? "Already published" : "Published",
-            `<p><strong>${result.already ? "This post was already live." : "Published to LinkedIn."}</strong></p><p class="note">Post reference: <code>${urn}</code></p><p class="note"><a href="https://www.linkedin.com/feed/">Open LinkedIn</a> · <a href="https://globalbioenergywatch.org">Back to the tracker</a></p>`,
+            `<p><strong>${result.already ? "This post was already live." : "Published to LinkedIn."}</strong></p>${where ? `<p class="note">${where}</p>` : ""}<p class="note">Post reference: <code>${urn}</code></p><p class="note"><a href="https://www.linkedin.com/feed/">Open LinkedIn</a> · <a href="https://globalbioenergywatch.org">Back to the tracker</a></p>`,
           );
         }
 
