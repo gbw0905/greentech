@@ -264,13 +264,21 @@ export type PublishResult =
   | { ok: true; urn: string; already: boolean }
   | { ok: false; reason: "invalid-token" | "provider-error"; detail?: string };
 
-/** Publish a pending draft to the connected LinkedIn member profile. */
+/**
+ * Publish a pending draft. Destination follows the saved LinkedIn settings:
+ * - company_page  → post as the organization (requires w_organization_social);
+ *                   falls back to personal + mention if LinkedIn denies it.
+ * - personal_mention → post to the member profile with a company mention tag.
+ */
 export async function publishDraftByToken(token: string): Promise<PublishResult> {
   const row = await findDraftByToken(token);
   if (!row) return { ok: false, reason: "invalid-token" };
   if (row.status === "published" && row.linkedin_post_urn) {
     return { ok: true, urn: row.linkedin_post_urn, already: true };
   }
+
+  const { getLinkedInSettings } = await import("./linkedin-settings.server");
+  const settings = await getLinkedInSettings();
 
   const me = await linkedInFetch("/v2/userinfo");
   if (!me.ok) {
@@ -280,11 +288,11 @@ export async function publishDraftByToken(token: string): Promise<PublishResult>
   }
   const { sub } = (await me.json()) as { sub: string };
 
-  // Tag the Global Bioenergy Watch company page via a mention annotation.
-  // The managed LinkedIn app lacks w_organization_social, so posts go to the
-  // member profile — the mention still links every post back to the page.
   const COMPANY_NAME = "Global Bioenergy Watch";
-  const COMPANY_URN = "urn:li:organization:137244598";
+  const companyUrn = `urn:li:organization:${settings.companyOrgId}`;
+
+  // Personal posts tag the company page via a mention annotation so every
+  // post still links back to the page even without org posting rights.
   const text = row.post_text.includes(COMPANY_NAME)
     ? row.post_text
     : `${row.post_text}\n\nFollow ${COMPANY_NAME} for daily updates.`;
@@ -299,7 +307,7 @@ export async function publishDraftByToken(token: string): Promise<PublishResult>
               length: COMPANY_NAME.length,
               value: {
                 "com.linkedin.common.CompanyAttributedEntity": {
-                  company: COMPANY_URN,
+                  company: companyUrn,
                 },
               },
             },
@@ -307,20 +315,41 @@ export async function publishDraftByToken(token: string): Promise<PublishResult>
         : [],
   };
 
-  const res = await linkedInFetch("/v2/ugcPosts", {
-    method: "POST",
-    body: JSON.stringify({
-      author: `urn:li:person:${sub}`,
-      lifecycleState: "PUBLISHED",
-      specificContent: {
-        "com.linkedin.ugc.ShareContent": {
-          shareCommentary,
-          shareMediaCategory: "NONE",
+  const postUgc = (author: string, isOrg: boolean) =>
+    linkedInFetch("/v2/ugcPosts", {
+      method: "POST",
+      body: JSON.stringify({
+        author,
+        lifecycleState: "PUBLISHED",
+        specificContent: {
+          "com.linkedin.ugc.ShareContent": {
+            shareCommentary: isOrg ? { text: row.post_text } : shareCommentary,
+            shareMediaCategory: "NONE",
+          },
         },
-      },
-      visibility: { "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC" },
-    }),
-  });
+        visibility: {
+          [isOrg
+            ? "com.linkedin.ugc.OrganizationNetworkVisibility"
+            : "com.linkedin.ugc.MemberNetworkVisibility"]: "PUBLIC",
+        },
+      }),
+    });
+
+  let res: Response;
+  if (settings.postingMode === "company_page") {
+    res = await postUgc(companyUrn, true);
+    if (!res.ok) {
+      // Org posting unavailable (missing w_organization_social or the account
+      // is not a page admin) — fall back to personal posting with mention.
+      const body = await res.text();
+      console.warn(
+        `LinkedIn org post failed [${res.status}], falling back to personal profile: ${body}`,
+      );
+      res = await postUgc(`urn:li:person:${sub}`, false);
+    }
+  } else {
+    res = await postUgc(`urn:li:person:${sub}`, false);
+  }
   if (!res.ok) {
     const body = await res.text();
     console.error(`LinkedIn ugcPosts failed [${res.status}]: ${body}`);
