@@ -9,7 +9,7 @@ export function PageShell({
 }) {
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-30 border-b border-white/10 bg-black text-white backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b border-white/30 bg-black text-white backdrop-blur-xl">
         <div className="mx-auto flex max-w-[80rem] items-center justify-between gap-2 px-4 py-2 sm:gap-4 sm:px-5 sm:py-2.5 lg:px-8">
           <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
             <Link to="/" className="shrink-0">
@@ -38,7 +38,7 @@ export function PageShell({
           </div>
           <Link
             to="/"
-            className="label-mono inline-flex shrink-0 items-center gap-2 rounded-full border border-white/20 bg-white/10 px-2.5 py-1.5 font-bold text-white transition-all hover:-translate-y-px hover:bg-white/20 sm:px-3.5 sm:py-2"
+            className="label-mono inline-flex shrink-0 items-center gap-2 border border-white/40 bg-black px-2.5 py-1.5 font-bold text-white transition-all hover:border-white hover:bg-white/10 sm:px-3.5 sm:py-2"
           >
             <ArrowLeft className="size-3.5" />
             <span className="hidden sm:inline">Back to dashboard</span>
