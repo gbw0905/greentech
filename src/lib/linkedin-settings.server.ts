@@ -36,7 +36,7 @@ export function verifyAdminKey(key: string): boolean {
 /** Extract the numeric LinkedIn organization ID from a company page URL. */
 export function extractOrgId(url: string): string | null {
   const m = url.match(/company\/(\d+)/);
-  return m ? m[1] : null;
+  return m?.[1] ?? null;
 }
 
 export async function getLinkedInSettings(): Promise<LinkedInSettings> {
