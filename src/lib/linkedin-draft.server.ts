@@ -261,30 +261,23 @@ export async function linkedInFetch(path: string, init?: RequestInit): Promise<R
 }
 
 export type PublishResult =
-  | { ok: true; urn: string; already: boolean }
+  | { ok: true; urn: string; already: boolean; via?: "organization" | "personal" }
   | { ok: false; reason: "invalid-token" | "provider-error"; detail?: string };
 
 /**
- * Publish a pending draft. Destination follows the saved LinkedIn settings:
- * - company_page  → post as the organization (requires w_organization_social);
- *                   falls back to personal + mention if LinkedIn denies it.
- * - personal_mention → post to the member profile with a company mention tag.
+ * Publish through the managed LinkedIn connection (personal profile with a
+ * company mention; an org attempt first when the mode asks for it). This is
+ * the fallback path used whenever the custom OAuth app cannot post directly.
  */
-export async function publishDraftByToken(token: string): Promise<PublishResult> {
-  const row = await findDraftByToken(token);
-  if (!row) return { ok: false, reason: "invalid-token" };
-  if (row.status === "published" && row.linkedin_post_urn) {
-    return { ok: true, urn: row.linkedin_post_urn, already: true };
-  }
-
-  const { getLinkedInSettings } = await import("./linkedin-settings.server");
-  const settings = await getLinkedInSettings();
-
+async function publishViaManagedConnection(
+  settings: { postingMode: "personal_mention" | "company_page"; companyOrgId: string },
+  row: DraftRow,
+): Promise<{ urn: string; via: "organization" | "personal" } | null> {
   const me = await linkedInFetch("/v2/userinfo");
   if (!me.ok) {
     const body = await me.text();
     console.error(`LinkedIn userinfo failed [${me.status}]: ${body}`);
-    return { ok: false, reason: "provider-error", detail: `userinfo ${me.status}: ${body}` };
+    return null;
   }
   const { sub } = (await me.json()) as { sub: string };
 
@@ -333,8 +326,10 @@ export async function publishDraftByToken(token: string): Promise<PublishResult>
     });
 
   let res: Response;
+  let via: "organization" | "personal";
   if (settings.postingMode === "company_page") {
     res = await postUgc(companyUrn, true);
+    via = "organization";
     if (!res.ok) {
       // Org posting unavailable (missing w_organization_social or the account
       // is not a page admin) — fall back to personal posting with mention.
@@ -343,23 +338,62 @@ export async function publishDraftByToken(token: string): Promise<PublishResult>
         `LinkedIn org post failed [${res.status}], falling back to personal profile: ${body}`,
       );
       res = await postUgc(`urn:li:person:${sub}`, false);
+      via = "personal";
     }
   } else {
     res = await postUgc(`urn:li:person:${sub}`, false);
+    via = "personal";
   }
   if (!res.ok) {
     const body = await res.text();
     console.error(`LinkedIn ugcPosts failed [${res.status}]: ${body}`);
-    return { ok: false, reason: "provider-error", detail: `${res.status}: ${body}` };
+    return null;
   }
   const { id } = (await res.json()) as { id: string };
+  return { urn: id, via };
+}
+
+/**
+ * Publish a pending draft. Destination follows the saved LinkedIn settings:
+ * - company_page  → post directly as the organization using the custom
+ *                   LinkedIn app token (w_organization_social). Falls back to
+ *                   the managed connection (personal + mention) if the custom
+ *                   app is not connected or LinkedIn rejects the post.
+ * - personal_mention → managed connection: member profile with a mention tag.
+ */
+export async function publishDraftByToken(token: string): Promise<PublishResult> {
+  const row = await findDraftByToken(token);
+  if (!row) return { ok: false, reason: "invalid-token" };
+  if (row.status === "published" && row.linkedin_post_urn) {
+    return { ok: true, urn: row.linkedin_post_urn, already: true };
+  }
+
+  const { getLinkedInSettings } = await import("./linkedin-settings.server");
+  const settings = await getLinkedInSettings();
+
+  let published: { urn: string; via: "organization" | "personal" } | null = null;
+
+  if (settings.postingMode === "company_page") {
+    const { postViaCustomOrgApp } = await import("./linkedin-org-oauth.server");
+    const direct = await postViaCustomOrgApp(settings.companyOrgId, row.post_text);
+    if (direct.ok) {
+      published = { urn: direct.urn, via: "organization" };
+    } else {
+      console.warn(
+        `Custom LinkedIn app org post failed (${direct.detail}); falling back to the managed connection.`,
+      );
+    }
+  }
+
+  published ??= await publishViaManagedConnection(settings, row);
+  if (!published) return { ok: false, reason: "provider-error" };
 
   const db = await adminDb();
   await db
     .from("linkedin_drafts")
-    .update({ status: "published", linkedin_post_urn: id, published_at: new Date().toISOString() })
+    .update({ status: "published", linkedin_post_urn: published.urn, published_at: new Date().toISOString() })
     .eq("id", row.id)
     .eq("status", "pending");
 
-  return { ok: true, urn: id, already: false };
+  return { ok: true, urn: published.urn, already: false, via: published.via };
 }
