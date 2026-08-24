@@ -133,7 +133,7 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-30 border-b border-border bg-white text-foreground backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b border-white/10 bg-black text-white backdrop-blur-xl">
         <div className="mx-auto flex max-w-[80rem] items-center justify-between gap-2 px-4 py-2 sm:gap-4 sm:px-5 sm:py-2.5 lg:px-8">
           <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
             <img
@@ -148,20 +148,20 @@ function Dashboard() {
                 href="https://www.linkedin.com/company/global-bioenergy-watch/?viewAsMember=true"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block truncate font-display text-base leading-none font-extrabold tracking-tight text-foreground transition-colors hover:text-primary-glow sm:text-xl lg:text-[1.4rem]"
+                className="block truncate font-display text-base leading-none font-extrabold tracking-tight text-white transition-colors hover:text-white/80 sm:text-xl lg:text-[1.4rem]"
               >
                 Global Bioenergy Watch
               </a>
-              <div className="kicker mt-1 hidden items-center gap-1.5 text-muted-foreground sm:flex">
-                <span className="size-1.5 rounded-full bg-accent" />
+              <div className="kicker mt-1 hidden items-center gap-1.5 text-white/70 sm:flex">
+                <span className="size-1.5 rounded-full bg-white" />
                 Independent policy &amp; market desk
               </div>
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-4">
             <div className="hidden text-right sm:block">
-              <div className="label-mono text-muted-foreground">Last scan</div>
-              <div className="font-mono text-xs text-foreground">
+              <div className="label-mono text-white/70">Last scan</div>
+              <div className="font-mono text-xs text-white">
                 {busy && !feed ? "scanning…" : formatDate(data.fetchedAt)}
               </div>
             </div>
@@ -169,7 +169,7 @@ function Dashboard() {
               type="button"
               onClick={() => rescan.mutate()}
               disabled={busy}
-              className="label-mono inline-flex items-center gap-2 rounded-md bg-accent px-3 py-1.5 font-bold text-accent-foreground transition-colors hover:opacity-90 disabled:opacity-60 sm:px-3.5 sm:py-2"
+              className="label-mono inline-flex items-center gap-2 rounded-md bg-white px-3 py-1.5 font-bold text-black transition-colors hover:opacity-90 disabled:opacity-60 sm:px-3.5 sm:py-2"
             >
               <RefreshCw className={`size-3.5 ${busy ? "animate-spin" : ""}`} />
               Rescan
@@ -178,15 +178,14 @@ function Dashboard() {
         </div>
         <nav
           aria-label="Page sections"
-          className="mx-auto flex max-w-[80rem] items-stretch gap-2 overflow-x-auto border-t border-border bg-white px-4 py-2 sm:px-5 sm:py-2.5 lg:px-8"
+          className="mx-auto flex max-w-[80rem] items-stretch gap-2 overflow-x-auto border-t border-white/10 bg-black px-4 py-2 sm:px-5 sm:py-2.5 lg:px-8"
         >
           {SECTIONS.map((s) => (
             <a
               key={s.href}
               href={s.href}
-              className="label-mono group inline-flex min-w-max flex-1 items-center justify-center gap-2 text-center whitespace-nowrap rounded-sm border border-border bg-white px-3 py-1.5 text-xs font-bold text-foreground shadow-sm transition-all hover:-translate-y-px hover:border-foreground/30 hover:shadow-md sm:px-4 sm:py-2"
+              className="label-mono group inline-flex min-w-max flex-1 items-center justify-center gap-2 text-center whitespace-nowrap rounded-sm border border-white/10 bg-black px-3 py-1.5 text-xs font-extrabold text-white shadow-sm transition-all hover:-translate-y-px hover:border-white/30 hover:bg-white/10 sm:px-4 sm:py-2"
             >
-              <span className="size-1.5 rounded-full" style={{ background: s.tone }} />
               {s.label}
             </a>
           ))}
