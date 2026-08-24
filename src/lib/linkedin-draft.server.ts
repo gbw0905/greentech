@@ -280,6 +280,33 @@ export async function publishDraftByToken(token: string): Promise<PublishResult>
   }
   const { sub } = (await me.json()) as { sub: string };
 
+  // Tag the Global Bioenergy Watch company page via a mention annotation.
+  // The managed LinkedIn app lacks w_organization_social, so posts go to the
+  // member profile — the mention still links every post back to the page.
+  const COMPANY_NAME = "Global Bioenergy Watch";
+  const COMPANY_URN = "urn:li:organization:137244598";
+  const text = row.post_text.includes(COMPANY_NAME)
+    ? row.post_text
+    : `${row.post_text}\n\nFollow ${COMPANY_NAME} for daily updates.`;
+  const mentionStart = text.lastIndexOf(COMPANY_NAME);
+  const shareCommentary: Record<string, unknown> = {
+    text,
+    attributes:
+      mentionStart >= 0
+        ? [
+            {
+              start: mentionStart,
+              length: COMPANY_NAME.length,
+              value: {
+                "com.linkedin.common.CompanyAttributedEntity": {
+                  company: COMPANY_URN,
+                },
+              },
+            },
+          ]
+        : [],
+  };
+
   const res = await linkedInFetch("/v2/ugcPosts", {
     method: "POST",
     body: JSON.stringify({
@@ -287,7 +314,7 @@ export async function publishDraftByToken(token: string): Promise<PublishResult>
       lifecycleState: "PUBLISHED",
       specificContent: {
         "com.linkedin.ugc.ShareContent": {
-          shareCommentary: { text: row.post_text },
+          shareCommentary,
           shareMediaCategory: "NONE",
         },
       },
