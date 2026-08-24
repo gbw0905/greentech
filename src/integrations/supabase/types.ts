@@ -104,6 +104,45 @@ export type Database = {
           },
         ]
       }
+      linkedin_drafts: {
+        Row: {
+          created_at: string
+          day_key: string
+          emailed_at: string | null
+          id: string
+          items: Json
+          linkedin_post_urn: string | null
+          post_text: string
+          publish_token_hash: string
+          published_at: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          day_key: string
+          emailed_at?: string | null
+          id?: string
+          items?: Json
+          linkedin_post_urn?: string | null
+          post_text: string
+          publish_token_hash: string
+          published_at?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          day_key?: string
+          emailed_at?: string | null
+          id?: string
+          items?: Json
+          linkedin_post_urn?: string | null
+          post_text?: string
+          publish_token_hash?: string
+          published_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       policy_updates: {
         Row: {
           ai_brief: string | null
