@@ -188,10 +188,20 @@ export async function createAndEmailDraft(recipient: string): Promise<DraftResul
   });
   const publishUrl = `${SITE_URL}/api/public/linkedin-publish?token=${tokenForEmail}`;
 
-  const result = await sendTemplateEmail("linkedin-draft", recipient, {
-    idempotencyKey: `linkedin-draft-${dayKey}`,
-    templateData: { dateLabel, postText, publishUrl, items },
-  });
+  let result;
+  try {
+    result = await sendTemplateEmail("linkedin-draft", recipient, {
+      idempotencyKey: `linkedin-draft-${dayKey}`,
+      templateData: { dateLabel, postText, publishUrl, items },
+    });
+  } catch (e) {
+    // A previous failed send with the same key returns 409 — retry once fresh.
+    if (!(e instanceof Error) || !e.message.includes("409")) throw e;
+    result = await sendTemplateEmail("linkedin-draft", recipient, {
+      idempotencyKey: `linkedin-draft-${dayKey}-${randomBytes(3).toString("hex")}`,
+      templateData: { dateLabel, postText, publishUrl, items },
+    });
+  }
 
   if (result.sent) {
     await db.from("linkedin_drafts").update({ emailed_at: new Date().toISOString() }).eq("day_key", dayKey);
