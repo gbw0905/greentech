@@ -243,7 +243,7 @@ export async function previewDraftByToken(token: string): Promise<DraftPreview |
   };
 }
 
-async function linkedInFetch(path: string, init?: RequestInit): Promise<Response> {
+export async function linkedInFetch(path: string, init?: RequestInit): Promise<Response> {
   const lovableKey = process.env["LOVABLE_API_KEY"];
   const connectionKey = process.env["LINKEDIN_API_KEY"];
   if (!lovableKey) throw new Error("LOVABLE_API_KEY is not configured");
