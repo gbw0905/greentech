@@ -327,11 +327,8 @@ export async function publishDraftByToken(token: string): Promise<PublishResult>
             shareMediaCategory: "NONE",
           },
         },
-        visibility: {
-          [isOrg
-            ? "com.linkedin.ugc.OrganizationNetworkVisibility"
-            : "com.linkedin.ugc.MemberNetworkVisibility"]: "PUBLIC",
-        },
+        // LinkedIn uses MemberNetworkVisibility PUBLIC for org posts too.
+        visibility: { "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC" },
       }),
     });
 
