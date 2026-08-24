@@ -20,6 +20,7 @@ import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as AlertsConfirmRouteImport } from './routes/alerts.confirm'
 import { Route as CountriesSlugRouteImport } from './routes/countries.$slug'
+import { Route as SettingsLinkedinRouteImport } from './routes/settings.linkedin'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as ApiPublicDailyFlyerEmailRouteImport } from './routes/api/public/daily-flyer-email'
@@ -86,6 +87,11 @@ const AlertsConfirmRoute = AlertsConfirmRouteImport.update({
 const CountriesSlugRoute = CountriesSlugRouteImport.update({
   id: '/countries/$slug',
   path: '/countries/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsLinkedinRoute = SettingsLinkedinRouteImport.update({
+  id: '/settings/linkedin',
+  path: '/settings/linkedin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
@@ -159,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/countries/$slug': typeof CountriesSlugRoute
+  '/settings/linkedin': typeof SettingsLinkedinRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/daily-flyer-email': typeof ApiPublicDailyFlyerEmailRoute
@@ -182,6 +189,7 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/countries/$slug': typeof CountriesSlugRoute
+  '/settings/linkedin': typeof SettingsLinkedinRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/daily-flyer-email': typeof ApiPublicDailyFlyerEmailRoute
@@ -206,6 +214,7 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/countries/$slug': typeof CountriesSlugRoute
+  '/settings/linkedin': typeof SettingsLinkedinRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/daily-flyer-email': typeof ApiPublicDailyFlyerEmailRoute
@@ -231,6 +240,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/alerts/confirm'
     | '/countries/$slug'
+    | '/settings/linkedin'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/daily-flyer-email'
@@ -254,6 +264,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/alerts/confirm'
     | '/countries/$slug'
+    | '/settings/linkedin'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/daily-flyer-email'
@@ -277,6 +288,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/alerts/confirm'
     | '/countries/$slug'
+    | '/settings/linkedin'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/daily-flyer-email'
@@ -301,6 +313,7 @@ export interface RootRouteChildren {
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   AlertsConfirmRoute: typeof AlertsConfirmRoute
   CountriesSlugRoute: typeof CountriesSlugRoute
+  SettingsLinkedinRoute: typeof SettingsLinkedinRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicDailyFlyerEmailRoute: typeof ApiPublicDailyFlyerEmailRoute
@@ -392,6 +405,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CountriesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings/linkedin': {
+      id: '/settings/linkedin'
+      path: '/settings/linkedin'
+      fullPath: '/settings/linkedin'
+      preLoaderRoute: typeof SettingsLinkedinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/.lovable/oauth/consent': {
       id: '/.lovable/oauth/consent'
       path: '/.lovable/oauth/consent'
@@ -478,6 +498,7 @@ const rootRouteChildren: RootRouteChildren = {
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   AlertsConfirmRoute: AlertsConfirmRoute,
   CountriesSlugRoute: CountriesSlugRoute,
+  SettingsLinkedinRoute: SettingsLinkedinRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicDailyFlyerEmailRoute: ApiPublicDailyFlyerEmailRoute,
