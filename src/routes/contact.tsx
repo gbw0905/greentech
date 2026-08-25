@@ -1,76 +1,16 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { z } from "zod";
-import { sendTemplateEmail } from "@/lib/email-templates/send-email";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Mail, ArrowLeft, Linkedin } from "lucide-react";
+import { Linkedin, ArrowLeft } from "lucide-react";
 import siteLogo from "@/assets/logo.png";
 
-const OFFICIAL_EMAIL = "info@globalbioenergywatch.org";
-
-const contactSchema = z.object({
-  name: z.string().min(1).max(120),
-  email: z.string().email().max(120),
-  subject: z.string().min(1).max(200),
-  message: z.string().min(10).max(5000),
-});
+const LINKEDIN_URL = "https://www.linkedin.com/company/global-bioenergy-watch/";
 
 export const Route = createFileRoute("/contact")({
   component: ContactPage,
-  server: {
-    handlers: {
-      POST: async ({ request }) => {
-        const formData = await request.formData();
-        const payload = {
-          name: formData.get("name"),
-          email: formData.get("email"),
-          subject: formData.get("subject"),
-          message: formData.get("message"),
-        };
-        const parsed = contactSchema.safeParse(payload);
-        if (!parsed.success) {
-          return Response.json({ ok: false, error: "Please check all fields and try again." }, { status: 400 });
-        }
-        try {
-          await sendTemplateEmail("contact-form", OFFICIAL_EMAIL, {
-            templateData: parsed.data,
-            replyTo: parsed.data.email,
-            idempotencyKey: `contact-${parsed.data.email}-${Date.now()}`,
-          });
-          return Response.json({ ok: true });
-        } catch (error) {
-          console.error("Contact form send failed:", error);
-          return Response.json({ ok: false, error: "Message could not be sent. Please try again later." }, { status: 500 });
-        }
-      },
-    },
-  },
 });
 
 function ContactPage() {
-  const router = useRouter();
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    const res = await fetch("/contact", {
-      method: "POST",
-      body: formData,
-    });
-    const result = await res.json();
-    if (result.ok) {
-      form.reset();
-      alert("Thank you — your message has been sent.");
-    } else {
-      alert(result.error || "Something went wrong.");
-    }
-    router.invalidate();
-  }
-
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-30 border-b border-white/30 bg-black text-white backdrop-blur-xl">
@@ -109,72 +49,53 @@ function ContactPage() {
         <div className="mx-auto max-w-2xl">
           <div className="ink-bar mb-6 px-5 py-6 sm:px-7">
             <div className="flex items-center gap-2 text-accent">
-              <Mail className="size-3.5" />
+              <Linkedin className="size-3.5" />
               <span className="kicker text-accent">Contact</span>
             </div>
             <h1 className="mt-2 font-display text-3xl leading-[1.05] font-extrabold tracking-[-0.03em] text-ink-foreground sm:text-[2.6rem]">
               Get in touch
             </h1>
             <p className="mt-2 max-w-3xl text-sm/relaxed text-ink-muted">
-              Reach the Global Bioenergy Watch desk. For press, partnerships, data corrections, or general inquiries, email{" "}
-              <a href={`mailto:${OFFICIAL_EMAIL}`} className="font-bold text-accent underline">
-                {OFFICIAL_EMAIL}
-              </a>
-              .
+              Reach the Global Bioenergy Watch desk on LinkedIn for press, partnerships, data corrections, or general inquiries.
             </p>
             <div className="mt-4 h-0.5 w-24 rounded-full bg-accent" />
           </div>
 
           <Card className="border border-border bg-card shadow-sm">
             <CardHeader className="space-y-1">
-              <CardTitle className="font-display text-xl font-bold">Send a message</CardTitle>
+              <CardTitle className="font-display text-xl font-bold">Connect on LinkedIn</CardTitle>
               <CardDescription className="text-sm text-muted-foreground">
-                All fields are required. We aim to reply within two business days.
+                Messages are managed through the Global Bioenergy Watch company page.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Name</Label>
-                    <Input id="name" name="name" required maxLength={120} placeholder="Your name" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" name="email" type="email" required maxLength={120} placeholder="you@example.com" />
-                  </div>
+              <a
+                href={LINKEDIN_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 rounded-md border border-border bg-muted/50 p-4 transition-colors hover:bg-muted"
+              >
+                <div className="flex size-12 shrink-0 items-center justify-center rounded-md bg-[#0A66C2] text-white">
+                  <Linkedin className="size-6 fill-current" />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="subject">Subject</Label>
-                  <Input id="subject" name="subject" required maxLength={200} placeholder="How can we help?" />
+                <div className="min-w-0">
+                  <p className="font-display text-base font-bold text-foreground">Global Bioenergy Watch</p>
+                  <p className="truncate text-sm text-muted-foreground">linkedin.com/company/global-bioenergy-watch</p>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="message">Message</Label>
-                  <Textarea
-                    id="message"
-                    name="message"
-                    required
-                    minLength={10}
-                    maxLength={5000}
-                    rows={6}
-                    placeholder="Tell us what you need..."
-                  />
-                </div>
-                <Button type="submit" className="w-full bg-accent text-white hover:bg-accent/90">
-                  <Mail className="mr-2 size-4" />
-                  Send message
-                </Button>
-              </form>
+              </a>
+              <Button asChild className="mt-4 w-full bg-accent text-white hover:bg-accent/90">
+                <a href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer">
+                  <Linkedin className="mr-2 size-4 fill-current" />
+                  Message on LinkedIn
+                </a>
+              </Button>
             </CardContent>
           </Card>
 
           <div className="mt-8 rounded-md border border-border bg-muted/50 p-4 text-sm text-muted-foreground">
-            <p className="font-semibold text-foreground">Receiving inbox note</p>
+            <p className="font-semibold text-foreground">Why LinkedIn?</p>
             <p className="mt-1">
-              Lovable's managed email service sends outbound messages only. To actually receive replies at{" "}
-              <strong>{OFFICIAL_EMAIL}</strong>, you need a mailbox with an external email provider (e.g., Google Workspace,
-              Zoho Mail, or Microsoft 365) and add its MX records at your domain registrar. The delegated{" "}
-              <code>notify.globalbioenergywatch.org</code> subdomain used for sending can stay in place.
+              A branded email inbox is on hold while the domain mailbox is set up. Until then, LinkedIn is the fastest way to reach the desk.
             </p>
           </div>
         </div>
