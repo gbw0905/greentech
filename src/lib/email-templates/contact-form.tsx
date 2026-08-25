@@ -34,7 +34,7 @@ const ContactFormEmail = ({ name, email, subject, message }: Props) => (
 
 export const template = {
   component: ContactFormEmail,
-  subject: (data: Record<string, any>) => `[Global Bioenergy Watch] Contact: ${data.subject || 'New message'}`,
+  subject: (data: Record<string, any>) => `[Global Bioenergy Watch] Contact: ${data['subject'] || 'New message'}`,
   displayName: 'Contact form submission',
   previewData: {
     name: 'Jane Doe',
