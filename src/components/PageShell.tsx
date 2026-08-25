@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Linkedin, Mail } from "lucide-react";
+import { ArrowLeft, Linkedin } from "lucide-react";
 import siteLogo from "@/assets/logo.png";
 
 export function PageShell({
@@ -38,13 +38,6 @@ export function PageShell({
           </div>
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <Link
-              to="/contact"
-              className="label-mono hidden items-center gap-1.5 border border-white/40 bg-black px-2.5 py-1.5 text-xs font-bold text-white transition-all hover:border-white hover:bg-white/10 sm:inline-flex sm:px-3 sm:py-2"
-            >
-              <Mail className="size-3.5" />
-              Contact
-            </Link>
-            <Link
               to="/"
               className="label-mono inline-flex shrink-0 items-center gap-2 border border-white/40 bg-black px-2.5 py-1.5 font-bold text-white transition-all hover:border-white hover:bg-white/10 sm:px-3.5 sm:py-2"
             >
@@ -62,12 +55,6 @@ export function PageShell({
           <p className="text-xs text-muted-foreground">
             Updates are aggregated from live web sources and auto-classified by jurisdiction and fuel
             type. Verify against primary legislation before use in compliance decisions.
-          </p>
-          <p className="text-sm text-foreground">
-            <span className="font-bold">Official email:</span>{" "}
-            <a href="mailto:info@globalbioenergywatch.org" className="font-bold text-accent underline">
-              info@globalbioenergywatch.org
-            </a>
           </p>
           <p className="flex flex-wrap items-center gap-2 text-sm font-bold text-foreground">
             <span>© 2026 All rights reserved — Global Bioenergy Watch —</span>
