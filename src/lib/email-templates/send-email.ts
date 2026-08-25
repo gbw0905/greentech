@@ -71,7 +71,7 @@ export async function sendTemplateEmail(
     await sendLovableEmail(
       {
         to: recipient,
-        from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
+        from: `${SITE_NAME} <${OFFICIAL_EMAIL}>`,
         sender_domain: SENDER_DOMAIN,
         subject,
         html,
@@ -79,7 +79,7 @@ export async function sendTemplateEmail(
         purpose: 'transactional',
         label: templateName,
         idempotency_key: options.idempotencyKey || crypto.randomUUID(),
-        ...(options.replyTo ? { reply_to: options.replyTo } : {}),
+        reply_to: options.replyTo || OFFICIAL_EMAIL,
       },
       { apiKey, sendUrl: process.env['LOVABLE_SEND_URL'] }
     )
