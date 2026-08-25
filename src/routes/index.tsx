@@ -395,6 +395,12 @@ function Dashboard() {
               Updates are aggregated from live web sources and auto-classified by jurisdiction and
               fuel type. Verify against primary legislation before use in compliance decisions.
             </p>
+            <p className="text-sm text-foreground">
+              <span className="font-bold">Official email:</span>{" "}
+              <a href="mailto:info@globalbioenergywatch.org" className="font-bold text-accent underline">
+                info@globalbioenergywatch.org
+              </a>
+            </p>
             <p className="flex flex-wrap items-center gap-2 text-sm font-bold text-foreground">
               <span>© 2026 All rights reserved — Global Bioenergy Watch —</span>
               <a
