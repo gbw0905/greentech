@@ -26,9 +26,11 @@ export const recordVisitFn = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-export const getTrafficStatsFn = createServerFn({ method: "GET" }).handler(async () => {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data, error } = await supabaseAdmin.rpc("get_traffic_stats");
-  if (error) return null;
-  return data;
-});
+export const getTrafficStatsFn = createServerFn({ method: "GET" })
+  .inputValidator((input: unknown) => input as Record<string, never>)
+  .handler(async () => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin.rpc("get_traffic_stats");
+    if (error) return null;
+    return data;
+  });
