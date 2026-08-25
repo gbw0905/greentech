@@ -1,7 +1,7 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { RefreshCw, AlertTriangle, Map, Factory, TrendingUp, BellRing, Briefcase, Linkedin } from "lucide-react";
+import { RefreshCw, AlertTriangle, Map, Factory, TrendingUp, BellRing, Briefcase, Linkedin, Mail } from "lucide-react";
 import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
 import siteLogo from "@/assets/logo.png";
 import { UpdateCard, formatDate } from "@/components/UpdateCard";
@@ -158,7 +158,14 @@ function Dashboard() {
               </div>
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-4">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-4">
+            <Link
+              to="/contact"
+              className="label-mono hidden items-center gap-1.5 border border-white/40 bg-black px-2.5 py-1.5 text-xs font-bold text-white transition-all hover:border-white hover:bg-white/10 sm:inline-flex sm:px-3 sm:py-2"
+            >
+              <Mail className="size-3.5" />
+              Contact
+            </Link>
             <div className="hidden text-right sm:block">
               <div className="label-mono text-white/70">Last scan</div>
               <div className="font-mono text-xs text-white">
@@ -189,6 +196,13 @@ function Dashboard() {
               {s.label}
             </a>
           ))}
+          <Link
+            to="/contact"
+            className="label-mono group inline-flex min-w-max items-center justify-center gap-1.5 text-center whitespace-nowrap border border-white/40 bg-black px-3 py-1.5 text-xs font-extrabold text-white shadow-sm transition-all hover:border-white hover:bg-white/10 sm:px-4 sm:py-2"
+          >
+            <Mail className="size-3.5" />
+            Contact
+          </Link>
         </nav>
       </header>
 
@@ -380,6 +394,12 @@ function Dashboard() {
             <p className="text-xs text-muted-foreground">
               Updates are aggregated from live web sources and auto-classified by jurisdiction and
               fuel type. Verify against primary legislation before use in compliance decisions.
+            </p>
+            <p className="text-sm text-foreground">
+              <span className="font-bold">Official email:</span>{" "}
+              <a href="mailto:info@globalbioenergywatch.org" className="font-bold text-accent underline">
+                info@globalbioenergywatch.org
+              </a>
             </p>
             <p className="flex flex-wrap items-center gap-2 text-sm font-bold text-foreground">
               <span>© 2026 All rights reserved — Global Bioenergy Watch —</span>

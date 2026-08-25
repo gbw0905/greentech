@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as JobsRouteImport } from './routes/jobs'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as ProfilesRouteImport } from './routes/profiles'
@@ -36,6 +37,11 @@ import { Route as ApiPublicLinkedinOauthCallbackRouteImport } from './routes/api
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JobsRoute = JobsRouteImport.update({
@@ -162,6 +168,7 @@ const ApiPublicLinkedinOauthCallbackRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/contact': typeof ContactRoute
   '/jobs': typeof JobsRoute
   '/mcp': typeof McpRoute
   '/profiles': typeof ProfilesRoute
@@ -187,6 +194,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/contact': typeof ContactRoute
   '/jobs': typeof JobsRoute
   '/mcp': typeof McpRoute
   '/profiles': typeof ProfilesRoute
@@ -213,6 +221,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/contact': typeof ContactRoute
   '/jobs': typeof JobsRoute
   '/mcp': typeof McpRoute
   '/profiles': typeof ProfilesRoute
@@ -240,6 +249,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/contact'
     | '/jobs'
     | '/mcp'
     | '/profiles'
@@ -265,6 +275,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/contact'
     | '/jobs'
     | '/mcp'
     | '/profiles'
@@ -290,6 +301,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/contact'
     | '/jobs'
     | '/mcp'
     | '/profiles'
@@ -316,6 +328,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ContactRoute: typeof ContactRoute
   JobsRoute: typeof JobsRoute
   McpRoute: typeof McpRoute
   ProfilesRoute: typeof ProfilesRoute
@@ -347,6 +360,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/jobs': {
@@ -508,6 +528,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ContactRoute: ContactRoute,
   JobsRoute: JobsRoute,
   McpRoute: McpRoute,
   ProfilesRoute: ProfilesRoute,

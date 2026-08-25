@@ -7,12 +7,11 @@ import { TEMPLATES } from './registry'
 
 // Configuration baked in at scaffold time
 const SITE_NAME = "Global Bioenergy Watch"
+// Official contact/sender address for the tracker
+const OFFICIAL_EMAIL = "info@globalbioenergywatch.org"
 // SENDER_DOMAIN is the verified sender subdomain FQDN (e.g., "notify.example.com").
 // It MUST match the subdomain delegated to Lovable's nameservers. NEVER use the root domain.
 const SENDER_DOMAIN = "notify.globalbioenergywatch.org"
-// FROM_DOMAIN is the domain shown in the From: header (e.g., "example.com").
-// Can be the root domain when display_from_root is enabled — this is cosmetic only.
-const FROM_DOMAIN = "globalbioenergywatch.org"
 
 export type SendTemplateEmailResult =
   | { sent: true }
@@ -69,7 +68,7 @@ export async function sendTemplateEmail(
     await sendLovableEmail(
       {
         to: recipient,
-        from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
+        from: `${SITE_NAME} <${OFFICIAL_EMAIL}>`,
         sender_domain: SENDER_DOMAIN,
         subject,
         html,
@@ -77,7 +76,7 @@ export async function sendTemplateEmail(
         purpose: 'transactional',
         label: templateName,
         idempotency_key: options.idempotencyKey || crypto.randomUUID(),
-        ...(options.replyTo ? { reply_to: options.replyTo } : {}),
+        reply_to: options.replyTo || OFFICIAL_EMAIL,
       },
       { apiKey, sendUrl: process.env['LOVABLE_SEND_URL'] }
     )
