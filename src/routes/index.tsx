@@ -158,7 +158,14 @@ function Dashboard() {
               </div>
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-4">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-4">
+            <Link
+              to="/contact"
+              className="label-mono hidden items-center gap-1.5 border border-white/40 bg-black px-2.5 py-1.5 text-xs font-bold text-white transition-all hover:border-white hover:bg-white/10 sm:inline-flex sm:px-3 sm:py-2"
+            >
+              <Mail className="size-3.5" />
+              Contact
+            </Link>
             <div className="hidden text-right sm:block">
               <div className="label-mono text-white/70">Last scan</div>
               <div className="font-mono text-xs text-white">
@@ -189,6 +196,13 @@ function Dashboard() {
               {s.label}
             </a>
           ))}
+          <Link
+            to="/contact"
+            className="label-mono group inline-flex min-w-max items-center justify-center gap-1.5 text-center whitespace-nowrap border border-white/40 bg-black px-3 py-1.5 text-xs font-extrabold text-white shadow-sm transition-all hover:border-white hover:bg-white/10 sm:px-4 sm:py-2"
+          >
+            <Mail className="size-3.5" />
+            Contact
+          </Link>
         </nav>
       </header>
 
