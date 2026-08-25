@@ -93,9 +93,9 @@ function ContactPage() {
           </Card>
 
           <div className="mt-8 rounded-md border border-border bg-muted/50 p-4 text-sm text-muted-foreground">
-            <p className="font-semibold text-foreground">Why LinkedIn?</p>
+            <p className="font-semibold text-foreground">Contact method</p>
             <p className="mt-1">
-              A branded email inbox is on hold while the domain mailbox is set up. Until then, LinkedIn is the fastest way to reach the desk.
+              LinkedIn is the fastest way to reach the Global Bioenergy Watch desk for press, partnerships, data corrections, or general inquiries.
             </p>
           </div>
         </div>
