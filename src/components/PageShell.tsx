@@ -36,14 +36,23 @@ export function PageShell({
               </div>
             </div>
           </div>
-          <Link
-            to="/"
-            className="label-mono inline-flex shrink-0 items-center gap-2 border border-white/40 bg-black px-2.5 py-1.5 font-bold text-white transition-all hover:border-white hover:bg-white/10 sm:px-3.5 sm:py-2"
-          >
-            <ArrowLeft className="size-3.5" />
-            <span className="hidden sm:inline">Back to dashboard</span>
-            <span className="sm:hidden">Back</span>
-          </Link>
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            <Link
+              to="/contact"
+              className="label-mono hidden items-center gap-1.5 border border-white/40 bg-black px-2.5 py-1.5 text-xs font-bold text-white transition-all hover:border-white hover:bg-white/10 sm:inline-flex sm:px-3 sm:py-2"
+            >
+              <Mail className="size-3.5" />
+              Contact
+            </Link>
+            <Link
+              to="/"
+              className="label-mono inline-flex shrink-0 items-center gap-2 border border-white/40 bg-black px-2.5 py-1.5 font-bold text-white transition-all hover:border-white hover:bg-white/10 sm:px-3.5 sm:py-2"
+            >
+              <ArrowLeft className="size-3.5" />
+              <span className="hidden sm:inline">Back to dashboard</span>
+              <span className="sm:hidden">Back</span>
+            </Link>
+          </div>
         </div>
       </header>
 
