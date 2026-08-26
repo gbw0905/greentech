@@ -749,18 +749,18 @@ export function ChartScatter({
               tickFormatter={formatY}
               stroke="var(--muted-foreground)"
               tick={{ fill: "var(--muted-foreground)", fontSize: isMobile ? 9 : 11 }}
-              label={
-                isMobile
-                  ? undefined
-                  : {
+              {...(isMobile
+                ? {}
+                : {
+                    label: {
                       value: `${yAxis.label} (${yAxis.unit})`,
                       angle: -90,
                       position: "insideLeft",
                       fill: "var(--foreground)",
                       fontSize: 12,
                       fontWeight: 600,
-                    }
-              }
+                    },
+                  })}
             />
             <ZAxis type="number" dataKey="size" range={isMobile ? [24, 160] : [60, 600]} />
             <Tooltip content={<CustomTooltip />} cursor={{ stroke: "var(--muted-foreground)", strokeDasharray: "3 3" }} />
