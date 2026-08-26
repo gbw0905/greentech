@@ -24,6 +24,7 @@ interface Props {
   dateLabel?: string
   postText?: string
   publishUrl?: string
+  destinationNote?: string
   items?: Item[]
 }
 
@@ -80,7 +81,13 @@ const sourceTitle = { fontSize: '13px', fontWeight: 700, color: '#0b1220', margi
 const sourceMeta = { fontSize: '11px', color: '#7b8394', margin: '2px 0 0' }
 const foot = { fontSize: '11px', color: '#8a92a1', margin: '18px 0 0' }
 
-const LinkedInDraft = ({ dateLabel = '', postText = '', publishUrl = '', items = [] }: Props) => (
+const LinkedInDraft = ({
+  dateLabel = '',
+  postText = '',
+  publishUrl = '',
+  destinationNote = 'The button publishes this exact text through the destination selected in your LinkedIn posting settings.',
+  items = [],
+}: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>{`Your LinkedIn post for ${dateLabel} is ready to review`}</Preview>
@@ -103,10 +110,7 @@ const LinkedInDraft = ({ dateLabel = '', postText = '', publishUrl = '', items =
           </Button>
 
           <Text style={note}>
-            The button publishes this exact text to your personal LinkedIn profile (LinkedIn has
-            not granted company-page posting permission to this connection). To run it on the{' '}
-            <strong>Global Bioenergy Watch</strong> page instead, copy the text above and paste it
-            into the page composer. The approval link is single-use and expires once used.
+            {destinationNote} The approval link is single-use and expires once used.
           </Text>
 
           {items.length > 0 ? (
