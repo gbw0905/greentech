@@ -110,10 +110,7 @@ const LinkedInDraft = ({
           </Button>
 
           <Text style={note}>
-            The button publishes this exact text to your personal LinkedIn profile (LinkedIn has
-            not granted company-page posting permission to this connection). To run it on the{' '}
-            <strong>Global Bioenergy Watch</strong> page instead, copy the text above and paste it
-            into the page composer. The approval link is single-use and expires once used.
+            {destinationNote} The approval link is single-use and expires once used.
           </Text>
 
           {items.length > 0 ? (
