@@ -188,18 +188,31 @@ export async function createAndEmailDraft(recipient: string): Promise<DraftResul
   });
   const publishUrl = `${SITE_URL}/api/public/linkedin-publish?token=${tokenForEmail}`;
 
+  // Describe the real destination: company page when company-page mode is
+  // selected AND the custom app is connected, personal profile otherwise.
+  const { getLinkedInSettings } = await import("./linkedin-settings.server");
+  const { getOrgConnectionStatus } = await import("./linkedin-org-oauth.server");
+  const settings = await getLinkedInSettings();
+  const orgConnection =
+    settings.postingMode === "company_page" ? await getOrgConnectionStatus() : null;
+  const destinationNote = orgConnection?.connected
+    ? `The button publishes this exact text directly to the Global Bioenergy Watch company page${orgConnection.orgName ? ` (${orgConnection.orgName})` : ""}.`
+    : settings.postingMode === "company_page"
+      ? "Company-page posting is selected but the custom LinkedIn app is not connected, so this will publish to your personal LinkedIn profile with the company page tagged."
+      : "The button publishes this exact text to your personal LinkedIn profile with the Global Bioenergy Watch page tagged as a mention.";
+
   let result;
   try {
     result = await sendTemplateEmail("linkedin-draft", recipient, {
       idempotencyKey: `linkedin-draft-${dayKey}`,
-      templateData: { dateLabel, postText, publishUrl, items },
+      templateData: { dateLabel, postText, publishUrl, destinationNote, items },
     });
   } catch (e) {
     // A previous failed send with the same key returns 409 — retry once fresh.
     if (!(e instanceof Error) || !e.message.includes("409")) throw e;
     result = await sendTemplateEmail("linkedin-draft", recipient, {
       idempotencyKey: `linkedin-draft-${dayKey}-${randomBytes(3).toString("hex")}`,
-      templateData: { dateLabel, postText, publishUrl, items },
+      templateData: { dateLabel, postText, publishUrl, destinationNote, items },
     });
   }
 
