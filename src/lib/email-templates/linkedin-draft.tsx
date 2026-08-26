@@ -24,6 +24,7 @@ interface Props {
   dateLabel?: string
   postText?: string
   publishUrl?: string
+  destinationNote?: string
   items?: Item[]
 }
 

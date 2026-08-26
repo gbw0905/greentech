@@ -393,6 +393,15 @@ function Dashboard() {
                 <span>Syed Asiful Alam, PhD</span>
               </a>
             </p>
+            <p className="text-sm">
+              <Link
+                to="/contact"
+                className="font-semibold text-foreground underline underline-offset-4 hover:text-primary"
+              >
+                Contact &amp; corrections
+              </Link>
+            </p>
+
           </footer>
         </main>
       </div>
