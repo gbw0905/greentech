@@ -758,7 +758,7 @@ export function ChartScatter({
                 fontWeight: 600,
               }}
             />
-            <ZAxis type="number" dataKey="size" range={[60, 600]} />
+            <ZAxis type="number" dataKey="size" range={isMobile ? [30, 220] : [60, 600]} />
             <Tooltip content={<CustomTooltip />} cursor={{ stroke: "var(--muted-foreground)", strokeDasharray: "3 3" }} />
             {groups.map((g) => (
               <Scatter
