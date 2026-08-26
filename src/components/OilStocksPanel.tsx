@@ -4,7 +4,7 @@ import { Building2, Download } from "lucide-react";
 import { getOilStocksFn, type OilQuote } from "@/lib/oil.functions";
 import { openEntityNews } from "@/lib/open-news";
 import { entityLogo } from "@/lib/entity-logos";
-import { ChartHeat, ChartPanel, chartFmt } from "@/components/chart-kit";
+import { ChartHeat, ChartPanel, ChartScatter, chartFmt, type ScatterPoint } from "@/components/chart-kit";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { downloadBrandedCsv, type BrandedExport } from "@/lib/branded-export";
 import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
