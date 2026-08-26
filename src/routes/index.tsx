@@ -398,7 +398,7 @@ function Dashboard() {
                 to="/contact"
                 className="font-semibold text-foreground underline underline-offset-4 hover:text-primary"
               >
-                Contact &amp; corrections
+                Contact us
               </Link>
             </p>
 
