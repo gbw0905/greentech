@@ -877,13 +877,30 @@ export function ChartPanel({
         {status ? <span className="label-mono text-muted-foreground">{status}</span> : null}
       </div>
 
-      {metricOptions || limitOptions || actions || filters || assistant ? (
+      {metricOptions || limitOptions || viewOptions || actions || filters || assistant ? (
         <div className="mb-2 flex flex-wrap items-center gap-2 rounded-sm border border-border bg-surface-2/60 p-2 sm:flex-nowrap sm:overflow-x-auto sm:whitespace-nowrap">
           {filters
             ? isValidElement(filters)
               ? cloneElement(filters as ReactElement<any>, { bare: true })
               : filters
             : null}
+          {viewOptions ? (
+            <label className="flex w-full shrink-0 items-center gap-1.5 sm:w-auto">
+              <span className="label-mono shrink-0 text-muted-foreground">{viewLabel}</span>
+              <select
+                className="chart-select min-w-0 flex-1 sm:w-auto sm:flex-none"
+                value={viewValue}
+                onChange={(e) => onViewChange?.(e.target.value)}
+                aria-label={`Choose the chart type for ${title}`}
+              >
+                {viewOptions.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
           {metricOptions ? (
             <label className="flex w-full shrink-0 items-center gap-1.5 sm:w-auto">
               <span className="label-mono shrink-0 text-muted-foreground">{metricLabel}</span>
