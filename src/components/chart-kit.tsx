@@ -635,7 +635,9 @@ export function ChartScatter({
 
   const reg = regression(data);
   const r = corrCoeff(data);
-  const trendDomain = reg ? [xDomain[0], xDomain[1]] : null;
+  const trendDomain: [number, number] | null = reg
+    ? ([xMin - xPad, xMax + xPad] as [number, number])
+    : null;
   const trendY = (x: number) => reg!.m * x + reg!.b;
 
   const groups = [...new Set(data.map((d) => d.group))].sort();
