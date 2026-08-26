@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 import { Fuel } from "lucide-react";
-import { ChartHeat, ChartPanel, chartFmt as fmt } from "@/components/chart-kit";
+import { ChartHeat, ChartPanel, ChartScatter, chartFmt as fmt, type ScatterPoint } from "@/components/chart-kit";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
 import type { FuelType } from "@/lib/policy-taxonomy";
