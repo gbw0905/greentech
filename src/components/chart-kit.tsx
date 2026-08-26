@@ -771,15 +771,20 @@ export function ChartScatter({
             ))}
             {trendDomain && (
               <>
-                <ReferenceLine
-                  segment={[
-                    { x: trendDomain[0], y: trendY(trendDomain[0]) },
-                    { x: trendDomain[1], y: trendY(trendDomain[1]) },
-                  ]}
-                  stroke="var(--primary)"
-                  strokeDasharray="5 5"
-                  strokeWidth={2}
-                />
+                {(() => {
+                  const [x0, x1] = trendDomain;
+                  return (
+                    <ReferenceLine
+                      segment={[
+                        { x: x0, y: trendY(x0) },
+                        { x: x1, y: trendY(x1) },
+                      ]}
+                      stroke="var(--primary)"
+                      strokeDasharray="5 5"
+                      strokeWidth={2}
+                    />
+                  );
+                })()}
               </>
             )}
           </ScatterChart>
