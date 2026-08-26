@@ -826,6 +826,10 @@ export function ChartPanel({
   limitValue,
   limitOptions,
   onLimitChange,
+  viewValue,
+  viewOptions,
+  onViewChange,
+  viewLabel = "View",
   status,
   footnote,
   filters,
@@ -844,6 +848,11 @@ export function ChartPanel({
   limitValue?: string;
   limitOptions?: { value: string; label: string }[];
   onLimitChange?: (v: string) => void;
+  /** Optional chart-type switcher, e.g. Heat map / Scatter. */
+  viewValue?: string;
+  viewOptions?: { value: string; label: string }[];
+  onViewChange?: (v: string) => void;
+  viewLabel?: string;
   status?: string;
   footnote?: string;
   /** Optional buttons (e.g. export) rendered in the header. */
