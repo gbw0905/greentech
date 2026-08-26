@@ -144,7 +144,16 @@ function scatterAxes(metricKey: StockMetric) {
     };
   }
   return {
-    x: { metric: STOCK_METRICS.change, help: "X-axis shows 1-day market momentum; Y-axis shows the selected measure." },
+    x: {
+      metric: {
+        label: "1-day change (%)",
+        unit: "1-day price change, %",
+        help: "X-axis shows 1-day market momentum (negative = down, positive = up); Y-axis shows the selected measure.",
+        decimals: 2,
+        value: (q: OilQuote) => q.changePct,
+      },
+      help: "X-axis shows 1-day market momentum (negative = down, positive = up); Y-axis shows the selected measure.",
+    },
     y: STOCK_METRICS[metricKey],
     size: { label: "Annual capacity", unit: "MMboe/yr", value: (q: OilQuote) => capOf(q.symbol).mmboe },
   };
