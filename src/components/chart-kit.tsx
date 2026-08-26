@@ -720,7 +720,7 @@ export function ChartScatter({
         {yAxis.help ? <p className="chart-sub leading-snug text-muted-foreground">{yAxis.help}</p> : null}
       </div>
 
-      <div className="h-[28rem] w-full rounded-sm border border-border/60 bg-card p-2 sm:h-[30rem]">
+      <div className="h-[24rem] w-full min-w-0 overflow-hidden rounded-sm border border-border/60 bg-card p-2 sm:h-[28rem] lg:h-[30rem]">
         <ResponsiveContainer width="100%" height="100%">
           <ScatterChart margin={{ top: 10, right: 20, bottom: 40, left: 10 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.5} />
