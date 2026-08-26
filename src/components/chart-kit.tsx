@@ -720,9 +720,9 @@ export function ChartScatter({
         {yAxis.help ? <p className="chart-sub leading-snug text-muted-foreground">{yAxis.help}</p> : null}
       </div>
 
-      <div className="h-[24rem] w-full min-w-0 overflow-hidden rounded-sm border border-border/60 bg-card p-2 sm:h-[28rem] lg:h-[30rem]">
+      <div className="h-[22rem] w-full min-w-0 overflow-hidden rounded-sm border border-border/60 bg-card p-1.5 sm:h-[26rem] lg:h-[30rem]">
         <ResponsiveContainer width="100%" height="100%">
-          <ScatterChart margin={{ top: 10, right: 20, bottom: 40, left: 10 }}>
+          <ScatterChart margin={isMobile ? { top: 8, right: 8, bottom: 32, left: 0 } : { top: 10, right: 20, bottom: 40, left: 10 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.5} />
             <XAxis
               type="number"
@@ -731,13 +731,13 @@ export function ChartScatter({
               domain={xDomain as [number, number]}
               tickFormatter={formatX}
               stroke="var(--muted-foreground)"
-              tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
+              tick={{ fill: "var(--muted-foreground)", fontSize: isMobile ? 9 : 11 }}
               label={{
                 value: `${xAxis.label} (${xAxis.unit})`,
                 position: "insideBottom",
-                offset: -25,
+                offset: isMobile ? -18 : -25,
                 fill: "var(--foreground)",
-                fontSize: 12,
+                fontSize: isMobile ? 10 : 12,
                 fontWeight: 600,
               }}
             />
@@ -748,17 +748,21 @@ export function ChartScatter({
               domain={yDomain as [number, number]}
               tickFormatter={formatY}
               stroke="var(--muted-foreground)"
-              tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
-              label={{
-                value: `${yAxis.label} (${yAxis.unit})`,
-                angle: -90,
-                position: "insideLeft",
-                fill: "var(--foreground)",
-                fontSize: 12,
-                fontWeight: 600,
-              }}
+              tick={{ fill: "var(--muted-foreground)", fontSize: isMobile ? 9 : 11 }}
+              label={
+                isMobile
+                  ? undefined
+                  : {
+                      value: `${yAxis.label} (${yAxis.unit})`,
+                      angle: -90,
+                      position: "insideLeft",
+                      fill: "var(--foreground)",
+                      fontSize: 12,
+                      fontWeight: 600,
+                    }
+              }
             />
-            <ZAxis type="number" dataKey="size" range={isMobile ? [30, 220] : [60, 600]} />
+            <ZAxis type="number" dataKey="size" range={isMobile ? [24, 160] : [60, 600]} />
             <Tooltip content={<CustomTooltip />} cursor={{ stroke: "var(--muted-foreground)", strokeDasharray: "3 3" }} />
             {groups.map((g) => (
               <Scatter
