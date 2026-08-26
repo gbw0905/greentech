@@ -534,16 +534,16 @@ export function ChartHeat({
 export type ScatterPoint = {
   key: string;
   label: string;
-  sub?: string;
+  sub?: string | undefined;
   x: number;
   y: number;
   size: number;
   /** Group name used for color (usually country or region). */
   group: string;
-  logo?: string;
-  meta?: string;
-  changePct?: number;
-  newsTarget?: NewsTarget;
+  logo?: string | undefined;
+  meta?: string | undefined;
+  changePct?: number | undefined;
+  newsTarget?: NewsTarget | undefined;
 };
 
 /** Deterministic, readable color for a group name. */
