@@ -134,6 +134,22 @@ const STOCK_METRICS: Record<
   },
 };
 
+/** Defines the scatter-plot axes for each selected metric so X and Y never collide. */
+function scatterAxes(metricKey: StockMetric) {
+  if (metricKey === "change") {
+    return {
+      x: { metric: STOCK_METRICS.price, help: "X-axis shows the share price; Y-axis shows the 1-day move." },
+      y: STOCK_METRICS.change,
+      size: { label: "Annual capacity", unit: "MMboe/yr", value: (q: OilQuote) => capOf(q.symbol).mmboe },
+    };
+  }
+  return {
+    x: { metric: STOCK_METRICS.change, help: "X-axis shows 1-day market momentum; Y-axis shows the selected measure." },
+    y: STOCK_METRICS[metricKey],
+    size: { label: "Annual capacity", unit: "MMboe/yr", value: (q: OilQuote) => capOf(q.symbol).mmboe },
+  };
+}
+
 export function OilStocksPanel() {
   const [metricKey, setMetricKey] = useState<StockMetric>("capacity");
   const { data, isLoading } = useQuery({
