@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Ship, Truck, TrainFront } from "lucide-react";
-import { ChartHeat, ChartPanel, chartFmt as fmt } from "@/components/chart-kit";
+import { ChartHeat, ChartPanel, ChartScatter, chartFmt as fmt, type ScatterPoint } from "@/components/chart-kit";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
 import { openEntityNews } from "@/lib/open-news";
@@ -91,6 +91,29 @@ const METRICS: Record<Metric, { label: string; unit: string; help: string; decim
   },
 };
 
+/** Defines the scatter-plot axes for each selected metric so X and Y never collide. */
+function scatterAxes(metricKey: Metric) {
+  if (metricKey === "share") {
+    return {
+      x: { metric: METRICS.volume, help: "X-axis shows absolute biofuel volume; Y-axis shows biofuel intensity." },
+      y: METRICS.share,
+      size: { label: "Biofuel share of fuel burn", unit: "%", value: (c: Carrier) => c.share },
+    };
+  }
+  if (metricKey === "price") {
+    return {
+      x: { metric: METRICS.share, help: "X-axis shows biofuel intensity; Y-axis shows share price." },
+      y: METRICS.price,
+      size: { label: "Biofuel volume used", unit: "Ml/yr", value: (c: Carrier) => c.volumeMnL },
+    };
+  }
+  return {
+    x: { metric: METRICS.share, help: "X-axis shows biofuel intensity; Y-axis shows absolute biofuel volume." },
+    y: METRICS.volume,
+    size: { label: "Biofuel share of fuel burn", unit: "%", value: (c: Carrier) => c.share },
+  };
+}
+
 function CarrierChart({
   title,
   blurb,
@@ -111,6 +134,7 @@ function CarrierChart({
   exportName: string;
 }) {
   const [metricKey, setMetricKey] = useState<Metric>("volume");
+  const [view, setView] = useState<"heat" | "scatter">("heat");
   const { get } = useEntityQuotes();
   const metric = METRICS[metricKey];
   const valueOf = (c: Carrier) =>
@@ -121,6 +145,21 @@ function CarrierChart({
   });
   const ranked = f.filtered.slice().sort((a, b) => valueOf(b) - valueOf(a));
   const rows = ranked.slice(0, 10);
+
+  const axes = scatterAxes(metricKey);
+  const scatterPoints: ScatterPoint[] = rows.map((c) => ({
+    key: c.name,
+    label: c.name,
+    sub: `${c.country}`,
+    x: axes.x.metric.value(c),
+    y: metric.value(c),
+    size: axes.size.value(c),
+    group: c.country,
+    logo: entityLogoByName(c.name),
+    meta: priceMeta(get(CARRIER_TICKERS[c.name])),
+    changePct: get(CARRIER_TICKERS[c.name])?.changePct,
+    newsTarget: { name: c.name, query: `"${c.name}" ${newsSuffix}` },
+  }));
 
   return (
     <ChartPanel
@@ -133,6 +172,12 @@ function CarrierChart({
         label: METRICS[m].label,
       }))}
       onMetricChange={(v) => setMetricKey(v as Metric)}
+      viewValue={view}
+      viewOptions={[
+        { value: "heat", label: "Heat map" },
+        { value: "scatter", label: "Scatter plot" },
+      ]}
+      onViewChange={(v) => setView(v as "heat" | "scatter")}
       actions={
         <ExportCsvButton
           disabled={ranked.length === 0}
@@ -214,28 +259,40 @@ function CarrierChart({
           No listed carriers for this filter — open that country's profile page for its policy and
           market updates.
         </p>
+      ) : view === "scatter" ? (
+        <ChartScatter
+          points={scatterPoints}
+          xAxis={{ label: axes.x.metric.label, unit: axes.x.metric.unit, help: axes.x.help }}
+          yAxis={{ label: metric.label, unit: metric.unit, help: metric.help }}
+          sizeAxis={{ label: axes.size.label, unit: axes.size.unit }}
+          formatX={(n) => fmt(n, axes.x.metric.decimals)}
+          formatY={(n) => fmt(n, metric.decimals)}
+          formatSize={(n) => fmt(n, 0)}
+          onSelect={openEntityNews}
+          indexLabel="Listed freight carriers index"
+        />
       ) : (
-      <ChartHeat
-        unitLabel={metric.unit}
-        measureLabel={metric.label}
-        measureHelp={metric.help}
-        indexLabel="Listed freight carriers index"
-        format={(n: number) => fmt(n, metric.decimals)}
-        items={rows.map((c) => ({
-          key: c.name,
-          label: c.name,
-          sub: c.note,
-          value: valueOf(c),
-          logo: entityLogoByName(c.name),
-          meta: priceMeta(get(CARRIER_TICKERS[c.name])),
-          tone: priceTone(get(CARRIER_TICKERS[c.name])),
-          changePct: get(CARRIER_TICKERS[c.name])?.changePct,
-        }))}
-        onSelect={openEntityNews}
-        news={Object.fromEntries(
-          rows.map((c) => [c.name, { name: c.name, query: `"${c.name}" ${newsSuffix}` }]),
-        )}
-      />
+        <ChartHeat
+          unitLabel={metric.unit}
+          measureLabel={metric.label}
+          measureHelp={metric.help}
+          indexLabel="Listed freight carriers index"
+          format={(n: number) => fmt(n, metric.decimals)}
+          items={rows.map((c) => ({
+            key: c.name,
+            label: c.name,
+            sub: c.note,
+            value: valueOf(c),
+            logo: entityLogoByName(c.name),
+            meta: priceMeta(get(CARRIER_TICKERS[c.name])),
+            tone: priceTone(get(CARRIER_TICKERS[c.name])),
+            changePct: get(CARRIER_TICKERS[c.name])?.changePct,
+          }))}
+          onSelect={openEntityNews}
+          news={Object.fromEntries(
+            rows.map((c) => [c.name, { name: c.name, query: `"${c.name}" ${newsSuffix}` }]),
+          )}
+        />
       )}
     </ChartPanel>
   );

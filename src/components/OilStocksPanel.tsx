@@ -4,7 +4,7 @@ import { Building2, Download } from "lucide-react";
 import { getOilStocksFn, type OilQuote } from "@/lib/oil.functions";
 import { openEntityNews } from "@/lib/open-news";
 import { entityLogo } from "@/lib/entity-logos";
-import { ChartHeat, ChartPanel, chartFmt } from "@/components/chart-kit";
+import { ChartHeat, ChartPanel, ChartScatter, chartFmt, type ScatterPoint } from "@/components/chart-kit";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { downloadBrandedCsv, type BrandedExport } from "@/lib/branded-export";
 import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
@@ -134,8 +134,34 @@ const STOCK_METRICS: Record<
   },
 };
 
+/** Defines the scatter-plot axes for each selected metric so X and Y never collide. */
+function scatterAxes(metricKey: StockMetric) {
+  if (metricKey === "change") {
+    return {
+      x: { metric: STOCK_METRICS.price, help: "X-axis shows the share price; Y-axis shows the 1-day move." },
+      y: STOCK_METRICS.change,
+      size: { label: "Annual capacity", unit: "MMboe/yr", value: (q: OilQuote) => capOf(q.symbol).mmboe },
+    };
+  }
+  return {
+    x: {
+      metric: {
+        label: "1-day change (%)",
+        unit: "1-day price change, %",
+        help: "X-axis shows 1-day market momentum (negative = down, positive = up); Y-axis shows the selected measure.",
+        decimals: 2,
+        value: (q: OilQuote) => q.changePct,
+      },
+      help: "X-axis shows 1-day market momentum (negative = down, positive = up); Y-axis shows the selected measure.",
+    },
+    y: STOCK_METRICS[metricKey],
+    size: { label: "Annual capacity", unit: "MMboe/yr", value: (q: OilQuote) => capOf(q.symbol).mmboe },
+  };
+}
+
 export function OilStocksPanel() {
   const [metricKey, setMetricKey] = useState<StockMetric>("capacity");
+  const [view, setView] = useState<"heat" | "scatter">("heat");
   const { data, isLoading } = useQuery({
     queryKey: ["oil-stocks"],
     queryFn: () => getOilStocksFn(),
@@ -156,6 +182,21 @@ export function OilStocksPanel() {
   const ranked = [...f.filtered].sort((a, b) => metric.value(b) - metric.value(a));
   const sorted = ranked.slice(0, 10);
 
+  const axes = scatterAxes(metricKey);
+  const scatterPoints: ScatterPoint[] = sorted.map((q) => ({
+    key: q.symbol,
+    label: q.label,
+    sub: `${q.symbol.replace(/\.[A-Z]+$/, "")} · ${countryOf(q.symbol)}`,
+    x: axes.x.metric.value(q),
+    y: metric.value(q),
+    size: axes.size.value(q),
+    group: countryOf(q.symbol),
+    logo: entityLogo(q.symbol),
+    meta: `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%`,
+    changePct: q.changePct,
+    newsTarget: { name: q.label, query: `"${q.label}" oil company news` },
+  }));
+
   return (
     <ChartPanel
       icon={Building2}
@@ -167,6 +208,12 @@ export function OilStocksPanel() {
         label: STOCK_METRICS[m].label,
       }))}
       onMetricChange={(v) => setMetricKey(v as StockMetric)}
+      viewValue={view}
+      viewOptions={[
+        { value: "heat", label: "Heat map" },
+        { value: "scatter", label: "Scatter plot" },
+      ]}
+      onViewChange={(v) => setView(v as "heat" | "scatter")}
       actions={
         <button
           type="button"
@@ -221,7 +268,11 @@ export function OilStocksPanel() {
           })}
         />
       }
-      footnote="Capacity is approximate annual output in million barrels of oil equivalent per year (upstream production, or crude throughput for refiners). Prices refresh every five minutes and are quoted in each company's primary listing currency. Click any row for that company's latest news."
+      footnote={
+        view === "scatter"
+          ? `Scatter plot: X = ${axes.x.metric.label}, Y = ${metric.label}, bubble size = ${axes.size.label}. ${axes.x.help} Capacity is approximate annual output in million barrels of oil equivalent per year. Prices refresh every five minutes and are quoted in each company's primary listing currency. Click any bubble for that company's latest news.`
+          : "Capacity is approximate annual output in million barrels of oil equivalent per year (upstream production, or crude throughput for refiners). Prices refresh every five minutes and are quoted in each company's primary listing currency. Click any row for that company's latest news."
+      }
     >
       {sorted.length === 0 && !isLoading ? (
         <p className="text-sm text-muted-foreground">
@@ -229,6 +280,18 @@ export function OilStocksPanel() {
             ? "Market data is unavailable right now."
             : "No listed oil companies for this filter — open that country's profile page for its policy and market updates."}
         </p>
+      ) : view === "scatter" ? (
+        <ChartScatter
+          points={scatterPoints}
+          xAxis={{ label: axes.x.metric.label, unit: axes.x.metric.unit, help: axes.x.help }}
+          yAxis={{ label: metric.label, unit: metric.unit, help: metric.help }}
+          sizeAxis={{ label: axes.size.label, unit: axes.size.unit }}
+          formatX={(n) => chartFmt(n, axes.x.metric.decimals)}
+          formatY={(n) => chartFmt(n, metric.decimals)}
+          formatSize={(n) => chartFmt(n, 0)}
+          onSelect={openEntityNews}
+          indexLabel="NYSE / global energy majors index"
+        />
       ) : (
         <ChartHeat
           unitLabel={metric.unit}

@@ -1,9 +1,22 @@
-import { cloneElement, isValidElement, useState } from "react";
+import { cloneElement, isValidElement, useMemo, useState } from "react";
 import type { ReactElement } from "react";
 import { REFERENCE_NOTE, sourcesFor } from "@/lib/data-sources";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { LucideIcon } from "lucide-react";
 import type { NewsTarget } from "@/lib/open-news";
+import {
+  ResponsiveContainer,
+  ScatterChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  ZAxis,
+  Tooltip,
+  Scatter,
+  ReferenceLine,
+  ReferenceDot,
+} from "recharts";
+
 
 /** Shared number formatter for every chart in the app. */
 export const chartFmt = (n: number, d = 0) =>
@@ -518,8 +531,294 @@ export function ChartHeat({
     </div>
   );
 }
+export type ScatterPoint = {
+  key: string;
+  label: string;
+  sub?: string | undefined;
+  x: number;
+  y: number;
+  size: number;
+  /** Group name used for color (usually country or region). */
+  group: string;
+  logo?: string | undefined;
+  meta?: string | undefined;
+  changePct?: number | undefined;
+  newsTarget?: NewsTarget | undefined;
+};
 
-/** Identical frame (title, blurb, measure select, footnote) for every graph. */
+/** Deterministic, readable color for a group name. */
+const GROUP_COLORS = [
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
+  "var(--chart-6)",
+  "var(--chart-7)",
+  "var(--chart-8)",
+  "var(--chart-9)",
+  "var(--chart-10)",
+];
+
+function groupColor(group: string) {
+  let h = 0;
+  for (let i = 0; i < group.length; i += 1) h = (h << 5) - h + group.charCodeAt(i);
+  return GROUP_COLORS[Math.abs(h) % GROUP_COLORS.length];
+}
+
+/** Linear regression (least squares) through points. */
+function regression(points: { x: number; y: number }[]) {
+  const n = points.length;
+  if (n < 2) return null;
+  const sumX = points.reduce((s, p) => s + p.x, 0);
+  const sumY = points.reduce((s, p) => s + p.y, 0);
+  const sumXY = points.reduce((s, p) => s + p.x * p.y, 0);
+  const sumXX = points.reduce((s, p) => s + p.x * p.x, 0);
+  const denom = n * sumXX - sumX * sumX;
+  if (denom === 0) return null;
+  const m = (n * sumXY - sumX * sumY) / denom;
+  const b = (sumY - m * sumX) / n;
+  return { m, b };
+}
+
+function corrCoeff(points: { x: number; y: number }[]) {
+  const n = points.length;
+  if (n < 2) return null;
+  const sumX = points.reduce((s, p) => s + p.x, 0);
+  const sumY = points.reduce((s, p) => s + p.y, 0);
+  const sumXY = points.reduce((s, p) => s + p.x * p.y, 0);
+  const sumXX = points.reduce((s, p) => s + p.x * p.x, 0);
+  const sumYY = points.reduce((s, p) => s + p.y * p.y, 0);
+  const denom = Math.sqrt((n * sumXX - sumX * sumX) * (n * sumYY - sumY * sumY));
+  if (denom === 0) return null;
+  return (n * sumXY - sumX * sumY) / denom;
+}
+
+/**
+ * Dual-metric scatter plot with bubble size and a trend/regression line.
+ * Useful for showing market-vs-sustainability relationships (e.g. share price vs SAF use).
+ */
+export function ChartScatter({
+  points,
+  xAxis,
+  yAxis,
+  sizeAxis,
+  formatX,
+  formatY,
+  formatSize,
+  onSelect,
+  indexLabel,
+}: {
+  points: ScatterPoint[];
+  xAxis: { label: string; unit: string; help?: string };
+  yAxis: { label: string; unit: string; help?: string };
+  sizeAxis: { label: string; unit: string; help?: string };
+  formatX: (n: number) => string;
+  formatY: (n: number) => string;
+  formatSize?: (n: number) => string;
+  onSelect?: (target: NewsTarget) => void;
+  indexLabel?: string;
+}) {
+  const isMobile = useIsMobile();
+  const data = useMemo(() => points, [points]);
+
+  const xs = data.map((d) => d.x);
+  const ys = data.map((d) => d.y);
+  const xMin = Math.min(...xs);
+  const xMax = Math.max(...xs);
+  const yMin = Math.min(...ys);
+  const yMax = Math.max(...ys);
+  const xPad = Math.max((xMax - xMin) * 0.08, xMax * 0.02);
+  const yPad = Math.max((yMax - yMin) * 0.08, yMax * 0.02);
+  const xDomain = [xMin - xPad, xMax + xPad];
+  const yDomain = [Math.max(0, yMin - yPad), yMax + yPad];
+
+  const reg = regression(data);
+  const r = corrCoeff(data);
+  const trendDomain: [number, number] | null = reg
+    ? ([xMin - xPad, xMax + xPad] as [number, number])
+    : null;
+  const trendY = (x: number) => reg!.m * x + reg!.b;
+
+  const groups = [...new Set(data.map((d) => d.group))].sort();
+  const groupMap = Object.fromEntries(groups.map((g) => [g, groupColor(g)]));
+
+  const moves = data
+    .map((d) => d.changePct)
+    .filter((c): c is number => typeof c === "number" && Number.isFinite(c));
+  const avgMove = moves.length ? moves.reduce((s, c) => s + c, 0) / moves.length : 0;
+  const pct = (n: number) => `${n >= 0 ? "+" : ""}${n.toFixed(2)}%`;
+
+  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
+    if (!active || !payload?.length) return null;
+    const p = payload[0].payload as ScatterPoint;
+    return (
+      <div className="rounded-sm border border-border bg-card p-3 shadow-lg">
+        <div className="chart-label text-foreground">{p.label}</div>
+        {p.sub ? <div className="chart-sub mt-0.5 text-muted-foreground">{p.sub}</div> : null}
+        <div className="mt-2 border-t border-border/60 pt-2 space-y-1">
+          <div className="flex justify-between gap-4">
+            <span className="chart-sub text-muted-foreground">{xAxis.label}</span>
+            <span className="chart-value text-foreground">{formatX(p.x)}</span>
+          </div>
+          <div className="flex justify-between gap-4">
+            <span className="chart-sub text-muted-foreground">{yAxis.label}</span>
+            <span className="chart-value text-foreground">{formatY(p.y)}</span>
+          </div>
+          <div className="flex justify-between gap-4">
+            <span className="chart-sub text-muted-foreground">{sizeAxis.label}</span>
+            <span className="chart-value text-foreground">{formatSize ? formatSize(p.size) : formatY(p.size)}</span>
+          </div>
+          {typeof p.changePct === "number" ? (
+            <div className={`chart-sub font-mono tabular-nums ${p.changePct >= 0 ? "text-primary" : "text-destructive"}`}>
+              {p.changePct >= 0 ? "▲" : "▼"} {pct(p.changePct)} today
+            </div>
+          ) : null}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div>
+      {moves.length ? (
+        <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-sm border border-border/60 bg-card p-2.5">
+          <span className="chart-sub uppercase tracking-wide text-muted-foreground">
+            {indexLabel ? `${indexLabel} · 1-day` : "Market trend (1-day)"}
+          </span>
+          <span
+            className={`chart-value ${avgMove >= 0 ? "text-primary" : "text-destructive"}`}
+            title="Average 1-day share price move across the listed entities shown"
+          >
+            {avgMove >= 0 ? "▲" : "▼"} {pct(avgMove)} avg
+          </span>
+          {reg && r !== null ? (
+            <span className="chart-sub text-muted-foreground">
+              Trend slope: {reg.m >= 0 ? "+" : ""}{reg.m.toExponential(2)} · R² {(r * r).toFixed(2)}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+
+      <div className="mb-3 rounded-sm border border-border/60 bg-muted/40 p-2.5 space-y-1">
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+          <span className="chart-sub uppercase tracking-wide text-muted-foreground">X axis</span>
+          <span className="chart-label text-foreground">{xAxis.label}</span>
+          <span className="chart-sub text-muted-foreground">— {xAxis.unit}</span>
+        </div>
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+          <span className="chart-sub uppercase tracking-wide text-muted-foreground">Y axis</span>
+          <span className="chart-label text-foreground">{yAxis.label}</span>
+          <span className="chart-sub text-muted-foreground">— {yAxis.unit}</span>
+        </div>
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+          <span className="chart-sub uppercase tracking-wide text-muted-foreground">Bubble size</span>
+          <span className="chart-label text-foreground">{sizeAxis.label}</span>
+          <span className="chart-sub text-muted-foreground">— {sizeAxis.unit}</span>
+        </div>
+        {xAxis.help ? <p className="chart-sub leading-snug text-muted-foreground">{xAxis.help}</p> : null}
+        {yAxis.help ? <p className="chart-sub leading-snug text-muted-foreground">{yAxis.help}</p> : null}
+      </div>
+
+      <div className="h-[22rem] w-full min-w-0 overflow-hidden rounded-sm border border-border/60 bg-card p-1.5 sm:h-[26rem] lg:h-[30rem]">
+        <ResponsiveContainer width="100%" height="100%">
+          <ScatterChart margin={isMobile ? { top: 8, right: 8, bottom: 32, left: 0 } : { top: 10, right: 20, bottom: 40, left: 10 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.5} />
+            <XAxis
+              type="number"
+              dataKey="x"
+              name={xAxis.label}
+              domain={xDomain as [number, number]}
+              tickFormatter={formatX}
+              stroke="var(--muted-foreground)"
+              tick={{ fill: "var(--muted-foreground)", fontSize: isMobile ? 9 : 11 }}
+              label={{
+                value: `${xAxis.label} (${xAxis.unit})`,
+                position: "insideBottom",
+                offset: isMobile ? -18 : -25,
+                fill: "var(--foreground)",
+                fontSize: isMobile ? 10 : 12,
+                fontWeight: 600,
+              }}
+            />
+            <YAxis
+              type="number"
+              dataKey="y"
+              name={yAxis.label}
+              domain={yDomain as [number, number]}
+              tickFormatter={formatY}
+              stroke="var(--muted-foreground)"
+              tick={{ fill: "var(--muted-foreground)", fontSize: isMobile ? 9 : 11 }}
+              {...(isMobile
+                ? {}
+                : {
+                    label: {
+                      value: `${yAxis.label} (${yAxis.unit})`,
+                      angle: -90,
+                      position: "insideLeft",
+                      fill: "var(--foreground)",
+                      fontSize: 12,
+                      fontWeight: 600,
+                    },
+                  })}
+            />
+            <ZAxis type="number" dataKey="size" range={isMobile ? [24, 160] : [60, 600]} />
+            <Tooltip content={<CustomTooltip />} cursor={{ stroke: "var(--muted-foreground)", strokeDasharray: "3 3" }} />
+            {groups.map((g) => (
+              <Scatter
+                key={g}
+                name={g}
+                data={data.filter((d) => d.group === g)}
+                fill={groupMap[g]}
+                stroke="var(--card-foreground)"
+                strokeWidth={1}
+                onClick={(p) => p?.newsTarget && onSelect?.(p.newsTarget)}
+              />
+            ))}
+            {trendDomain && (
+              <>
+                {(() => {
+                  const [x0, x1] = trendDomain;
+                  return (
+                    <ReferenceLine
+                      segment={[
+                        { x: x0, y: trendY(x0) },
+                        { x: x1, y: trendY(x1) },
+                      ]}
+                      stroke="var(--primary)"
+                      strokeDasharray="5 5"
+                      strokeWidth={2}
+                    />
+                  );
+                })()}
+              </>
+            )}
+          </ScatterChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="chart-axis mt-3 flex flex-wrap items-center gap-3">
+        <span className="text-muted-foreground">Color = country/region</span>
+        <div className="flex flex-wrap gap-2">
+          {groups.slice(0, isMobile ? 5 : 10).map((g) => (
+            <span key={g} className="inline-flex items-center gap-1.5">
+              <span
+                className="inline-block size-2.5 rounded-full"
+                style={{ background: groupMap[g] }}
+              />
+              <span>{g}</span>
+            </span>
+          ))}
+          {groups.length > (isMobile ? 5 : 10) ? (
+            <span className="text-muted-foreground">+{groups.length - (isMobile ? 5 : 10)} more</span>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 export function ChartPanel({
   icon: Icon,
   title,
@@ -531,6 +830,10 @@ export function ChartPanel({
   limitValue,
   limitOptions,
   onLimitChange,
+  viewValue,
+  viewOptions,
+  onViewChange,
+  viewLabel = "View",
   status,
   footnote,
   filters,
@@ -549,6 +852,11 @@ export function ChartPanel({
   limitValue?: string;
   limitOptions?: { value: string; label: string }[];
   onLimitChange?: (v: string) => void;
+  /** Optional chart-type switcher, e.g. Heat map / Scatter. */
+  viewValue?: string;
+  viewOptions?: { value: string; label: string }[];
+  onViewChange?: (v: string) => void;
+  viewLabel?: string;
   status?: string;
   footnote?: string;
   /** Optional buttons (e.g. export) rendered in the header. */
@@ -573,13 +881,30 @@ export function ChartPanel({
         {status ? <span className="label-mono text-muted-foreground">{status}</span> : null}
       </div>
 
-      {metricOptions || limitOptions || actions || filters || assistant ? (
+      {metricOptions || limitOptions || viewOptions || actions || filters || assistant ? (
         <div className="mb-2 flex flex-wrap items-center gap-2 rounded-sm border border-border bg-surface-2/60 p-2 sm:flex-nowrap sm:overflow-x-auto sm:whitespace-nowrap">
           {filters
             ? isValidElement(filters)
               ? cloneElement(filters as ReactElement<any>, { bare: true })
               : filters
             : null}
+          {viewOptions ? (
+            <label className="flex w-full shrink-0 items-center gap-1.5 sm:w-auto">
+              <span className="label-mono shrink-0 text-muted-foreground">{viewLabel}</span>
+              <select
+                className="chart-select min-w-0 flex-1 sm:w-auto sm:flex-none"
+                value={viewValue}
+                onChange={(e) => onViewChange?.(e.target.value)}
+                aria-label={`Choose the chart type for ${title}`}
+              >
+                {viewOptions.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
           {metricOptions ? (
             <label className="flex w-full shrink-0 items-center gap-1.5 sm:w-auto">
               <span className="label-mono shrink-0 text-muted-foreground">{metricLabel}</span>

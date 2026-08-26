@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Plane } from "lucide-react";
 import { openEntityNews } from "@/lib/open-news";
-import { ChartHeat, ChartPanel, chartFmt as fmt } from "@/components/chart-kit";
+import { ChartHeat, ChartPanel, ChartScatter, chartFmt as fmt, type ScatterPoint } from "@/components/chart-kit";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
 import { AIRLINE_TICKERS } from "@/lib/entity-tickers";
@@ -78,8 +78,32 @@ const AIRLINE_METRICS: Record<
   },
 };
 
+/** Defines the scatter-plot axes for each selected metric so X and Y never collide. */
+function scatterAxes(metricKey: AirlineMetric) {
+  if (metricKey === "share") {
+    return {
+      x: { metric: AIRLINE_METRICS.volume, help: "X-axis shows absolute SAF volume; Y-axis shows SAF intensity." },
+      y: AIRLINE_METRICS.share,
+      size: { label: "SAF share of fuel burn", unit: "%", value: (a: Airline) => a.share },
+    };
+  }
+  if (metricKey === "price") {
+    return {
+      x: { metric: AIRLINE_METRICS.share, help: "X-axis shows SAF intensity; Y-axis shows share price." },
+      y: AIRLINE_METRICS.price,
+      size: { label: "SAF uplift volume", unit: "Ml/yr", value: (a: Airline) => a.volume },
+    };
+  }
+  return {
+    x: { metric: AIRLINE_METRICS.share, help: "X-axis shows SAF intensity; Y-axis shows absolute SAF volume." },
+    y: AIRLINE_METRICS.volume,
+    size: { label: "SAF share of fuel burn", unit: "%", value: (a: Airline) => a.share },
+  };
+}
+
 export function SafAirlinesPanel() {
   const [metricKey, setMetricKey] = useState<AirlineMetric>("volume");
+  const [view, setView] = useState<"heat" | "scatter">("heat");
   const { get } = useEntityQuotes();
   const metric = AIRLINE_METRICS[metricKey];
   const valueOf = (a: Airline) =>
@@ -90,6 +114,21 @@ export function SafAirlinesPanel() {
   });
   const ranked = [...f.filtered].sort((a, b) => valueOf(b) - valueOf(a));
   const sorted = ranked.slice(0, 10);
+
+  const axes = scatterAxes(metricKey);
+  const scatterPoints: ScatterPoint[] = sorted.map((a) => ({
+    key: a.code,
+    label: a.name,
+    sub: `${a.code} · ${a.country}`,
+    x: axes.x.metric.value(a),
+    y: metric.value(a),
+    size: axes.size.value(a),
+    group: a.country,
+    logo: entityLogoByName(a.name),
+    meta: priceMeta(get(AIRLINE_TICKERS[a.code])),
+    changePct: get(AIRLINE_TICKERS[a.code])?.changePct,
+    newsTarget: { name: a.name, query: `${a.name} sustainable aviation fuel OR SAF` },
+  }));
 
   return (
     <ChartPanel
@@ -102,6 +141,12 @@ export function SafAirlinesPanel() {
         label: AIRLINE_METRICS[m].label,
       }))}
       onMetricChange={(v) => setMetricKey(v as AirlineMetric)}
+      viewValue={view}
+      viewOptions={[
+        { value: "heat", label: "Heat map" },
+        { value: "scatter", label: "Scatter plot" },
+      ]}
+      onViewChange={(v) => setView(v as "heat" | "scatter")}
       actions={
         <ExportCsvButton
           disabled={ranked.length === 0}
@@ -178,38 +223,54 @@ export function SafAirlinesPanel() {
           })}
         />
       }
-      footnote="Estimates from airline sustainability reports, offtake announcements and regulatory disclosures. Click any row for the latest SAF news for that carrier."
+      footnote={
+        view === "scatter"
+          ? `Scatter plot: X = ${axes.x.metric.label}, Y = ${metric.label}, bubble size = ${axes.size.label}. ${axes.x.help} Estimates from airline sustainability reports, offtake announcements and regulatory disclosures. Click any bubble for the latest SAF news for that carrier.`
+          : "Estimates from airline sustainability reports, offtake announcements and regulatory disclosures. Click any row for the latest SAF news for that carrier."
+      }
     >
       {sorted.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           No listed airlines for this filter — open that country's profile page for its policy and
           market updates.
         </p>
+      ) : view === "scatter" ? (
+        <ChartScatter
+          points={scatterPoints}
+          xAxis={{ label: axes.x.metric.label, unit: axes.x.metric.unit, help: axes.x.help }}
+          yAxis={{ label: metric.label, unit: metric.unit, help: metric.help }}
+          sizeAxis={{ label: axes.size.label, unit: axes.size.unit }}
+          formatX={(n) => fmt(n, axes.x.metric.decimals)}
+          formatY={(n) => fmt(n, metric.decimals)}
+          formatSize={(n) => fmt(n, 0)}
+          onSelect={openEntityNews}
+          indexLabel="Global listed airlines index"
+        />
       ) : (
-      <ChartHeat
-        unitLabel={metric.unit}
-        measureLabel={metric.label}
-        measureHelp={metric.help}
-        indexLabel="Global listed airlines index"
-        format={(n: number) => fmt(n, metric.decimals)}
-        items={sorted.map((a) => ({
-          key: a.code,
-          label: a.name,
-          sub: a.note,
-          value: valueOf(a),
-          logo: entityLogoByName(a.name),
-          meta: priceMeta(get(AIRLINE_TICKERS[a.code])),
-          tone: priceTone(get(AIRLINE_TICKERS[a.code])),
-          changePct: get(AIRLINE_TICKERS[a.code])?.changePct,
-        }))}
-        onSelect={openEntityNews}
-        news={Object.fromEntries(
-          sorted.map((a) => [
-            a.code,
-            { name: a.name, query: `${a.name} sustainable aviation fuel OR SAF` },
-          ]),
-        )}
-      />
+        <ChartHeat
+          unitLabel={metric.unit}
+          measureLabel={metric.label}
+          measureHelp={metric.help}
+          indexLabel="Global listed airlines index"
+          format={(n: number) => fmt(n, metric.decimals)}
+          items={sorted.map((a) => ({
+            key: a.code,
+            label: a.name,
+            sub: a.note,
+            value: valueOf(a),
+            logo: entityLogoByName(a.name),
+            meta: priceMeta(get(AIRLINE_TICKERS[a.code])),
+            tone: priceTone(get(AIRLINE_TICKERS[a.code])),
+            changePct: get(AIRLINE_TICKERS[a.code])?.changePct,
+          }))}
+          onSelect={openEntityNews}
+          news={Object.fromEntries(
+            sorted.map((a) => [
+              a.code,
+              { name: a.name, query: `${a.name} sustainable aviation fuel OR SAF` },
+            ]),
+          )}
+        />
       )}
     </ChartPanel>
   );

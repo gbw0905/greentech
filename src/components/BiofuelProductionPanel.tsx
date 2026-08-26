@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 import { Fuel } from "lucide-react";
-import { ChartHeat, ChartPanel, chartFmt as fmt } from "@/components/chart-kit";
+import { ChartHeat, ChartPanel, ChartScatter, chartFmt as fmt, type ScatterPoint } from "@/components/chart-kit";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
 import type { FuelType } from "@/lib/policy-taxonomy";
@@ -85,8 +85,43 @@ const STATION_METRICS: Record<
   },
 };
 
+function perSiteValue(s: Station) {
+  return (s.volumeMnL * 1000) / Math.max(s.sites, 1);
+}
+
+/** Defines the scatter-plot axes for each selected metric so X and Y never collide. */
+function scatterAxes(metricKey: StationMetric) {
+  if (metricKey === "sites") {
+    return {
+      x: { metric: STATION_METRICS.volume, help: "X-axis shows total volume sold; Y-axis shows number of sites." },
+      y: STATION_METRICS.sites,
+      size: { label: "Volume per site", unit: "litres x1000/yr", value: perSiteValue },
+    };
+  }
+  if (metricKey === "volume") {
+    return {
+      x: { metric: STATION_METRICS.perSite, help: "X-axis shows throughput per site; Y-axis shows total volume sold." },
+      y: STATION_METRICS.volume,
+      size: { label: "Retail sites", unit: "sites", value: (s: Station) => s.sites },
+    };
+  }
+  if (metricKey === "perSite") {
+    return {
+      x: { metric: STATION_METRICS.sites, help: "X-axis shows network size; Y-axis shows throughput per site." },
+      y: STATION_METRICS.perSite,
+      size: { label: "Biofuel volume sold", unit: "Ml/yr", value: (s: Station) => s.volumeMnL },
+    };
+  }
+  return {
+    x: { metric: STATION_METRICS.volume, help: "X-axis shows total volume sold; Y-axis shows share price." },
+    y: STATION_METRICS.price,
+    size: { label: "Retail sites", unit: "sites", value: (s: Station) => s.sites },
+  };
+}
+
 export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
   const [stationMetric, setStationMetric] = useState<StationMetric>("sites");
+  const [view, setView] = useState<"heat" | "scatter">("heat");
   const { get } = useEntityQuotes();
   const metric = STATION_METRICS[stationMetric];
   const valueOf = (s: Station) =>
@@ -102,6 +137,21 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
   const ranked = f.filtered.slice().sort((a, b) => valueOf(b) - valueOf(a));
   const stations = ranked.slice(0, 10);
 
+  const axes = scatterAxes(stationMetric);
+  const scatterPoints: ScatterPoint[] = stations.map((s) => ({
+    key: s.name,
+    label: s.name,
+    sub: `${s.country} · ${s.fuels.join(" / ")}`,
+    x: axes.x.metric.value(s),
+    y: metric.value(s),
+    size: axes.size.value(s),
+    group: s.country,
+    logo: entityLogoByName(s.name),
+    meta: priceMeta(get(STATION_TICKERS[s.name])),
+    changePct: get(STATION_TICKERS[s.name])?.changePct,
+    newsTarget: { name: s.name, query: `"${s.name}" biofuel OR ethanol OR renewable diesel station` },
+  }));
+
   return (
     <ChartPanel
       icon={Fuel}
@@ -113,6 +163,12 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
         label: STATION_METRICS[m].label,
       }))}
       onMetricChange={(v) => setStationMetric(v as StationMetric)}
+      viewValue={view}
+      viewOptions={[
+        { value: "heat", label: "Heat map" },
+        { value: "scatter", label: "Scatter plot" },
+      ]}
+      onViewChange={(v) => setView(v as "heat" | "scatter")}
       actions={
         <ExportCsvButton
           disabled={ranked.length === 0}
@@ -170,7 +226,11 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
           matched={ranked.length}
         />
       }
-      footnote="Approximate site counts from company retail disclosures and national blending programmes. Click any row to open the latest news for that network."
+      footnote={
+        view === "scatter"
+          ? `Scatter plot: X = ${axes.x.metric.label}, Y = ${metric.label}, bubble size = ${axes.size.label}. ${axes.x.help} Approximate site counts from company retail disclosures and national blending programmes. Click any bubble to open the latest news for that network.`
+          : "Approximate site counts from company retail disclosures and national blending programmes. Click any row to open the latest news for that network."
+      }
       assistant={
         <ChartSummaryAssistant
           disabled={stations.length === 0}
@@ -199,31 +259,43 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
           No listed station networks for this filter — open that country's profile page for its
           policy and market updates.
         </p>
+      ) : view === "scatter" ? (
+        <ChartScatter
+          points={scatterPoints}
+          xAxis={{ label: axes.x.metric.label, unit: axes.x.metric.unit, help: axes.x.help }}
+          yAxis={{ label: metric.label, unit: metric.unit, help: metric.help }}
+          sizeAxis={{ label: axes.size.label, unit: axes.size.unit }}
+          formatX={(n) => fmt(n, axes.x.metric.decimals)}
+          formatY={(n) => fmt(n, metric.decimals)}
+          formatSize={(n) => fmt(n, 0)}
+          onSelect={openEntityNews}
+          indexLabel="Listed fuel retailers & producers index"
+        />
       ) : (
-      <ChartHeat
-        unitLabel={metric.unit}
-        measureLabel={metric.label}
-        measureHelp={metric.help}
-        indexLabel="Listed fuel retailers & producers index"
-        format={(n: number) => fmt(n, metric.decimals)}
-        items={stations.map((s) => ({
-          key: s.name,
-          label: s.name,
-          sub: s.note,
-          value: valueOf(s),
-          logo: entityLogoByName(s.name),
-          meta: priceMeta(get(STATION_TICKERS[s.name])),
-          tone: priceTone(get(STATION_TICKERS[s.name])),
-          changePct: get(STATION_TICKERS[s.name])?.changePct,
-        }))}
-        onSelect={openEntityNews}
-        news={Object.fromEntries(
-          stations.map((s) => [
-            s.name,
-            { name: s.name, query: `"${s.name}" biofuel OR ethanol OR renewable diesel station` },
-          ])
-        )}
-      />
+        <ChartHeat
+          unitLabel={metric.unit}
+          measureLabel={metric.label}
+          measureHelp={metric.help}
+          indexLabel="Listed fuel retailers & producers index"
+          format={(n: number) => fmt(n, metric.decimals)}
+          items={stations.map((s) => ({
+            key: s.name,
+            label: s.name,
+            sub: s.note,
+            value: valueOf(s),
+            logo: entityLogoByName(s.name),
+            meta: priceMeta(get(STATION_TICKERS[s.name])),
+            tone: priceTone(get(STATION_TICKERS[s.name])),
+            changePct: get(STATION_TICKERS[s.name])?.changePct,
+          }))}
+          onSelect={openEntityNews}
+          news={Object.fromEntries(
+            stations.map((s) => [
+              s.name,
+              { name: s.name, query: `"${s.name}" biofuel OR ethanol OR renewable diesel station` },
+            ])
+          )}
+        />
       )}
     </ChartPanel>
   );
