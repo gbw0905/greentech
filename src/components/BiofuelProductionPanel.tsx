@@ -85,6 +85,40 @@ const STATION_METRICS: Record<
   },
 };
 
+function perSiteValue(s: Station) {
+  return (s.volumeMnL * 1000) / Math.max(s.sites, 1);
+}
+
+/** Defines the scatter-plot axes for each selected metric so X and Y never collide. */
+function scatterAxes(metricKey: StationMetric) {
+  if (metricKey === "sites") {
+    return {
+      x: { metric: STATION_METRICS.volume, help: "X-axis shows total volume sold; Y-axis shows number of sites." },
+      y: STATION_METRICS.sites,
+      size: { label: "Volume per site", unit: "litres x1000/yr", value: perSiteValue },
+    };
+  }
+  if (metricKey === "volume") {
+    return {
+      x: { metric: STATION_METRICS.perSite, help: "X-axis shows throughput per site; Y-axis shows total volume sold." },
+      y: STATION_METRICS.volume,
+      size: { label: "Retail sites", unit: "sites", value: (s: Station) => s.sites },
+    };
+  }
+  if (metricKey === "perSite") {
+    return {
+      x: { metric: STATION_METRICS.sites, help: "X-axis shows network size; Y-axis shows throughput per site." },
+      y: STATION_METRICS.perSite,
+      size: { label: "Biofuel volume sold", unit: "Ml/yr", value: (s: Station) => s.volumeMnL },
+    };
+  }
+  return {
+    x: { metric: STATION_METRICS.volume, help: "X-axis shows total volume sold; Y-axis shows share price." },
+    y: STATION_METRICS.price,
+    size: { label: "Retail sites", unit: "sites", value: (s: Station) => s.sites },
+  };
+}
+
 export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
   const [stationMetric, setStationMetric] = useState<StationMetric>("sites");
   const { get } = useEntityQuotes();
