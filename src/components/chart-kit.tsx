@@ -1,9 +1,22 @@
-import { cloneElement, isValidElement, useState } from "react";
+import { cloneElement, isValidElement, useMemo, useState } from "react";
 import type { ReactElement } from "react";
 import { REFERENCE_NOTE, sourcesFor } from "@/lib/data-sources";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { LucideIcon } from "lucide-react";
 import type { NewsTarget } from "@/lib/open-news";
+import {
+  ResponsiveContainer,
+  ScatterChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  ZAxis,
+  Tooltip,
+  Scatter,
+  ReferenceLine,
+  ReferenceDot,
+} from "recharts";
+
 
 /** Shared number formatter for every chart in the app. */
 export const chartFmt = (n: number, d = 0) =>
