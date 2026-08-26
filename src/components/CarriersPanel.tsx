@@ -91,6 +91,29 @@ const METRICS: Record<Metric, { label: string; unit: string; help: string; decim
   },
 };
 
+/** Defines the scatter-plot axes for each selected metric so X and Y never collide. */
+function scatterAxes(metricKey: Metric) {
+  if (metricKey === "share") {
+    return {
+      x: { metric: METRICS.volume, help: "X-axis shows absolute biofuel volume; Y-axis shows biofuel intensity." },
+      y: METRICS.share,
+      size: { label: "Biofuel share of fuel burn", unit: "%", value: (c: Carrier) => c.share },
+    };
+  }
+  if (metricKey === "price") {
+    return {
+      x: { metric: METRICS.share, help: "X-axis shows biofuel intensity; Y-axis shows share price." },
+      y: METRICS.price,
+      size: { label: "Biofuel volume used", unit: "Ml/yr", value: (c: Carrier) => c.volumeMnL },
+    };
+  }
+  return {
+    x: { metric: METRICS.share, help: "X-axis shows biofuel intensity; Y-axis shows absolute biofuel volume." },
+    y: METRICS.volume,
+    size: { label: "Biofuel share of fuel burn", unit: "%", value: (c: Carrier) => c.share },
+  };
+}
+
 function CarrierChart({
   title,
   blurb,
