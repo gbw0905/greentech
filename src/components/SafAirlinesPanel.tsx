@@ -78,6 +78,29 @@ const AIRLINE_METRICS: Record<
   },
 };
 
+/** Defines the scatter-plot axes for each selected metric so X and Y never collide. */
+function scatterAxes(metricKey: AirlineMetric) {
+  if (metricKey === "share") {
+    return {
+      x: { metric: AIRLINE_METRICS.volume, help: "X-axis shows absolute SAF volume; Y-axis shows SAF intensity." },
+      y: AIRLINE_METRICS.share,
+      size: { label: "SAF share of fuel burn", unit: "%", value: (a: Airline) => a.share },
+    };
+  }
+  if (metricKey === "price") {
+    return {
+      x: { metric: AIRLINE_METRICS.share, help: "X-axis shows SAF intensity; Y-axis shows share price." },
+      y: AIRLINE_METRICS.price,
+      size: { label: "SAF uplift volume", unit: "Ml/yr", value: (a: Airline) => a.volume },
+    };
+  }
+  return {
+    x: { metric: AIRLINE_METRICS.share, help: "X-axis shows SAF intensity; Y-axis shows absolute SAF volume." },
+    y: AIRLINE_METRICS.volume,
+    size: { label: "SAF share of fuel burn", unit: "%", value: (a: Airline) => a.share },
+  };
+}
+
 export function SafAirlinesPanel() {
   const [metricKey, setMetricKey] = useState<AirlineMetric>("volume");
   const { get } = useEntityQuotes();
