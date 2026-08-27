@@ -25,8 +25,10 @@ import { Route as SettingsLinkedinRouteImport } from './routes/settings.linkedin
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as ApiPublicDailyFlyerEmailRouteImport } from './routes/api/public/daily-flyer-email'
+import { Route as ApiPublicDailyGeminiFlyerRouteImport } from './routes/api/public/daily-gemini-flyer'
 import { Route as ApiPublicDailyLinkedinDraftRouteImport } from './routes/api/public/daily-linkedin-draft'
 import { Route as ApiPublicDailyTrafficEmailRouteImport } from './routes/api/public/daily-traffic-email'
+import { Route as ApiPublicFlyerImageRouteImport } from './routes/api/public/flyer-image'
 import { Route as ApiPublicIngestPolicyRouteImport } from './routes/api/public/ingest-policy'
 import { Route as ApiPublicInstantBriefAlertsRouteImport } from './routes/api/public/instant-brief-alerts'
 import { Route as ApiPublicLinkedinPublishRouteImport } from './routes/api/public/linkedin-publish'
@@ -118,6 +120,12 @@ const ApiPublicDailyFlyerEmailRoute =
     path: '/api/public/daily-flyer-email',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicDailyGeminiFlyerRoute =
+  ApiPublicDailyGeminiFlyerRouteImport.update({
+    id: '/api/public/daily-gemini-flyer',
+    path: '/api/public/daily-gemini-flyer',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicDailyLinkedinDraftRoute =
   ApiPublicDailyLinkedinDraftRouteImport.update({
     id: '/api/public/daily-linkedin-draft',
@@ -130,6 +138,11 @@ const ApiPublicDailyTrafficEmailRoute =
     path: '/api/public/daily-traffic-email',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicFlyerImageRoute = ApiPublicFlyerImageRouteImport.update({
+  id: '/api/public/flyer-image',
+  path: '/api/public/flyer-image',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicIngestPolicyRoute = ApiPublicIngestPolicyRouteImport.update({
   id: '/api/public/ingest-policy',
   path: '/api/public/ingest-policy',
@@ -183,8 +196,10 @@ export interface FileRoutesByFullPath {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/daily-flyer-email': typeof ApiPublicDailyFlyerEmailRoute
+  '/api/public/daily-gemini-flyer': typeof ApiPublicDailyGeminiFlyerRoute
   '/api/public/daily-linkedin-draft': typeof ApiPublicDailyLinkedinDraftRoute
   '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
+  '/api/public/flyer-image': typeof ApiPublicFlyerImageRoute
   '/api/public/ingest-policy': typeof ApiPublicIngestPolicyRoute
   '/api/public/instant-brief-alerts': typeof ApiPublicInstantBriefAlertsRoute
   '/api/public/linkedin-publish': typeof ApiPublicLinkedinPublishRoute
@@ -209,8 +224,10 @@ export interface FileRoutesByTo {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/daily-flyer-email': typeof ApiPublicDailyFlyerEmailRoute
+  '/api/public/daily-gemini-flyer': typeof ApiPublicDailyGeminiFlyerRoute
   '/api/public/daily-linkedin-draft': typeof ApiPublicDailyLinkedinDraftRoute
   '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
+  '/api/public/flyer-image': typeof ApiPublicFlyerImageRoute
   '/api/public/ingest-policy': typeof ApiPublicIngestPolicyRoute
   '/api/public/instant-brief-alerts': typeof ApiPublicInstantBriefAlertsRoute
   '/api/public/linkedin-publish': typeof ApiPublicLinkedinPublishRoute
@@ -236,8 +253,10 @@ export interface FileRoutesById {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/daily-flyer-email': typeof ApiPublicDailyFlyerEmailRoute
+  '/api/public/daily-gemini-flyer': typeof ApiPublicDailyGeminiFlyerRoute
   '/api/public/daily-linkedin-draft': typeof ApiPublicDailyLinkedinDraftRoute
   '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
+  '/api/public/flyer-image': typeof ApiPublicFlyerImageRoute
   '/api/public/ingest-policy': typeof ApiPublicIngestPolicyRoute
   '/api/public/instant-brief-alerts': typeof ApiPublicInstantBriefAlertsRoute
   '/api/public/linkedin-publish': typeof ApiPublicLinkedinPublishRoute
@@ -264,8 +283,10 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/daily-flyer-email'
+    | '/api/public/daily-gemini-flyer'
     | '/api/public/daily-linkedin-draft'
     | '/api/public/daily-traffic-email'
+    | '/api/public/flyer-image'
     | '/api/public/ingest-policy'
     | '/api/public/instant-brief-alerts'
     | '/api/public/linkedin-publish'
@@ -290,8 +311,10 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/daily-flyer-email'
+    | '/api/public/daily-gemini-flyer'
     | '/api/public/daily-linkedin-draft'
     | '/api/public/daily-traffic-email'
+    | '/api/public/flyer-image'
     | '/api/public/ingest-policy'
     | '/api/public/instant-brief-alerts'
     | '/api/public/linkedin-publish'
@@ -316,8 +339,10 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/daily-flyer-email'
+    | '/api/public/daily-gemini-flyer'
     | '/api/public/daily-linkedin-draft'
     | '/api/public/daily-traffic-email'
+    | '/api/public/flyer-image'
     | '/api/public/ingest-policy'
     | '/api/public/instant-brief-alerts'
     | '/api/public/linkedin-publish'
@@ -343,8 +368,10 @@ export interface RootRouteChildren {
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicDailyFlyerEmailRoute: typeof ApiPublicDailyFlyerEmailRoute
+  ApiPublicDailyGeminiFlyerRoute: typeof ApiPublicDailyGeminiFlyerRoute
   ApiPublicDailyLinkedinDraftRoute: typeof ApiPublicDailyLinkedinDraftRoute
   ApiPublicDailyTrafficEmailRoute: typeof ApiPublicDailyTrafficEmailRoute
+  ApiPublicFlyerImageRoute: typeof ApiPublicFlyerImageRoute
   ApiPublicIngestPolicyRoute: typeof ApiPublicIngestPolicyRoute
   ApiPublicInstantBriefAlertsRoute: typeof ApiPublicInstantBriefAlertsRoute
   ApiPublicLinkedinPublishRoute: typeof ApiPublicLinkedinPublishRoute
@@ -467,6 +494,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicDailyFlyerEmailRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/daily-gemini-flyer': {
+      id: '/api/public/daily-gemini-flyer'
+      path: '/api/public/daily-gemini-flyer'
+      fullPath: '/api/public/daily-gemini-flyer'
+      preLoaderRoute: typeof ApiPublicDailyGeminiFlyerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/daily-linkedin-draft': {
       id: '/api/public/daily-linkedin-draft'
       path: '/api/public/daily-linkedin-draft'
@@ -479,6 +513,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/daily-traffic-email'
       fullPath: '/api/public/daily-traffic-email'
       preLoaderRoute: typeof ApiPublicDailyTrafficEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/flyer-image': {
+      id: '/api/public/flyer-image'
+      path: '/api/public/flyer-image'
+      fullPath: '/api/public/flyer-image'
+      preLoaderRoute: typeof ApiPublicFlyerImageRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/ingest-policy': {
@@ -544,8 +585,10 @@ const rootRouteChildren: RootRouteChildren = {
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicDailyFlyerEmailRoute: ApiPublicDailyFlyerEmailRoute,
+  ApiPublicDailyGeminiFlyerRoute: ApiPublicDailyGeminiFlyerRoute,
   ApiPublicDailyLinkedinDraftRoute: ApiPublicDailyLinkedinDraftRoute,
   ApiPublicDailyTrafficEmailRoute: ApiPublicDailyTrafficEmailRoute,
+  ApiPublicFlyerImageRoute: ApiPublicFlyerImageRoute,
   ApiPublicIngestPolicyRoute: ApiPublicIngestPolicyRoute,
   ApiPublicInstantBriefAlertsRoute: ApiPublicInstantBriefAlertsRoute,
   ApiPublicLinkedinPublishRoute: ApiPublicLinkedinPublishRoute,

@@ -7,6 +7,8 @@ import { template as dailyFlyerTemplate } from './daily-flyer'
 import { template as chartSummaryTemplate } from './chart-summary'
 import { template as linkedinDraftTemplate } from './linkedin-draft'
 import { template as contactFormTemplate } from './contact-form'
+import { template as geminiFlyerTemplate } from './gemini-flyer'
+
 
 export interface TemplateEntry {
   component: ComponentType<any>
@@ -34,4 +36,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'chart-summary': chartSummaryTemplate,
   'linkedin-draft': linkedinDraftTemplate,
   'contact-form': contactFormTemplate,
+  'gemini-flyer': geminiFlyerTemplate,
 }
+
