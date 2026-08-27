@@ -12,7 +12,7 @@ export interface FlyerItem {
   fuels: string[];
 }
 
-const MODEL = "gemini-2.0-flash-exp-image-generation";
+const MODEL = "gemini-3.1-flash-image";
 const SITE_URL = "https://globalbioenergywatch.org";
 
 async function adminDb() {
@@ -82,7 +82,16 @@ function buildPrompt(items: FlyerItem[], dateLabel: string): string {
 }
 
 function extractImageBase64(responseBody: unknown): string | null {
-  const candidates = (responseBody as Record<string, unknown>)?.["candidates"];
+  const body = responseBody as Record<string, unknown>;
+
+  // New "interactions" endpoint returns the last generated image directly.
+  const outputImage = body?.["output_image"];
+  if (outputImage && typeof (outputImage as Record<string, unknown>)?.["data"] === "string") {
+    return (outputImage as { data: string }).data;
+  }
+
+  // Fallback to legacy generateContent candidate shape.
+  const candidates = body?.["candidates"];
   if (!Array.isArray(candidates)) return null;
   for (const candidate of candidates) {
     const content = (candidate as Record<string, unknown>)?.["content"];
@@ -155,19 +164,17 @@ export async function generateFlyerImage(force = false): Promise<GenerateResult>
 
   const prompt = buildPrompt(items, dateLabel);
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: {
-          responseModalities: ["TEXT", "IMAGE"],
-        },
-      }),
+  const res = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": apiKey,
     },
-  );
+    body: JSON.stringify({
+      model: MODEL,
+      input: [{ type: "text", text: prompt }],
+    }),
+  });
 
   if (!res.ok) {
     const body = await res.text().catch(() => "");
