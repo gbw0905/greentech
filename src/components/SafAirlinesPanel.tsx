@@ -121,7 +121,7 @@ export function SafAirlinesPanel() {
     label: a.name,
     sub: `${a.code} · ${a.country}`,
     x: axes.x.metric.value(a),
-    y: metric.value(a),
+    y: valueOf(a),
     size: axes.size.value(a),
     group: a.country,
     logo: entityLogoByName(a.name),

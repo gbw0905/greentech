@@ -152,7 +152,7 @@ function CarrierChart({
     label: c.name,
     sub: `${c.country}`,
     x: axes.x.metric.value(c),
-    y: metric.value(c),
+    y: valueOf(c),
     size: axes.size.value(c),
     group: c.country,
     logo: entityLogoByName(c.name),
