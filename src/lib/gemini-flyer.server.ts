@@ -82,20 +82,22 @@ function buildPrompt(items: FlyerItem[], dateLabel: string): string {
 }
 
 function extractImageBase64(responseBody: unknown): string | null {
-  const candidates = (responseBody as Record<string, unknown>)?.candidates;
+  const candidates = (responseBody as Record<string, unknown>)?.["candidates"];
   if (!Array.isArray(candidates)) return null;
   for (const candidate of candidates) {
-    const parts = (candidate as Record<string, unknown>)?.content?.parts;
+    const content = (candidate as Record<string, unknown>)?.["content"];
+    const parts = (content as Record<string, unknown> | undefined)?.["parts"];
     if (!Array.isArray(parts)) continue;
     for (const part of parts) {
-      const inlineData = (part as Record<string, unknown>)?.inlineData;
-      if (inlineData && typeof (inlineData as Record<string, unknown>)?.data === "string") {
+      const inlineData = (part as Record<string, unknown>)?.["inlineData"];
+      if (inlineData && typeof (inlineData as Record<string, unknown>)?.["data"] === "string") {
         return (inlineData as { data: string }).data;
       }
     }
   }
   return null;
 }
+
 
 export type GenerateResult =
   | {
