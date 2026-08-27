@@ -628,8 +628,8 @@ export function ChartScatter({
   const xMax = Math.max(...xs);
   const yMin = Math.min(...ys);
   const yMax = Math.max(...ys);
-  const xPad = Math.max((xMax - xMin) * 0.08, xMax * 0.02);
-  const yPad = Math.max((yMax - yMin) * 0.08, yMax * 0.02);
+  const xPad = Math.max((xMax - xMin) * 0.08, Math.abs(xMax) * 0.02, 1e-6);
+  const yPad = Math.max((yMax - yMin) * 0.08, Math.abs(yMax) * 0.02, 1e-6);
   const xDomain = [xMin - xPad, xMax + xPad];
   const yDomain = [Math.max(0, yMin - yPad), yMax + yPad];
 

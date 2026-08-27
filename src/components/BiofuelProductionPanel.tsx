@@ -143,7 +143,7 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
     label: s.name,
     sub: `${s.country} · ${s.fuels.join(" / ")}`,
     x: axes.x.metric.value(s),
-    y: metric.value(s),
+    y: valueOf(s),
     size: axes.size.value(s),
     group: s.country,
     logo: entityLogoByName(s.name),
