@@ -187,27 +187,40 @@ export async function generateFlyerImage(force = false): Promise<GenerateResult>
 
   const prompt = buildPrompt(items, dateLabel);
 
-  const res = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-goog-api-key": apiKey,
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      input: [{ type: "text", text: prompt }],
-    }),
-  });
+  let imageBase64: string | null = null;
+  let lastError = "";
 
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    return { ok: false, error: `Gemini API failed [${res.status}]: ${body.slice(0, 500)}` };
+  if (apiKey) {
+    const res = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": apiKey,
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        input: [{ type: "text", text: prompt }],
+      }),
+    });
+    if (res.ok) {
+      imageBase64 = extractImageBase64((await res.json()) as unknown);
+      if (!imageBase64) lastError = "Gemini response did not contain an image";
+    } else {
+      const body = await res.text().catch(() => "");
+      lastError = `Gemini API failed [${res.status}]: ${body.slice(0, 300)}`;
+    }
+  } else {
+    lastError = "GEMINI_API_KEY is not configured";
   }
 
-  const json = (await res.json()) as unknown;
-  const imageBase64 = extractImageBase64(json);
   if (!imageBase64) {
-    return { ok: false, error: "Gemini response did not contain an image" };
+    const fallback = await generateViaGateway(prompt);
+    if (fallback.data) imageBase64 = fallback.data;
+    else lastError = `${lastError}; fallback: ${fallback.error}`;
+  }
+
+  if (!imageBase64) {
+    return { ok: false, error: lastError };
   }
 
   const upsert = await db
