@@ -104,6 +104,39 @@ export type Database = {
           },
         ]
       }
+      flyer_generations: {
+        Row: {
+          created_at: string
+          day_key: string
+          emailed_at: string | null
+          emailed_to: string | null
+          id: string
+          image_base64: string | null
+          items_json: Json
+          prompt: string
+        }
+        Insert: {
+          created_at?: string
+          day_key: string
+          emailed_at?: string | null
+          emailed_to?: string | null
+          id?: string
+          image_base64?: string | null
+          items_json?: Json
+          prompt: string
+        }
+        Update: {
+          created_at?: string
+          day_key?: string
+          emailed_at?: string | null
+          emailed_to?: string | null
+          id?: string
+          image_base64?: string | null
+          items_json?: Json
+          prompt?: string
+        }
+        Relationships: []
+      }
       linkedin_drafts: {
         Row: {
           created_at: string
