@@ -113,7 +113,10 @@ export function SafAirlinesPanel() {
     facetA: (a) => a.country,
   });
   const ranked = [...f.filtered].sort((a, b) => valueOf(b) - valueOf(a));
-  const sorted = ranked.slice(0, 10);
+  // Default view is the global top 10; once a country or search filter is
+  // applied we show every matching airline in that selection (capped at 20).
+  const isFiltered = Boolean(f.a || f.b || f.query.trim());
+  const sorted = ranked.slice(0, isFiltered ? 20 : 10);
 
   const axes = scatterAxes(metricKey);
   const scatterPoints: ScatterPoint[] = sorted.map((a) => ({
