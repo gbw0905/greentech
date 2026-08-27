@@ -149,9 +149,7 @@ export type GenerateResult =
 
 export async function generateFlyerImage(force = false): Promise<GenerateResult> {
   const apiKey = process.env["GEMINI_API_KEY"];
-  if (!apiKey) {
-    return { ok: false, error: "GEMINI_API_KEY is not configured" };
-  }
+
 
   const db = await adminDb();
   const dayKey = new Date().toISOString().slice(0, 10);
