@@ -218,7 +218,10 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
     facetB: (s) => s.fuels as string[],
   });
   const ranked = f.filtered.slice().sort((a, b) => valueOf(b) - valueOf(a));
-  const stations = ranked.slice(0, 10);
+  // Default view is the global top 10; once a country, fuel or search filter is
+  // applied we show every matching station in that selection (capped at 20).
+  const isFiltered = Boolean(f.a || f.b || f.query.trim());
+  const stations = ranked.slice(0, isFiltered ? 20 : 10);
 
   const axes = scatterAxes(stationMetric);
   const scatterPoints: ScatterPoint[] = stations.map((s) => ({
