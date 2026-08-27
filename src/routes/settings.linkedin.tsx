@@ -5,6 +5,7 @@ import {
   AlertTriangle,
   Building2,
   CheckCircle2,
+  Image,
   KeyRound,
   Link2,
   Linkedin,
@@ -13,6 +14,7 @@ import {
   Unlink,
   UserRound,
 } from "lucide-react";
+
 import { PageShell, PageHeading } from "@/components/PageShell";
 import {
   getLinkedInSettingsFn,
@@ -20,6 +22,9 @@ import {
   startLinkedInOrgConnectFn,
   disconnectLinkedInOrgFn,
 } from "@/lib/linkedin.functions";
+import { generateFlyerNowFn } from "@/lib/gemini-flyer.functions";
+
+
 
 type PostingMode = "personal_mention" | "company_page";
 
@@ -75,7 +80,11 @@ function LinkedInSettingsPage() {
   const [url, setUrl] = useState("");
   const [mode, setMode] = useState<PostingMode>("personal_mention");
   const [busy, setBusy] = useState(false);
+  const [flyerBusy, setFlyerBusy] = useState(false);
   const [message, setMessage] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+
+  const generateFlyer = useServerFn(generateFlyerNowFn);
+
 
   async function unlock() {
     setBusy(true);
@@ -138,7 +147,24 @@ function LinkedInSettingsPage() {
     }
   }
 
+  async function runGenerateFlyer() {
+    setFlyerBusy(true);
+    setMessage(null);
+    try {
+      const res = await generateFlyer({ data: { adminKey, force: true } });
+      setMessage({
+        kind: "ok",
+        text: `Flyer generated for ${res.dayKey} and emailed${res.suppressed ? " (recipient suppressed)" : ""}.`,
+      });
+    } catch (e) {
+      setMessage({ kind: "err", text: e instanceof Error ? e.message : "Could not generate flyer" });
+    } finally {
+      setFlyerBusy(false);
+    }
+  }
+
   return (
+
     <PageShell>
       <PageHeading
         icon={Linkedin}
@@ -365,6 +391,25 @@ function LinkedInSettingsPage() {
             </p>
           </div>
 
+          {/* AI daily flyer */}
+          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+            <h2 className="font-display text-lg font-extrabold text-foreground">AI daily LinkedIn flyer</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Generate an AI image flyer from today's top bioenergy headlines. It is emailed to{" "}
+              <span className="label-mono">LINKEDIN_DRAFT_EMAIL</span> and can be shared on LinkedIn.
+              Requires a <span className="label-mono">GEMINI_API_KEY</span> project secret.
+            </p>
+            <button
+              type="button"
+              onClick={() => void runGenerateFlyer()}
+              disabled={flyerBusy}
+              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#0a66c2] px-5 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+            >
+              {flyerBusy ? <Loader2 className="size-4 animate-spin" /> : <Image className="size-4" />}
+              Generate flyer now
+            </button>
+          </div>
+
           <button
             type="button"
             onClick={() => void save()}
@@ -374,6 +419,7 @@ function LinkedInSettingsPage() {
             {busy && <Loader2 className="size-4 animate-spin" />}
             Save settings
           </button>
+
 
           {message && (
             <p
