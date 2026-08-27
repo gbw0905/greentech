@@ -202,9 +202,10 @@ export async function generateFlyerImage(force = false): Promise<GenerateResult>
     ok: true,
     dayKey,
     imageUrl: `${SITE_URL}/api/public/flyer-image?day=${dayKey}`,
-    items: (upsert.data?.items_json as FlyerItem[] | undefined) ?? items,
+    items: ((upsert.data?.items_json as unknown) as FlyerItem[] | undefined) ?? items,
     alreadyExisted: false,
   };
+
 }
 
 export async function emailFlyer(recipient: string): Promise<{
