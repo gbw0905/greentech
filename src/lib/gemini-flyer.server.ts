@@ -125,7 +125,7 @@ export async function generateFlyerImage(force = false): Promise<GenerateResult>
   if (!force) {
     const existing = await db
       .from("flyer_generations")
-      .select("image_base64")
+      .select("image_base64, items_json")
       .eq("day_key", dayKey)
       .maybeSingle();
     if (existing.data?.image_base64) {
@@ -133,10 +133,11 @@ export async function generateFlyerImage(force = false): Promise<GenerateResult>
         ok: true,
         dayKey,
         imageUrl: `${SITE_URL}/api/public/flyer-image?day=${dayKey}`,
-        items: (existing.data.items_json as FlyerItem[] | undefined) ?? [],
+        items: ((existing.data.items_json as unknown) as FlyerItem[] | undefined) ?? [],
         alreadyExisted: true,
       };
     }
+
   }
 
   const items = await topItems();
