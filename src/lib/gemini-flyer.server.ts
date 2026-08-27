@@ -108,6 +108,31 @@ function extractImageBase64(responseBody: unknown): string | null {
 }
 
 
+/** Fallback: Lovable AI Gateway image model, used when the user's Gemini key is unavailable. */
+async function generateViaGateway(prompt: string): Promise<{ data?: string; error?: string }> {
+  const key = process.env["LOVABLE_API_KEY"];
+  if (!key) return { error: "no gateway key" };
+  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash-image",
+      messages: [{ role: "user", content: prompt }],
+      modalities: ["image", "text"],
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    return { error: `Gateway failed [${res.status}]: ${body.slice(0, 300)}` };
+  }
+  const json = (await res.json()) as {
+    choices?: Array<{ message?: { images?: Array<{ image_url?: { url?: string } }> } }>;
+  };
+  const url = json.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+  const b64 = url?.split(",")[1];
+  return b64 ? { data: b64 } : { error: "Gateway response had no image" };
+}
+
 export type GenerateResult =
   | {
       ok: true;
