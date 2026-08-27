@@ -97,16 +97,19 @@ function extractImageBase64(responseBody: unknown): string | null {
   return null;
 }
 
-export interface GenerateResult {
-  ok: true;
-  dayKey: string;
-  imageUrl: string;
-  items: FlyerItem[];
-  alreadyExisted: boolean;
-} | {
-  ok: false;
-  error: string;
-};
+export type GenerateResult =
+  | {
+      ok: true;
+      dayKey: string;
+      imageUrl: string;
+      items: FlyerItem[];
+      alreadyExisted: boolean;
+    }
+  | {
+      ok: false;
+      error: string;
+    };
+
 
 export async function generateFlyerImage(force = false): Promise<GenerateResult> {
   const apiKey = process.env["GEMINI_API_KEY"];
