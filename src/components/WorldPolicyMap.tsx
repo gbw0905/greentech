@@ -206,10 +206,77 @@ export function WorldPolicyMap({
                 />
               );
             })}
+
+            {showAirports &&
+              airportPoints.map(({ airport, x, y }) => {
+                const isHover = hoverAirport?.iata === airport.iata;
+                const r = SAF_STATUS_RADIUS[airport.status] / Math.sqrt(view.z);
+                return (
+                  <g
+                    key={airport.iata}
+                    transform={`translate(${x},${y}) rotate(45)`}
+                    className="cursor-pointer"
+                    onMouseEnter={() => {
+                      setHoverAirport(airport);
+                      setHover(null);
+                    }}
+                    onMouseLeave={() => setHoverAirport(null)}
+                    onClick={() => {
+                      if (moved.current || !airport.countrySlug) return;
+                      onSelect(airport.countrySlug === activeCountry ? null : airport.countrySlug);
+                    }}
+                  >
+                    <rect
+                      x={-r}
+                      y={-r}
+                      width={r * 2}
+                      height={r * 2}
+                      rx={r * 0.3}
+                      fill={SAF_AIRPORT_COLOR}
+                      fillOpacity={airport.status === "announced" ? 0.55 : 0.9}
+                      stroke="var(--background)"
+                      strokeWidth={0.8 / view.z}
+                    />
+                    {isHover && (
+                      <rect
+                        x={-r * 2}
+                        y={-r * 2}
+                        width={r * 4}
+                        height={r * 4}
+                        fill="none"
+                        stroke={SAF_AIRPORT_COLOR}
+                        strokeWidth={1 / view.z}
+                      />
+                    )}
+                  </g>
+                );
+              })}
           </g>
         </svg>
 
-        {hovered && tip && (
+        {hoverAirport && tip && (
+          <div
+            className="pointer-events-none absolute z-10 w-56 -translate-x-1/2 -translate-y-[calc(100%+10px)] rounded-md border border-border bg-surface px-2.5 py-1.5 shadow-[var(--shadow-lift)]"
+            style={{ left: tip.x, top: tip.y }}
+          >
+            <div className="font-display text-xs font-semibold">
+              {hoverAirport.name} ({hoverAirport.iata})
+            </div>
+            <div className="label-mono text-muted-foreground">
+              {hoverAirport.city} · {hoverAirport.country}
+            </div>
+            <div className="label-mono mt-1 inline-flex items-center gap-1.5" style={{ color: SAF_AIRPORT_COLOR }}>
+              <span className="size-2 rotate-45 rounded-[1px]" style={{ background: SAF_AIRPORT_COLOR }} />
+              SAF · {SAF_STATUS_LABEL[hoverAirport.status]}
+            </div>
+            <p className="mt-1.5 border-t border-border pt-1.5 font-mono text-[10px] leading-snug text-muted-foreground">
+              {hoverAirport.suppliers}
+            </p>
+          </div>
+        )}
+
+        {hovered && !hoverAirport && tip && (
+
           <div
             className="pointer-events-none absolute z-10 w-56 -translate-x-1/2 -translate-y-[calc(100%+10px)] rounded-md border border-border bg-surface px-2.5 py-1.5 shadow-[var(--shadow-lift)]"
             style={{ left: tip.x, top: tip.y }}
