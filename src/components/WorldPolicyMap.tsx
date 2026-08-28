@@ -11,6 +11,12 @@ import {
 } from "@/lib/policy-taxonomy";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { getCountryIndicesFn } from "@/lib/country-markets.functions";
+import {
+  SAF_AIRPORTS,
+  SAF_STATUS_LABEL,
+  SAF_STATUS_RADIUS,
+  type SafAirport,
+} from "@/lib/saf-airports";
 
 interface GeoFeature {
   type: "Feature";
