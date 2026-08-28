@@ -355,6 +355,19 @@ export function WorldPolicyMap({
               <Icon className="size-3.5" />
             </button>
           ))}
+          <button
+            type="button"
+            aria-label={showAirports ? "Hide SAF airports" : "Show SAF airports"}
+            aria-pressed={showAirports}
+            title={showAirports ? "Hide SAF airports" : "Show SAF airports"}
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={() => setShowAirports((v) => !v)}
+            className={`grid size-7 place-items-center rounded-md border border-border bg-surface/90 backdrop-blur transition-colors hover:text-primary ${
+              showAirports ? "text-primary" : "text-muted-foreground"
+            }`}
+          >
+            <PlaneTakeoff className="size-3.5" />
+          </button>
           {zoomed && (
             <button
               type="button"
@@ -367,6 +380,7 @@ export function WorldPolicyMap({
             </button>
           )}
         </div>
+
 
         {!features && (
           <div className="label-mono absolute inset-0 flex items-center justify-center text-muted-foreground">
