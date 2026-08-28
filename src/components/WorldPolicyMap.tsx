@@ -2,7 +2,7 @@ import { geoNaturalEarth1, geoPath, geoGraticule10 } from "d3-geo";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { feature } from "topojson-client";
 import { Link } from "@tanstack/react-router";
-import { Minus, Plus, Maximize2 } from "lucide-react";
+import { Minus, Plus, Maximize2, PlaneTakeoff } from "lucide-react";
 import {
   COUNTRIES,
   POLICY_STATUS_COLOR,
