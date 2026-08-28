@@ -434,6 +434,11 @@ export function WorldPolicyMap({
         )}
         <div className="label-mono font-mono text-muted-foreground">{view.z.toFixed(1)}×</div>
       </div>
+      <p className="mt-1.5 font-mono text-[10px] leading-snug text-muted-foreground">
+        SAF airport layer: curated from published airport, fuel-supplier and airline disclosures —
+        indicative, not exhaustive. Toggle it with the plane button on the map.
+      </p>
+
     </div>
   );
 }
