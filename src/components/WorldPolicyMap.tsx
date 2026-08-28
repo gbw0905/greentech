@@ -68,11 +68,21 @@ export function WorldPolicyMap({
     };
   }, []);
 
-  const { path, graticule } = useMemo(() => {
-    const projection = geoNaturalEarth1().fitSize([WIDTH, HEIGHT], { type: "Sphere" });
-    const p = geoPath(projection);
-    return { path: p, graticule: p(geoGraticule10()) ?? "" };
+  const { path, graticule, projection } = useMemo(() => {
+    const proj = geoNaturalEarth1().fitSize([WIDTH, HEIGHT], { type: "Sphere" });
+    const p = geoPath(proj);
+    return { path: p, graticule: p(geoGraticule10()) ?? "", projection: proj };
   }, []);
+
+  const airportPoints = useMemo(
+    () =>
+      SAF_AIRPORTS.map((a) => {
+        const xy = projection([a.lon, a.lat]);
+        return xy ? { airport: a, x: xy[0], y: xy[1] } : null;
+      }).filter(Boolean) as { airport: SafAirport; x: number; y: number }[],
+    [projection],
+  );
+
 
   const byMapName = useMemo(() => {
     const m = new Map<string, (typeof COUNTRIES)[number]>();
