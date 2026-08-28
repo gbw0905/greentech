@@ -158,6 +158,7 @@ export function WorldPolicyMap({
         onPointerLeave={() => {
           drag.current = null;
           setHover(null);
+          setHoverAirport(null);
           setTip(null);
         }}
       >
