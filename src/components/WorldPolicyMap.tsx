@@ -26,6 +26,7 @@ interface GeoFeature {
 
 const WIDTH = 900;
 const HEIGHT = 400;
+const SAF_AIRPORT_COLOR = "var(--chart-2, oklch(0.62 0.17 250))";
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 8;
 
