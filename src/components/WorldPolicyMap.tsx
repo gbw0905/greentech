@@ -402,7 +402,15 @@ export function WorldPolicyMap({
               {s}
             </span>
           ))}
+          <span className="inline-flex items-center gap-1.5" style={{ color: SAF_AIRPORT_COLOR }}>
+            <span
+              className="size-2 rotate-45 rounded-[1px]"
+              style={{ background: SAF_AIRPORT_COLOR }}
+            />
+            SAF airport ({SAF_AIRPORTS.length})
+          </span>
         </div>
+
         {hovered ? (
           <div className="label-mono text-foreground">
             {hovered.name} ·{" "}
