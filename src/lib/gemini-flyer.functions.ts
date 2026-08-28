@@ -40,7 +40,7 @@ export const generateFlyerNowFn = createServerFn({ method: "POST" })
       throw new Error("Invalid recipient email");
     }
 
-    const emailed = await emailFlyer(recipient);
+    const emailed = await emailFlyer(recipient, { unique: true });
     if (!emailed.ok) {
       throw new Error(emailed.error);
     }
