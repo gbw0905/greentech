@@ -251,7 +251,11 @@ export async function generateFlyerImage(force = false): Promise<GenerateResult>
 
 }
 
-export async function emailFlyer(recipient: string): Promise<{
+export async function emailFlyer(
+  recipient: string,
+  /** Manual re-sends must not collapse into the day's first send. */
+  opts: { unique?: boolean } = {},
+): Promise<{
   ok: true;
   emailed: boolean;
   suppressed: boolean;
@@ -270,8 +274,13 @@ export async function emailFlyer(recipient: string): Promise<{
     timeZone: "UTC",
   });
 
+  const idempotencyKey = opts.unique
+    ? `gemini-flyer-${generated.dayKey}-manual-${Date.now()}`
+    : `gemini-flyer-${generated.dayKey}`;
+
   const result = await sendTemplateEmail("gemini-flyer", recipient, {
-    idempotencyKey: `gemini-flyer-${generated.dayKey}`,
+    idempotencyKey,
+
     templateData: {
       dateLabel,
       imageUrl: generated.imageUrl,
