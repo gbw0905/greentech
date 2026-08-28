@@ -51,6 +51,8 @@ export function WorldPolicyMap({
   });
   const indices = marketData?.indices ?? {};
   const [hover, setHover] = useState<string | null>(null);
+  const [hoverAirport, setHoverAirport] = useState<SafAirport | null>(null);
+  const [showAirports, setShowAirports] = useState(true);
   const [tip, setTip] = useState<{ x: number; y: number } | null>(null);
   const [view, setView] = useState({ z: 1, x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement | null>(null);
