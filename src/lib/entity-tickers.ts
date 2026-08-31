@@ -264,6 +264,7 @@ export const ALL_ENTITY_TICKERS: string[] = Array.from(
       ...Object.values(CARRIER_TICKERS),
       ...Object.values(STATION_TICKERS),
       ...Object.values(UCO_TICKERS),
+      ...Object.values(MARINE_TICKERS),
     ].filter((t): t is string => Boolean(t)),
   ),
 );
