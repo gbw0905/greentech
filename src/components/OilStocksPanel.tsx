@@ -171,7 +171,8 @@ function scatterAxes(metricKey: StockMetric) {
 
 export function OilStocksPanel() {
   const [metricKey, setMetricKey] = useState<StockMetric>("capacity");
-  const [view, setView] = useState<"heat" | "scatter">("heat");
+  const [view, setView] = useState<PanelView>("heat");
+  const detail = useEntityDetail();
   const { data, isLoading } = useQuery({
     queryKey: ["oil-stocks"],
     queryFn: () => getOilStocksFn(),
