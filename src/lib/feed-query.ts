@@ -1,5 +1,6 @@
-import { queryOptions, type QueryClient } from "@tanstack/react-query";
+import { queryOptions } from "@tanstack/react-query";
 import { getPolicyFeed } from "@/lib/policy.functions";
+import type { PolicyFeed } from "@/lib/policy-types";
 
 export const feedQuery = queryOptions({
   queryKey: ["policy-feed"],
@@ -11,14 +12,19 @@ export const feedQuery = queryOptions({
 });
 
 /**
- * Warms the feed on the server so updates are in the HTML for every visitor,
- * even when their browser's follow-up request to the server function fails.
- * Never throws: a failed prefetch just falls back to client fetching.
+ * Loads the feed on the server so updates ship inside the HTML for every
+ * visitor, even if their browser's follow-up request fails. Never throws:
+ * on failure the client query simply fetches and retries.
  */
-export async function prefetchFeed(queryClient: QueryClient) {
+export async function loadFeed(): Promise<{ feed: PolicyFeed | null }> {
   try {
-    await queryClient.ensureQueryData(feedQuery);
+    return { feed: (await getPolicyFeed()) as PolicyFeed };
   } catch {
-    /* client will retry */
+    return { feed: null };
   }
+}
+
+/** Query options seeded with server-rendered data when it is available. */
+export function feedQueryWithInitial(initial: PolicyFeed | null) {
+  return initial ? { ...feedQuery, initialData: initial } : feedQuery;
 }
