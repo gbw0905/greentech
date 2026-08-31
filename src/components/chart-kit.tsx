@@ -198,6 +198,100 @@ export function ChartBars({
   );
 }
 
+/** The four chart types every Supply & producers panel offers. */
+export const PANEL_VIEWS = [
+  { value: "heat", label: "Heat map" },
+  { value: "scatter", label: "Scatter plot" },
+  { value: "bars", label: "Ranked bars" },
+  { value: "table", label: "Data table" },
+];
+
+export type PanelView = "heat" | "scatter" | "bars" | "table";
+
+/** Plain ranked table view — same data, same typography, no visual encoding. */
+export function ChartTable({
+  items,
+  measureLabel,
+  unitLabel,
+  format,
+  news,
+  onSelect,
+  metaHeader = "Market",
+}: {
+  items: ChartItem[];
+  measureLabel: string;
+  unitLabel: string;
+  format: (n: number) => string;
+  news?: Record<string, NewsTarget>;
+  onSelect?: (t: NewsTarget) => void;
+  metaHeader?: string;
+}) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[32rem] border-collapse text-left">
+        <caption className="chart-axis pb-2 text-left">
+          {measureLabel} — {unitLabel}
+        </caption>
+        <thead>
+          <tr className="border-b border-border">
+            <th scope="col" className="chart-axis w-8 py-1.5 uppercase tracking-[0.1em]">
+              #
+            </th>
+            <th scope="col" className="chart-axis py-1.5 uppercase tracking-[0.1em]">
+              Entity
+            </th>
+            <th scope="col" className="chart-axis py-1.5 text-right uppercase tracking-[0.1em]">
+              {measureLabel}
+            </th>
+            <th scope="col" className="chart-axis py-1.5 text-right uppercase tracking-[0.1em]">
+              {metaHeader}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.map((item, idx) => {
+            const target = news?.[item.key];
+            return (
+              <tr
+                key={item.key}
+                onClick={target ? () => onSelect?.(target) : undefined}
+                className={`border-b border-border/50 transition-colors hover:bg-foreground/[0.04] ${
+                  target ? "cursor-pointer" : ""
+                }`}
+              >
+                <td className="chart-axis py-1.5 tabular-nums">{String(idx + 1).padStart(2, "0")}</td>
+                <td className="py-1.5">
+                  <div className="flex items-center gap-2">
+                    {item.logo ? <TileLogo src={item.logo} alt={item.label} size={16} /> : null}
+                    <div className="min-w-0">
+                      <div className="chart-label truncate text-foreground">{item.label}</div>
+                      {item.sub ? <div className="chart-sub truncate">{item.sub}</div> : null}
+                    </div>
+                  </div>
+                </td>
+                <td className="chart-value py-1.5 text-right tabular-nums text-foreground">
+                  {format(item.value)}
+                </td>
+                <td
+                  className={`chart-sub py-1.5 text-right font-mono tabular-nums ${
+                    item.tone === "up"
+                      ? "text-primary"
+                      : item.tone === "down"
+                        ? "text-destructive"
+                        : ""
+                  }`}
+                >
+                  {item.meta ?? "—"}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 /** Blue -> cyan -> green -> yellow -> red RGB ramp, t in [0,1]. */
 const RGB_STOPS: Array<[number, number, number]> = [
   [37, 99, 235],
