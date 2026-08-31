@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
-import { feedQuery, prefetchFeed } from "@/lib/feed-query";
+import { feedQueryWithInitial, loadFeed } from "@/lib/feed-query";
 import {
   countryBySlug,
   REGION_ACCENT,
@@ -32,7 +32,7 @@ export const Route = createFileRoute("/countries/$slug")({
       ],
     };
   },
-  loader: ({ context }) => prefetchFeed(context.queryClient),
+  loader: () => loadFeed(),
   component: CountryPage,
   errorComponent: ({ error }) => (
     <div className="p-10 text-sm text-destructive" role="alert">
@@ -48,7 +48,8 @@ function CountryPage() {
   useVisitTracker();
   const { slug } = Route.useParams();
   const country = countryBySlug(slug)!;
-  const { data, isFetching } = useQuery(feedQuery);
+  const { feed: initialFeed } = Route.useLoaderData();
+  const { data, isFetching } = useQuery(feedQueryWithInitial(initialFeed));
   const keywords = (country.updateKeywords ?? []).map((k) => k.toLowerCase());
   const updates = (data?.updates ?? [])
     .filter((u) => {

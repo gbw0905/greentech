@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { RefreshCw, AlertTriangle, Map, Factory, TrendingUp, BellRing, Briefcase, Linkedin } from "lucide-react";
 import { refreshPolicyFeed } from "@/lib/policy.functions";
-import { feedQuery, prefetchFeed } from "@/lib/feed-query";
+import { feedQueryWithInitial, loadFeed } from "@/lib/feed-query";
 import siteLogo from "@/assets/logo.png";
 import { UpdateCard, formatDate } from "@/components/UpdateCard";
 import { WorldPolicyMap } from "@/components/WorldPolicyMap";
@@ -33,7 +33,7 @@ const DESCRIPTION =
   "Live tracker of global bioenergy and biofuel policy: ethanol, biodiesel, renewable diesel and SAF mandates by region, country and fuel type.";
 
 export const Route = createFileRoute("/")({
-  loader: ({ context }) => prefetchFeed(context.queryClient),
+  loader: () => loadFeed(),
   head: () => ({
     meta: [
       { title: TITLE },
@@ -96,7 +96,8 @@ function SectionHeading({
 function Dashboard() {
   useVisitTracker();
   const queryClient = useQueryClient();
-  const { data: feed, isFetching } = useQuery(feedQuery);
+  const { feed: initialFeed } = Route.useLoaderData();
+  const { data: feed, isFetching } = useQuery(feedQueryWithInitial(initialFeed));
   const rescan = useMutation({
     mutationFn: () => refreshPolicyFeed(),
     onSuccess: (fresh) => {
