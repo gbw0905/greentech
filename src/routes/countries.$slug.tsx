@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { queryOptions, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
-import { getPolicyFeed } from "@/lib/policy.functions";
+import { feedQuery, prefetchFeed } from "@/lib/feed-query";
 import {
   countryBySlug,
   REGION_ACCENT,
@@ -12,11 +12,6 @@ import {
 import { UpdateCard } from "@/components/UpdateCard";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
 
-const feedQuery = queryOptions({
-  queryKey: ["policy-feed"],
-  queryFn: () => getPolicyFeed(),
-  staleTime: 10 * 60 * 1000,
-});
 
 export const Route = createFileRoute("/countries/$slug")({
   beforeLoad: ({ params }) => {
@@ -37,6 +32,7 @@ export const Route = createFileRoute("/countries/$slug")({
       ],
     };
   },
+  loader: ({ context }) => prefetchFeed(context.queryClient),
   component: CountryPage,
   errorComponent: ({ error }) => (
     <div className="p-10 text-sm text-destructive" role="alert">
