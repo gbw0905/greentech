@@ -211,7 +211,42 @@ export function OilStocksPanel() {
     newsTarget: { name: q.label, query: `"${q.label}" oil company news` },
   }));
 
+  const items = sorted.map((q) => ({
+    key: q.symbol,
+    label: q.label,
+    sub: `${q.symbol.replace(/\.[A-Z]+$/, "")} · ${chartFmt(q.price, 2)}`,
+    value: metric.value(q),
+    logo: entityLogo(q.symbol),
+    meta: `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%`,
+    tone: q.changePct >= 0 ? ("up" as const) : ("down" as const),
+    changePct: q.changePct,
+  }));
+  const newsMap = Object.fromEntries(
+    sorted.map((q) => [q.symbol, { name: q.label, query: `"${q.label}" oil company news` }]),
+  );
+  const onSelect = detail.onSelect((t) => {
+    const q = sorted.find((x) => x.label === t?.name);
+    if (!q) return null;
+    return {
+      name: q.label,
+      sub: `${q.symbol} · ${countryOf(q.symbol)}`,
+      logo: entityLogo(q.symbol),
+      stats: [
+        { label: "Share price", value: chartFmt(q.price, 2) },
+        {
+          label: "1-day change",
+          value: `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%`,
+          tone: detailTone(q.changePct),
+        },
+        { label: metric.label, value: `${chartFmt(metric.value(q), metric.decimals)} ${metric.unit}` },
+      ],
+      news: { name: q.label, query: `"${q.label}" oil company news` },
+    };
+  });
+
   return (
+    <>
+    {detail.sheet}
     <ChartPanel
       icon={Building2}
       title="Top global oil companies"
