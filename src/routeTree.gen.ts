@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as JobsRouteImport } from './routes/jobs'
 import { Route as McpRouteImport } from './routes/mcp'
@@ -19,6 +20,8 @@ import { Route as TimelineRouteImport } from './routes/timeline'
 import { Route as VideosRouteImport } from './routes/videos'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as AboutMissionVisionRouteImport } from './routes/about.mission-vision'
+import { Route as AboutTeamRouteImport } from './routes/about.team'
 import { Route as AlertsConfirmRouteImport } from './routes/alerts.confirm'
 import { Route as CountriesSlugRouteImport } from './routes/countries.$slug'
 import { Route as SettingsLinkedinRouteImport } from './routes/settings.linkedin'
@@ -39,6 +42,11 @@ import { Route as ApiPublicLinkedinOauthCallbackRouteImport } from './routes/api
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -88,6 +96,16 @@ const Char91DotwellKnownChar93OauthProtectedResourceRoute =
     path: '/.well-known/oauth-protected-resource',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AboutMissionVisionRoute = AboutMissionVisionRouteImport.update({
+  id: '/mission-vision',
+  path: '/mission-vision',
+  getParentRoute: () => AboutRoute,
+} as any)
+const AboutTeamRoute = AboutTeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => AboutRoute,
+} as any)
 const AlertsConfirmRoute = AlertsConfirmRouteImport.update({
   id: '/alerts/confirm',
   path: '/alerts/confirm',
@@ -181,6 +199,7 @@ const ApiPublicLinkedinOauthCallbackRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRouteWithChildren
   '/contact': typeof ContactRoute
   '/jobs': typeof JobsRoute
   '/mcp': typeof McpRoute
@@ -190,6 +209,8 @@ export interface FileRoutesByFullPath {
   '/videos': typeof VideosRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/about/mission-vision': typeof AboutMissionVisionRoute
+  '/about/team': typeof AboutTeamRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/countries/$slug': typeof CountriesSlugRoute
   '/settings/linkedin': typeof SettingsLinkedinRoute
@@ -209,6 +230,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRouteWithChildren
   '/contact': typeof ContactRoute
   '/jobs': typeof JobsRoute
   '/mcp': typeof McpRoute
@@ -218,6 +240,8 @@ export interface FileRoutesByTo {
   '/videos': typeof VideosRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/about/mission-vision': typeof AboutMissionVisionRoute
+  '/about/team': typeof AboutTeamRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/countries/$slug': typeof CountriesSlugRoute
   '/settings/linkedin': typeof SettingsLinkedinRoute
@@ -238,6 +262,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRouteWithChildren
   '/contact': typeof ContactRoute
   '/jobs': typeof JobsRoute
   '/mcp': typeof McpRoute
@@ -247,6 +272,8 @@ export interface FileRoutesById {
   '/videos': typeof VideosRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/about/mission-vision': typeof AboutMissionVisionRoute
+  '/about/team': typeof AboutTeamRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/countries/$slug': typeof CountriesSlugRoute
   '/settings/linkedin': typeof SettingsLinkedinRoute
@@ -268,6 +295,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/contact'
     | '/jobs'
     | '/mcp'
@@ -277,6 +305,8 @@ export interface FileRouteTypes {
     | '/videos'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/about/mission-vision'
+    | '/about/team'
     | '/alerts/confirm'
     | '/countries/$slug'
     | '/settings/linkedin'
@@ -296,6 +326,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
     | '/contact'
     | '/jobs'
     | '/mcp'
@@ -305,6 +336,8 @@ export interface FileRouteTypes {
     | '/videos'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/about/mission-vision'
+    | '/about/team'
     | '/alerts/confirm'
     | '/countries/$slug'
     | '/settings/linkedin'
@@ -324,6 +357,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/about'
     | '/contact'
     | '/jobs'
     | '/mcp'
@@ -333,6 +367,8 @@ export interface FileRouteTypes {
     | '/videos'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/about/mission-vision'
+    | '/about/team'
     | '/alerts/confirm'
     | '/countries/$slug'
     | '/settings/linkedin'
@@ -353,6 +389,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRouteWithChildren
   ContactRoute: typeof ContactRoute
   JobsRoute: typeof JobsRoute
   McpRoute: typeof McpRoute
@@ -387,6 +424,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -451,6 +495,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/.well-known/oauth-protected-resource'
       preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/about/mission-vision': {
+      id: '/about/mission-vision'
+      path: '/mission-vision'
+      fullPath: '/about/mission-vision'
+      preLoaderRoute: typeof AboutMissionVisionRouteImport
+      parentRoute: typeof AboutRoute
+    }
+    '/about/team': {
+      id: '/about/team'
+      path: '/team'
+      fullPath: '/about/team'
+      preLoaderRoute: typeof AboutTeamRouteImport
+      parentRoute: typeof AboutRoute
     }
     '/alerts/confirm': {
       id: '/alerts/confirm'
@@ -567,8 +625,21 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AboutRouteChildren {
+  AboutMissionVisionRoute: typeof AboutMissionVisionRoute
+  AboutTeamRoute: typeof AboutTeamRoute
+}
+
+const AboutRouteChildren: AboutRouteChildren = {
+  AboutMissionVisionRoute: AboutMissionVisionRoute,
+  AboutTeamRoute: AboutTeamRoute,
+}
+
+const AboutRouteWithChildren = AboutRoute._addFileChildren(AboutRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRouteWithChildren,
   ContactRoute: ContactRoute,
   JobsRoute: JobsRoute,
   McpRoute: McpRoute,
