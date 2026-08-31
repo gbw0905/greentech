@@ -258,11 +258,8 @@ export function OilStocksPanel() {
       }))}
       onMetricChange={(v) => setMetricKey(v as StockMetric)}
       viewValue={view}
-      viewOptions={[
-        { value: "heat", label: "Heat map" },
-        { value: "scatter", label: "Scatter plot" },
-      ]}
-      onViewChange={(v) => setView(v as "heat" | "scatter")}
+      viewOptions={PANEL_VIEWS}
+      onViewChange={(v) => setView(v as PanelView)}
       actions={
         <button
           type="button"
