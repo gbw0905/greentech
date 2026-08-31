@@ -26,6 +26,11 @@ const BY_PANEL: Record<string, string[]> = {
     "Certification and eligibility: ISCC EU/PLUS certificate database, EU RED III Annex IX Part B listings, UK RTFO feedstock reporting.",
     "Cross-checks: US EPA RFS/EMTS feedstock data, USDA/GAIN UCO trade reports, China customs UCO export statistics.",
   ],
+  "Global marine biofuel suppliers and users": [
+    "Marine biofuel bunker volumes: MPA Singapore annual bunker sales statistics, Port of Rotterdam bunker throughput data and supplier press disclosures.",
+    "Shipping-line biofuel uptake: carrier sustainability and ESG reports, green-fuel product disclosures (ECO Delivery, Ship Green, ACT+) and public bunkering announcements.",
+    "Cross-checks: IMO DCS and EU MRV reporting, ISCC EU certification records for marine bio-blends.",
+  ],
 };
 
 
