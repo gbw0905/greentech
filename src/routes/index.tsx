@@ -14,6 +14,7 @@ import { AlertSignup } from "@/components/AlertSignup";
 import { JobsPanel } from "@/components/JobsPanel";
 import { TrafficPanel } from "@/components/TrafficPanel";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
+import { AboutMenu } from "@/components/AboutMenu";
 
 const feedQuery = queryOptions({
   queryKey: ["policy-feed"],
@@ -187,6 +188,7 @@ function Dashboard() {
               {s.label}
             </a>
           ))}
+          <AboutMenu />
         </nav>
       </header>
 
