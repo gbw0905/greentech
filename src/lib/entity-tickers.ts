@@ -156,6 +156,50 @@ export const STATION_TICKERS: Record<string, string | null> = {
   "ADNOC Distribution": "ADNOCDIST.AE",
 };
 
+/** Used cooking oil collectors, renderers and traders. */
+export const UCO_TICKERS: Record<string, string | null> = {
+  "Darling Ingredients": "DAR",
+  "Baker Commodities": null,
+  "Mahoney Environmental": "DAR",
+  "Restaurant Technologies": null,
+  "Valley Proteins / Darling": "DAR",
+  "Rothsay (Darling Canada)": "DAR",
+  Sanimax: null,
+  "Grupo Bioils Mexico": null,
+  Olleco: null,
+  Brocklesby: null,
+  "Argent Energy (feedstock)": null,
+  "Greenergy feedstock": null,
+  "SARIA / ecoMotion": null,
+  "Reststoff / Refood": null,
+  Quatra: null,
+  "Rotie / Simadan": null,
+  "MBP Solutions": null,
+  "Neste feedstock sourcing": "NESTE.HE",
+  "Biokraft / ScanOil": null,
+  "Saipol / Avril waste oils": null,
+  "Bunge Loders (waste streams)": "BG",
+  Ecoslops: "ALESA.PA",
+  "Bionor / Ecogras": null,
+  "Comgest / Oleoalgarve": null,
+  "Mythen / Italbiolio": null,
+  "Eni Biofeedstock sourcing": "ENI.MI",
+  "Orlen waste-oil sourcing": "PKN.WA",
+  "Jinshang Bio (China UCO)": null,
+  "Zhuoyue New Energy": "688196.SS",
+  "Hebei Jingu": "000803.SZ",
+  "EcoCeres feedstock": null,
+  "Revoil / Malaysia UCO traders": null,
+  "Apical / RGE waste oils": null,
+  "Yoshihara Oil Mill": "2617.T",
+  "Revive Eco / Gaia (India)": null,
+  "Refuel Energy Korea": null,
+  "Cookers Australia": null,
+  "BSBIOS waste-oil sourcing": null,
+  "Ambipar Environment": "AMBP3.SA",
+  "Explora / Argentina UCO": null,
+  "Vuthisa / SA waste oils": null,
+};
 
 /** Every ticker the entity-quote feed needs to fetch. */
 export const ALL_ENTITY_TICKERS: string[] = Array.from(
@@ -164,6 +208,8 @@ export const ALL_ENTITY_TICKERS: string[] = Array.from(
       ...Object.values(AIRLINE_TICKERS),
       ...Object.values(CARRIER_TICKERS),
       ...Object.values(STATION_TICKERS),
+      ...Object.values(UCO_TICKERS),
     ].filter((t): t is string => Boolean(t)),
   ),
 );
+
