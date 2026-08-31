@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { Fuel, Recycle, Building2, Plane, Truck, ChevronRight } from "lucide-react";
+import { Fuel, Recycle, Building2, Plane, Truck, Ship, ChevronRight } from "lucide-react";
 import { BiofuelProductionPanel } from "@/components/BiofuelProductionPanel";
 import { UcoSuppliersPanel } from "@/components/UcoSuppliersPanel";
+import { MarineBiofuelPanel } from "@/components/MarineBiofuelPanel";
 import { OilStocksPanel } from "@/components/OilStocksPanel";
 import { SafAirlinesPanel } from "@/components/SafAirlinesPanel";
 import { CarriersPanel } from "@/components/CarriersPanel";
 
-type PanelId = "stations" | "uco" | "oil" | "saf" | "carriers";
+type PanelId = "stations" | "uco" | "marine" | "oil" | "saf" | "carriers";
 
 const CARDS: {
   id: PanelId;
@@ -34,6 +35,15 @@ const CARDS: {
     stat: "40+",
     statLabel: "collectors & traders",
     tone: "var(--chart-3)",
+  },
+  {
+    id: "marine",
+    icon: Ship,
+    title: "Marine biofuels",
+    blurb: "Bunker suppliers of B24/B30 blends and the shipping lines burning them.",
+    stat: "50",
+    statLabel: "suppliers & users",
+    tone: "var(--chart-5)",
   },
   {
     id: "oil",
@@ -67,6 +77,7 @@ const CARDS: {
 function PanelBody({ id }: { id: PanelId }) {
   if (id === "stations") return <BiofuelProductionPanel fuels={[]} />;
   if (id === "uco") return <UcoSuppliersPanel />;
+  if (id === "marine") return <MarineBiofuelPanel />;
   if (id === "oil") return <OilStocksPanel />;
   if (id === "saf") return <SafAirlinesPanel />;
   return <CarriersPanel />;
