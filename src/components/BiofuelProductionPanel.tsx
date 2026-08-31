@@ -354,8 +354,27 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
           formatX={(n) => fmt(n, axes.x.metric.decimals)}
           formatY={(n) => fmt(n, metric.decimals)}
           formatSize={(n) => fmt(n, 0)}
-          onSelect={openEntityNews}
+          onSelect={onSelect}
           indexLabel="Listed fuel retailers & producers index"
+        />
+      ) : view === "bars" ? (
+        <ChartBars
+          items={items}
+          unitLabel={metric.unit}
+          yLabel="Network"
+          metaHeader="Market"
+          format={(n: number) => fmt(n, metric.decimals)}
+          news={newsMap}
+          onSelect={onSelect}
+        />
+      ) : view === "table" ? (
+        <ChartTable
+          items={items}
+          measureLabel={metric.label}
+          unitLabel={metric.unit}
+          format={(n: number) => fmt(n, metric.decimals)}
+          news={newsMap}
+          onSelect={onSelect}
         />
       ) : (
         <ChartHeat
@@ -364,25 +383,12 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
           measureHelp={metric.help}
           indexLabel="Listed fuel retailers & producers index"
           format={(n: number) => fmt(n, metric.decimals)}
-          items={stations.map((s) => ({
-            key: s.name,
-            label: s.name,
-            sub: s.note,
-            value: valueOf(s),
-            logo: entityLogoByName(s.name),
-            meta: priceMeta(get(STATION_TICKERS[s.name])),
-            tone: priceTone(get(STATION_TICKERS[s.name])),
-            changePct: get(STATION_TICKERS[s.name])?.changePct,
-          }))}
-          onSelect={openEntityNews}
-          news={Object.fromEntries(
-            stations.map((s) => [
-              s.name,
-              { name: s.name, query: `"${s.name}" biofuel OR ethanol OR renewable diesel station` },
-            ])
-          )}
+          items={items}
+          onSelect={onSelect}
+          news={newsMap}
         />
       )}
     </ChartPanel>
+    </>
   );
 }
