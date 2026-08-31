@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { Fuel, Recycle, Building2, Plane, Truck, ChevronRight } from "lucide-react";
+import { Fuel, Recycle, Building2, Plane, Truck, Ship, ChevronRight } from "lucide-react";
 import { BiofuelProductionPanel } from "@/components/BiofuelProductionPanel";
 import { UcoSuppliersPanel } from "@/components/UcoSuppliersPanel";
+import { MarineBiofuelPanel } from "@/components/MarineBiofuelPanel";
 import { OilStocksPanel } from "@/components/OilStocksPanel";
 import { SafAirlinesPanel } from "@/components/SafAirlinesPanel";
 import { CarriersPanel } from "@/components/CarriersPanel";
 
-type PanelId = "stations" | "uco" | "oil" | "saf" | "carriers";
+type PanelId = "stations" | "uco" | "marine" | "oil" | "saf" | "carriers";
 
 const CARDS: {
   id: PanelId;
