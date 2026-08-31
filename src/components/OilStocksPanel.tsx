@@ -335,8 +335,27 @@ export function OilStocksPanel() {
           formatX={(n) => chartFmt(n, axes.x.metric.decimals)}
           formatY={(n) => chartFmt(n, metric.decimals)}
           formatSize={(n) => chartFmt(n, 0)}
-          onSelect={openEntityNews}
+          onSelect={onSelect}
           indexLabel="NYSE / global energy majors index"
+        />
+      ) : view === "bars" ? (
+        <ChartBars
+          items={items}
+          unitLabel={metric.unit}
+          yLabel="Company"
+          metaHeader="1-day"
+          format={(n: number) => chartFmt(n, metric.decimals)}
+          news={newsMap}
+          onSelect={onSelect}
+        />
+      ) : view === "table" ? (
+        <ChartTable
+          items={items}
+          measureLabel={metric.label}
+          unitLabel={metric.unit}
+          format={(n: number) => chartFmt(n, metric.decimals)}
+          news={newsMap}
+          onSelect={onSelect}
         />
       ) : (
         <ChartHeat
@@ -345,22 +364,12 @@ export function OilStocksPanel() {
           measureHelp={metric.help}
           indexLabel="NYSE / global energy majors index"
           format={(n) => chartFmt(n, metric.decimals)}
-          items={sorted.map((q) => ({
-            key: q.symbol,
-            label: q.label,
-            sub: `${q.symbol.replace(/\.[A-Z]+$/, "")} · ${chartFmt(q.price, 2)}`,
-            value: metric.value(q),
-            logo: entityLogo(q.symbol),
-            meta: `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%`,
-            tone: q.changePct >= 0 ? ("up" as const) : ("down" as const),
-            changePct: q.changePct,
-          }))}
-          onSelect={openEntityNews}
-          news={Object.fromEntries(
-            sorted.map((q) => [q.symbol, { name: q.label, query: `"${q.label}" oil company news` }]),
-          )}
+          items={items}
+          onSelect={onSelect}
+          news={newsMap}
         />
       )}
     </ChartPanel>
+    </>
   );
 }
