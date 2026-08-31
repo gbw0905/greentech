@@ -89,10 +89,33 @@ export function SupplyProducersSection() {
   if (active) {
     return (
       <div className="space-y-4">
+        {/* Mobile: a dataset picker, so every dataset is reachable without
+            discovering a horizontal scroller. */}
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:hidden">
+          <select
+            aria-label="Choose dataset"
+            value={active}
+            onChange={(e) => setActive(e.target.value as PanelId)}
+            className="chart-select w-full min-w-0"
+          >
+            {CARDS.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.title}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={() => setActive(null)}
+            className="label-mono shrink-0 border border-border bg-white px-3 py-2 font-bold text-foreground"
+          >
+            All
+          </button>
+        </div>
         <div
           role="tablist"
           aria-label="Supply and producer datasets"
-          className="flex items-stretch gap-2 overflow-x-auto pb-1"
+          className="hidden items-stretch gap-2 overflow-x-auto pb-1 sm:flex"
         >
           <button
             type="button"
