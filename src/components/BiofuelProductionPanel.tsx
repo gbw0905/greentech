@@ -238,7 +238,49 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
     newsTarget: { name: s.name, query: `"${s.name}" biofuel OR ethanol OR renewable diesel station` },
   }));
 
+  const items = stations.map((s) => ({
+    key: s.name,
+    label: s.name,
+    sub: s.note,
+    value: valueOf(s),
+    logo: entityLogoByName(s.name),
+    meta: priceMeta(get(STATION_TICKERS[s.name])),
+    tone: priceTone(get(STATION_TICKERS[s.name])),
+    changePct: get(STATION_TICKERS[s.name])?.changePct,
+  }));
+  const newsMap = Object.fromEntries(
+    stations.map((s) => [
+      s.name,
+      { name: s.name, query: `"${s.name}" biofuel OR ethanol OR renewable diesel station` },
+    ]),
+  );
+  const onSelect = detail.onSelect((t) => {
+    const s = stations.find((x) => x.name === t?.name);
+    if (!s) return null;
+    const q = get(STATION_TICKERS[s.name]);
+    return {
+      name: s.name,
+      sub: `${s.country} · ${s.fuels.join(" / ")}`,
+      logo: entityLogoByName(s.name),
+      note: s.note,
+      stats: [
+        { label: "Retail sites offering biofuels", value: fmt(s.sites, 0) },
+        { label: "Biofuel volume sold", value: `${fmt(s.volumeMnL, 0)} Ml/yr` },
+        { label: "Ticker", value: STATION_TICKERS[s.name] ?? "Not listed" },
+        { label: "Share price", value: q ? fmt(q.price, 2) : "—" },
+        {
+          label: "1-day change",
+          value: q ? `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%` : "—",
+          tone: detailTone(q?.changePct),
+        },
+      ],
+      news: { name: s.name, query: `"${s.name}" biofuel OR ethanol OR renewable diesel station` },
+    };
+  });
+
   return (
+    <>
+    {detail.sheet}
     <ChartPanel
       icon={Fuel}
       title="Top global fuel stations selling biofuels"
