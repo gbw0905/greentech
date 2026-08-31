@@ -2,9 +2,19 @@ import { useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Building2, Download } from "lucide-react";
 import { getOilStocksFn, type OilQuote } from "@/lib/oil.functions";
-import { openEntityNews } from "@/lib/open-news";
 import { entityLogo } from "@/lib/entity-logos";
-import { ChartHeat, ChartPanel, ChartScatter, chartFmt, type ScatterPoint } from "@/components/chart-kit";
+import {
+  ChartBars,
+  ChartHeat,
+  ChartPanel,
+  ChartScatter,
+  ChartTable,
+  PANEL_VIEWS,
+  chartFmt,
+  type PanelView,
+  type ScatterPoint,
+} from "@/components/chart-kit";
+import { detailTone, useEntityDetail } from "@/components/EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { downloadBrandedCsv, type BrandedExport } from "@/lib/branded-export";
 import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
@@ -161,7 +171,8 @@ function scatterAxes(metricKey: StockMetric) {
 
 export function OilStocksPanel() {
   const [metricKey, setMetricKey] = useState<StockMetric>("capacity");
-  const [view, setView] = useState<"heat" | "scatter">("heat");
+  const [view, setView] = useState<PanelView>("heat");
+  const detail = useEntityDetail();
   const { data, isLoading } = useQuery({
     queryKey: ["oil-stocks"],
     queryFn: () => getOilStocksFn(),
@@ -200,7 +211,42 @@ export function OilStocksPanel() {
     newsTarget: { name: q.label, query: `"${q.label}" oil company news` },
   }));
 
+  const items = sorted.map((q) => ({
+    key: q.symbol,
+    label: q.label,
+    sub: `${q.symbol.replace(/\.[A-Z]+$/, "")} · ${chartFmt(q.price, 2)}`,
+    value: metric.value(q),
+    logo: entityLogo(q.symbol),
+    meta: `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%`,
+    tone: q.changePct >= 0 ? ("up" as const) : ("down" as const),
+    changePct: q.changePct,
+  }));
+  const newsMap = Object.fromEntries(
+    sorted.map((q) => [q.symbol, { name: q.label, query: `"${q.label}" oil company news` }]),
+  );
+  const onSelect = detail.onSelect((t) => {
+    const q = sorted.find((x) => x.label === t?.name);
+    if (!q) return null;
+    return {
+      name: q.label,
+      sub: `${q.symbol} · ${countryOf(q.symbol)}`,
+      logo: entityLogo(q.symbol),
+      stats: [
+        { label: "Share price", value: chartFmt(q.price, 2) },
+        {
+          label: "1-day change",
+          value: `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%`,
+          tone: detailTone(q.changePct),
+        },
+        { label: metric.label, value: `${chartFmt(metric.value(q), metric.decimals)} ${metric.unit}` },
+      ],
+      news: { name: q.label, query: `"${q.label}" oil company news` },
+    };
+  });
+
   return (
+    <>
+    {detail.sheet}
     <ChartPanel
       icon={Building2}
       title="Top global oil companies"
@@ -212,11 +258,8 @@ export function OilStocksPanel() {
       }))}
       onMetricChange={(v) => setMetricKey(v as StockMetric)}
       viewValue={view}
-      viewOptions={[
-        { value: "heat", label: "Heat map" },
-        { value: "scatter", label: "Scatter plot" },
-      ]}
-      onViewChange={(v) => setView(v as "heat" | "scatter")}
+      viewOptions={PANEL_VIEWS}
+      onViewChange={(v) => setView(v as PanelView)}
       actions={
         <button
           type="button"
@@ -292,8 +335,27 @@ export function OilStocksPanel() {
           formatX={(n) => chartFmt(n, axes.x.metric.decimals)}
           formatY={(n) => chartFmt(n, metric.decimals)}
           formatSize={(n) => chartFmt(n, 0)}
-          onSelect={openEntityNews}
+          onSelect={onSelect}
           indexLabel="NYSE / global energy majors index"
+        />
+      ) : view === "bars" ? (
+        <ChartBars
+          items={items}
+          unitLabel={metric.unit}
+          yLabel="Company"
+          metaHeader="1-day"
+          format={(n: number) => chartFmt(n, metric.decimals)}
+          news={newsMap}
+          onSelect={onSelect}
+        />
+      ) : view === "table" ? (
+        <ChartTable
+          items={items}
+          measureLabel={metric.label}
+          unitLabel={metric.unit}
+          format={(n: number) => chartFmt(n, metric.decimals)}
+          news={newsMap}
+          onSelect={onSelect}
         />
       ) : (
         <ChartHeat
@@ -302,22 +364,12 @@ export function OilStocksPanel() {
           measureHelp={metric.help}
           indexLabel="NYSE / global energy majors index"
           format={(n) => chartFmt(n, metric.decimals)}
-          items={sorted.map((q) => ({
-            key: q.symbol,
-            label: q.label,
-            sub: `${q.symbol.replace(/\.[A-Z]+$/, "")} · ${chartFmt(q.price, 2)}`,
-            value: metric.value(q),
-            logo: entityLogo(q.symbol),
-            meta: `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%`,
-            tone: q.changePct >= 0 ? ("up" as const) : ("down" as const),
-            changePct: q.changePct,
-          }))}
-          onSelect={openEntityNews}
-          news={Object.fromEntries(
-            sorted.map((q) => [q.symbol, { name: q.label, query: `"${q.label}" oil company news` }]),
-          )}
+          items={items}
+          onSelect={onSelect}
+          news={newsMap}
         />
       )}
     </ChartPanel>
+    </>
   );
 }

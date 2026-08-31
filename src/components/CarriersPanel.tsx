@@ -1,9 +1,19 @@
 import { useState } from "react";
 import { Ship, Truck, TrainFront } from "lucide-react";
-import { ChartHeat, ChartPanel, ChartScatter, chartFmt as fmt, type ScatterPoint } from "@/components/chart-kit";
+import {
+  ChartBars,
+  ChartHeat,
+  ChartPanel,
+  ChartScatter,
+  ChartTable,
+  PANEL_VIEWS,
+  chartFmt as fmt,
+  type PanelView,
+  type ScatterPoint,
+} from "@/components/chart-kit";
+import { detailTone, useEntityDetail } from "@/components/EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
-import { openEntityNews } from "@/lib/open-news";
 import { CARRIER_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
@@ -134,7 +144,8 @@ function CarrierChart({
   exportName: string;
 }) {
   const [metricKey, setMetricKey] = useState<Metric>("volume");
-  const [view, setView] = useState<"heat" | "scatter">("heat");
+  const [view, setView] = useState<PanelView>("heat");
+  const detail = useEntityDetail();
   const { get } = useEntityQuotes();
   const metric = METRICS[metricKey];
   const valueOf = (c: Carrier) =>
@@ -164,7 +175,46 @@ function CarrierChart({
     newsTarget: { name: c.name, query: `"${c.name}" ${newsSuffix}` },
   }));
 
+  const items = rows.map((c) => ({
+    key: c.name,
+    label: c.name,
+    sub: c.note,
+    value: valueOf(c),
+    logo: entityLogoByName(c.name),
+    meta: priceMeta(get(CARRIER_TICKERS[c.name])),
+    tone: priceTone(get(CARRIER_TICKERS[c.name])),
+    changePct: get(CARRIER_TICKERS[c.name])?.changePct,
+  }));
+  const newsMap = Object.fromEntries(
+    rows.map((c) => [c.name, { name: c.name, query: `"${c.name}" ${newsSuffix}` }]),
+  );
+  const onSelect = detail.onSelect((t) => {
+    const c = rows.find((x) => x.name === t?.name);
+    if (!c) return null;
+    const q = get(CARRIER_TICKERS[c.name]);
+    return {
+      name: c.name,
+      sub: `${c.flag} ${c.country}`,
+      logo: entityLogoByName(c.name),
+      note: c.note,
+      stats: [
+        { label: "Biofuel volume used", value: `${fmt(c.volumeMnL, 0)} Ml/yr` },
+        { label: "Biofuel share of fuel burn", value: `${fmt(c.share, 1)}%` },
+        { label: "Ticker", value: CARRIER_TICKERS[c.name] ?? "Not listed" },
+        { label: "Share price", value: q ? fmt(q.price, 2) : "—" },
+        {
+          label: "1-day change",
+          value: q ? `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%` : "—",
+          tone: detailTone(q?.changePct),
+        },
+      ],
+      news: { name: c.name, query: `"${c.name}" ${newsSuffix}` },
+    };
+  });
+
   return (
+    <>
+    {detail.sheet}
     <ChartPanel
       icon={Icon}
       title={title}
@@ -176,11 +226,8 @@ function CarrierChart({
       }))}
       onMetricChange={(v) => setMetricKey(v as Metric)}
       viewValue={view}
-      viewOptions={[
-        { value: "heat", label: "Heat map" },
-        { value: "scatter", label: "Scatter plot" },
-      ]}
-      onViewChange={(v) => setView(v as "heat" | "scatter")}
+      viewOptions={PANEL_VIEWS}
+      onViewChange={(v) => setView(v as PanelView)}
       actions={
         <ExportCsvButton
           disabled={ranked.length === 0}
@@ -271,8 +318,27 @@ function CarrierChart({
           formatX={(n) => fmt(n, axes.x.metric.decimals)}
           formatY={(n) => fmt(n, metric.decimals)}
           formatSize={(n) => fmt(n, 0)}
-          onSelect={openEntityNews}
+          onSelect={onSelect}
           indexLabel="Listed freight carriers index"
+        />
+      ) : view === "bars" ? (
+        <ChartBars
+          items={items}
+          unitLabel={metric.unit}
+          yLabel={yLabel}
+          metaHeader="Market"
+          format={(n: number) => fmt(n, metric.decimals)}
+          news={newsMap}
+          onSelect={onSelect}
+        />
+      ) : view === "table" ? (
+        <ChartTable
+          items={items}
+          measureLabel={metric.label}
+          unitLabel={metric.unit}
+          format={(n: number) => fmt(n, metric.decimals)}
+          news={newsMap}
+          onSelect={onSelect}
         />
       ) : (
         <ChartHeat
@@ -281,23 +347,13 @@ function CarrierChart({
           measureHelp={metric.help}
           indexLabel="Listed freight carriers index"
           format={(n: number) => fmt(n, metric.decimals)}
-          items={rows.map((c) => ({
-            key: c.name,
-            label: c.name,
-            sub: c.note,
-            value: valueOf(c),
-            logo: entityLogoByName(c.name),
-            meta: priceMeta(get(CARRIER_TICKERS[c.name])),
-            tone: priceTone(get(CARRIER_TICKERS[c.name])),
-            changePct: get(CARRIER_TICKERS[c.name])?.changePct,
-          }))}
-          onSelect={openEntityNews}
-          news={Object.fromEntries(
-            rows.map((c) => [c.name, { name: c.name, query: `"${c.name}" ${newsSuffix}` }]),
-          )}
+          items={items}
+          onSelect={onSelect}
+          news={newsMap}
         />
       )}
     </ChartPanel>
+    </>
   );
 }
 

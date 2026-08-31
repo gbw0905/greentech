@@ -2,11 +2,21 @@ import { useState } from "react";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 import { Fuel } from "lucide-react";
-import { ChartHeat, ChartPanel, ChartScatter, chartFmt as fmt, type ScatterPoint } from "@/components/chart-kit";
+import {
+  ChartBars,
+  ChartHeat,
+  ChartPanel,
+  ChartScatter,
+  ChartTable,
+  PANEL_VIEWS,
+  chartFmt as fmt,
+  type PanelView,
+  type ScatterPoint,
+} from "@/components/chart-kit";
+import { detailTone, useEntityDetail } from "@/components/EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
 import type { FuelType } from "@/lib/policy-taxonomy";
-import { openEntityNews } from "@/lib/open-news";
 import { STATION_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 
@@ -204,7 +214,8 @@ function scatterAxes(metricKey: StationMetric) {
 
 export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
   const [stationMetric, setStationMetric] = useState<StationMetric>("sites");
-  const [view, setView] = useState<"heat" | "scatter">("heat");
+  const [view, setView] = useState<PanelView>("heat");
+  const detail = useEntityDetail();
   const { get } = useEntityQuotes();
   const metric = STATION_METRICS[stationMetric];
   const valueOf = (s: Station) =>
@@ -238,7 +249,49 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
     newsTarget: { name: s.name, query: `"${s.name}" biofuel OR ethanol OR renewable diesel station` },
   }));
 
+  const items = stations.map((s) => ({
+    key: s.name,
+    label: s.name,
+    sub: s.note,
+    value: valueOf(s),
+    logo: entityLogoByName(s.name),
+    meta: priceMeta(get(STATION_TICKERS[s.name])),
+    tone: priceTone(get(STATION_TICKERS[s.name])),
+    changePct: get(STATION_TICKERS[s.name])?.changePct,
+  }));
+  const newsMap = Object.fromEntries(
+    stations.map((s) => [
+      s.name,
+      { name: s.name, query: `"${s.name}" biofuel OR ethanol OR renewable diesel station` },
+    ]),
+  );
+  const onSelect = detail.onSelect((t) => {
+    const s = stations.find((x) => x.name === t?.name);
+    if (!s) return null;
+    const q = get(STATION_TICKERS[s.name]);
+    return {
+      name: s.name,
+      sub: `${s.country} · ${s.fuels.join(" / ")}`,
+      logo: entityLogoByName(s.name),
+      note: s.note,
+      stats: [
+        { label: "Retail sites offering biofuels", value: fmt(s.sites, 0) },
+        { label: "Biofuel volume sold", value: `${fmt(s.volumeMnL, 0)} Ml/yr` },
+        { label: "Ticker", value: STATION_TICKERS[s.name] ?? "Not listed" },
+        { label: "Share price", value: q ? fmt(q.price, 2) : "—" },
+        {
+          label: "1-day change",
+          value: q ? `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%` : "—",
+          tone: detailTone(q?.changePct),
+        },
+      ],
+      news: { name: s.name, query: `"${s.name}" biofuel OR ethanol OR renewable diesel station` },
+    };
+  });
+
   return (
+    <>
+    {detail.sheet}
     <ChartPanel
       icon={Fuel}
       title="Top global fuel stations selling biofuels"
@@ -250,11 +303,8 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
       }))}
       onMetricChange={(v) => setStationMetric(v as StationMetric)}
       viewValue={view}
-      viewOptions={[
-        { value: "heat", label: "Heat map" },
-        { value: "scatter", label: "Scatter plot" },
-      ]}
-      onViewChange={(v) => setView(v as "heat" | "scatter")}
+      viewOptions={PANEL_VIEWS}
+      onViewChange={(v) => setView(v as PanelView)}
       actions={
         <ExportCsvButton
           disabled={ranked.length === 0}
@@ -354,8 +404,27 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
           formatX={(n) => fmt(n, axes.x.metric.decimals)}
           formatY={(n) => fmt(n, metric.decimals)}
           formatSize={(n) => fmt(n, 0)}
-          onSelect={openEntityNews}
+          onSelect={onSelect}
           indexLabel="Listed fuel retailers & producers index"
+        />
+      ) : view === "bars" ? (
+        <ChartBars
+          items={items}
+          unitLabel={metric.unit}
+          yLabel="Network"
+          metaHeader="Market"
+          format={(n: number) => fmt(n, metric.decimals)}
+          news={newsMap}
+          onSelect={onSelect}
+        />
+      ) : view === "table" ? (
+        <ChartTable
+          items={items}
+          measureLabel={metric.label}
+          unitLabel={metric.unit}
+          format={(n: number) => fmt(n, metric.decimals)}
+          news={newsMap}
+          onSelect={onSelect}
         />
       ) : (
         <ChartHeat
@@ -364,25 +433,12 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
           measureHelp={metric.help}
           indexLabel="Listed fuel retailers & producers index"
           format={(n: number) => fmt(n, metric.decimals)}
-          items={stations.map((s) => ({
-            key: s.name,
-            label: s.name,
-            sub: s.note,
-            value: valueOf(s),
-            logo: entityLogoByName(s.name),
-            meta: priceMeta(get(STATION_TICKERS[s.name])),
-            tone: priceTone(get(STATION_TICKERS[s.name])),
-            changePct: get(STATION_TICKERS[s.name])?.changePct,
-          }))}
-          onSelect={openEntityNews}
-          news={Object.fromEntries(
-            stations.map((s) => [
-              s.name,
-              { name: s.name, query: `"${s.name}" biofuel OR ethanol OR renewable diesel station` },
-            ])
-          )}
+          items={items}
+          onSelect={onSelect}
+          news={newsMap}
         />
       )}
     </ChartPanel>
+    </>
   );
 }

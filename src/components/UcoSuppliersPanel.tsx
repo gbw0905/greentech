@@ -1,9 +1,19 @@
 import { useState } from "react";
 import { Recycle } from "lucide-react";
-import { ChartHeat, ChartPanel, ChartScatter, chartFmt as fmt, type ScatterPoint } from "@/components/chart-kit";
+import {
+  ChartBars,
+  ChartHeat,
+  ChartPanel,
+  ChartScatter,
+  ChartTable,
+  PANEL_VIEWS,
+  chartFmt as fmt,
+  type PanelView,
+  type ScatterPoint,
+} from "@/components/chart-kit";
+import { detailTone, useEntityDetail } from "@/components/EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
-import { openEntityNews } from "@/lib/open-news";
 import { UCO_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
@@ -129,7 +139,8 @@ const NEWS_SUFFIX = "used cooking oil OR UCO feedstock biofuel";
 
 export function UcoSuppliersPanel() {
   const [metricKey, setMetricKey] = useState<Metric>("volume");
-  const [view, setView] = useState<"heat" | "scatter">("heat");
+  const [view, setView] = useState<PanelView>("heat");
+  const detail = useEntityDetail();
   const { get } = useEntityQuotes();
   const metric = METRICS[metricKey];
   const valueOf = (s: UcoSupplier) =>
@@ -158,7 +169,46 @@ export function UcoSuppliersPanel() {
     newsTarget: { name: s.name, query: `"${s.name}" ${NEWS_SUFFIX}` },
   }));
 
+  const items = rows.map((s) => ({
+    key: s.name,
+    label: s.name,
+    sub: s.note,
+    value: valueOf(s),
+    logo: entityLogoByName(s.name),
+    meta: priceMeta(get(UCO_TICKERS[s.name])),
+    tone: priceTone(get(UCO_TICKERS[s.name])),
+    changePct: get(UCO_TICKERS[s.name])?.changePct,
+  }));
+  const newsMap = Object.fromEntries(
+    rows.map((s) => [s.name, { name: s.name, query: `"${s.name}" ${NEWS_SUFFIX}` }]),
+  );
+  const onSelect = detail.onSelect((t) => {
+    const s = rows.find((r) => r.name === t?.name);
+    if (!s) return null;
+    const q = get(UCO_TICKERS[s.name]);
+    return {
+      name: s.name,
+      sub: `${s.flag} ${s.country}`,
+      logo: entityLogoByName(s.name),
+      note: s.note,
+      stats: [
+        { label: "UCO collected", value: `${fmt(s.volumeKt, 0)} kt/yr` },
+        { label: "Collection countries", value: fmt(s.countriesServed, 0) },
+        { label: "Ticker", value: UCO_TICKERS[s.name] ?? "Not listed" },
+        { label: "Share price", value: q ? fmt(q.price, 2) : "—" },
+        {
+          label: "1-day change",
+          value: q ? `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%` : "—",
+          tone: detailTone(q?.changePct),
+        },
+      ],
+      news: { name: s.name, query: `"${s.name}" ${NEWS_SUFFIX}` },
+    };
+  });
+
   return (
+    <>
+    {detail.sheet}
     <ChartPanel
       icon={Recycle}
       title={TITLE}
@@ -170,11 +220,8 @@ export function UcoSuppliersPanel() {
       }))}
       onMetricChange={(v) => setMetricKey(v as Metric)}
       viewValue={view}
-      viewOptions={[
-        { value: "heat", label: "Heat map" },
-        { value: "scatter", label: "Scatter plot" },
-      ]}
-      onViewChange={(v) => setView(v as "heat" | "scatter")}
+      viewOptions={PANEL_VIEWS}
+      onViewChange={(v) => setView(v as PanelView)}
       actions={
         <ExportCsvButton
           disabled={ranked.length === 0}
@@ -265,8 +312,27 @@ export function UcoSuppliersPanel() {
           formatX={(n) => fmt(n, axes.x.metric.decimals)}
           formatY={(n) => fmt(n, metric.decimals)}
           formatSize={(n) => fmt(n, 0)}
-          onSelect={openEntityNews}
+          onSelect={onSelect}
           indexLabel="Global UCO suppliers index"
+        />
+      ) : view === "bars" ? (
+        <ChartBars
+          items={items}
+          unitLabel={metric.unit}
+          yLabel="UCO supplier"
+          metaHeader="Market"
+          format={(n: number) => fmt(n, metric.decimals)}
+          news={newsMap}
+          onSelect={onSelect}
+        />
+      ) : view === "table" ? (
+        <ChartTable
+          items={items}
+          measureLabel={metric.label}
+          unitLabel={metric.unit}
+          format={(n: number) => fmt(n, metric.decimals)}
+          news={newsMap}
+          onSelect={onSelect}
         />
       ) : (
         <ChartHeat
@@ -275,22 +341,12 @@ export function UcoSuppliersPanel() {
           measureHelp={metric.help}
           indexLabel="Global UCO suppliers index"
           format={(n: number) => fmt(n, metric.decimals)}
-          items={rows.map((s) => ({
-            key: s.name,
-            label: s.name,
-            sub: s.note,
-            value: valueOf(s),
-            logo: entityLogoByName(s.name),
-            meta: priceMeta(get(UCO_TICKERS[s.name])),
-            tone: priceTone(get(UCO_TICKERS[s.name])),
-            changePct: get(UCO_TICKERS[s.name])?.changePct,
-          }))}
-          onSelect={openEntityNews}
-          news={Object.fromEntries(
-            rows.map((s) => [s.name, { name: s.name, query: `"${s.name}" ${NEWS_SUFFIX}` }]),
-          )}
+          items={items}
+          onSelect={onSelect}
+          news={newsMap}
         />
       )}
     </ChartPanel>
+    </>
   );
 }

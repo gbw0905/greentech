@@ -1,7 +1,17 @@
 import { useState } from "react";
 import { Plane } from "lucide-react";
-import { openEntityNews } from "@/lib/open-news";
-import { ChartHeat, ChartPanel, ChartScatter, chartFmt as fmt, type ScatterPoint } from "@/components/chart-kit";
+import {
+  ChartBars,
+  ChartHeat,
+  ChartPanel,
+  ChartScatter,
+  ChartTable,
+  PANEL_VIEWS,
+  chartFmt as fmt,
+  type PanelView,
+  type ScatterPoint,
+} from "@/components/chart-kit";
+import { detailTone, useEntityDetail } from "@/components/EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
 import { AIRLINE_TICKERS } from "@/lib/entity-tickers";
@@ -103,7 +113,8 @@ function scatterAxes(metricKey: AirlineMetric) {
 
 export function SafAirlinesPanel() {
   const [metricKey, setMetricKey] = useState<AirlineMetric>("volume");
-  const [view, setView] = useState<"heat" | "scatter">("heat");
+  const [view, setView] = useState<PanelView>("heat");
+  const detail = useEntityDetail();
   const { get } = useEntityQuotes();
   const metric = AIRLINE_METRICS[metricKey];
   const valueOf = (a: Airline) =>
@@ -133,7 +144,49 @@ export function SafAirlinesPanel() {
     newsTarget: { name: a.name, query: `${a.name} sustainable aviation fuel OR SAF` },
   }));
 
+  const items = sorted.map((a) => ({
+    key: a.code,
+    label: a.name,
+    sub: a.note,
+    value: valueOf(a),
+    logo: entityLogoByName(a.name),
+    meta: priceMeta(get(AIRLINE_TICKERS[a.code])),
+    tone: priceTone(get(AIRLINE_TICKERS[a.code])),
+    changePct: get(AIRLINE_TICKERS[a.code])?.changePct,
+  }));
+  const newsMap = Object.fromEntries(
+    sorted.map((a) => [
+      a.code,
+      { name: a.name, query: `${a.name} sustainable aviation fuel OR SAF` },
+    ]),
+  );
+  const onSelect = detail.onSelect((t) => {
+    const a = sorted.find((x) => x.name === t?.name);
+    if (!a) return null;
+    const q = get(AIRLINE_TICKERS[a.code]);
+    return {
+      name: a.name,
+      sub: `${a.flag} ${a.country} · ${a.code}`,
+      logo: entityLogoByName(a.name),
+      note: a.note,
+      stats: [
+        { label: "SAF uplift", value: `${fmt(a.volume, 0)} Ml/yr` },
+        { label: "SAF share of fuel burn", value: `${fmt(a.share, 2)}%` },
+        { label: "Ticker", value: AIRLINE_TICKERS[a.code] ?? "Not listed" },
+        { label: "Share price", value: q ? fmt(q.price, 2) : "—" },
+        {
+          label: "1-day change",
+          value: q ? `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%` : "—",
+          tone: detailTone(q?.changePct),
+        },
+      ],
+      news: { name: a.name, query: `${a.name} sustainable aviation fuel OR SAF` },
+    };
+  });
+
   return (
+    <>
+    {detail.sheet}
     <ChartPanel
       icon={Plane}
       title="Top airlines using SAF globally"
@@ -145,11 +198,8 @@ export function SafAirlinesPanel() {
       }))}
       onMetricChange={(v) => setMetricKey(v as AirlineMetric)}
       viewValue={view}
-      viewOptions={[
-        { value: "heat", label: "Heat map" },
-        { value: "scatter", label: "Scatter plot" },
-      ]}
-      onViewChange={(v) => setView(v as "heat" | "scatter")}
+      viewOptions={PANEL_VIEWS}
+      onViewChange={(v) => setView(v as PanelView)}
       actions={
         <ExportCsvButton
           disabled={ranked.length === 0}
@@ -246,8 +296,27 @@ export function SafAirlinesPanel() {
           formatX={(n) => fmt(n, axes.x.metric.decimals)}
           formatY={(n) => fmt(n, metric.decimals)}
           formatSize={(n) => fmt(n, 0)}
-          onSelect={openEntityNews}
+          onSelect={onSelect}
           indexLabel="Global listed airlines index"
+        />
+      ) : view === "bars" ? (
+        <ChartBars
+          items={items}
+          unitLabel={metric.unit}
+          yLabel="Airline"
+          metaHeader="Market"
+          format={(n: number) => fmt(n, metric.decimals)}
+          news={newsMap}
+          onSelect={onSelect}
+        />
+      ) : view === "table" ? (
+        <ChartTable
+          items={items}
+          measureLabel={metric.label}
+          unitLabel={metric.unit}
+          format={(n: number) => fmt(n, metric.decimals)}
+          news={newsMap}
+          onSelect={onSelect}
         />
       ) : (
         <ChartHeat
@@ -256,25 +325,12 @@ export function SafAirlinesPanel() {
           measureHelp={metric.help}
           indexLabel="Global listed airlines index"
           format={(n: number) => fmt(n, metric.decimals)}
-          items={sorted.map((a) => ({
-            key: a.code,
-            label: a.name,
-            sub: a.note,
-            value: valueOf(a),
-            logo: entityLogoByName(a.name),
-            meta: priceMeta(get(AIRLINE_TICKERS[a.code])),
-            tone: priceTone(get(AIRLINE_TICKERS[a.code])),
-            changePct: get(AIRLINE_TICKERS[a.code])?.changePct,
-          }))}
-          onSelect={openEntityNews}
-          news={Object.fromEntries(
-            sorted.map((a) => [
-              a.code,
-              { name: a.name, query: `${a.name} sustainable aviation fuel OR SAF` },
-            ]),
-          )}
+          items={items}
+          onSelect={onSelect}
+          news={newsMap}
         />
       )}
     </ChartPanel>
+    </>
   );
 }
