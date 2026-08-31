@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Layers, X } from "lucide-react";
-import { feedQuery } from "@/lib/feed-query";
+import { feedQueryWithInitial, loadFeed } from "@/lib/feed-query";
 import { COUNTRIES, FUEL_TYPES, FUEL_ACCENT, flagFor, type FuelType } from "@/lib/policy-taxonomy";
 import { UpdateCard } from "@/components/UpdateCard";
 import { PageShell, PageHeading } from "@/components/PageShell";
@@ -23,12 +23,14 @@ export const Route = createFileRoute("/timeline")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
+  loader: () => loadFeed(),
   component: TimelinePage,
 });
 
 function TimelinePage() {
   useVisitTracker();
-  const { data: feed, isFetching } = useQuery(feedQuery);
+  const { feed: initialFeed } = Route.useLoaderData();
+  const { data: feed, isFetching } = useQuery(feedQueryWithInitial(initialFeed));
   const updates = feed?.updates ?? [];
   const [fuels, setFuels] = useState<FuelType[]>([]);
   const [country, setCountry] = useState<string | null>(null);

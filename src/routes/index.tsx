@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { RefreshCw, AlertTriangle, Map, Factory, TrendingUp, BellRing, Briefcase, Linkedin } from "lucide-react";
-import { getPolicyFeed, refreshPolicyFeed } from "@/lib/policy.functions";
+import { refreshPolicyFeed } from "@/lib/policy.functions";
+import { feedQueryWithInitial, loadFeed } from "@/lib/feed-query";
 import siteLogo from "@/assets/logo.png";
 import { UpdateCard, formatDate } from "@/components/UpdateCard";
 import { WorldPolicyMap } from "@/components/WorldPolicyMap";
@@ -16,14 +17,6 @@ import { TrafficPanel } from "@/components/TrafficPanel";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
 import { AboutMenu } from "@/components/AboutMenu";
 
-const feedQuery = queryOptions({
-  queryKey: ["policy-feed"],
-  queryFn: () => getPolicyFeed(),
-  staleTime: 5 * 60 * 1000,
-  // Keeps the desk current without a page reload.
-  refetchInterval: 5 * 60 * 1000,
-  refetchOnWindowFocus: true,
-});
 
 const TITLE = "Global Bioenergy Watch | Worldwide Biofuel Policy Tracker";
 
@@ -40,6 +33,7 @@ const DESCRIPTION =
   "Live tracker of global bioenergy and biofuel policy: ethanol, biodiesel, renewable diesel and SAF mandates by region, country and fuel type.";
 
 export const Route = createFileRoute("/")({
+  loader: () => loadFeed(),
   head: () => ({
     meta: [
       { title: TITLE },
@@ -102,7 +96,8 @@ function SectionHeading({
 function Dashboard() {
   useVisitTracker();
   const queryClient = useQueryClient();
-  const { data: feed, isFetching } = useQuery(feedQuery);
+  const { feed: initialFeed } = Route.useLoaderData();
+  const { data: feed, isFetching } = useQuery(feedQueryWithInitial(initialFeed));
   const rescan = useMutation({
     mutationFn: () => refreshPolicyFeed(),
     onSuccess: (fresh) => {
