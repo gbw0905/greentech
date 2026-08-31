@@ -187,6 +187,7 @@ function Dashboard() {
               {s.label}
             </a>
           ))}
+          <AboutMenu />
         </nav>
       </header>
 
