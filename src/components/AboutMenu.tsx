@@ -23,7 +23,10 @@ export function AboutMenu() {
 
   const updatePos = () => {
     const rect = btnRef.current?.getBoundingClientRect();
-    if (rect) setPos({ top: rect.bottom + 4, left: rect.left, width: rect.width });
+    if (!rect) return;
+    const width = 208; // w-52
+    const left = Math.max(8, Math.min(rect.left, window.innerWidth - width - 8));
+    setPos({ top: rect.bottom + 4, left, width });
   };
 
   useEffect(() => {
