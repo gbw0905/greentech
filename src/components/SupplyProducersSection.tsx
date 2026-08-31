@@ -77,6 +77,7 @@ const CARDS: {
 function PanelBody({ id }: { id: PanelId }) {
   if (id === "stations") return <BiofuelProductionPanel fuels={[]} />;
   if (id === "uco") return <UcoSuppliersPanel />;
+  if (id === "marine") return <MarineBiofuelPanel />;
   if (id === "oil") return <OilStocksPanel />;
   if (id === "saf") return <SafAirlinesPanel />;
   return <CarriersPanel />;
