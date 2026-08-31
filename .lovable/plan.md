@@ -1,31 +1,36 @@
-# Copy-ready LinkedIn DM template (daily)
+# Add Global UCO (Used Cooking Oil) Suppliers Panel
 
-Bulk-messaging your LinkedIn connections through an API is not possible — LinkedIn exposes no endpoint to list connections or send member-to-member messages, and automated DM tools breach the User Agreement. Instead, the site will generate a short, personalised message with the site link each day that you paste manually to whoever you choose.
+## What you'll see
 
-## What you get
+A new **"Global UCO suppliers"** panel inside the existing *Biofuel supply at the pump and top users* section (`#production`), stacked with the fuel stations, oil companies, SAF airlines and carriers panels. It shows the world's major used cooking oil collectors, aggregators and traders — the feedstock layer that supplies biodiesel, renewable diesel (HVO) and SAF producers.
 
-- A **"Message templates"** card on the existing LinkedIn settings page showing today's DM text.
-- Each template is ~350–500 characters: greeting placeholder, one line on the day's biggest bioenergy development, one value line about the tracker, and the link `https://globalbioenergywatch.org`.
-- Three tone variants generated per day: **Warm intro** (new contacts), **Industry peer** (analysts/policy folks), **Short nudge** (one-liner).
-- A **name field**: type a contact's first name and every variant updates (`Hi Sarah,` …) so the copied text is already personalised.
-- **Copy** button per variant, plus a **Regenerate** button if you want a different angle.
-- Same daily email you already receive for the LinkedIn draft gains a "DM templates" section, so you can copy from your phone too.
+The panel behaves exactly like the other entity charts on the site:
 
-## How it works
+- **Heat map view** (default): tiles sized and colored by annual UCO collection/supply volume (thousand tonnes per year), RGB color scale, entity logos where available.
+- **Scatter plot view**: volume vs. number of collection countries/sites with regression trend line.
+- **Single-line toolbar**: view switch, measure dropdown, country filter, search, Export CSV, Email summary (ChartSummaryAssistant) — same as other panels.
+- **Expand-when-filtered**: global top 10 by default; up to 20 matching suppliers when a country or search filter is active.
+- **Live quotes**: listed suppliers (e.g. Darling Ingredients, Darling's DAR) show live share price and trend color via the existing entity-quote feed.
+- **News links**: clicking a supplier opens its latest biofuel/UCO-related news via the existing entity-news helper.
+- **Flags and country labels** on every tile, consistent with the other charts.
 
-- Reuses the existing top-5 updates query from the daily draft pipeline (no new data source).
-- One AI call composes all three variants from those verified headlines; no invented facts.
-- Templates are cached once per UTC day so opening the page repeatedly is free; **Regenerate** forces a fresh call.
+## Dataset
+
+Curated list of ~30 major UCO suppliers/collectors worldwide with: name, country, flag, annual UCO volume (kt), collection footprint (sites or countries served), certification notes (ISCC, RED II Annex IX status), and region. Coverage spans:
+
+- **North America**: Darling Ingredients, Mahoney Environmental, Baker Commodities, Restaurant Technologies, Greasezilla / others
+- **Europe**: Olleco (UK), MBP Solutions, Brocklesby, Argent Energy feedstock arm, Saria/EEW, Quatra, Biokraft/ScanOcean, MVGM
+- **Asia-Pacific**: China UCO exporters (major aggregators), Japanese collectors, Southeast Asia (Indonesia/Malaysia POME-adjacent UCO traders), Australia
+- **Latin America / other**: Brazil and Argentina collectors where material
+
+Figures are clearly labeled approximate with data-source references listed in the methodology/data-source registry, same pattern as existing panels.
 
 ## Technical details
 
-- New server module `src/lib/linkedin-dm.server.ts`: exports `getOrCreateDailyTemplates(force?)` — pulls the day's items via the existing `topItems()` logic, prompts the Lovable AI gateway, returns `{ dayKey, variants: [{ id, label, text }], items }`.
-- New table `linkedin_dm_templates`: `id`, `day_key` (unique), `variants` (jsonb), `items` (jsonb), `created_at`. RLS enabled, `GRANT ALL … TO service_role` only; no `anon`/`authenticated` access — read exclusively through server functions.
-- New `src/lib/linkedin-dm.functions.ts`: `getDmTemplatesFn` and `regenerateDmTemplatesFn`, both gated by the same admin-key check already used by `generateFlyerNowFn` on the settings page.
-- `src/routes/settings.linkedin.tsx`: new card rendering the name input, variant cards, copy-to-clipboard buttons (`navigator.clipboard`), and a regenerate action with toast feedback.
-- `src/lib/email-templates/linkedin-draft.tsx`: appended "DM templates" section; `createAndEmailDraft` in `src/lib/linkedin-draft.server.ts` passes the variants into `templateData`.
-- Personalisation is client-side: the stored text uses a `{{name}}` placeholder, replaced on render and on copy (falls back to `Hi there,` when blank).
+1. **New file `src/components/UcoSuppliersPanel.tsx`** — mirrors the structure of `CarriersPanel.tsx`: typed `UcoSupplier` dataset, `ChartPanel` wrapper, `ChartHeat`/`ChartScatter`, `ChartFilterBar` with country options derived from the dataset, `useEntityQuotes` for live prices, `openEntityNews` for hyperlinks, `ExportCsvButton`, `ChartSummaryAssistant`.
+2. **`src/lib/entity-tickers.ts`** — add `UCO_TICKERS` map (e.g. `Darling Ingredients: "DAR"`, `Bunge: "BG"`, private/unlisted collectors as `null`) and merge into `ALL_ENTITY_TICKERS`.
+3. **`src/lib/data-sources.ts`** — add the UCO dataset references (company reports, ISCC certificates database, trade press) so the Email summary assistant cites sources.
+4. **`src/routes/index.tsx`** — render `<UcoSuppliersPanel />` in the `#production` section stack below `<BiofuelProductionPanel />` (or alongside the other entity panels).
+5. **Fonts, colors, sizing** come from `chart-kit.tsx` so the new panel matches all existing graphs automatically.
 
-## Not included
-
-No automated sending, no connection scraping, no browser automation — copying and sending stays a manual action by you.
+No database or backend changes; data is a curated static dataset like the other entity panels.
