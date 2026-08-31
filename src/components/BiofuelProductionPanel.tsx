@@ -2,11 +2,21 @@ import { useState } from "react";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 import { Fuel } from "lucide-react";
-import { ChartHeat, ChartPanel, ChartScatter, chartFmt as fmt, type ScatterPoint } from "@/components/chart-kit";
+import {
+  ChartBars,
+  ChartHeat,
+  ChartPanel,
+  ChartScatter,
+  ChartTable,
+  PANEL_VIEWS,
+  chartFmt as fmt,
+  type PanelView,
+  type ScatterPoint,
+} from "@/components/chart-kit";
+import { detailTone, useEntityDetail } from "@/components/EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
 import type { FuelType } from "@/lib/policy-taxonomy";
-import { openEntityNews } from "@/lib/open-news";
 import { STATION_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 
@@ -204,7 +214,8 @@ function scatterAxes(metricKey: StationMetric) {
 
 export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
   const [stationMetric, setStationMetric] = useState<StationMetric>("sites");
-  const [view, setView] = useState<"heat" | "scatter">("heat");
+  const [view, setView] = useState<PanelView>("heat");
+  const detail = useEntityDetail();
   const { get } = useEntityQuotes();
   const metric = STATION_METRICS[stationMetric];
   const valueOf = (s: Station) =>
@@ -292,11 +303,8 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
       }))}
       onMetricChange={(v) => setStationMetric(v as StationMetric)}
       viewValue={view}
-      viewOptions={[
-        { value: "heat", label: "Heat map" },
-        { value: "scatter", label: "Scatter plot" },
-      ]}
-      onViewChange={(v) => setView(v as "heat" | "scatter")}
+      viewOptions={PANEL_VIEWS}
+      onViewChange={(v) => setView(v as PanelView)}
       actions={
         <ExportCsvButton
           disabled={ranked.length === 0}
