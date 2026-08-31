@@ -37,6 +37,15 @@ const CARDS: {
     tone: "var(--chart-3)",
   },
   {
+    id: "marine",
+    icon: Ship,
+    title: "Marine biofuels",
+    blurb: "Bunker suppliers of B24/B30 blends and the shipping lines burning them.",
+    stat: "50",
+    statLabel: "suppliers & users",
+    tone: "var(--chart-5)",
+  },
+  {
     id: "oil",
     icon: Building2,
     title: "Oil companies",
