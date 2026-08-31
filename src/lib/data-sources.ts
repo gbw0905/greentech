@@ -21,7 +21,13 @@ const BY_PANEL: Record<string, string[]> = {
     "Retail biofuel volumes and site counts: fuel retailer annual reports and national renewable-fuel obligation registers.",
     "Cross-checks: US EPA RFS/EMTS data, EU member-state RED III reporting.",
   ],
+  "Global UCO (used cooking oil) suppliers": [
+    "UCO collection volumes and footprints: collector and renderer annual reports, investor presentations and public feedstock disclosures.",
+    "Certification and eligibility: ISCC EU/PLUS certificate database, EU RED III Annex IX Part B listings, UK RTFO feedstock reporting.",
+    "Cross-checks: US EPA RFS/EMTS feedstock data, USDA/GAIN UCO trade reports, China customs UCO export statistics.",
+  ],
 };
+
 
 const CARRIER = [
   "Biofuel volumes and blend shares for carriers: operator sustainability reports, fleet decarbonisation disclosures and public bunker/fuel purchase announcements.",

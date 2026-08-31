@@ -12,6 +12,8 @@ import { OilStocksPanel } from "@/components/OilStocksPanel";
 import { BiofuelProductionPanel } from "@/components/BiofuelProductionPanel";
 import { SafAirlinesPanel } from "@/components/SafAirlinesPanel";
 import { CarriersPanel } from "@/components/CarriersPanel";
+import { UcoSuppliersPanel } from "@/components/UcoSuppliersPanel";
+
 import { AlertSignup } from "@/components/AlertSignup";
 import { JobsPanel } from "@/components/JobsPanel";
 import { TrafficPanel } from "@/components/TrafficPanel";
@@ -301,10 +303,12 @@ function Dashboard() {
             />
             <BiofuelProductionPanel fuels={[]} />
             <div className="mt-4 space-y-4">
+              <UcoSuppliersPanel />
               <OilStocksPanel />
               <SafAirlinesPanel />
               <CarriersPanel />
             </div>
+
           </section>
 
           <section id="jobs" className="pt-4">
