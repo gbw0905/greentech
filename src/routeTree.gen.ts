@@ -20,6 +20,7 @@ import { Route as TimelineRouteImport } from './routes/timeline'
 import { Route as VideosRouteImport } from './routes/videos'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as AboutIndexRouteImport } from './routes/about.index'
 import { Route as AboutMissionVisionRouteImport } from './routes/about.mission-vision'
 import { Route as AboutTeamRouteImport } from './routes/about.team'
 import { Route as AlertsConfirmRouteImport } from './routes/alerts.confirm'
@@ -96,6 +97,11 @@ const Char91DotwellKnownChar93OauthProtectedResourceRoute =
     path: '/.well-known/oauth-protected-resource',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AboutIndexRoute = AboutIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AboutRoute,
+} as any)
 const AboutMissionVisionRoute = AboutMissionVisionRouteImport.update({
   id: '/mission-vision',
   path: '/mission-vision',
@@ -214,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/countries/$slug': typeof CountriesSlugRoute
   '/settings/linkedin': typeof SettingsLinkedinRoute
+  '/about/': typeof AboutIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/daily-flyer-email': typeof ApiPublicDailyFlyerEmailRoute
@@ -230,7 +237,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutRouteWithChildren
   '/contact': typeof ContactRoute
   '/jobs': typeof JobsRoute
   '/mcp': typeof McpRoute
@@ -245,6 +251,7 @@ export interface FileRoutesByTo {
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/countries/$slug': typeof CountriesSlugRoute
   '/settings/linkedin': typeof SettingsLinkedinRoute
+  '/about': typeof AboutIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/daily-flyer-email': typeof ApiPublicDailyFlyerEmailRoute
@@ -277,6 +284,7 @@ export interface FileRoutesById {
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/countries/$slug': typeof CountriesSlugRoute
   '/settings/linkedin': typeof SettingsLinkedinRoute
+  '/about/': typeof AboutIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/daily-flyer-email': typeof ApiPublicDailyFlyerEmailRoute
@@ -310,6 +318,7 @@ export interface FileRouteTypes {
     | '/alerts/confirm'
     | '/countries/$slug'
     | '/settings/linkedin'
+    | '/about/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/daily-flyer-email'
@@ -326,7 +335,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/about'
     | '/contact'
     | '/jobs'
     | '/mcp'
@@ -341,6 +349,7 @@ export interface FileRouteTypes {
     | '/alerts/confirm'
     | '/countries/$slug'
     | '/settings/linkedin'
+    | '/about'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/daily-flyer-email'
@@ -372,6 +381,7 @@ export interface FileRouteTypes {
     | '/alerts/confirm'
     | '/countries/$slug'
     | '/settings/linkedin'
+    | '/about/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/daily-flyer-email'
@@ -495,6 +505,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/.well-known/oauth-protected-resource'
       preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/about/': {
+      id: '/about/'
+      path: '/'
+      fullPath: '/about/'
+      preLoaderRoute: typeof AboutIndexRouteImport
+      parentRoute: typeof AboutRoute
     }
     '/about/mission-vision': {
       id: '/about/mission-vision'
@@ -628,11 +645,13 @@ declare module '@tanstack/react-router' {
 interface AboutRouteChildren {
   AboutMissionVisionRoute: typeof AboutMissionVisionRoute
   AboutTeamRoute: typeof AboutTeamRoute
+  AboutIndexRoute: typeof AboutIndexRoute
 }
 
 const AboutRouteChildren: AboutRouteChildren = {
   AboutMissionVisionRoute: AboutMissionVisionRoute,
   AboutTeamRoute: AboutTeamRoute,
+  AboutIndexRoute: AboutIndexRoute,
 }
 
 const AboutRouteWithChildren = AboutRoute._addFileChildren(AboutRouteChildren)
