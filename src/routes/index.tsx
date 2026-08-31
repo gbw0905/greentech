@@ -299,16 +299,9 @@ function Dashboard() {
               kicker="Supply & producers"
               icon={Factory}
               title="Biofuel supply at the pump and top users"
-              subtitle="Retail networks selling biofuels worldwide and the largest users of each fuel."
+              subtitle="Pick a dataset to open its full workspace — heat map, scatter plot, ranked bars or data table, with per-entity detail."
             />
-            <BiofuelProductionPanel fuels={[]} />
-            <div className="mt-4 space-y-4">
-              <UcoSuppliersPanel />
-              <OilStocksPanel />
-              <SafAirlinesPanel />
-              <CarriersPanel />
-            </div>
-
+            <SupplyProducersSection />
           </section>
 
           <section id="jobs" className="pt-4">
