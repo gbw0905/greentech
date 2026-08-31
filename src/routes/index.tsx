@@ -8,11 +8,7 @@ import { UpdateCard, formatDate } from "@/components/UpdateCard";
 import { WorldPolicyMap } from "@/components/WorldPolicyMap";
 
 import { OilPricePanel } from "@/components/OilPricePanel";
-import { OilStocksPanel } from "@/components/OilStocksPanel";
-import { BiofuelProductionPanel } from "@/components/BiofuelProductionPanel";
-import { SafAirlinesPanel } from "@/components/SafAirlinesPanel";
-import { CarriersPanel } from "@/components/CarriersPanel";
-import { UcoSuppliersPanel } from "@/components/UcoSuppliersPanel";
+import { SupplyProducersSection } from "@/components/SupplyProducersSection";
 
 import { AlertSignup } from "@/components/AlertSignup";
 import { JobsPanel } from "@/components/JobsPanel";
