@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Fuel, Recycle, Building2, Plane, Truck, Ship, Container, Wheat, ChevronRight } from "lucide-react";
+import { Fuel, Recycle, Building2, Plane, Truck, Ship, Container, Wheat, Zap, ChevronRight } from "lucide-react";
 import { BiofuelProductionPanel } from "@/components/BiofuelProductionPanel";
 import { UcoSuppliersPanel } from "@/components/UcoSuppliersPanel";
 import { MarineBiofuelPanel } from "@/components/MarineBiofuelPanel";
@@ -8,8 +8,9 @@ import { SafAirlinesPanel } from "@/components/SafAirlinesPanel";
 import { CarriersPanel } from "@/components/CarriersPanel";
 import { BlendingTerminalsPanel } from "@/components/BlendingTerminalsPanel";
 import { EthanolProductionPanel } from "@/components/EthanolProductionPanel";
+import { BioPowerGeneratorsPanel } from "@/components/BioPowerGeneratorsPanel";
 
-type PanelId = "stations" | "uco" | "ethanol" | "terminals" | "marine" | "oil" | "saf" | "carriers";
+type PanelId = "stations" | "uco" | "ethanol" | "terminals" | "marine" | "oil" | "saf" | "carriers" | "biopower";
 
 const CARDS: {
   id: PanelId;
@@ -46,6 +47,15 @@ const CARDS: {
     stat: "45+",
     statLabel: "producers tracked",
     tone: "var(--chart-1)",
+  },
+  {
+    id: "biopower",
+    icon: Zap,
+    title: "Biofuel power generators",
+    blurb: "Electricity generators burning biomass, bagasse, biogas and waste-derived fuels.",
+    stat: "40+",
+    statLabel: "generators tracked",
+    tone: "var(--chart-9)",
   },
   {
     id: "terminals",
@@ -98,6 +108,7 @@ function PanelBody({ id }: { id: PanelId }) {
   if (id === "stations") return <BiofuelProductionPanel fuels={[]} />;
   if (id === "uco") return <UcoSuppliersPanel />;
   if (id === "ethanol") return <EthanolProductionPanel />;
+  if (id === "biopower") return <BioPowerGeneratorsPanel />;
   if (id === "terminals") return <BlendingTerminalsPanel />;
   if (id === "marine") return <MarineBiofuelPanel />;
   if (id === "oil") return <OilStocksPanel />;
