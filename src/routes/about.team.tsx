@@ -55,6 +55,29 @@ function TeamPage() {
           </a>
         </article>
 
+        <article className="rounded-lg border border-border bg-white p-6 shadow-sm">
+          <div className="flex size-14 items-center justify-center rounded-full bg-foreground font-display text-lg font-extrabold text-background">
+            CVO
+          </div>
+          <h2 className="mt-4 font-display text-lg font-extrabold tracking-tight text-foreground">
+            Chukwuemeka Valentine Okolo
+          </h2>
+          <p className="kicker mt-1 text-muted-foreground">Contributor</p>
+          <p className="mt-3 text-sm/relaxed text-muted-foreground">
+            Supports policy scanning and market research across global bioenergy jurisdictions,
+            helping verify sources and keep the tracker current.
+          </p>
+          <a
+            href="https://www.linkedin.com/in/chukwuemeka-valentine-okolo-9332a2a7/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-[#0A66C2]/10 px-2.5 py-1.5 text-sm font-bold text-[#0A66C2] transition-colors hover:bg-[#0A66C2]/15"
+          >
+            <Linkedin className="size-4 fill-current" />
+            LinkedIn profile
+          </a>
+        </article>
+
         <article className="flex flex-col justify-center rounded-lg border border-dashed border-border bg-muted/30 p-6">
           <h2 className="font-display text-lg font-extrabold tracking-tight text-foreground">
             More members coming soon
