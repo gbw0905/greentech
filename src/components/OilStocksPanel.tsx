@@ -14,7 +14,7 @@ import {
   type PanelView,
   type ScatterPoint,
 } from "@/components/chart-kit";
-import { detailTone, useEntityDetail } from "@/components/EntityDetailSheet";
+import { detailTone, useEntityDetail, type GraphContext } from "@/components/EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { downloadBrandedCsv, type BrandedExport } from "@/lib/branded-export";
 import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
@@ -224,6 +224,19 @@ export function OilStocksPanel() {
   const newsMap = Object.fromEntries(
     sorted.map((q) => [q.symbol, { name: q.label, query: `"${q.label}" oil company news` }]),
   );
+  const filters: [string, string][] = [
+    ["Country", f.a || "All countries"],
+    ["Type", f.b || "All types"],
+  ];
+  if (f.query.trim()) filters.push(["Search", `"${f.query.trim()}"`]);
+  const graph: GraphContext = {
+    measure: metric.label,
+    unit: metric.unit,
+    view: PANEL_VIEWS.find((v) => v.value === view)?.label ?? view,
+    filters,
+    items: sorted.map((q) => ({ name: q.label, value: metric.value(q) })),
+    format: (n: number) => chartFmt(n, metric.decimals),
+  };
   const onSelect = detail.onSelect((t) => {
     const q = sorted.find((x) => x.label === t?.name);
     if (!q) return null;
@@ -242,7 +255,7 @@ export function OilStocksPanel() {
       ],
       news: { name: q.label, query: `"${q.label}" oil company news` },
     };
-  });
+  }, graph);
 
   return (
     <>
