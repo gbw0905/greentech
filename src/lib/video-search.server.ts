@@ -132,3 +132,20 @@ export async function fetchLiveMedia(keywords: string[], perKeyword = 6) {
     return { videos: [], articles: [], cachedAt: Date.now(), stale: true };
   }
 }
+
+/** Latest headlines for a single entity (company, airline, terminal…). */
+export async function fetchEntityNews(query: string, limit = 8) {
+  const key = `entity-news:${query}:${limit}`;
+  const cached = cacheGet<{ articles: LiveArticle[] }>(key);
+  if (cached && Date.now() - cached.at < 20 * 60_000) {
+    return { articles: cached.value.articles, cachedAt: cached.at, stale: false };
+  }
+  try {
+    const articles = await searchWeb(query, limit);
+    if (articles.length) cacheSet(key, { articles });
+    return { articles, cachedAt: Date.now(), stale: false };
+  } catch {
+    if (cached) return { articles: cached.value.articles, cachedAt: cached.at, stale: true };
+    return { articles: [] as LiveArticle[], cachedAt: Date.now(), stale: true };
+  }
+}
