@@ -367,31 +367,17 @@ function Dashboard() {
           </section>
 
           <footer className="space-y-3 border-t border-border pt-6 pb-10">
-            <p className="text-xs text-muted-foreground">
-              Updates are aggregated from live web sources and auto-classified by jurisdiction and
-              fuel type. Verify against primary legislation before use in compliance decisions.
-            </p>
-            <p className="flex flex-wrap items-center gap-2 text-sm font-bold text-foreground">
-              <span>© 2026 All rights reserved — Global Bioenergy Watch —</span>
+            <p className="text-sm font-semibold text-foreground">
               <a
-                href="https://www.linkedin.com/in/asifulalam0905024/"
+                href="https://www.linkedin.com/company/global-bioenergy-watch/?viewAsMember=true"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-md bg-[#0A66C2]/10 px-2 py-1 text-[#0A66C2] transition-colors hover:bg-[#0A66C2]/15"
+                className="inline-flex items-center gap-1.5 underline underline-offset-4 hover:text-primary"
               >
                 <Linkedin className="size-4 fill-current" />
-                <span>Syed Asiful Alam, PhD</span>
+                Contact us
               </a>
             </p>
-            <p className="text-sm">
-              <Link
-                to="/contact"
-                className="font-semibold text-foreground underline underline-offset-4 hover:text-primary"
-              >
-                Contact us
-              </Link>
-            </p>
-
           </footer>
         </main>
       </div>
