@@ -38,14 +38,14 @@ type Producer = {
  */
 const PRODUCERS: Producer[] = [
   // ---------- United States (corn belt) ----------
-  { name: "POET", country: "United States", flag: "🇺🇸", capacityMl: 12100, plants: 34, feedstock: "Corn", note: "World's largest corn ethanol producer, biorefineries across the Midwest" },
-  { name: "Valero Renewable Fuels", country: "United States", flag: "🇺🇸", capacityMl: 6800, plants: 12, feedstock: "Corn", note: "Refiner-owned ethanol fleet with carbon-capture pipeline plans" },
-  { name: "Archer Daniels Midland", country: "United States", flag: "🇺🇸", capacityMl: 6200, plants: 8, feedstock: "Corn", note: "Dry and wet mill ethanol with Decatur CCS integration" },
-  { name: "Green Plains", country: "United States", flag: "🇺🇸", capacityMl: 4200, plants: 10, feedstock: "Corn", note: "Low-carbon ethanol and high-protein co-products" },
+  { name: "POET", country: "United States", flag: "🇺🇸", capacityMl: 11350, plants: 34, feedstock: "Corn", note: "World's largest corn ethanol producer, biorefineries across the Midwest" },
+  { name: "Valero Renewable Fuels", country: "United States", flag: "🇺🇸", capacityMl: 6050, plants: 12, feedstock: "Corn", note: "Refiner-owned ethanol fleet with carbon-capture pipeline plans" },
+  { name: "Archer Daniels Midland", country: "United States", flag: "🇺🇸", capacityMl: 6050, plants: 8, feedstock: "Corn", note: "Dry and wet mill ethanol with Decatur CCS integration" },
+  { name: "Green Plains", country: "United States", flag: "🇺🇸", capacityMl: 3785, plants: 10, feedstock: "Corn", note: "Low-carbon ethanol and high-protein co-products" },
   { name: "Flint Hills Resources", country: "United States", flag: "🇺🇸", capacityMl: 3400, plants: 7, feedstock: "Corn", note: "Koch-owned ethanol platform in Iowa and Nebraska" },
   { name: "Marquis Energy", country: "United States", flag: "🇺🇸", capacityMl: 1900, plants: 2, feedstock: "Corn", note: "Illinois mega-plant with carbon sequestration project" },
   { name: "Southwest Iowa Renewable Energy", country: "United States", flag: "🇺🇸", capacityMl: 550, plants: 1, feedstock: "Corn", note: "Council Bluffs plant serving western corn belt" },
-  { name: "Pacific Ethanol / Alto", country: "United States", flag: "🇺🇸", capacityMl: 1500, plants: 5, feedstock: "Corn", note: "West-coast specialty alcohol and fuel ethanol" },
+  { name: "Pacific Ethanol / Alto", country: "United States", flag: "🇺🇸", capacityMl: 1325, plants: 5, feedstock: "Corn", note: "West-coast specialty alcohol and fuel ethanol" },
   { name: "LanzaJet / LanzaTech", country: "United States", flag: "🇺🇸", capacityMl: 400, plants: 3, feedstock: "Waste gas", note: "Gas-fermentation ethanol and alcohol-to-jet SAF" },
 
   // ---------- Brazil (sugarcane) ----------
