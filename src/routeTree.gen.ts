@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as DataSourcesRouteImport } from './routes/data-sources'
 import { Route as JobsRouteImport } from './routes/jobs'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as ProfilesRouteImport } from './routes/profiles'
@@ -53,6 +54,11 @@ const AboutRoute = AboutRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DataSourcesRoute = DataSourcesRouteImport.update({
+  id: '/data-sources',
+  path: '/data-sources',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JobsRoute = JobsRouteImport.update({
@@ -207,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRouteWithChildren
   '/contact': typeof ContactRoute
+  '/data-sources': typeof DataSourcesRoute
   '/jobs': typeof JobsRoute
   '/mcp': typeof McpRoute
   '/profiles': typeof ProfilesRoute
@@ -238,6 +245,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/contact': typeof ContactRoute
+  '/data-sources': typeof DataSourcesRoute
   '/jobs': typeof JobsRoute
   '/mcp': typeof McpRoute
   '/profiles': typeof ProfilesRoute
@@ -271,6 +279,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRouteWithChildren
   '/contact': typeof ContactRoute
+  '/data-sources': typeof DataSourcesRoute
   '/jobs': typeof JobsRoute
   '/mcp': typeof McpRoute
   '/profiles': typeof ProfilesRoute
@@ -305,6 +314,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/contact'
+    | '/data-sources'
     | '/jobs'
     | '/mcp'
     | '/profiles'
@@ -336,6 +346,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/contact'
+    | '/data-sources'
     | '/jobs'
     | '/mcp'
     | '/profiles'
@@ -368,6 +379,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/contact'
+    | '/data-sources'
     | '/jobs'
     | '/mcp'
     | '/profiles'
@@ -401,6 +413,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRouteWithChildren
   ContactRoute: typeof ContactRoute
+  DataSourcesRoute: typeof DataSourcesRoute
   JobsRoute: typeof JobsRoute
   McpRoute: typeof McpRoute
   ProfilesRoute: typeof ProfilesRoute
@@ -448,6 +461,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/data-sources': {
+      id: '/data-sources'
+      path: '/data-sources'
+      fullPath: '/data-sources'
+      preLoaderRoute: typeof DataSourcesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/jobs': {
@@ -660,6 +680,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRouteWithChildren,
   ContactRoute: ContactRoute,
+  DataSourcesRoute: DataSourcesRoute,
   JobsRoute: JobsRoute,
   McpRoute: McpRoute,
   ProfilesRoute: ProfilesRoute,
