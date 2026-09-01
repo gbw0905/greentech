@@ -77,8 +77,18 @@ function TeamPage() {
           </h2>
           <p className="kicker mt-1 text-muted-foreground">Founder &amp; Editor</p>
           <p className="mt-3 text-sm/relaxed text-muted-foreground">
-            Founded Global Bioenergy Watch to make bioenergy policy and market intelligence open
-            and verifiable. Leads editorial standards, data methodology, and platform development.
+            Syed brings a wealth of experience in GHG sustainability, GIS &amp; Remote Sensing, and
+            cradle to gate life cycle analysis of renewable fuels and feedstock materials. Throughout
+            his career, he has been at the forefront of environmental sustainability, specializing in
+            greenhouse gas emissions reduction and management. His proficiency in GIS &amp; Remote
+            Sensing technologies has allowed him to analyze spatial data with precision,
+            facilitating informed decision-making in environmental conservation. In the realm of LCA
+            practices, Syed conducted thorough assessments of fuel production processes, carbon
+            balances and materials statement. His career journey reflects a passion for integrating
+            technological innovations with environmental stewardship. Whether it's developing
+            strategies for GHG reduction or utilizing GIS &amp; Remote Sensing for spatial analysis,
+            he is dedicated to making impactful contributions to the field of environmental
+            sustainability.
           </p>
           <a
             href={FOUNDER_LINKEDIN}
