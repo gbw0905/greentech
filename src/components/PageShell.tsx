@@ -75,6 +75,13 @@ export function PageShell({
             >
               Contact us
             </Link>
+            <span className="mx-2 text-muted-foreground">·</span>
+            <Link
+              to="/data-sources"
+              className="font-semibold text-foreground underline underline-offset-4 hover:text-primary"
+            >
+              Data sources
+            </Link>
           </p>
 
         </footer>
