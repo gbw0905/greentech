@@ -11,7 +11,7 @@ import {
   type PanelView,
   type ScatterPoint,
 } from "@/components/chart-kit";
-import { detailTone, useEntityDetail } from "@/components/EntityDetailSheet";
+import { detailTone, useEntityDetail, type GraphContext } from "@/components/EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
 import { AIRLINE_TICKERS } from "@/lib/entity-tickers";
@@ -160,6 +160,16 @@ export function SafAirlinesPanel() {
       { name: a.name, query: `${a.name} sustainable aviation fuel OR SAF` },
     ]),
   );
+  const filters: [string, string][] = [["Country", f.a || "All countries"]];
+  if (f.query.trim()) filters.push(["Search", `"${f.query.trim()}"`]);
+  const graph: GraphContext = {
+    measure: metric.label,
+    unit: metric.unit,
+    view: PANEL_VIEWS.find((v) => v.value === view)?.label ?? view,
+    filters,
+    items: sorted.map((a) => ({ name: a.name, value: valueOf(a) })),
+    format: (n: number) => fmt(n, metric.decimals),
+  };
   const onSelect = detail.onSelect((t) => {
     const a = sorted.find((x) => x.name === t?.name);
     if (!a) return null;
@@ -182,7 +192,7 @@ export function SafAirlinesPanel() {
       ],
       news: { name: a.name, query: `${a.name} sustainable aviation fuel OR SAF` },
     };
-  });
+  }, graph);
 
   return (
     <>

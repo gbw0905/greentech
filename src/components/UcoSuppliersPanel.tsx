@@ -11,7 +11,7 @@ import {
   type PanelView,
   type ScatterPoint,
 } from "@/components/chart-kit";
-import { detailTone, useEntityDetail } from "@/components/EntityDetailSheet";
+import { detailTone, useEntityDetail, type GraphContext } from "@/components/EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
 import { UCO_TICKERS } from "@/lib/entity-tickers";
@@ -182,6 +182,16 @@ export function UcoSuppliersPanel() {
   const newsMap = Object.fromEntries(
     rows.map((s) => [s.name, { name: s.name, query: `"${s.name}" ${NEWS_SUFFIX}` }]),
   );
+  const filters: [string, string][] = [["Country", f.a || "All countries"]];
+  if (f.query.trim()) filters.push(["Search", `"${f.query.trim()}"`]);
+  const graph: GraphContext = {
+    measure: metric.label,
+    unit: metric.unit,
+    view: PANEL_VIEWS.find((v) => v.value === view)?.label ?? view,
+    filters,
+    items: rows.map((s) => ({ name: s.name, value: valueOf(s) })),
+    format: (n: number) => fmt(n, metric.decimals),
+  };
   const onSelect = detail.onSelect((t) => {
     const s = rows.find((r) => r.name === t?.name);
     if (!s) return null;
@@ -204,7 +214,7 @@ export function UcoSuppliersPanel() {
       ],
       news: { name: s.name, query: `"${s.name}" ${NEWS_SUFFIX}` },
     };
-  });
+  }, graph);
 
   return (
     <>

@@ -13,7 +13,7 @@ import {
   type PanelView,
   type ScatterPoint,
 } from "@/components/chart-kit";
-import { detailTone, useEntityDetail } from "@/components/EntityDetailSheet";
+import { detailTone, useEntityDetail, type GraphContext } from "@/components/EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
 import type { FuelType } from "@/lib/policy-taxonomy";
@@ -265,6 +265,20 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
       { name: s.name, query: `"${s.name}" biofuel OR ethanol OR renewable diesel station` },
     ]),
   );
+  const filters: [string, string][] = [
+    ["Country", f.a || "All countries"],
+    ["Fuel type", f.b || "All fuels"],
+  ];
+  if (fuels.length) filters.push(["Section fuel filter", fuels.join(", ")]);
+  if (f.query.trim()) filters.push(["Search", `"${f.query.trim()}"`]);
+  const graph: GraphContext = {
+    measure: metric.label,
+    unit: metric.unit,
+    view: PANEL_VIEWS.find((v) => v.value === view)?.label ?? view,
+    filters,
+    items: stations.map((s) => ({ name: s.name, value: valueOf(s) })),
+    format: (n: number) => fmt(n, metric.decimals),
+  };
   const onSelect = detail.onSelect((t) => {
     const s = stations.find((x) => x.name === t?.name);
     if (!s) return null;
@@ -287,7 +301,7 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
       ],
       news: { name: s.name, query: `"${s.name}" biofuel OR ethanol OR renewable diesel station` },
     };
-  });
+  }, graph);
 
   return (
     <>
