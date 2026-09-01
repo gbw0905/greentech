@@ -291,7 +291,7 @@ function Dashboard() {
               tone="var(--chart-6)"
               kicker="Supply & producers"
               icon={Factory}
-              title="Biofuel supply at the pump and top users"
+              title="Global Biofuel Suppliers and Users"
               subtitle="Pick a dataset to open its full workspace — heat map, scatter plot, ranked bars or data table, with per-entity detail."
             />
             <SupplyProducersSection />

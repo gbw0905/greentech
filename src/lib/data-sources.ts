@@ -26,11 +26,20 @@ const BY_PANEL: Record<string, string[]> = {
     "Certification and eligibility: ISCC EU/PLUS certificate database, EU RED III Annex IX Part B listings, UK RTFO feedstock reporting.",
     "Cross-checks: US EPA RFS/EMTS feedstock data, USDA/GAIN UCO trade reports, China customs UCO export statistics.",
   ],
+  "Global blending terminals and capacity": [
+    "Terminal counts and blended-product throughput: operator annual reports, terminal network disclosures and port authority storage registries.",
+    "Cross-checks: EIA refined-product terminal data, national fuel-obligation registers (RFS, RTFO, RED III, RenovaBio, EBP).",
+  ],
+  "Global ethanol production": [
+    "Ethanol capacities and plant counts: producer annual reports and plant listings.",
+    "Cross-checks: Renewable Fuels Association plant registry, ePURE production statistics, UNICA/CONAB Brazil data, Indian OMC ethanol tender allocations.",
+  ],
   "Global marine biofuel suppliers and users": [
     "Marine biofuel bunker volumes: MPA Singapore annual bunker sales statistics, Port of Rotterdam bunker throughput data and supplier press disclosures.",
     "Shipping-line biofuel uptake: carrier sustainability and ESG reports, green-fuel product disclosures (ECO Delivery, Ship Green, ACT+) and public bunkering announcements.",
     "Cross-checks: IMO DCS and EU MRV reporting, ISCC EU certification records for marine bio-blends.",
   ],
+
 };
 
 
