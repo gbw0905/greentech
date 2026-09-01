@@ -49,6 +49,15 @@ const CARDS: {
     tone: "var(--chart-1)",
   },
   {
+    id: "biopower",
+    icon: Zap,
+    title: "Biofuel power generators",
+    blurb: "Electricity generators burning biomass, bagasse, biogas and waste-derived fuels.",
+    stat: "40+",
+    statLabel: "generators tracked",
+    tone: "var(--chart-9)",
+  },
+  {
     id: "terminals",
     icon: Container,
     title: "Blending terminals & capacity",
@@ -99,6 +108,7 @@ function PanelBody({ id }: { id: PanelId }) {
   if (id === "stations") return <BiofuelProductionPanel fuels={[]} />;
   if (id === "uco") return <UcoSuppliersPanel />;
   if (id === "ethanol") return <EthanolProductionPanel />;
+  if (id === "biopower") return <BioPowerGeneratorsPanel />;
   if (id === "terminals") return <BlendingTerminalsPanel />;
   if (id === "marine") return <MarineBiofuelPanel />;
   if (id === "oil") return <OilStocksPanel />;
