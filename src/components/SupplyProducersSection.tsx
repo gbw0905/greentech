@@ -1,13 +1,15 @@
 import { useState } from "react";
-import { Fuel, Recycle, Building2, Plane, Truck, Ship, ChevronRight } from "lucide-react";
+import { Fuel, Recycle, Building2, Plane, Truck, Ship, Container, Wheat, ChevronRight } from "lucide-react";
 import { BiofuelProductionPanel } from "@/components/BiofuelProductionPanel";
 import { UcoSuppliersPanel } from "@/components/UcoSuppliersPanel";
 import { MarineBiofuelPanel } from "@/components/MarineBiofuelPanel";
 import { OilStocksPanel } from "@/components/OilStocksPanel";
 import { SafAirlinesPanel } from "@/components/SafAirlinesPanel";
 import { CarriersPanel } from "@/components/CarriersPanel";
+import { BlendingTerminalsPanel } from "@/components/BlendingTerminalsPanel";
+import { EthanolProductionPanel } from "@/components/EthanolProductionPanel";
 
-type PanelId = "stations" | "uco" | "marine" | "oil" | "saf" | "carriers";
+type PanelId = "stations" | "uco" | "ethanol" | "terminals" | "marine" | "oil" | "saf" | "carriers";
 
 const CARDS: {
   id: PanelId;
@@ -35,6 +37,24 @@ const CARDS: {
     stat: "40+",
     statLabel: "collectors & traders",
     tone: "var(--chart-3)",
+  },
+  {
+    id: "ethanol",
+    icon: Wheat,
+    title: "Ethanol production",
+    blurb: "Corn, cane, wheat and cellulosic ethanol producers supplying blended gasoline and ATJ.",
+    stat: "45+",
+    statLabel: "producers tracked",
+    tone: "var(--chart-1)",
+  },
+  {
+    id: "terminals",
+    icon: Container,
+    title: "Blending terminals & capacity",
+    blurb: "Tank farms and loading racks blending ethanol, biodiesel, HVO and SAF into finished fuel.",
+    stat: "45+",
+    statLabel: "terminal operators",
+    tone: "var(--chart-8)",
   },
   {
     id: "marine",
@@ -77,6 +97,8 @@ const CARDS: {
 function PanelBody({ id }: { id: PanelId }) {
   if (id === "stations") return <BiofuelProductionPanel fuels={[]} />;
   if (id === "uco") return <UcoSuppliersPanel />;
+  if (id === "ethanol") return <EthanolProductionPanel />;
+  if (id === "terminals") return <BlendingTerminalsPanel />;
   if (id === "marine") return <MarineBiofuelPanel />;
   if (id === "oil") return <OilStocksPanel />;
   if (id === "saf") return <SafAirlinesPanel />;
