@@ -1,6 +1,9 @@
 import { cloneElement, isValidElement, useMemo, useState } from "react";
 import type { ReactElement } from "react";
+import { Link } from "@tanstack/react-router";
 import { REFERENCE_NOTE, sourcesFor } from "@/lib/data-sources";
+import { datasetFor } from "@/lib/datasets/provenance";
+
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { LucideIcon } from "lucide-react";
 import type { NewsTarget } from "@/lib/open-news";
