@@ -87,13 +87,19 @@ export function useEntityDetail() {
   const close = useCallback(() => setDetail(null), []);
   return {
     open,
-    /** Wraps a NewsTarget-based onSelect so panels can keep their existing handlers. */
-    onSelect: (lookup: (t: NewsTarget) => EntityDetail | null | undefined) => (t: NewsTarget) => {
-      if (!t) return;
-      const d = lookup(t);
-      if (d) setDetail(d);
-      else openEntityNews(t);
-    },
+    /**
+     * Wraps a NewsTarget-based onSelect so panels can keep their existing
+     * handlers. Pass the current GraphContext as the second argument so the
+     * sheet also shows the active filter parameters and graph values.
+     */
+    onSelect:
+      (lookup: (t: NewsTarget) => EntityDetail | null | undefined, graph?: GraphContext) =>
+      (t: NewsTarget) => {
+        if (!t) return;
+        const d = lookup(t);
+        if (d) setDetail(graph ? enrichDetail(d, graph) : d);
+        else openEntityNews(t);
+      },
     sheet: <EntityDetailSheet detail={detail} onClose={close} />,
   };
 }
