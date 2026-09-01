@@ -19,8 +19,10 @@ export const Route = createFileRoute("/videos")({
       { property: "og:title", content: TITLE },
       { property: "og:description", content: DESCRIPTION },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://globalbioenergywatch.org/videos" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://globalbioenergywatch.org/videos" }],
   }),
   component: VideosPage,
 });

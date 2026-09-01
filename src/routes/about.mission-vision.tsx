@@ -14,8 +14,10 @@ export const Route = createFileRoute("/about/mission-vision")({
       { property: "og:title", content: TITLE },
       { property: "og:description", content: DESCRIPTION },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://globalbioenergywatch.org/about/mission-vision" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://globalbioenergywatch.org/about/mission-vision" }],
   }),
   component: MissionVisionPage,
 });

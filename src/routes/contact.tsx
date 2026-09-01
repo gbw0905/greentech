@@ -6,7 +6,24 @@ import siteLogo from "@/assets/logo.png";
 
 const LINKEDIN_URL = "https://www.linkedin.com/company/global-bioenergy-watch/";
 
+const TITLE = "Contact Global Bioenergy Watch";
+const DESCRIPTION =
+  "Get in touch with the Global Bioenergy Watch desk about biofuel policy updates, data corrections or partnerships.";
+const URL = "https://globalbioenergywatch.org/contact";
+
 export const Route = createFileRoute("/contact")({
+  head: () => ({
+    meta: [
+      { title: TITLE },
+      { name: "description", content: DESCRIPTION },
+      { property: "og:title", content: TITLE },
+      { property: "og:description", content: DESCRIPTION },
+      { property: "og:url", content: URL },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+    links: [{ rel: "canonical", href: URL }],
+  }),
   component: ContactPage,
 });
 

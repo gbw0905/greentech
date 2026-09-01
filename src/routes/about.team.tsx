@@ -52,8 +52,10 @@ export const Route = createFileRoute("/about/team")({
       { property: "og:title", content: TITLE },
       { property: "og:description", content: DESCRIPTION },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://globalbioenergywatch.org/about/team" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://globalbioenergywatch.org/about/team" }],
   }),
   component: TeamPage,
 });
