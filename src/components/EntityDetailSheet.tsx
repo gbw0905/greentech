@@ -1,6 +1,63 @@
 import { useCallback, useEffect, useState } from "react";
-import { X, ExternalLink } from "lucide-react";
+import { X, ExternalLink, RefreshCw } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { openEntityNews, type NewsTarget } from "@/lib/open-news";
+import { getEntityNewsFn } from "@/lib/videos.functions";
+
+/** Live headline list for the entity, fetched from the news index on open. */
+function EntityNews({ target }: { target: NewsTarget }) {
+  const fetchNews = useServerFn(getEntityNewsFn);
+  const query = target?.query ?? "";
+  const { data, isFetching, refetch } = useQuery({
+    queryKey: ["entity-news", query],
+    queryFn: () => fetchNews({ data: { query, limit: 8 } }),
+    enabled: query.length > 1,
+    staleTime: 10 * 60_000,
+  });
+  const articles = data?.articles ?? [];
+
+  return (
+    <div className="mt-5">
+      <div className="flex items-center justify-between gap-2">
+        <h5 className="chart-sub uppercase tracking-[0.12em] text-muted-foreground">Latest news</h5>
+        <button
+          type="button"
+          onClick={() => refetch()}
+          className="label-mono inline-flex items-center gap-1 text-muted-foreground hover:text-primary"
+        >
+          <RefreshCw className={`size-3 ${isFetching ? "animate-spin" : ""}`} /> Refresh
+        </button>
+      </div>
+      {isFetching && articles.length === 0 ? (
+        <p className="mt-2 text-sm text-muted-foreground">Loading headlines…</p>
+      ) : articles.length === 0 ? (
+        <p className="mt-2 text-sm text-muted-foreground">
+          No recent headlines found — open the full search below.
+        </p>
+      ) : (
+        <ul className="mt-2 divide-y divide-border border-y border-border">
+          {articles.map((a) => (
+            <li key={a.url}>
+              <a
+                href={a.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block py-2 text-sm/snug hover:text-primary"
+              >
+                {a.title}
+                <span className="label-mono mt-0.5 block text-muted-foreground">
+                  {a.source}
+                  {a.published ? ` · ${new Date(a.published).toLocaleDateString()}` : ""}
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 type Stat = { label: string; value: string; tone?: "default" | "up" | "down" | undefined };
 
@@ -210,13 +267,15 @@ export function EntityDetailSheet({
           </div>
         ))}
 
+        <EntityNews target={detail.news} />
+
         <button
           type="button"
           onClick={() => openEntityNews(detail.news)}
-          className="mt-5 inline-flex items-center justify-center gap-2 border border-ink bg-ink px-3 py-2 text-sm font-semibold text-ink-foreground transition-opacity hover:opacity-85"
+          className="mt-4 inline-flex items-center justify-center gap-2 border border-ink bg-ink px-3 py-2 text-sm font-semibold text-ink-foreground transition-opacity hover:opacity-85"
         >
           <ExternalLink className="size-4" />
-          Latest news for {detail.name}
+          More news for {detail.name}
         </button>
       </aside>
     </div>
