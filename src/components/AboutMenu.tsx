@@ -68,7 +68,7 @@ export function AboutMenu() {
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen(true)}
-        className="label-mono group inline-flex w-full items-center justify-center gap-2 text-center whitespace-nowrap border border-white/40 bg-black px-3 py-1.5 text-xs font-extrabold text-white shadow-sm transition-all hover:border-white hover:bg-white/10 sm:px-4 sm:py-2"
+        className="label-mono group inline-flex w-full items-center justify-center gap-2 text-center whitespace-nowrap border border-menubar-fg/40 bg-menubar-nav px-3 py-1.5 text-xs font-extrabold text-menubar-fg shadow-sm transition-all hover:border-menubar-fg hover:bg-menubar-fg/10 sm:px-4 sm:py-2"
       >
         About us
         <ChevronDown
@@ -81,7 +81,7 @@ export function AboutMenu() {
             ref={menuRef}
             role="menu"
             onMouseLeave={() => setOpen(false)}
-            className="fixed z-50 w-52 overflow-hidden border border-white/30 bg-black shadow-xl"
+            className="fixed z-50 w-52 overflow-hidden border border-menubar-fg/30 bg-menubar-nav shadow-xl"
             style={{ top: pos.top, left: pos.left }}
           >
             {ITEMS.map((item) => (
@@ -90,7 +90,7 @@ export function AboutMenu() {
                 to={item.to}
                 role="menuitem"
                 onClick={() => setOpen(false)}
-                className="label-mono block border-b border-white/10 px-4 py-2.5 text-xs font-bold text-white transition-colors last:border-b-0 hover:bg-white/10"
+                className="label-mono block border-b border-menubar-fg/10 px-4 py-2.5 text-xs font-bold text-menubar-fg transition-colors last:border-b-0 hover:bg-menubar-fg/10"
               >
                 {item.label}
               </Link>
