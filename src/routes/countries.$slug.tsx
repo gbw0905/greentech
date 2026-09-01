@@ -19,16 +19,37 @@ export const Route = createFileRoute("/countries/$slug")({
   },
   head: ({ params }) => {
     const country = countryBySlug(params.slug);
-    const title = `${country?.name ?? "Country"} Bioenergy Policy Profile | Global Bioenergy Watch`;
-    const description = `Mandates, blending targets and the latest bioenergy policy updates for ${country?.name ?? "this market"}.`;
+    const name = country?.name ?? "Country";
+    const title = `${name} Biofuel Policy Profile`;
+    const description = `Mandates, blending targets and the latest bioenergy policy updates for ${name}.`;
+    const url = `https://globalbioenergywatch.org/countries/${params.slug}`;
     return {
       meta: [
         { title },
         { name: "description", content: description },
         { property: "og:title", content: title },
         { property: "og:description", content: description },
+        { property: "og:url", content: url },
         { property: "og:type", content: "article" },
         { name: "twitter:card", content: "summary_large_image" },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            name: title,
+            description,
+            url,
+            isPartOf: {
+              "@type": "WebSite",
+              name: "Global Bioenergy Watch",
+              url: "https://globalbioenergywatch.org",
+            },
+          }),
+        },
       ],
     };
   },

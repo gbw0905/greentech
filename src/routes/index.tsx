@@ -40,8 +40,27 @@ export const Route = createFileRoute("/")({
       { name: "description", content: DESCRIPTION },
       { property: "og:title", content: TITLE },
       { property: "og:description", content: DESCRIPTION },
+      { property: "og:url", content: "https://globalbioenergywatch.org/" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+    ],
+    links: [{ rel: "canonical", href: "https://globalbioenergywatch.org/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "Global Bioenergy Watch",
+          url: "https://globalbioenergywatch.org/",
+          description: DESCRIPTION,
+          publisher: {
+            "@type": "Organization",
+            name: "Global Bioenergy Watch",
+            url: "https://globalbioenergywatch.org/",
+          },
+        }),
+      },
     ],
   }),
   component: Index,
