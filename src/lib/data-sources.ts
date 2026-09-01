@@ -39,7 +39,10 @@ const BY_PANEL: Record<string, string[]> = {
     "Shipping-line biofuel uptake: carrier sustainability and ESG reports, green-fuel product disclosures (ECO Delivery, Ship Green, ACT+) and public bunkering announcements.",
     "Cross-checks: IMO DCS and EU MRV reporting, ISCC EU certification records for marine bio-blends.",
   ],
-
+  "Global electricity generators using biofuel": [
+    "Biofuel-fired generating capacity and output: generator annual reports, sustainability filings and national renewables registries.",
+    "Cross-checks: IEA Bioenergy country reports, IRENA renewable capacity statistics, Ember global electricity data, national bioenergy programme filings.",
+  ],
 };
 
 
