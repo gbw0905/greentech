@@ -1,6 +1,9 @@
 import { cloneElement, isValidElement, useMemo, useState } from "react";
 import type { ReactElement } from "react";
+import { Link } from "@tanstack/react-router";
 import { REFERENCE_NOTE, sourcesFor } from "@/lib/data-sources";
+import { datasetFor } from "@/lib/datasets/provenance";
+
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { LucideIcon } from "lucide-react";
 import type { NewsTarget } from "@/lib/open-news";
@@ -1051,18 +1054,34 @@ export function ChartPanel({
       ) : null}
 
       {title ? (
-        <details className="mt-2 text-xs text-muted-foreground">
-          <summary className="label-mono cursor-pointer text-foreground">
-            Data sources &amp; references
-          </summary>
-          <ul className="mt-2 list-disc space-y-1 pl-4">
-            {sourcesFor(title).map((s) => (
-              <li key={s}>{s}</li>
-            ))}
-          </ul>
-          <p className="mt-2">{REFERENCE_NOTE}</p>
-        </details>
+        <>
+          {datasetFor(title) ? (
+            <p className="label-mono mt-2 text-xs text-muted-foreground">
+              Figures as reported for {datasetFor(title)!.reportingYear} · last reviewed{" "}
+              {datasetFor(title)!.lastReviewed} ·{" "}
+              <Link
+                to="/data-sources"
+                hash={datasetFor(title)!.id}
+                className="text-primary underline underline-offset-4"
+              >
+                Sources &amp; method
+              </Link>
+            </p>
+          ) : null}
+          <details className="mt-2 text-xs text-muted-foreground">
+            <summary className="label-mono cursor-pointer text-foreground">
+              Data sources &amp; references
+            </summary>
+            <ul className="mt-2 list-disc space-y-1 pl-4">
+              {sourcesFor(title).map((s) => (
+                <li key={s}>{s}</li>
+              ))}
+            </ul>
+            <p className="mt-2">{REFERENCE_NOTE}</p>
+          </details>
+        </>
       ) : null}
+
     </div>
   );
 }

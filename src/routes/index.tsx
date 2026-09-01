@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { RefreshCw, AlertTriangle, Map, Factory, TrendingUp, BellRing, Briefcase, Linkedin } from "lucide-react";
@@ -202,6 +202,12 @@ function Dashboard() {
               {s.label}
             </a>
           ))}
+          <Link
+            to="/data-sources"
+            className="label-mono group inline-flex min-w-max flex-1 items-center justify-center gap-2 text-center whitespace-nowrap border border-white/40 bg-black px-3 py-1.5 text-xs font-extrabold text-white shadow-sm transition-all hover:border-white hover:bg-white/10 sm:px-4 sm:py-2"
+          >
+            Data sources
+          </Link>
           <AboutMenu />
         </nav>
       </header>
