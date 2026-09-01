@@ -1,6 +1,40 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Users, Linkedin } from "lucide-react";
 import { PageShell, PageHeading } from "@/components/PageShell";
+
+/** Drop team headshots in src/assets and import them here. */
+const founderPhoto: string | undefined = undefined;
+const okoloPhoto: string | undefined = undefined;
+
+/** Round headshot with an initials fallback when no photo is supplied. */
+function Avatar({
+  src,
+  alt,
+  initials,
+}: {
+  src: string | undefined;
+  alt: string;
+  initials: string;
+}) {
+  const [failed, setFailed] = useState(false);
+  if (src && !failed) {
+    return (
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        onError={() => setFailed(true)}
+        className="size-16 rounded-full border border-border object-cover"
+      />
+    );
+  }
+  return (
+    <div className="flex size-16 items-center justify-center rounded-full bg-foreground font-display text-lg font-extrabold text-background">
+      {initials}
+    </div>
+  );
+}
 
 const TITLE = "Team Members — Global Bioenergy Watch";
 const DESCRIPTION =
@@ -33,9 +67,7 @@ function TeamPage() {
 
       <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         <article className="rounded-lg border border-border bg-white p-6 shadow-sm">
-          <div className="flex size-14 items-center justify-center rounded-full bg-foreground font-display text-lg font-extrabold text-background">
-            SA
-          </div>
+          <Avatar src={founderPhoto} alt="Syed Asiful Alam, PhD" initials="SA" />
           <h2 className="mt-4 font-display text-lg font-extrabold tracking-tight text-foreground">
             Syed Asiful Alam, PhD
           </h2>
@@ -56,9 +88,7 @@ function TeamPage() {
         </article>
 
         <article className="rounded-lg border border-border bg-white p-6 shadow-sm">
-          <div className="flex size-14 items-center justify-center rounded-full bg-foreground font-display text-lg font-extrabold text-background">
-            CVO
-          </div>
+          <Avatar src={okoloPhoto} alt="Chukwuemeka Valentine Okolo" initials="CVO" />
           <h2 className="mt-4 font-display text-lg font-extrabold tracking-tight text-foreground">
             Chukwuemeka Valentine Okolo
           </h2>
