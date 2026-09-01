@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { X, ExternalLink } from "lucide-react";
 import { openEntityNews, type NewsTarget } from "@/lib/open-news";
 
+type Stat = { label: string; value: string; tone?: "default" | "up" | "down" | undefined };
+
 export type EntityDetail = {
   name: string;
   sub?: string;
@@ -9,9 +11,64 @@ export type EntityDetail = {
   flag?: string;
   logo?: string | undefined;
   note?: string;
-  stats: { label: string; value: string; tone?: "default" | "up" | "down" | undefined }[];
+  stats: Stat[];
+  /** Extra titled stat groups rendered below the main stats. */
+  sections?: { title: string; stats: Stat[] }[];
   news: NewsTarget;
 };
+
+/**
+ * Snapshot of the chart the user clicked: which measure/view/filters were
+ * active and the ranked values behind the graph, so the detail sheet can
+ * explain exactly what the clicked tile/bar/bubble means.
+ */
+export type GraphContext = {
+  /** Selected dropdown measure, e.g. "Annual capacity (MMboe/yr)". */
+  measure: string;
+  unit: string;
+  /** Current chart view label, e.g. "Heat map". */
+  view: string;
+  /** Active filter parameters as [label, value] pairs. */
+  filters: [string, string][];
+  /** Ranked (highest first) entries currently shown in the chart. */
+  items: { name: string; value: number }[];
+  format: (n: number) => string;
+};
+
+/** Derives rank, share, range and percentile for the clicked entity. */
+function enrichDetail(d: EntityDetail, g: GraphContext): EntityDetail {
+  const idx = g.items.findIndex((i) => i.name === d.name);
+  const sections: { title: string; stats: Stat[] }[] = [...(d.sections ?? [])];
+  if (idx >= 0) {
+    const v = g.items[idx]!.value;
+    const values = g.items.map((i) => i.value);
+    const total = values.reduce((s, x) => s + Math.max(x, 0), 0);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const beaten = values.filter((x) => x < v).length;
+    const share = total > 0 ? (Math.max(v, 0) / total) * 100 : 0;
+    sections.push({
+      title: "Graph values for this entry",
+      stats: [
+        { label: "Rank in this view", value: `#${idx + 1} of ${g.items.length}` },
+        { label: g.measure, value: `${g.format(v)} (${g.unit})` },
+        { label: "Share of all shown", value: `${share.toFixed(1)}%` },
+        { label: "Range across entries", value: `${g.format(min)} – ${g.format(max)}` },
+        { label: "Standing", value: `Higher than ${Math.round((beaten / g.items.length) * 100)}% of entries shown` },
+      ],
+    });
+  }
+  sections.push({
+    title: "Active filters when clicked",
+    stats: [
+      { label: "Chart view", value: g.view },
+      { label: "Measure", value: g.measure },
+      { label: "Entries shown", value: String(g.items.length) },
+      ...g.filters.map(([label, value]): Stat => ({ label, value })),
+    ],
+  });
+  return { ...d, sections };
+}
 
 /** Maps a percent change to the shared up/down colour tone. */
 export function detailTone(changePct?: number): "default" | "up" | "down" {
