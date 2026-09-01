@@ -13,7 +13,7 @@ function Avatar({
   alt,
   initials,
 }: {
-  src?: string;
+  src: string | undefined;
   alt: string;
   initials: string;
 }) {
