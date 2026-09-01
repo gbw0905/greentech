@@ -184,6 +184,32 @@ export function EntityDetailSheet({
           ))}
         </dl>
 
+        {detail.sections?.map((sec) => (
+          <div key={sec.title} className="mt-4">
+            <h5 className="chart-sub uppercase tracking-[0.12em] text-muted-foreground">
+              {sec.title}
+            </h5>
+            <dl className="mt-1.5 divide-y divide-border border-y border-border">
+              {sec.stats.map((s) => (
+                <div key={s.label} className="flex items-baseline justify-between gap-3 py-2">
+                  <dt className="chart-sub text-muted-foreground">{s.label}</dt>
+                  <dd
+                    className={`chart-value text-right tabular-nums ${
+                      s.tone === "up"
+                        ? "text-primary"
+                        : s.tone === "down"
+                          ? "text-destructive"
+                          : "text-foreground"
+                    }`}
+                  >
+                    {s.value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        ))}
+
         <button
           type="button"
           onClick={() => openEntityNews(detail.news)}
