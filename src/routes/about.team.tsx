@@ -3,9 +3,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Users, Linkedin } from "lucide-react";
 import { PageShell, PageHeading } from "@/components/PageShell";
 
-/** Drop team headshots in src/assets and import them here. */
-const founderPhoto: string | undefined = undefined;
-const okoloPhoto: string | undefined = undefined;
+import founderAsset from "@/assets/syed-asiful-alam.jpg.asset.json";
+import okoloAsset from "@/assets/chukwuemeka-okolo.jpg.asset.json";
+
+const founderPhoto: string | undefined = founderAsset.url;
+const okoloPhoto: string | undefined = okoloAsset.url;
 
 /** Round headshot with an initials fallback when no photo is supplied. */
 function Avatar({
