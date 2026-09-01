@@ -267,13 +267,15 @@ export function EntityDetailSheet({
           </div>
         ))}
 
+        <EntityNews target={detail.news} />
+
         <button
           type="button"
           onClick={() => openEntityNews(detail.news)}
-          className="mt-5 inline-flex items-center justify-center gap-2 border border-ink bg-ink px-3 py-2 text-sm font-semibold text-ink-foreground transition-opacity hover:opacity-85"
+          className="mt-4 inline-flex items-center justify-center gap-2 border border-ink bg-ink px-3 py-2 text-sm font-semibold text-ink-foreground transition-opacity hover:opacity-85"
         >
           <ExternalLink className="size-4" />
-          Latest news for {detail.name}
+          More news for {detail.name}
         </button>
       </aside>
     </div>
