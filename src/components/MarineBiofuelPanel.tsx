@@ -195,6 +195,19 @@ export function MarineBiofuelPanel() {
   const newsMap = Object.fromEntries(
     rows.map((e) => [e.name, { name: e.name, query: `"${e.name}" ${NEWS_SUFFIX}` }]),
   );
+  const filters: [string, string][] = [
+    ["Role", f.b || "Suppliers & users"],
+    ["Country", f.a || "All countries"],
+  ];
+  if (f.query.trim()) filters.push(["Search", `"${f.query.trim()}"`]);
+  const graph: GraphContext = {
+    measure: metric.label,
+    unit: metric.unit,
+    view: PANEL_VIEWS.find((v) => v.value === view)?.label ?? view,
+    filters,
+    items: rows.map((e) => ({ name: e.name, value: valueOf(e) })),
+    format: (n: number) => fmt(n, metric.decimals),
+  };
   const onSelect = detail.onSelect((t) => {
     const e = rows.find((r) => r.name === t?.name);
     if (!e) return null;
@@ -218,7 +231,7 @@ export function MarineBiofuelPanel() {
       ],
       news: { name: e.name, query: `"${e.name}" ${NEWS_SUFFIX}` },
     };
-  });
+  }, graph);
 
   return (
     <>

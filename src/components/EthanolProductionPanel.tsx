@@ -184,6 +184,19 @@ export function EthanolProductionPanel() {
   const newsMap = Object.fromEntries(
     rows.map((p) => [p.name, { name: p.name, query: `"${p.name}" ${NEWS_SUFFIX}` }]),
   );
+  const filters: [string, string][] = [
+    ["Country", f.a || "All countries"],
+    ["Feedstock", f.b || "All feedstocks"],
+  ];
+  if (f.query.trim()) filters.push(["Search", `"${f.query.trim()}"`]);
+  const graph: GraphContext = {
+    measure: metric.label,
+    unit: metric.unit,
+    view: PANEL_VIEWS.find((v) => v.value === view)?.label ?? view,
+    filters,
+    items: rows.map((p) => ({ name: p.name, value: valueOf(p) })),
+    format: (n: number) => fmt(n, metric.decimals),
+  };
   const onSelect = detail.onSelect((target) => {
     const p = rows.find((r) => r.name === target?.name);
     if (!p) return null;
@@ -207,7 +220,7 @@ export function EthanolProductionPanel() {
       ],
       news: { name: p.name, query: `"${p.name}" ${NEWS_SUFFIX}` },
     };
-  });
+  }, graph);
 
   return (
     <>

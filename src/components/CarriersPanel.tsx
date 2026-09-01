@@ -188,6 +188,16 @@ function CarrierChart({
   const newsMap = Object.fromEntries(
     rows.map((c) => [c.name, { name: c.name, query: `"${c.name}" ${newsSuffix}` }]),
   );
+  const filters: [string, string][] = [["Country", f.a || "All countries"]];
+  if (f.query.trim()) filters.push(["Search", `"${f.query.trim()}"`]);
+  const graph: GraphContext = {
+    measure: metric.label,
+    unit: metric.unit,
+    view: PANEL_VIEWS.find((v) => v.value === view)?.label ?? view,
+    filters,
+    items: rows.map((c) => ({ name: c.name, value: valueOf(c) })),
+    format: (n: number) => fmt(n, metric.decimals),
+  };
   const onSelect = detail.onSelect((t) => {
     const c = rows.find((x) => x.name === t?.name);
     if (!c) return null;
@@ -210,7 +220,7 @@ function CarrierChart({
       ],
       news: { name: c.name, query: `"${c.name}" ${newsSuffix}` },
     };
-  });
+  }, graph);
 
   return (
     <>
