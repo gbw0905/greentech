@@ -83,6 +83,10 @@
   --color-ink: var(--ink);
   --color-ink-foreground: var(--ink-foreground);
   --color-ink-muted: var(--ink-muted);
+  --color-menubar-bg: var(--menubar-bg);
+  --color-menubar-nav: var(--menubar-nav);
+  --color-menubar-fg: var(--menubar-fg);
+  --color-menubar-muted: var(--menubar-muted);
 }
 
 :root {
