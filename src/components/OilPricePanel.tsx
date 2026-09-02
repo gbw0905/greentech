@@ -228,10 +228,9 @@ export function OilPricePanel() {
     }
   };
 
+  const quotes = data?.quotes ?? [];
   const selectedQuote = quotes.find((q) => q.symbol === selected);
   const selectedOutlook = selected ? outlook[selected] : undefined;
-
-  const quotes = data?.quotes ?? [];
   const stale = data?.stale ?? false;
   const asOf = data?.asOf ?? dataUpdatedAt;
   const stamp = asOf
