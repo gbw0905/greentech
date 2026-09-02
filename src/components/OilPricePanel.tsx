@@ -295,13 +295,22 @@ export function OilPricePanel() {
         {quotes.map((q) => {
           const up = q.change >= 0;
           const color = assetColor(q.symbol);
+          const active = selected === q.symbol;
           return (
-            <div
+            <button
               key={q.symbol}
-              className="flex flex-col space-y-1 rounded-[var(--radius)] border border-border bg-surface-2/60 p-3 transition-all duration-300 hover:-translate-y-0.5"
+              type="button"
+              onClick={() => {
+                setSelected(active ? null : q.symbol);
+                if (!active && !outlook[q.symbol]?.text) void requestOutlook(q);
+              }}
+              aria-pressed={active}
+              className={`flex cursor-pointer flex-col space-y-1 rounded-[var(--radius)] border bg-surface-2/60 p-3 text-left transition-all duration-300 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 ${
+                active ? "ring-2 ring-primary/50 -translate-y-0.5" : ""
+              }`}
               style={{
                 boxShadow: `inset 0 2px 0 0 ${color}`,
-                borderColor: `${color}40`,
+                borderColor: active ? color : `${color}40`,
               }}
             >
             <div className="flex items-baseline justify-between gap-2">
