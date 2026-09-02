@@ -1,7 +1,9 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { TrendingDown, TrendingUp } from "lucide-react";
+import { Loader2, RefreshCw, Sparkles, TrendingDown, TrendingUp, X } from "lucide-react";
+import { toast } from "sonner";
 import { getOilPricesFn, type OilQuote } from "@/lib/oil.functions";
+import { marketOutlookFn } from "@/lib/market-outlook.functions";
 
 const assetColor = (symbol: string) => {
   if (symbol === "CL=F") return "var(--market-crude)";
