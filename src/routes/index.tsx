@@ -191,20 +191,20 @@ function Dashboard() {
         </div>
         <nav
           aria-label="Page sections"
-          className="mx-auto flex max-w-[80rem] items-stretch gap-2 overflow-x-auto border-t border-menubar-fg/20 bg-menubar-nav px-4 py-2 sm:gap-3 sm:px-5 sm:py-2.5 lg:px-8"
+          className="mx-auto flex max-w-[80rem] items-stretch gap-2 overflow-x-auto border-t border-menubar-fg/20 bg-menubar-nav px-4 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-3 sm:px-5 sm:py-2.5 lg:px-8"
         >
           {SECTIONS.map((s) => (
             <a
               key={s.href}
               href={s.href}
-              className="label-mono group inline-flex min-w-max flex-1 items-center justify-center gap-2 text-center whitespace-nowrap border border-menubar-fg/40 bg-menubar-nav px-3 py-1.5 text-xs font-extrabold text-menubar-fg shadow-sm transition-all hover:border-menubar-fg hover:bg-menubar-fg/10 sm:px-4 sm:py-2"
+              className="label-mono group inline-flex min-w-max items-center justify-center gap-2 text-center whitespace-nowrap border border-menubar-fg/40 bg-menubar-nav px-3 py-1.5 text-xs font-extrabold text-menubar-fg shadow-sm transition-all hover:border-menubar-fg hover:bg-menubar-fg/10 sm:flex-1 sm:px-4 sm:py-2"
             >
               {s.label}
             </a>
           ))}
           <Link
             to="/data-sources"
-            className="label-mono group inline-flex min-w-max flex-1 items-center justify-center gap-2 text-center whitespace-nowrap border border-menubar-fg/40 bg-menubar-nav px-3 py-1.5 text-xs font-extrabold text-menubar-fg shadow-sm transition-all hover:border-menubar-fg hover:bg-menubar-fg/10 sm:px-4 sm:py-2"
+            className="label-mono group inline-flex min-w-max items-center justify-center gap-2 text-center whitespace-nowrap border border-menubar-fg/40 bg-menubar-nav px-3 py-1.5 text-xs font-extrabold text-menubar-fg shadow-sm transition-all hover:border-menubar-fg hover:bg-menubar-fg/10 sm:flex-1 sm:px-4 sm:py-2"
           >
             Data sources
           </Link>
