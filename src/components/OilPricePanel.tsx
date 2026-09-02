@@ -202,6 +202,35 @@ export function OilPricePanel() {
     gcTime: Infinity,
   });
 
+  const [selected, setSelected] = useState<string | null>(null);
+  const [outlook, setOutlook] = useState<Record<string, { text: string; loading: boolean }>>({});
+
+  const requestOutlook = async (q: OilQuote) => {
+    if (outlook[q.symbol]?.loading) return;
+    setOutlook((s) => ({ ...s, [q.symbol]: { text: "", loading: true } }));
+    try {
+      const { outlook: text } = await marketOutlookFn({
+        data: {
+          label: q.label,
+          symbol: q.symbol,
+          unit: q.unit,
+          price: q.price,
+          change: q.change,
+          changePct: q.changePct,
+          prevClose: q.prevClose,
+          series: q.series,
+        },
+      });
+      setOutlook((s) => ({ ...s, [q.symbol]: { text, loading: false } }));
+    } catch (e) {
+      setOutlook((s) => ({ ...s, [q.symbol]: { text: "", loading: false } }));
+      toast.error(e instanceof Error ? e.message : "Outlook failed");
+    }
+  };
+
+  const selectedQuote = quotes.find((q) => q.symbol === selected);
+  const selectedOutlook = selected ? outlook[selected] : undefined;
+
   const quotes = data?.quotes ?? [];
   const stale = data?.stale ?? false;
   const asOf = data?.asOf ?? dataUpdatedAt;
