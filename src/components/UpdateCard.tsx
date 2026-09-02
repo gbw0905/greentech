@@ -28,11 +28,31 @@ export function UpdateCard({
   compact?: boolean;
 }) {
   const host = hostOf(update.url);
+  const photo = imageForUpdate(update);
   return (
     <article
-      className={`glass-panel lift group relative overflow-hidden ${compact ? "p-2.5 pl-3.5" : "p-5 pl-6"}`}
+      className={`glass-panel lift group relative overflow-hidden ${compact ? "flex gap-3 p-2.5 pl-3.5" : "p-5 pl-6"}`}
       style={{ borderLeftColor: REGION_ACCENT[update.region], borderLeftWidth: 3 }}
     >
+      <a
+        href={update.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`relative shrink-0 overflow-hidden rounded-md bg-surface-2 ${compact ? "h-16 w-24 sm:h-[4.5rem] sm:w-28" : "float-right ml-4 mb-2 h-24 w-36"}`}
+        tabIndex={-1}
+        aria-hidden
+      >
+        <img
+          src={photo.src}
+          alt={photo.alt}
+          loading="lazy"
+          width={768}
+          height={512}
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+      </a>
+      <div className="min-w-0 flex-1">
+
       <div
         className={`label-mono flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-muted-foreground ${compact ? "text-[11px]" : ""}`}
       >
