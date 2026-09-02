@@ -344,10 +344,62 @@ export function OilPricePanel() {
             <div className="min-h-0 flex-1">
               <Chart q={q} color={color} />
             </div>
-            </div>
+            <span className="label-mono mt-1 inline-flex items-center gap-1 text-[9px] text-muted-foreground/80">
+              <Sparkles className="size-3" /> click for AI market outlook
+            </span>
+            </button>
           );
         })}
       </div>
+
+      {selectedQuote && (
+        <div
+          className="rise rounded-[var(--radius)] border p-3.5"
+          style={{
+            borderColor: `${assetColor(selectedQuote.symbol)}55`,
+            background: `color-mix(in oklab, ${assetColor(selectedQuote.symbol)} 6%, var(--surface-2))`,
+          }}
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="label-mono flex items-center gap-1.5 text-muted-foreground">
+              <Sparkles className="size-3.5" style={{ color: assetColor(selectedQuote.symbol) }} />
+              AI market outlook — {selectedQuote.label}
+            </p>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => void requestOutlook(selectedQuote)}
+                disabled={selectedOutlook?.loading}
+                className="label-mono inline-flex items-center gap-1 rounded-md border border-border bg-surface px-2 py-1 text-muted-foreground transition hover:text-foreground disabled:opacity-50"
+              >
+                <RefreshCw className={`size-3 ${selectedOutlook?.loading ? "animate-spin" : ""}`} />
+                regenerate
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelected(null)}
+                className="label-mono inline-flex items-center gap-1 rounded-md border border-border bg-surface px-2 py-1 text-muted-foreground transition hover:text-foreground"
+              >
+                <X className="size-3" /> close
+              </button>
+            </div>
+          </div>
+          {selectedOutlook?.loading ? (
+            <p className="mt-2.5 flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="size-4 animate-spin" /> Writing a 150-word outlook from the latest
+              price action…
+            </p>
+          ) : (
+            <p className="mt-2.5 text-sm leading-relaxed text-foreground">
+              {selectedOutlook?.text ?? "Click regenerate to write the outlook."}
+            </p>
+          )}
+          <p className="label-mono mt-2.5 text-[9px] text-muted-foreground/80">
+            AI-generated from the 30-day price series shown above. May contain errors — always
+            cross-verify before acting.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
