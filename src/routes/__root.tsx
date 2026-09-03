@@ -77,15 +77,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Global Bioenergy Watch" },
-      { name: "description", content: "Worldwide biofuel and bioenergy policy tracker." },
+      { title: "Global Bioenergy Watch — Worldwide Biofuel Policy Tracker" },
+      {
+        name: "description",
+        content:
+          "Worldwide biofuel and bioenergy policy tracker with live government mandates, market updates and production data.",
+      },
       { name: "author", content: "Global Bioenergy Watch" },
       { name: "google-site-verification", content: "kk1yedKT7BHoNWBTFpeMTp_j7INL7XAT6U2QS4AfQj8" },
-      { property: "og:title", content: "Global Bioenergy Watch" },
-      { property: "og:description", content: "Worldwide biofuel and bioenergy policy tracker." },
+      { property: "og:site_name", content: "Global Bioenergy Watch" },
+      { property: "og:title", content: "Global Bioenergy Watch — Worldwide Biofuel Policy Tracker" },
+      {
+        property: "og:description",
+        content:
+          "Worldwide biofuel and bioenergy policy tracker with live government mandates, market updates and production data.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
       { name: "theme-color", content: "#0A1730" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
