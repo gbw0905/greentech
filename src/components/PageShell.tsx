@@ -26,7 +26,7 @@ export function PageShell({
                 href="https://www.linkedin.com/company/global-bioenergy-watch/?viewAsMember=true"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block truncate font-display text-base leading-none font-extrabold tracking-tight text-menubar-fg transition-colors hover:text-menubar-fg/80 sm:text-xl lg:text-[1.4rem]"
+                className="brand-gradient-text block truncate font-display text-base leading-none font-extrabold tracking-tight sm:text-xl lg:text-[1.4rem]"
               >
                 Global Bioenergy Watch
               </a>
