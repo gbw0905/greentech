@@ -11,11 +11,9 @@ import {
   type PanelView,
   type ScatterPoint,
 } from "@/components/chart-kit";
-import { detailTone, useEntityDetail, type GraphContext } from "@/components/EntityDetailSheet";
+import { useEntityDetail, type GraphContext } from "@/components/EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
-import { PELLET_TICKERS } from "@/lib/entity-tickers";
-import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 
@@ -83,7 +81,7 @@ const PRODUCERS: Producer[] = [
   { name: "Rentech / Wawa", country: "Canada", flag: "🇨🇦", capacityKt: 450, plants: 2, feedstock: "Softwood residues", note: "Ontario pellet mills historically contracted to UK utilities" },
 ];
 
-type Metric = "capacity" | "plants" | "price";
+type Metric = "capacity" | "plants";
 
 const METRICS: Record<
   Metric,
@@ -102,13 +100,6 @@ const METRICS: Record<
     help: "Number of operating pellet mills. Many small heating mills can rank high here but low on tonnage.",
     decimals: 0,
     value: (p) => p.plants,
-  },
-  price: {
-    label: "Share price (listing currency)",
-    unit: "share price, primary listing currency",
-    help: "Latest traded share price where the producer or its parent is listed. Private producers sit at the end.",
-    decimals: 2,
-    value: () => 0,
   },
 };
 
@@ -132,10 +123,8 @@ export function WoodPelletProducersPanel() {
   const [metricKey, setMetricKey] = useState<Metric>("capacity");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
-  const { get } = useEntityQuotes();
   const metric = METRICS[metricKey];
-  const valueOf = (p: Producer) =>
-    metricKey === "price" ? (get(PELLET_TICKERS[p.name])?.price ?? 0) : metric.value(p);
+  const valueOf = (p: Producer) => metric.value(p);
 
   const f = useChartFilter(PRODUCERS, {
     text: (p) => `${p.name} ${p.country} ${p.feedstock} ${p.note}`,
@@ -156,8 +145,6 @@ export function WoodPelletProducersPanel() {
     size: axes.size.value(p),
     group: p.country,
     logo: entityLogoByName(p.name),
-    meta: priceMeta(get(PELLET_TICKERS[p.name])),
-    changePct: get(PELLET_TICKERS[p.name])?.changePct,
     newsTarget: { name: p.name, query: `"${p.name}" ${NEWS_SUFFIX}` },
   }));
 
@@ -167,9 +154,6 @@ export function WoodPelletProducersPanel() {
     sub: `${p.feedstock} · ${p.note}`,
     value: valueOf(p),
     logo: entityLogoByName(p.name),
-    meta: priceMeta(get(PELLET_TICKERS[p.name])),
-    tone: priceTone(get(PELLET_TICKERS[p.name])),
-    changePct: get(PELLET_TICKERS[p.name])?.changePct,
   }));
   const newsMap = Object.fromEntries(
     rows.map((p) => [p.name, { name: p.name, query: `"${p.name}" ${NEWS_SUFFIX}` }]),
@@ -190,7 +174,6 @@ export function WoodPelletProducersPanel() {
   const onSelect = detail.onSelect((target) => {
     const p = rows.find((r) => r.name === target?.name);
     if (!p) return null;
-    const q = get(PELLET_TICKERS[p.name]);
     return {
       name: p.name,
       sub: `${p.flag} ${p.country}`,
@@ -200,13 +183,6 @@ export function WoodPelletProducersPanel() {
         { label: "Pellet capacity", value: `${fmt(p.capacityKt, 0)} kt/yr` },
         { label: "Pellet plants", value: `${fmt(p.plants, 0)} mills` },
         { label: "Feedstock", value: p.feedstock },
-        { label: "Ticker", value: PELLET_TICKERS[p.name] ?? "Not listed" },
-        { label: "Share price", value: q ? fmt(q.price, 2) : "—" },
-        {
-          label: "1-day change",
-          value: q ? `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%` : "—",
-          tone: detailTone(q?.changePct),
-        },
       ],
       news: { name: p.name, query: `"${p.name}" ${NEWS_SUFFIX}` },
     };
@@ -241,25 +217,16 @@ export function WoodPelletProducersPanel() {
                 "Feedstock",
                 "Pellet capacity (kt/yr)",
                 "Pellet plants",
-                "Ticker",
-                "Share price",
-                "1-day change %",
                 "Note",
               ],
-              rows: ranked.map((p) => {
-                const q = get(PELLET_TICKERS[p.name]);
-                return [
+              rows: ranked.map((p) => [
                   p.name,
                   p.country,
                   p.feedstock,
                   p.capacityKt,
                   p.plants,
-                  PELLET_TICKERS[p.name] ?? "",
-                  q ? q.price.toFixed(2) : "",
-                  q ? q.changePct.toFixed(2) : "",
                   p.note,
-                ];
-              }),
+                ]),
             })}
           />
         }
@@ -310,9 +277,7 @@ export function WoodPelletProducersPanel() {
                 label: p.name,
                 sub: `${p.country} · ${p.feedstock} · ${p.note}`,
                 value: valueOf(p),
-                price: get(PELLET_TICKERS[p.name])?.price,
-                changePct: get(PELLET_TICKERS[p.name])?.changePct,
-              })),
+                          })),
             })}
           />
         }
