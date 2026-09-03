@@ -124,7 +124,7 @@ function ContactPage() {
             Updates are aggregated from live web sources and auto-classified by jurisdiction and fuel type. Verify
             against primary legislation before use in compliance decisions.
           </p>
-          <p className="mt-3 flex flex-wrap items-center gap-2 text-sm font-bold text-white">
+          <p className="mt-3 flex flex-wrap items-center gap-2 text-sm font-bold text-menubar-fg">
             <span>© 2026 All rights reserved — Global Bioenergy Watch —</span>
             <a
               href="https://www.linkedin.com/in/asifulalam0905024/"
