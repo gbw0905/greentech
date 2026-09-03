@@ -13,6 +13,7 @@ import {
   type FuelType,
 } from "@/lib/policy-taxonomy";
 import { UpdateCard } from "@/components/UpdateCard";
+import { CountryFlag } from "@/components/CountryFlag";
 import { VideoLibrary } from "@/components/VideoLibrary";
 import { LiveMediaFeed } from "@/components/LiveMediaFeed";
 
@@ -104,7 +105,7 @@ export function CountryFocusPanel({
             Selected on the map
           </p>
           <h3 className="mt-1 flex items-center gap-2.5 font-display text-2xl font-bold">
-            <span aria-hidden>{flagFor(profile.slug)}</span>
+            <CountryFlag slug={profile.slug} />
             {profile.name}
           </h3>
           <div className="mt-1 flex flex-wrap items-center gap-3">

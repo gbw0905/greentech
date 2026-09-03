@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
-import { REGION_ACCENT, flagFor } from "@/lib/policy-taxonomy";
+import { REGION_ACCENT } from "@/lib/policy-taxonomy";
+import { CountryFlag } from "@/components/CountryFlag";
 import { imageForUpdate } from "@/lib/update-images";
 import type { PolicyUpdate } from "@/lib/policy-types";
 
@@ -76,7 +77,7 @@ export function UpdateCard({
                 params={{ slug: update.countrySlug }}
                 className="inline-flex items-center gap-1 text-foreground underline-offset-4 hover:underline"
               >
-                <span aria-hidden>{flagFor(update.countrySlug)}</span>
+                <CountryFlag slug={update.countrySlug} />
                 {update.countryName}
               </Link>
             </>

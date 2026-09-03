@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Flag, Search } from "lucide-react";
-import { COUNTRIES, REGION_ACCENT, flagFor } from "@/lib/policy-taxonomy";
+import { COUNTRIES, REGION_ACCENT } from "@/lib/policy-taxonomy";
+import { CountryFlag } from "@/components/CountryFlag";
 import { PageShell, PageHeading } from "@/components/PageShell";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
 
@@ -63,9 +64,7 @@ function ProfilesPage() {
               {c.region}
             </div>
             <div className="mt-1 font-display font-semibold transition-colors group-hover:text-primary">
-              <span className="mr-1.5" aria-hidden>
-                {flagFor(c.slug)}
-              </span>
+              <CountryFlag slug={c.slug} className="mr-1.5" />
               {c.name}
             </div>
             <div className="mt-1 font-mono text-xs text-muted-foreground">{c.mandates[0]?.value}</div>
