@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { SummaryRequest } from "./chart-summary.server";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -19,6 +20,7 @@ export const summariseChartFn = createServerFn({ method: "POST" })
 
 /** Generates the analyst summary for the current view and emails it with references. */
 export const emailChartSummaryFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: { email: string; payload: SummaryRequest }) => {
     if (!input || !EMAIL_RE.test((input.email ?? "").trim())) {
       throw new Error("Enter a valid email address");

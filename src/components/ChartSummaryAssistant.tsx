@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Loader2, Lock, Mail } from "lucide-react";
 import { useAuthSession } from "@/hooks/useAuthSession";
@@ -36,6 +36,10 @@ export function ChartSummaryAssistant({
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (user?.email) setEmail((prev) => (prev.length === 0 ? user.email! : prev));
+  }, [user]);
 
   async function send() {
     if (sending) return;
