@@ -30,7 +30,7 @@ export const Route = createFileRoute("/contact")({
 function ContactPage() {
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-30 border-b border-white/30 bg-black text-white backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b border-menubar-fg/10 bg-menubar-bg text-menubar-fg backdrop-blur-xl">
         <div className="mx-auto flex max-w-[80rem] items-center justify-between gap-2 px-4 py-2 sm:gap-4 sm:px-5 sm:py-2.5 lg:px-8">
           <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
             <Link to="/" className="shrink-0">
@@ -45,7 +45,7 @@ function ContactPage() {
             <div className="min-w-0">
               <Link
                 to="/"
-                className="block truncate font-display text-base leading-none font-extrabold tracking-tight text-white transition-colors hover:text-white/80 sm:text-xl lg:text-[1.4rem]"
+                className="block truncate font-display text-base leading-none font-extrabold tracking-tight text-menubar-fg transition-colors hover:text-menubar-fg/80 sm:text-xl lg:text-[1.4rem]"
               >
                 Global Bioenergy Watch
               </Link>
@@ -53,7 +53,7 @@ function ContactPage() {
           </div>
           <Link
             to="/"
-            className="label-mono inline-flex shrink-0 items-center gap-2 border border-white/40 bg-black px-2.5 py-1.5 font-bold text-white transition-all hover:border-white hover:bg-white/10 sm:px-3.5 sm:py-2"
+            className="label-mono inline-flex shrink-0 items-center gap-2 border border-menubar-fg/40 bg-menubar-nav px-2.5 py-1.5 font-bold text-menubar-fg transition-all hover:border-menubar-fg hover:bg-menubar-fg/10 sm:px-3.5 sm:py-2"
           >
             <ArrowLeft className="size-3.5" />
             <span className="hidden sm:inline">Back to dashboard</span>
@@ -118,13 +118,13 @@ function ContactPage() {
         </div>
       </main>
 
-      <footer className="border-t border-border bg-black py-8 text-white">
+      <footer className="border-t border-border bg-menubar-bg py-8 text-menubar-fg">
         <div className="mx-auto max-w-[80rem] px-5 lg:px-8">
-          <p className="text-xs text-white/70">
+          <p className="text-xs text-menubar-muted">
             Updates are aggregated from live web sources and auto-classified by jurisdiction and fuel type. Verify
             against primary legislation before use in compliance decisions.
           </p>
-          <p className="mt-3 flex flex-wrap items-center gap-2 text-sm font-bold text-white">
+          <p className="mt-3 flex flex-wrap items-center gap-2 text-sm font-bold text-menubar-fg">
             <span>© 2026 All rights reserved — Global Bioenergy Watch —</span>
             <a
               href="https://www.linkedin.com/in/asifulalam0905024/"
