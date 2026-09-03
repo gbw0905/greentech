@@ -135,7 +135,7 @@ export function BiocharProducersPanel() {
   });
   const ranked = f.filtered.slice().sort((a, b) => valueOf(b) - valueOf(a));
   const isFiltered = Boolean(f.a || f.b || f.query.trim());
-  const rows = ranked.slice(0, isFiltered ? 20 : 10);
+  const rows = view === "table" ? ranked : ranked.slice(0, isFiltered ? 20 : 10);
 
   const axes = scatterAxes(metricKey);
   const scatterPoints: ScatterPoint[] = rows.map((p) => ({
