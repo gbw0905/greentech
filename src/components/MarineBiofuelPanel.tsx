@@ -17,6 +17,7 @@ import { entityLogoByName } from "@/lib/entity-logos";
 import { MARINE_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
+import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/lib/market-caps";
 import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 
 type MarineRole = "Supplier" | "User";
@@ -97,7 +98,7 @@ const ENTITIES: MarineEntity[] = [
   { name: "IKEA / Inter IKEA", country: "Sweden", flag: "🇸🇪", role: "User", volumeKt: 30, reach: 18, blendPct: 30, note: "Cargo owner committed to biofuel or zero-emission ocean freight" },
 ];
 
-type Metric = "volume" | "reach" | "blend" | "price";
+type Metric = "volume" | "reach" | "blend" | "price" | "marketcap";
 
 const METRICS: Record<
   Metric,
@@ -131,12 +132,25 @@ const METRICS: Record<
     decimals: 2,
     value: () => 0,
   },
+  marketcap: {
+    label: "Market cap (approx.)",
+    unit: "approximate market capitalisation, USD billions",
+    help: "Approximate latest market capitalisation in USD billions, converted at recent exchange rates. Private, state-owned or unlisted entities rank last.",
+    decimals: 1,
+    value: (e) => marketCapValue(MARINE_TICKERS[e.name]),
+  },
 };
 
 function scatterAxes(metricKey: Metric) {
   if (metricKey === "volume") {
     return {
       x: { metric: METRICS.reach, help: "X-axis shows port or vessel coverage; Y-axis shows annual marine biofuel volume." },
+      size: { label: "Marine biofuel", unit: "kt/yr", value: (e: MarineEntity) => e.volumeKt },
+    };
+  }
+  if (metricKey === "marketcap") {
+    return {
+      x: { metric: METRICS.volume, help: "X-axis shows annual marine biofuel volume; Y-axis shows approximate market cap." },
       size: { label: "Marine biofuel", unit: "kt/yr", value: (e: MarineEntity) => e.volumeKt },
     };
   }
@@ -228,6 +242,7 @@ export function MarineBiofuelPanel() {
           value: q ? `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%` : "—",
           tone: detailTone(q?.changePct),
         },
+        { label: "Market cap (approx.)", value: marketCapLabel(MARINE_TICKERS[e.name]) ?? "Private / state-owned" },
       ],
       news: { name: e.name, query: `"${e.name}" ${NEWS_SUFFIX}` },
     };
@@ -266,6 +281,7 @@ export function MarineBiofuelPanel() {
                 "Ticker",
                 "Share price",
                 "1-day change %",
+                "Market cap (approx., USD bn)",
                 "Note",
               ],
               rows: ranked.map((e) => {
@@ -280,6 +296,7 @@ export function MarineBiofuelPanel() {
                   MARINE_TICKERS[e.name] ?? "",
                   q ? q.price.toFixed(2) : "",
                   q ? q.changePct.toFixed(2) : "",
+                  marketCapLabel(MARINE_TICKERS[e.name]) ?? "",
                   e.note,
                 ];
               }),
@@ -312,7 +329,7 @@ export function MarineBiofuelPanel() {
             matched={ranked.length}
           />
         }
-        footnote="Indicative annual marine biofuel volumes from bunker supplier disclosures, MPA Singapore and Port of Rotterdam bunker statistics, and shipping-line sustainability reports. Click any tile for the latest news."
+        footnote={`Indicative annual marine biofuel volumes from bunker supplier disclosures, MPA Singapore and Port of Rotterdam bunker statistics, and shipping-line sustainability reports. Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
         assistant={
           <ChartSummaryAssistant
             disabled={rows.length === 0}
