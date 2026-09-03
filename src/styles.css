@@ -147,10 +147,10 @@
   --market-crude: oklch(0.35 0.09 250);
   --market-equity: oklch(0.48 0.12 150);
   --market-gold: oklch(0.62 0.13 85);
-  --menubar-bg: oklch(0.24 0.055 160);
-  --menubar-nav: oklch(0.28 0.06 155);
-  --menubar-fg: oklch(0.97 0.008 130);
-  --menubar-muted: oklch(0.78 0.035 150);
+  --menubar-bg: oklch(0.3 0.08 145);
+  --menubar-nav: oklch(0.35 0.09 145);
+  --menubar-fg: oklch(0.97 0.01 140);
+  --menubar-muted: oklch(0.8 0.05 145);
   --gradient-frost: linear-gradient(135deg, oklch(1 0 0), oklch(0.96 0.008 250));
   --gradient-primary: linear-gradient(120deg, var(--primary), var(--primary-glow));
   --gradient-aurora: linear-gradient(120deg, oklch(0.21 0.05 265) 0%, oklch(0.29 0.075 262) 55%, oklch(0.38 0.09 250) 100%);
