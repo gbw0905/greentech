@@ -165,11 +165,43 @@ export function SupplyProducersSection() {
   const [active, setActive] = useState<PanelId | null>(null);
 
   if (active) {
+    const current = CARDS.find((c) => c.id === active)!;
     return (
-      <div className="space-y-4">
+      <div className="glass-panel flex w-full min-w-0 flex-col">
+        {/* Workspace header: dataset identity + back control */}
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-border px-4 py-3 sm:px-5">
+          <div className="flex min-w-0 items-center gap-3">
+            <span
+              className="inline-flex size-9 shrink-0 items-center justify-center rounded-md"
+              style={{
+                background: `color-mix(in oklab, ${current.tone} 14%, white)`,
+                color: current.tone,
+              }}
+            >
+              <current.icon className="size-4.5" />
+            </span>
+            <div className="min-w-0">
+              <h3 className="truncate font-display text-base font-extrabold tracking-tight text-foreground sm:text-lg">
+                {current.title}
+              </h3>
+              <p className="hidden truncate text-xs text-muted-foreground sm:block">
+                {current.blurb}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setActive(null)}
+            className="label-mono inline-flex shrink-0 items-center gap-1.5 border border-border bg-white px-3 py-1.5 font-bold text-foreground transition-colors hover:bg-muted"
+          >
+            <Layers className="size-3.5" />
+            All datasets
+          </button>
+        </div>
+
         {/* Mobile: a dataset picker, so every dataset is reachable without
             discovering a horizontal scroller. */}
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:hidden">
+        <div className="border-b border-border px-4 py-2 sm:hidden">
           <select
             aria-label="Choose dataset"
             value={active}
@@ -182,26 +214,14 @@ export function SupplyProducersSection() {
               </option>
             ))}
           </select>
-          <button
-            type="button"
-            onClick={() => setActive(null)}
-            className="label-mono shrink-0 border border-border bg-white px-3 py-2 font-bold text-foreground"
-          >
-            All
-          </button>
         </div>
+
+        {/* Desktop: underline tab strip */}
         <div
           role="tablist"
           aria-label="Supply and producer datasets"
-          className="hidden items-stretch gap-2 overflow-x-auto pb-1 sm:flex"
+          className="hidden items-stretch gap-1 overflow-x-auto border-b border-border px-3 sm:flex"
         >
-          <button
-            type="button"
-            onClick={() => setActive(null)}
-            className="label-mono shrink-0 border border-border bg-white px-3 py-2 font-bold text-foreground transition-colors hover:bg-muted"
-          >
-            All datasets
-          </button>
           {CARDS.map((c) => {
             const on = c.id === active;
             return (
@@ -211,11 +231,14 @@ export function SupplyProducersSection() {
                 role="tab"
                 aria-selected={on}
                 onClick={() => setActive(c.id)}
-                className="label-mono inline-flex shrink-0 items-center gap-2 border px-3 py-2 font-bold whitespace-nowrap transition-colors"
+                className="label-mono inline-flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-2.5 font-bold whitespace-nowrap transition-colors"
                 style={
                   on
-                    ? { background: c.tone, borderColor: c.tone, color: "white" }
-                    : { borderColor: "var(--border)", background: "white", color: "var(--foreground)" }
+                    ? { borderBottomColor: c.tone, color: c.tone }
+                    : {
+                        borderBottomColor: "transparent",
+                        color: "var(--muted-foreground)",
+                      }
                 }
               >
                 <c.icon className="size-3.5" />
@@ -224,7 +247,10 @@ export function SupplyProducersSection() {
             );
           })}
         </div>
-        <PanelBody id={active} />
+
+        <div className="min-w-0 p-4 sm:p-5">
+          <PanelBody id={active} />
+        </div>
       </div>
     );
   }
@@ -236,31 +262,31 @@ export function SupplyProducersSection() {
           key={c.id}
           type="button"
           onClick={() => setActive(c.id)}
-          className="group flex flex-col items-start rounded-lg border border-border border-t-4 bg-white p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
-          style={{ borderTopColor: c.tone }}
+          className="group flex items-stretch overflow-hidden rounded-lg border border-border bg-white text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
         >
-          <span
-            className="inline-flex size-9 items-center justify-center rounded-md"
-            style={{ background: `color-mix(in oklab, ${c.tone} 14%, white)`, color: c.tone }}
-          >
-            <c.icon className="size-4.5" />
-          </span>
-          <h3 className="mt-3 font-display text-lg font-extrabold tracking-tight text-foreground">
-            {c.title}
-          </h3>
-          <p className="mt-1 text-sm/relaxed text-muted-foreground">{c.blurb}</p>
-          <div className="mt-4 flex w-full items-end justify-between border-t border-border pt-3">
-            <div>
-              <div className="font-display text-2xl font-extrabold tabular-nums" style={{ color: c.tone }}>
-                {c.stat}
-              </div>
-              <div className="label-mono text-muted-foreground">{c.statLabel}</div>
-            </div>
-            <span className="label-mono inline-flex items-center gap-1 font-bold text-foreground transition-transform group-hover:translate-x-0.5">
-              Explore
-              <ChevronRight className="size-3.5" />
+          <span className="w-1.5 shrink-0" style={{ background: c.tone }} aria-hidden />
+          <span className="flex min-w-0 flex-1 flex-col p-4">
+            <span className="flex items-center gap-2.5">
+              <span
+                className="inline-flex size-8 shrink-0 items-center justify-center rounded-md"
+                style={{ background: `color-mix(in oklab, ${c.tone} 14%, white)`, color: c.tone }}
+              >
+                <c.icon className="size-4" />
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate font-display text-base font-extrabold tracking-tight text-foreground">
+                  {c.title}
+                </span>
+                <span className="label-mono block text-muted-foreground">
+                  {c.stat} {c.statLabel}
+                </span>
+              </span>
+              <ChevronRight className="ml-auto size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" style={{ color: c.tone }} />
             </span>
-          </div>
+            <span className="mt-2 line-clamp-2 text-xs/relaxed text-muted-foreground sm:text-sm/relaxed">
+              {c.blurb}
+            </span>
+          </span>
         </button>
       ))}
     </div>

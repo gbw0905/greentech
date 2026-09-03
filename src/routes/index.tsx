@@ -91,23 +91,27 @@ function SectionHeading({
 }) {
   return (
     <div
-      className="ink-bar mb-6 px-5 py-5 sm:px-7 sm:py-6"
-      style={{ ["--tone" as string]: `color-mix(in oklab, ${tone} 62%, white)` }}
+      className="ink-bar mb-4 border-l-4 px-4 py-3 sm:px-5"
+      style={{
+        ["--tone" as string]: `color-mix(in oklab, ${tone} 62%, white)`,
+        borderLeftColor: "var(--tone)",
+      }}
     >
-      <div className="flex items-center gap-2" style={{ color: "var(--tone)" }}>
-        <Icon className="size-3.5" />
-        <span className="kicker" style={{ color: "var(--tone)" }}>
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+        <span
+          className="kicker inline-flex shrink-0 items-center gap-1.5"
+          style={{ color: "var(--tone)" }}
+        >
+          <Icon className="size-3" />
           {kicker}
         </span>
+        <h2 className="min-w-0 font-display text-lg leading-tight font-extrabold tracking-tight text-ink-foreground sm:text-2xl">
+          {title}
+        </h2>
       </div>
-      <h2 className="mt-2 font-display text-[1.75rem] leading-[1.1] font-extrabold tracking-tight text-ink-foreground sm:text-4xl">
-        {title}
-      </h2>
-      <p className="mt-2 max-w-3xl text-sm/relaxed text-ink-muted">{subtitle}</p>
-      <div
-        className="mt-4 h-0.5 w-24 rounded-full"
-        style={{ background: "var(--tone)" }}
-      />
+      <p className="mt-1 max-w-3xl text-xs/relaxed text-ink-muted sm:text-sm/relaxed">
+        {subtitle}
+      </p>
     </div>
   );
 }
