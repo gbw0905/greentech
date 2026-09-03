@@ -45,7 +45,7 @@ function ContactPage() {
             <div className="min-w-0">
               <Link
                 to="/"
-                className="block truncate font-display text-base leading-none font-extrabold tracking-tight text-white transition-colors hover:text-white/80 sm:text-xl lg:text-[1.4rem]"
+                className="block truncate font-display text-base leading-none font-extrabold tracking-tight text-menubar-fg transition-colors hover:text-menubar-fg/80 sm:text-xl lg:text-[1.4rem]"
               >
                 Global Bioenergy Watch
               </Link>
