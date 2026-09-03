@@ -11,11 +11,9 @@ import {
   type PanelView,
   type ScatterPoint,
 } from "@/components/chart-kit";
-import { detailTone, useEntityDetail, type GraphContext } from "@/components/EntityDetailSheet";
+import { useEntityDetail, type GraphContext } from "@/components/EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
-import { RNG_TICKERS } from "@/lib/entity-tickers";
-import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 
@@ -83,7 +81,7 @@ const PRODUCERS: Producer[] = [
   { name: "Raízen biogas", country: "Brazil", flag: "🇧🇷", outputMmbtu: 1.5, facilities: 6, feedstock: "Vinasse / bagasse", note: "Mill-integrated biogas plants supplying fleet fuel and power" },
 ];
 
-type Metric = "output" | "facilities" | "price";
+type Metric = "output" | "facilities";
 
 const METRICS: Record<
   Metric,
@@ -102,13 +100,6 @@ const METRICS: Record<
     help: "Number of operating digesters or landfill upgrading plants. A large fleet of small plants can rank high here but low on output.",
     decimals: 0,
     value: (p) => p.facilities,
-  },
-  price: {
-    label: "Share price (listing currency)",
-    unit: "share price, primary listing currency",
-    help: "Latest traded share price on the producer's primary listing. Private and utility-subsidiary producers have no listing and sit at the end.",
-    decimals: 2,
-    value: () => 0,
   },
 };
 
@@ -132,10 +123,8 @@ export function RngProducersPanel() {
   const [metricKey, setMetricKey] = useState<Metric>("output");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
-  const { get } = useEntityQuotes();
   const metric = METRICS[metricKey];
-  const valueOf = (p: Producer) =>
-    metricKey === "price" ? (get(RNG_TICKERS[p.name])?.price ?? 0) : metric.value(p);
+  const valueOf = (p: Producer) => metric.value(p);
 
   const f = useChartFilter(PRODUCERS, {
     text: (p) => `${p.name} ${p.country} ${p.feedstock} ${p.note}`,
@@ -156,8 +145,6 @@ export function RngProducersPanel() {
     size: axes.size.value(p),
     group: p.country,
     logo: entityLogoByName(p.name),
-    meta: priceMeta(get(RNG_TICKERS[p.name])),
-    changePct: get(RNG_TICKERS[p.name])?.changePct,
     newsTarget: { name: p.name, query: `"${p.name}" ${NEWS_SUFFIX}` },
   }));
 
@@ -167,9 +154,6 @@ export function RngProducersPanel() {
     sub: `${p.feedstock} · ${p.note}`,
     value: valueOf(p),
     logo: entityLogoByName(p.name),
-    meta: priceMeta(get(RNG_TICKERS[p.name])),
-    tone: priceTone(get(RNG_TICKERS[p.name])),
-    changePct: get(RNG_TICKERS[p.name])?.changePct,
   }));
   const newsMap = Object.fromEntries(
     rows.map((p) => [p.name, { name: p.name, query: `"${p.name}" ${NEWS_SUFFIX}` }]),
@@ -190,7 +174,6 @@ export function RngProducersPanel() {
   const onSelect = detail.onSelect((target) => {
     const p = rows.find((r) => r.name === target?.name);
     if (!p) return null;
-    const q = get(RNG_TICKERS[p.name]);
     return {
       name: p.name,
       sub: `${p.flag} ${p.country}`,
@@ -200,13 +183,6 @@ export function RngProducersPanel() {
         { label: "RNG output", value: `${fmt(p.outputMmbtu, 1)} million MMBtu/yr` },
         { label: "Production facilities", value: `${fmt(p.facilities, 0)} plants` },
         { label: "Feedstock", value: p.feedstock },
-        { label: "Ticker", value: RNG_TICKERS[p.name] ?? "Not listed" },
-        { label: "Share price", value: q ? fmt(q.price, 2) : "—" },
-        {
-          label: "1-day change",
-          value: q ? `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%` : "—",
-          tone: detailTone(q?.changePct),
-        },
       ],
       news: { name: p.name, query: `"${p.name}" ${NEWS_SUFFIX}` },
     };
@@ -241,25 +217,16 @@ export function RngProducersPanel() {
                 "Feedstock",
                 "RNG output (million MMBtu/yr)",
                 "Production facilities",
-                "Ticker",
-                "Share price",
-                "1-day change %",
                 "Note",
               ],
-              rows: ranked.map((p) => {
-                const q = get(RNG_TICKERS[p.name]);
-                return [
+              rows: ranked.map((p) => [
                   p.name,
                   p.country,
                   p.feedstock,
                   p.outputMmbtu,
                   p.facilities,
-                  RNG_TICKERS[p.name] ?? "",
-                  q ? q.price.toFixed(2) : "",
-                  q ? q.changePct.toFixed(2) : "",
                   p.note,
-                ];
-              }),
+                ]),
             })}
           />
         }
@@ -310,9 +277,7 @@ export function RngProducersPanel() {
                 label: p.name,
                 sub: `${p.country} · ${p.feedstock} · ${p.note}`,
                 value: valueOf(p),
-                price: get(RNG_TICKERS[p.name])?.price,
-                changePct: get(RNG_TICKERS[p.name])?.changePct,
-              })),
+                          })),
             })}
           />
         }
