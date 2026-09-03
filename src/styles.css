@@ -96,6 +96,7 @@
   --ink: oklch(0.32 0.09 145);
   --ink-foreground: oklch(0.97 0.01 140);
   --ink-muted: oklch(0.78 0.05 145);
+  --ink-accent: oklch(0.86 0.14 152);
   --foreground: oklch(0.22 0.045 265);
   --surface: oklch(1 0 0);
   --surface-1: oklch(0.985 0.004 250);
@@ -228,6 +229,7 @@
   --ink: oklch(0.28 0.08 145);
   --ink-foreground: oklch(0.96 0.01 140);
   --ink-muted: oklch(0.75 0.04 145);
+  --ink-accent: oklch(0.85 0.14 152);
   --menubar-bg: oklch(0.26 0.07 145);
   --menubar-nav: oklch(0.3 0.08 145);
   --menubar-fg: oklch(0.97 0.01 140);
