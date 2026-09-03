@@ -262,31 +262,31 @@ export function SupplyProducersSection() {
           key={c.id}
           type="button"
           onClick={() => setActive(c.id)}
-          className="group flex flex-col items-start rounded-lg border border-border border-t-4 bg-white p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
-          style={{ borderTopColor: c.tone }}
+          className="group flex items-stretch overflow-hidden rounded-lg border border-border bg-white text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
         >
-          <span
-            className="inline-flex size-9 items-center justify-center rounded-md"
-            style={{ background: `color-mix(in oklab, ${c.tone} 14%, white)`, color: c.tone }}
-          >
-            <c.icon className="size-4.5" />
-          </span>
-          <h3 className="mt-3 font-display text-lg font-extrabold tracking-tight text-foreground">
-            {c.title}
-          </h3>
-          <p className="mt-1 text-sm/relaxed text-muted-foreground">{c.blurb}</p>
-          <div className="mt-4 flex w-full items-end justify-between border-t border-border pt-3">
-            <div>
-              <div className="font-display text-2xl font-extrabold tabular-nums" style={{ color: c.tone }}>
-                {c.stat}
-              </div>
-              <div className="label-mono text-muted-foreground">{c.statLabel}</div>
-            </div>
-            <span className="label-mono inline-flex items-center gap-1 font-bold text-foreground transition-transform group-hover:translate-x-0.5">
-              Explore
-              <ChevronRight className="size-3.5" />
+          <span className="w-1.5 shrink-0" style={{ background: c.tone }} aria-hidden />
+          <span className="flex min-w-0 flex-1 flex-col p-4">
+            <span className="flex items-center gap-2.5">
+              <span
+                className="inline-flex size-8 shrink-0 items-center justify-center rounded-md"
+                style={{ background: `color-mix(in oklab, ${c.tone} 14%, white)`, color: c.tone }}
+              >
+                <c.icon className="size-4" />
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate font-display text-base font-extrabold tracking-tight text-foreground">
+                  {c.title}
+                </span>
+                <span className="label-mono block text-muted-foreground">
+                  {c.stat} {c.statLabel}
+                </span>
+              </span>
+              <ChevronRight className="ml-auto size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" style={{ color: c.tone }} />
             </span>
-          </div>
+            <span className="mt-2 line-clamp-2 text-xs/relaxed text-muted-foreground sm:text-sm/relaxed">
+              {c.blurb}
+            </span>
+          </span>
         </button>
       ))}
     </div>
