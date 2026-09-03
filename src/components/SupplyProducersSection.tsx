@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Fuel, Recycle, Building2, Plane, Truck, Ship, Container, Wheat, Zap, Flame, Layers, Trees, ChevronDown } from "lucide-react";
+import { Fuel, Recycle, Building2, Plane, Truck, Ship, Container, Wheat, Zap, Flame, Layers, Trees, ArrowLeft, ChevronRight } from "lucide-react";
 import { BiofuelProductionPanel } from "@/components/BiofuelProductionPanel";
 import { UcoSuppliersPanel } from "@/components/UcoSuppliersPanel";
 import { MarineBiofuelPanel } from "@/components/MarineBiofuelPanel";
