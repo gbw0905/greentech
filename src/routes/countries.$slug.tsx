@@ -1,3 +1,4 @@
+import { CountryFlag } from "@/components/CountryFlag";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";

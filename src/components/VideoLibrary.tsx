@@ -1,3 +1,4 @@
+import { CountryFlag } from "@/components/CountryFlag";
 import { useMemo } from "react";
 import { PlayCircle, ExternalLink, Video, Search, MapPin, Scale } from "lucide-react";
 import {
