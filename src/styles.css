@@ -484,10 +484,13 @@ input.chart-select {
 
 /** Green editorial header bar used above sections and page headings. */
 @utility ink-bar {
+  /* Lift accent text (kickers, rules) to an AA-contrast tint on the dark green bar. */
+  --accent: var(--ink-accent);
+  --accent-foreground: var(--ink);
   background: linear-gradient(
     100deg,
     var(--ink) 0%,
-    color-mix(in oklab, var(--ink) 80%, var(--accent)) 100%
+    color-mix(in oklab, var(--ink) 82%, oklch(0.6 0.14 152)) 100%
   );
   color: var(--ink-foreground);
   border-radius: calc(var(--radius) + 4px);
