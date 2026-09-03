@@ -16,6 +16,7 @@ import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/componen
 import { entityLogoByName } from "@/lib/entity-logos";
 import { UCO_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
+import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/lib/market-caps";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 
@@ -86,7 +87,7 @@ const SUPPLIERS: UcoSupplier[] = [
   { name: "Vuthisa / SA waste oils", country: "South Africa", flag: "🇿🇦", volumeKt: 45, countriesServed: 2, note: "Southern African catering-oil recovery" },
 ];
 
-type Metric = "volume" | "reach" | "price";
+type Metric = "volume" | "reach" | "price" | "marketcap";
 
 const METRICS: Record<
   Metric,
@@ -113,6 +114,13 @@ const METRICS: Record<
     decimals: 2,
     value: () => 0,
   },
+  marketcap: {
+    label: "Market cap (approx.)",
+    unit: "approximate market capitalisation, USD billions",
+    help: "Approximate latest market capitalisation in USD billions, converted at recent exchange rates. Private, state-owned or unlisted entities rank last.",
+    decimals: 1,
+    value: (s) => marketCapValue(UCO_TICKERS[s.name]),
+  },
 };
 
 function scatterAxes(metricKey: Metric) {
@@ -125,6 +133,12 @@ function scatterAxes(metricKey: Metric) {
   if (metricKey === "price") {
     return {
       x: { metric: METRICS.volume, help: "X-axis shows annual UCO volume; Y-axis shows share price." },
+      size: { label: "Collection countries", unit: "countries", value: (s: UcoSupplier) => s.countriesServed },
+    };
+  }
+  if (metricKey === "marketcap") {
+    return {
+      x: { metric: METRICS.volume, help: "X-axis shows annual UCO volume; Y-axis shows market cap." },
       size: { label: "Collection countries", unit: "countries", value: (s: UcoSupplier) => s.countriesServed },
     };
   }
@@ -206,6 +220,7 @@ export function UcoSuppliersPanel() {
         { label: "Collection countries", value: fmt(s.countriesServed, 0) },
         { label: "Ticker", value: UCO_TICKERS[s.name] ?? "Not listed" },
         { label: "Share price", value: q ? fmt(q.price, 2) : "—" },
+        { label: "Market cap (approx.)", value: marketCapLabel(UCO_TICKERS[s.name]) ?? "Private / state-owned" },
         {
           label: "1-day change",
           value: q ? `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%` : "—",
@@ -247,6 +262,7 @@ export function UcoSuppliersPanel() {
               "Ticker",
               "Share price",
               "1-day change %",
+              "Market cap (approx., USD bn)",
               "Note",
             ],
             rows: ranked.map((s) => {
@@ -259,6 +275,7 @@ export function UcoSuppliersPanel() {
                 UCO_TICKERS[s.name] ?? "",
                 q ? q.price.toFixed(2) : "",
                 q ? q.changePct.toFixed(2) : "",
+                marketCapLabel(UCO_TICKERS[s.name]) ?? "",
                 s.note,
               ];
             }),
@@ -284,7 +301,7 @@ export function UcoSuppliersPanel() {
           matched={ranked.length}
         />
       }
-      footnote="Indicative annual used cooking oil collection volumes from company reports, ISCC certification registers and EU Annex IX / US RFS feedstock filings. Click any tile for the latest news."
+      footnote={`Indicative annual used cooking oil collection volumes from company reports, ISCC certification registers and EU Annex IX / US RFS feedstock filings. Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
       assistant={
         <ChartSummaryAssistant
           disabled={rows.length === 0}

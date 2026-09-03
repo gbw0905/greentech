@@ -18,6 +18,7 @@ import { detailTone, useEntityDetail, type GraphContext } from "@/components/Ent
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { downloadBrandedCsv, type BrandedExport } from "@/lib/branded-export";
 import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
+import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/lib/market-caps";
 
 const fmt = (n: number, d = 2) =>
   n.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -77,6 +78,33 @@ const COMPANY_COUNTRY: Record<string, string> = {
 
 const countryOf = (symbol: string) => COMPANY_COUNTRY[symbol] ?? "Other";
 
+/** Maps this panel's oil-company trading symbols to the tickers used by the
+ * shared market-cap dataset (which may use a different exchange suffix). */
+const MARKETCAP_TICKER: Record<string, string | null> = {
+  "2222.SR": null,
+  XOM: "XOM",
+  CVX: "CVX",
+  SHEL: "SHEL",
+  TTE: "TTE",
+  BP: "BP.L",
+  "0857.HK": "0857.HK",
+  "0386.HK": "0386.HK",
+  "0883.HK": null,
+  COP: null,
+  PSX: null,
+  MPC: null,
+  OXY: null,
+  PBR: null,
+  E: null,
+  EQNR: null,
+  "RELIANCE.NS": null,
+  "ONGC.NS": null,
+  SU: "SU.TO",
+  CNQ: null,
+};
+
+const marketCapTickerOf = (symbol: string) => MARKETCAP_TICKER[symbol] ?? null;
+
 function oilExport(rows: OilQuote[]): BrandedExport {
   const header = [
     "Company",
@@ -88,6 +116,7 @@ function oilExport(rows: OilQuote[]): BrandedExport {
     "1-day change %",
     "Annual capacity (MMboe/yr)",
     "Capacity type",
+    "Market cap (approx., USD bn)",
   ];
   const body = rows.map((q) => [
     q.label,
@@ -99,6 +128,7 @@ function oilExport(rows: OilQuote[]): BrandedExport {
     q.changePct.toFixed(2),
     capOf(q.symbol).mmboe || "",
     capOf(q.symbol).kind,
+    marketCapValue(marketCapTickerOf(q.symbol)),
   ]);
   return {
     title: "Top global oil companies — share price & output capacity",
@@ -109,7 +139,7 @@ function oilExport(rows: OilQuote[]): BrandedExport {
   };
 }
 
-type StockMetric = "price" | "change" | "capacity";
+type StockMetric = "price" | "change" | "capacity" | "marketcap";
 
 const STOCK_METRICS: Record<
   StockMetric,
@@ -142,6 +172,13 @@ const STOCK_METRICS: Record<
     decimals: 0,
     value: (q) => capOf(q.symbol).mmboe,
   },
+  marketcap: {
+    label: "Market cap (approx.)",
+    unit: "approximate market capitalisation, USD billions",
+    help: "Approximate latest market capitalisation in USD billions, converted at recent exchange rates. Private, state-owned or unlisted entities rank last.",
+    decimals: 1,
+    value: (q) => marketCapValue(marketCapTickerOf(q.symbol)),
+  },
 };
 
 /** Defines the scatter-plot axes for each selected metric so X and Y never collide. */
@@ -150,6 +187,13 @@ function scatterAxes(metricKey: StockMetric) {
     return {
       x: { metric: STOCK_METRICS.price, help: "X-axis shows the share price; Y-axis shows the 1-day move." },
       y: STOCK_METRICS.change,
+      size: { label: "Annual capacity", unit: "MMboe/yr", value: (q: OilQuote) => capOf(q.symbol).mmboe },
+    };
+  }
+  if (metricKey === "marketcap") {
+    return {
+      x: { metric: STOCK_METRICS.capacity, help: "X-axis shows annual capacity; Y-axis shows approximate market cap." },
+      y: STOCK_METRICS.marketcap,
       size: { label: "Annual capacity", unit: "MMboe/yr", value: (q: OilQuote) => capOf(q.symbol).mmboe },
     };
   }
@@ -252,6 +296,7 @@ export function OilStocksPanel() {
           tone: detailTone(q.changePct),
         },
         { label: metric.label, value: `${chartFmt(metric.value(q), metric.decimals)} ${metric.unit}` },
+        { label: "Market cap (approx.)", value: marketCapLabel(marketCapTickerOf(q.symbol)) ?? "Private / state-owned" },
       ],
       news: { name: q.label, query: `"${q.label}" oil company news` },
     };
@@ -329,8 +374,8 @@ export function OilStocksPanel() {
       }
       footnote={
         view === "scatter"
-          ? `Scatter plot: X = ${axes.x.metric.label}, Y = ${metric.label}, bubble size = ${axes.size.label}. ${axes.x.help} Capacity is approximate annual output in million barrels of oil equivalent per year. Prices refresh every five minutes and are quoted in each company's primary listing currency. Click any bubble for that company's latest news.`
-          : "Capacity is approximate annual output in million barrels of oil equivalent per year (upstream production, or crude throughput for refiners). Prices refresh every five minutes and are quoted in each company's primary listing currency. Click any row for that company's latest news."
+          ? `Scatter plot: X = ${axes.x.metric.label}, Y = ${metric.label}, bubble size = ${axes.size.label}. ${axes.x.help} Capacity is approximate annual output in million barrels of oil equivalent per year. Prices refresh every five minutes and are quoted in each company's primary listing currency. Click any bubble for that company's latest news. ${MARKET_CAP_NOTE}`
+          : `Capacity is approximate annual output in million barrels of oil equivalent per year (upstream production, or crude throughput for refiners). Prices refresh every five minutes and are quoted in each company's primary listing currency. Click any row for that company's latest news. ${MARKET_CAP_NOTE}`
       }
     >
       {sorted.length === 0 && !isLoading ? (

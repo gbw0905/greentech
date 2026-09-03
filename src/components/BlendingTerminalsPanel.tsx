@@ -17,6 +17,7 @@ import { entityLogoByName } from "@/lib/entity-logos";
 import { TERMINAL_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
+import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/lib/market-caps";
 import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 
 type Terminal = {
@@ -90,7 +91,7 @@ const TERMINALS: Terminal[] = [
   { name: "ADNOC Distribution terminals", country: "United Arab Emirates", flag: "🇦🇪", capacityKm3: 5600, terminals: 14, note: "SAF blending and dispatch for Gulf airport supply" },
 ];
 
-type Metric = "capacity" | "sites" | "price";
+type Metric = "capacity" | "sites" | "price" | "marketcap";
 
 const METRICS: Record<
   Metric,
@@ -117,12 +118,25 @@ const METRICS: Record<
     decimals: 2,
     value: () => 0,
   },
+  marketcap: {
+    label: "Market cap (approx.)",
+    unit: "approximate market capitalisation, USD billions",
+    help: "Approximate latest market capitalisation in USD billions, converted at recent exchange rates. Private, state-owned or unlisted entities rank last.",
+    decimals: 1,
+    value: (t) => marketCapValue(TERMINAL_TICKERS[t.name]),
+  },
 };
 
 function scatterAxes(metricKey: Metric) {
   if (metricKey === "capacity") {
     return {
       x: { metric: METRICS.sites, help: "X-axis shows terminal count; Y-axis shows blending capacity." },
+      size: { label: "Blending capacity", unit: "k m³/yr", value: (t: Terminal) => t.capacityKm3 },
+    };
+  }
+  if (metricKey === "marketcap") {
+    return {
+      x: { metric: METRICS.capacity, help: "X-axis shows blending capacity; Y-axis shows approximate market cap." },
       size: { label: "Blending capacity", unit: "k m³/yr", value: (t: Terminal) => t.capacityKm3 },
     };
   }
@@ -209,6 +223,7 @@ export function BlendingTerminalsPanel() {
           value: q ? `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%` : "—",
           tone: detailTone(q?.changePct),
         },
+        { label: "Market cap (approx.)", value: marketCapLabel(TERMINAL_TICKERS[t.name]) ?? "Private / state-owned" },
       ],
       news: { name: t.name, query: `"${t.name}" ${NEWS_SUFFIX}` },
     };
@@ -245,6 +260,7 @@ export function BlendingTerminalsPanel() {
                 "Ticker",
                 "Share price",
                 "1-day change %",
+                "Market cap (approx., USD bn)",
                 "Note",
               ],
               rows: ranked.map((t) => {
@@ -257,6 +273,7 @@ export function BlendingTerminalsPanel() {
                   TERMINAL_TICKERS[t.name] ?? "",
                   q ? q.price.toFixed(2) : "",
                   q ? q.changePct.toFixed(2) : "",
+                  marketCapLabel(TERMINAL_TICKERS[t.name]) ?? "",
                   t.note,
                 ];
               }),
@@ -282,7 +299,7 @@ export function BlendingTerminalsPanel() {
             matched={ranked.length}
           />
         }
-        footnote="Indicative blending throughput and terminal counts from operator annual reports, terminal registries and national fuel-obligation filings. Click any tile for the latest news."
+        footnote={`Indicative blending throughput and terminal counts from operator annual reports, terminal registries and national fuel-obligation filings. Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
         assistant={
           <ChartSummaryAssistant
             disabled={rows.length === 0}

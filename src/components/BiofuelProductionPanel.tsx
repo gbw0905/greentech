@@ -19,6 +19,7 @@ import { entityLogoByName } from "@/lib/entity-logos";
 import type { FuelType } from "@/lib/policy-taxonomy";
 import { STATION_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
+import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/lib/market-caps";
 
 type Station = {
   name: string;
@@ -142,7 +143,7 @@ const STATIONS: Station[] = [
 
 
 
-type StationMetric = "sites" | "volume" | "perSite" | "price";
+type StationMetric = "sites" | "volume" | "perSite" | "price" | "marketcap";
 
 const STATION_METRICS: Record<
   StationMetric,
@@ -176,6 +177,13 @@ const STATION_METRICS: Record<
     decimals: 2,
     value: () => 0,
   },
+  marketcap: {
+    label: "Market cap (approx.)",
+    unit: "approximate market capitalisation, USD billions",
+    help: "Approximate latest market capitalisation in USD billions, converted at recent exchange rates. Private, state-owned or unlisted entities rank last.",
+    decimals: 1,
+    value: (s) => marketCapValue(STATION_TICKERS[s.name]),
+  },
 };
 
 function perSiteValue(s: Station) {
@@ -203,6 +211,13 @@ function scatterAxes(metricKey: StationMetric) {
       x: { metric: STATION_METRICS.sites, help: "X-axis shows network size; Y-axis shows throughput per site." },
       y: STATION_METRICS.perSite,
       size: { label: "Biofuel volume sold", unit: "Ml/yr", value: (s: Station) => s.volumeMnL },
+    };
+  }
+  if (metricKey === "marketcap") {
+    return {
+      x: { metric: STATION_METRICS.volume, help: "X-axis shows total volume sold; Y-axis shows market cap." },
+      y: STATION_METRICS.marketcap,
+      size: { label: "Retail sites", unit: "sites", value: (s: Station) => s.sites },
     };
   }
   return {
@@ -293,6 +308,7 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
         { label: "Biofuel volume sold", value: `${fmt(s.volumeMnL, 0)} Ml/yr` },
         { label: "Ticker", value: STATION_TICKERS[s.name] ?? "Not listed" },
         { label: "Share price", value: q ? fmt(q.price, 2) : "—" },
+        { label: "Market cap (approx.)", value: marketCapLabel(STATION_TICKERS[s.name]) ?? "Private / state-owned" },
         {
           label: "1-day change",
           value: q ? `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%` : "—",
@@ -336,6 +352,7 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
               "Ticker",
               "Share price",
               "1-day change %",
+              "Market cap (approx., USD bn)",
               "Note",
             ],
             rows: ranked.map((s) => {
@@ -350,6 +367,7 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
                 STATION_TICKERS[s.name] ?? "",
                 q ? q.price.toFixed(2) : "",
                 q ? q.changePct.toFixed(2) : "",
+                marketCapLabel(STATION_TICKERS[s.name]) ?? "",
                 s.note,
               ];
             }),
@@ -378,8 +396,8 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
       }
       footnote={
         view === "scatter"
-          ? `Scatter plot: X = ${axes.x.metric.label}, Y = ${metric.label}, bubble size = ${axes.size.label}. ${axes.x.help} Approximate site counts from company retail disclosures and national blending programmes. Click any bubble to open the latest news for that network.`
-          : "Approximate site counts from company retail disclosures and national blending programmes. Click any row to open the latest news for that network."
+          ? `Scatter plot: X = ${axes.x.metric.label}, Y = ${metric.label}, bubble size = ${axes.size.label}. ${axes.x.help} Approximate site counts from company retail disclosures and national blending programmes. Click any bubble to open the latest news for that network. ${MARKET_CAP_NOTE}`
+          : `Approximate site counts from company retail disclosures and national blending programmes. Click any row to open the latest news for that network. ${MARKET_CAP_NOTE}`
       }
       assistant={
         <ChartSummaryAssistant

@@ -16,6 +16,8 @@ import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/componen
 import { entityLogoByName } from "@/lib/entity-logos";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
+import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/lib/market-caps";
+import { BIOCHAR_TICKERS } from "@/lib/entity-tickers";
 
 type Producer = {
   name: string;
@@ -72,7 +74,7 @@ const PRODUCERS: Producer[] = [
   { name: "Nippon Biochar / Kuraray", country: "Japan", flag: "🇯🇵", capacityT: 4000, co2RemovalT: 8000, feedstock: "Wood / coconut shell", note: "Industrial carbon producer entering agricultural biochar J-Credits" },
 ];
 
-type Metric = "capacity" | "removal";
+type Metric = "capacity" | "removal" | "marketcap";
 
 const METRICS: Record<
   Metric,
@@ -92,12 +94,25 @@ const METRICS: Record<
     decimals: 0,
     value: (p) => p.co2RemovalT,
   },
+  marketcap: {
+    label: "Market cap (approx.)",
+    unit: "approximate market capitalisation, USD billions",
+    help: "Approximate latest market capitalisation in USD billions, converted at recent exchange rates. Private, state-owned or unlisted entities rank last.",
+    decimals: 1,
+    value: (p) => marketCapValue(BIOCHAR_TICKERS[p.name]),
+  },
 };
 
 function scatterAxes(metricKey: Metric) {
   if (metricKey === "capacity") {
     return {
       x: { metric: METRICS.removal, help: "X-axis shows durable CO₂ removal; Y-axis shows biochar capacity." },
+      size: { label: "Biochar capacity", unit: "t/yr", value: (p: Producer) => p.capacityT },
+    };
+  }
+  if (metricKey === "marketcap") {
+    return {
+      x: { metric: METRICS.capacity, help: "X-axis shows biochar capacity; Y-axis shows approximate market cap." },
       size: { label: "Biochar capacity", unit: "t/yr", value: (p: Producer) => p.capacityT },
     };
   }
@@ -174,6 +189,7 @@ export function BiocharProducersPanel() {
         { label: "Biochar capacity", value: `${fmt(p.capacityT, 0)} t/yr` },
         { label: "Durable CO₂ removal", value: `${fmt(p.co2RemovalT, 0)} tCO₂e/yr` },
         { label: "Feedstock", value: p.feedstock },
+        { label: "Market cap (approx.)", value: marketCapLabel(BIOCHAR_TICKERS[p.name]) ?? "Private / state-owned" },
       ],
       news: { name: p.name, query: `"${p.name}" ${NEWS_SUFFIX}` },
     };
@@ -208,6 +224,7 @@ export function BiocharProducersPanel() {
                 "Feedstock",
                 "Biochar capacity (t/yr)",
                 "Durable CO2 removal (tCO2e/yr)",
+                "Market cap (approx., USD bn)",
                 "Note",
               ],
               rows: ranked.map((p) => [
@@ -216,6 +233,7 @@ export function BiocharProducersPanel() {
                   p.feedstock,
                   p.capacityT,
                   p.co2RemovalT,
+                  marketCapValue(BIOCHAR_TICKERS[p.name]),
                   p.note,
                 ]),
             })}
@@ -247,7 +265,7 @@ export function BiocharProducersPanel() {
             matched={ranked.length}
           />
         }
-        footnote="Indicative capacities from producer disclosures, the International Biochar Initiative, European Biochar Certificate and Puro.earth / Carbonfuture registries. Click any tile for the latest news."
+        footnote={`Indicative capacities from producer disclosures, the International Biochar Initiative, European Biochar Certificate and Puro.earth / Carbonfuture registries. Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
         assistant={
           <ChartSummaryAssistant
             disabled={rows.length === 0}

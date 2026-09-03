@@ -16,6 +16,7 @@ import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/componen
 import { entityLogoByName } from "@/lib/entity-logos";
 import { AIRLINE_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
+import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/lib/market-caps";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 
@@ -59,7 +60,7 @@ const AIRLINES: Airline[] = [
   { code: "NZ", name: "Air New Zealand", country: "New Zealand", flag: "🇳🇿", volume: 4, share: 0.4, note: "Neste imports and domestic SAF development." },
 ];
 
-type AirlineMetric = "volume" | "share" | "price";
+type AirlineMetric = "volume" | "share" | "price" | "marketcap";
 
 const AIRLINE_METRICS: Record<
   AirlineMetric,
@@ -86,6 +87,13 @@ const AIRLINE_METRICS: Record<
     decimals: 2,
     value: () => 0,
   },
+  marketcap: {
+    label: "Market cap (approx.)",
+    unit: "approximate market capitalisation, USD billions",
+    help: "Approximate latest market capitalisation in USD billions, converted at recent exchange rates. Private, state-owned or unlisted entities rank last.",
+    decimals: 1,
+    value: (a) => marketCapValue(AIRLINE_TICKERS[a.code]),
+  },
 };
 
 /** Defines the scatter-plot axes for each selected metric so X and Y never collide. */
@@ -101,6 +109,13 @@ function scatterAxes(metricKey: AirlineMetric) {
     return {
       x: { metric: AIRLINE_METRICS.share, help: "X-axis shows SAF intensity; Y-axis shows share price." },
       y: AIRLINE_METRICS.price,
+      size: { label: "SAF uplift volume", unit: "Ml/yr", value: (a: Airline) => a.volume },
+    };
+  }
+  if (metricKey === "marketcap") {
+    return {
+      x: { metric: AIRLINE_METRICS.volume, help: "X-axis shows absolute SAF volume; Y-axis shows market cap." },
+      y: AIRLINE_METRICS.marketcap,
       size: { label: "SAF uplift volume", unit: "Ml/yr", value: (a: Airline) => a.volume },
     };
   }
@@ -184,6 +199,7 @@ export function SafAirlinesPanel() {
         { label: "SAF share of fuel burn", value: `${fmt(a.share, 2)}%` },
         { label: "Ticker", value: AIRLINE_TICKERS[a.code] ?? "Not listed" },
         { label: "Share price", value: q ? fmt(q.price, 2) : "—" },
+        { label: "Market cap (approx.)", value: marketCapLabel(AIRLINE_TICKERS[a.code]) ?? "Private / state-owned" },
         {
           label: "1-day change",
           value: q ? `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%` : "—",
@@ -226,6 +242,7 @@ export function SafAirlinesPanel() {
               "Ticker",
               "Share price",
               "1-day change %",
+              "Market cap (approx., USD bn)",
               "Note",
             ],
             rows: ranked.map((a) => {
@@ -239,6 +256,7 @@ export function SafAirlinesPanel() {
                 AIRLINE_TICKERS[a.code] ?? "",
                 q ? q.price.toFixed(2) : "",
                 q ? q.changePct.toFixed(2) : "",
+                marketCapLabel(AIRLINE_TICKERS[a.code]) ?? "",
                 a.note,
               ];
             }),
@@ -288,8 +306,8 @@ export function SafAirlinesPanel() {
       }
       footnote={
         view === "scatter"
-          ? `Scatter plot: X = ${axes.x.metric.label}, Y = ${metric.label}, bubble size = ${axes.size.label}. ${axes.x.help} Estimates from airline sustainability reports, offtake announcements and regulatory disclosures. Click any bubble for the latest SAF news for that carrier.`
-          : "Estimates from airline sustainability reports, offtake announcements and regulatory disclosures. Click any row for the latest SAF news for that carrier."
+          ? `Scatter plot: X = ${axes.x.metric.label}, Y = ${metric.label}, bubble size = ${axes.size.label}. ${axes.x.help} Estimates from airline sustainability reports, offtake announcements and regulatory disclosures. Click any bubble for the latest SAF news for that carrier. ${MARKET_CAP_NOTE}`
+          : `Estimates from airline sustainability reports, offtake announcements and regulatory disclosures. Click any row for the latest SAF news for that carrier. ${MARKET_CAP_NOTE}`
       }
     >
       {sorted.length === 0 ? (
