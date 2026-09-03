@@ -1,3 +1,4 @@
+import { CountryFlag } from "@/components/CountryFlag";
 import { useMemo } from "react";
 import { PlayCircle, ExternalLink, Video, Search, MapPin, Scale } from "lucide-react";
 import {
@@ -287,7 +288,7 @@ export function VideoLibrary({
                         : "border-border bg-surface-2 text-muted-foreground hover:border-primary hover:text-primary"
                     }`}
                   >
-                    {flagFor(slug)} {nameFor(slug)}
+                    <CountryFlag slug={slug} className="mr-1" /> {nameFor(slug)}
                   </button>
                 ))}
               </div>

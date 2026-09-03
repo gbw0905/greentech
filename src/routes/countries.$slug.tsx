@@ -1,3 +1,4 @@
+import { CountryFlag } from "@/components/CountryFlag";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
@@ -113,7 +114,7 @@ function CountryPage() {
           </span>
         </div>
         <h1 className="mt-3 flex items-center gap-3 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
-          <span aria-hidden>{flagFor(country.slug)}</span>
+          <CountryFlag slug={country.slug} />
           {country.name}
         </h1>
         <p className="mt-4 max-w-2xl text-base/relaxed text-muted-foreground">{country.blurb}</p>
