@@ -30,7 +30,7 @@ export const Route = createFileRoute("/contact")({
 function ContactPage() {
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-30 border-b border-white/30 bg-black text-white backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b border-menubar-fg/10 bg-menubar-bg text-menubar-fg backdrop-blur-xl">
         <div className="mx-auto flex max-w-[80rem] items-center justify-between gap-2 px-4 py-2 sm:gap-4 sm:px-5 sm:py-2.5 lg:px-8">
           <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
             <Link to="/" className="shrink-0">
