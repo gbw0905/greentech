@@ -710,3 +710,68 @@ input.chart-select {
     border-color: color-mix(in oklab, var(--accent) 45%, var(--border));
   }
 }
+
+/* ---------- motion: flip transitions ---------------------------------- */
+
+@keyframes flip-in-x {
+  from {
+    opacity: 0;
+    transform: perspective(900px) rotateX(-14deg) translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(900px) rotateX(0) translateY(0);
+  }
+}
+
+@keyframes flip-in-y {
+  from {
+    opacity: 0;
+    transform: perspective(900px) rotateY(12deg) translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(900px) rotateY(0) translateX(0);
+  }
+}
+
+/** Card flip-in (top-down flip). Use with inline animation-delay for stagger. */
+@utility flip-in {
+  animation: flip-in-x 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: top center;
+  backface-visibility: hidden;
+}
+
+/** Workspace flip-in (side flip) when a cascade opens. */
+@utility flip-in-side {
+  animation: flip-in-y 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: left center;
+  backface-visibility: hidden;
+}
+
+/** Interactive flip tilt on hover for cascade cards. */
+@utility flip-tilt {
+  transition:
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.3s ease;
+  transform-style: preserve-3d;
+  &:hover {
+    transform: perspective(900px) rotateX(4deg) translateY(-3px);
+    box-shadow: 0 20px 40px -20px rgb(0 0 0 / 0.45);
+  }
+  &:active {
+    transform: perspective(900px) rotateX(0) scale(0.98);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flip-in,
+  .flip-in-side {
+    animation: none;
+  }
+  .flip-tilt,
+  .flip-tilt:hover,
+  .flip-tilt:active {
+    transform: none;
+  }
+}

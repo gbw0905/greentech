@@ -198,13 +198,14 @@ export function SupplyProducersSection() {
 
       {/* Overview card grid */}
       {!activeCard ? (
-        <div className="grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {CARDS.map((c) => (
+        <div className="grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3" style={{ perspective: "900px" }}>
+          {CARDS.map((c, i) => (
             <button
               key={c.id}
               type="button"
               onClick={() => setActive(c.id)}
-              className="glass-panel group relative flex min-w-0 flex-col gap-2 overflow-hidden p-4 text-left transition-shadow hover:shadow-lg"
+              className="glass-panel flip-in flip-tilt group relative flex min-w-0 flex-col gap-2 overflow-hidden p-4 text-left"
+              style={{ animationDelay: `${i * 55}ms` }}
             >
               <span
                 className="absolute inset-x-0 top-0 h-1"
@@ -243,7 +244,7 @@ export function SupplyProducersSection() {
         </div>
       ) : (
         /* Cascaded workspace for the selected dataset */
-        <div className="flex w-full min-w-0 flex-col gap-3">
+        <div key={activeCard.id} className="flip-in-side flex w-full min-w-0 flex-col gap-3" style={{ perspective: "900px" }}>
           <div className="glass-panel hidden flex-wrap items-center gap-1 overflow-x-auto p-1.5 sm:flex">
             <button
               type="button"
