@@ -398,21 +398,6 @@ export const BIOPOWER_TICKERS: Record<string, string | null> = {
   "Hitachi Zosen Inova": "7004.T",
 };
 
-/** Every ticker the entity-quote feed needs to fetch. */
-export const ALL_ENTITY_TICKERS: string[] = Array.from(
-  new Set(
-    [
-      ...Object.values(AIRLINE_TICKERS),
-      ...Object.values(CARRIER_TICKERS),
-      ...Object.values(STATION_TICKERS),
-      ...Object.values(UCO_TICKERS),
-      ...Object.values(MARINE_TICKERS),
-      ...Object.values(TERMINAL_TICKERS),
-      ...Object.values(ETHANOL_TICKERS),
-      ...Object.values(BIOPOWER_TICKERS),
-    ].filter((t): t is string => Boolean(t)),
-  ),
-);
 
 
 
@@ -536,3 +521,22 @@ export const PELLET_TICKERS: Record<string, string | null> = {
   "AS Graanul Baltics": null,
   "Canada Wood Pellet Association members": null,
 };
+
+/** Every ticker the entity-quote feed needs to fetch. */
+export const ALL_ENTITY_TICKERS: string[] = Array.from(
+  new Set(
+    [
+      ...Object.values(AIRLINE_TICKERS),
+      ...Object.values(CARRIER_TICKERS),
+      ...Object.values(STATION_TICKERS),
+      ...Object.values(UCO_TICKERS),
+      ...Object.values(MARINE_TICKERS),
+      ...Object.values(TERMINAL_TICKERS),
+      ...Object.values(ETHANOL_TICKERS),
+      ...Object.values(BIOPOWER_TICKERS),
+      ...Object.values(RNG_TICKERS),
+      ...Object.values(BIOCHAR_TICKERS),
+      ...Object.values(PELLET_TICKERS),
+    ].filter((t): t is string => Boolean(t)),
+  ),
+);
