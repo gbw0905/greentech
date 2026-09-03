@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { Loader2, Mail } from "lucide-react";
+import { Loader2, Lock, Mail } from "lucide-react";
+import { useAuthSession } from "@/hooks/useAuthSession";
+import { SignInPrompt } from "@/components/SignInPrompt";
 import { emailChartSummaryFn } from "@/lib/chart-summary.functions";
 import type { SummaryRow } from "@/lib/chart-summary.server";
 
@@ -28,6 +30,7 @@ export function ChartSummaryAssistant({
   /** When supplied, the email form is rendered into this DOM node instead of inline. */
   portalTarget?: HTMLElement | null;
 }) {
+  const { user, signedIn } = useAuthSession();
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
@@ -53,7 +56,7 @@ export function ChartSummaryAssistant({
     }
   }
 
-  const panel = open ? (
+  const formPanel = (
     <div className="mt-2 rounded-sm border border-border bg-background p-3">
       <p className="mb-2 text-sm text-muted-foreground">
         We write a full analyst summary of the rows and measure currently shown — including the
@@ -87,7 +90,13 @@ export function ChartSummaryAssistant({
         cross-verify against the referenced primary sources.
       </p>
     </div>
-  ) : null;
+  );
+
+  const panel = open
+    ? signedIn
+      ? formPanel
+      : <SignInPrompt action="email yourself this analyst summary" />
+    : null;
 
   return (
     <>
@@ -95,10 +104,10 @@ export function ChartSummaryAssistant({
         type="button"
         onClick={() => setOpen((v) => !v)}
         disabled={disabled}
-        title="Email a full analyst summary of the rows and measure currently shown, with data sources"
+        title={signedIn ? "Email a full analyst summary of the rows and measure currently shown, with data sources" : "Sign in to email this summary"}
         className="inline-flex shrink-0 items-center gap-1.5 border border-ink bg-ink px-2.5 py-1.5 text-xs font-semibold text-ink-foreground transition-opacity hover:opacity-85 disabled:opacity-40"
       >
-        <Mail className="size-3.5" />
+        {signedIn ? <Mail className="size-3.5" /> : <Lock className="size-3.5" />}
         Email summary
       </button>
 
