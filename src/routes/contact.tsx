@@ -118,9 +118,9 @@ function ContactPage() {
         </div>
       </main>
 
-      <footer className="border-t border-border bg-black py-8 text-white">
+      <footer className="border-t border-border bg-menubar-bg py-8 text-menubar-fg">
         <div className="mx-auto max-w-[80rem] px-5 lg:px-8">
-          <p className="text-xs text-white/70">
+          <p className="text-xs text-menubar-muted">
             Updates are aggregated from live web sources and auto-classified by jurisdiction and fuel type. Verify
             against primary legislation before use in compliance decisions.
           </p>
