@@ -53,7 +53,7 @@ function ContactPage() {
           </div>
           <Link
             to="/"
-            className="label-mono inline-flex shrink-0 items-center gap-2 border border-white/40 bg-black px-2.5 py-1.5 font-bold text-white transition-all hover:border-white hover:bg-white/10 sm:px-3.5 sm:py-2"
+            className="label-mono inline-flex shrink-0 items-center gap-2 border border-menubar-fg/40 bg-menubar-nav px-2.5 py-1.5 font-bold text-menubar-fg transition-all hover:border-menubar-fg hover:bg-menubar-fg/10 sm:px-3.5 sm:py-2"
           >
             <ArrowLeft className="size-3.5" />
             <span className="hidden sm:inline">Back to dashboard</span>
