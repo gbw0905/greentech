@@ -93,9 +93,9 @@
   --radius: 0.5rem;
   /* Editorial navy on paper — research-desk palette */
   --background: oklch(0.968 0.007 250);
-  --ink: oklch(0.26 0.06 158);
-  --ink-foreground: oklch(0.97 0.008 130);
-  --ink-muted: oklch(0.8 0.03 150);
+  --ink: oklch(0.32 0.09 145);
+  --ink-foreground: oklch(0.97 0.01 140);
+  --ink-muted: oklch(0.78 0.05 145);
   --foreground: oklch(0.22 0.045 265);
   --surface: oklch(1 0 0);
   --surface-1: oklch(0.985 0.004 250);
