@@ -91,7 +91,7 @@ function SectionHeading({
 }) {
   return (
     <div
-      className="ink-bar mb-4 border-l-4 px-4 py-3 sm:px-5"
+      className="ink-bar ribbon-sheen mb-4 border-l-4 px-4 py-3 sm:px-5"
       style={{
         ["--tone" as string]: `color-mix(in oklab, ${tone} 62%, white)`,
         borderLeftColor: "var(--tone)",
@@ -186,7 +186,7 @@ function Dashboard() {
               type="button"
               onClick={() => rescan.mutate()}
               disabled={busy}
-              className="label-mono inline-flex items-center gap-2 rounded-md bg-menubar-fg px-3 py-1.5 font-bold text-menubar-bg transition-colors hover:opacity-90 disabled:opacity-60 sm:px-3.5 sm:py-2"
+              className="label-mono pill-motion inline-flex items-center gap-2 rounded-md bg-menubar-fg px-3 py-1.5 font-bold text-menubar-bg hover:opacity-90 disabled:opacity-60 sm:px-3.5 sm:py-2"
             >
               <RefreshCw className={`size-3.5 ${busy ? "animate-spin" : ""}`} />
               Rescan
@@ -201,14 +201,14 @@ function Dashboard() {
             <a
               key={s.href}
               href={s.href}
-              className="label-mono group inline-flex min-w-max items-center justify-center gap-2 text-center whitespace-nowrap border border-menubar-fg/40 bg-menubar-nav px-3 py-1.5 text-xs font-extrabold text-menubar-fg shadow-sm transition-all hover:border-menubar-fg hover:bg-menubar-fg/10 sm:flex-1 sm:px-4 sm:py-2"
+              className="label-mono pill-motion group inline-flex min-w-max items-center justify-center gap-2 text-center whitespace-nowrap border border-menubar-fg/40 bg-menubar-nav px-3 py-1.5 text-xs font-extrabold text-menubar-fg shadow-sm hover:border-menubar-fg hover:bg-menubar-fg/10 sm:flex-1 sm:px-4 sm:py-2"
             >
               {s.label}
             </a>
           ))}
           <Link
             to="/data-sources"
-            className="label-mono group inline-flex min-w-max items-center justify-center gap-2 text-center whitespace-nowrap border border-menubar-fg/40 bg-menubar-nav px-3 py-1.5 text-xs font-extrabold text-menubar-fg shadow-sm transition-all hover:border-menubar-fg hover:bg-menubar-fg/10 sm:flex-1 sm:px-4 sm:py-2"
+            className="label-mono pill-motion group inline-flex min-w-max items-center justify-center gap-2 text-center whitespace-nowrap border border-menubar-fg/40 bg-menubar-nav px-3 py-1.5 text-xs font-extrabold text-menubar-fg shadow-sm hover:border-menubar-fg hover:bg-menubar-fg/10 sm:flex-1 sm:px-4 sm:py-2"
           >
             Data sources
           </Link>
@@ -220,7 +220,7 @@ function Dashboard() {
 
         <main className="space-y-8">
           <section className="grid items-stretch gap-5 lg:grid-cols-[1.1fr_minmax(0,1fr)]">
-            <div className="h-full rounded-lg border border-border bg-white px-6 py-6 shadow-sm sm:px-8 sm:py-7">
+            <div className="card-motion h-full rounded-lg border border-border bg-white px-6 py-6 shadow-sm sm:px-8 sm:py-7">
               <div className="kicker inline-flex items-center gap-2 text-muted-foreground">
                 <span className="size-1.5 rounded-full bg-accent" />
                 Live policy &amp; market intelligence
@@ -249,7 +249,7 @@ function Dashboard() {
               </dl>
             </div>
 
-            <div className="flex flex-col rounded-lg border border-border bg-white p-4 shadow-sm">
+            <div className="card-motion flex flex-col rounded-lg border border-border bg-white p-4 shadow-sm">
               <div className="mb-2.5 flex items-baseline justify-between gap-3 border-b border-border pb-2">
                 <span className="kicker">Top 5 latest updates</span>
                 <span className="label-mono text-muted-foreground/70">Live</span>
@@ -279,7 +279,7 @@ function Dashboard() {
             </p>
           )}
 
-          <section id="markets">
+          <section id="markets" className="reveal">
             <SectionHeading
               tone="var(--chart-2)"
               kicker="Markets"
@@ -290,7 +290,7 @@ function Dashboard() {
             <OilPricePanel />
           </section>
 
-          <section id="map" className="pt-4">
+          <section id="map" className="reveal pt-4">
             <SectionHeading
               tone="var(--chart-3)"
               kicker="Jurisdiction map"
@@ -315,7 +315,7 @@ function Dashboard() {
             </div>
           </section>
 
-          <section id="production" className="pt-4">
+          <section id="production" className="reveal pt-4">
             <SectionHeading
               tone="var(--chart-6)"
               kicker="Supply & producers"
@@ -326,7 +326,7 @@ function Dashboard() {
             <SupplyProducersSection />
           </section>
 
-          <section id="jobs" className="pt-4">
+          <section id="jobs" className="reveal pt-4">
             <SectionHeading
               tone="var(--chart-7)"
               kicker="Careers"
@@ -337,7 +337,7 @@ function Dashboard() {
             <JobsPanel compact />
           </section>
 
-          <div className="pt-4">
+          <div className="reveal pt-4">
             <section id="alerts">
               <SectionHeading
                 tone="var(--chart-4)"
@@ -352,7 +352,7 @@ function Dashboard() {
 
           <TrafficPanel />
 
-          <section id="disclaimer">
+          <section id="disclaimer" className="reveal">
             <SectionHeading
               tone="var(--chart-8)"
               kicker="Editorial standards"
@@ -380,7 +380,7 @@ function Dashboard() {
               ].map((c) => (
                 <div
                   key={c.h}
-                  className="glass-panel border-t-4 p-5"
+                  className="glass-panel card-motion border-t-4 p-5"
                   style={{
                     borderTopColor: c.tone,
                     background: `color-mix(in oklab, ${c.tone} 7%, white)`,
