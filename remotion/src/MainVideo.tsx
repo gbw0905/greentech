@@ -1,5 +1,5 @@
 import React from "react";
-import { AbsoluteFill } from "remotion";
+import { AbsoluteFill, Audio, staticFile } from "remotion";
 import { TransitionSeries, springTiming, linearTiming } from "@remotion/transitions";
 import { wipe } from "@remotion/transitions/wipe";
 import { slide } from "@remotion/transitions/slide";
@@ -15,6 +15,7 @@ import { CloseScene } from "./scenes/CloseScene";
 export const MainVideo: React.FC = () => (
   <AbsoluteFill>
     <PersistentBackground />
+    <Audio src={staticFile("vo.mp3")} />
     <TransitionSeries>
       <TransitionSeries.Sequence durationInFrames={100}>
         <HookScene />
@@ -44,7 +45,7 @@ export const MainVideo: React.FC = () => (
         presentation={wipe({ direction: "from-right" })}
         timing={springTiming({ config: { damping: 200 }, durationInFrames: 20 })}
       />
-      <TransitionSeries.Sequence durationInFrames={120}>
+      <TransitionSeries.Sequence durationInFrames={140}>
         <CloseScene />
       </TransitionSeries.Sequence>
     </TransitionSeries>

@@ -28,9 +28,9 @@ await renderMedia({
   composition,
   serveUrl: bundled,
   codec: "h264",
-  outputLocation: "/mnt/documents/global-bioenergy-watch-explainer.mp4",
+  outputLocation: "/mnt/documents/global-bioenergy-watch-explainer-voiced.mp4",
   puppeteerInstance: browser,
-  muted: true,
+  audioCodec: "aac",
   concurrency: 1,
 });
 
