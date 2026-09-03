@@ -465,6 +465,18 @@ input.chart-select {
   }
 }
 
+@keyframes brand-gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
 @keyframes pulse-ring {
   0% {
     box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary) 55%, transparent);
