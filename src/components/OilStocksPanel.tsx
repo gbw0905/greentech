@@ -81,7 +81,7 @@ const countryOf = (symbol: string) => COMPANY_COUNTRY[symbol] ?? "Other";
 /** Maps this panel's oil-company trading symbols to the tickers used by the
  * shared market-cap dataset (which may use a different exchange suffix). */
 const MARKETCAP_TICKER: Record<string, string | null> = {
-  "2222.SR": null,
+  "2222.SR": "2222.SR",
   XOM: "XOM",
   CVX: "CVX",
   SHEL: "SHEL",
@@ -89,18 +89,18 @@ const MARKETCAP_TICKER: Record<string, string | null> = {
   BP: "BP.L",
   "0857.HK": "0857.HK",
   "0386.HK": "0386.HK",
-  "0883.HK": null,
-  COP: null,
-  PSX: null,
-  MPC: null,
-  OXY: null,
-  PBR: null,
-  E: null,
-  EQNR: null,
-  "RELIANCE.NS": null,
-  "ONGC.NS": null,
+  "0883.HK": "0883.HK",
+  COP: "COP",
+  PSX: "PSX",
+  MPC: "MPC",
+  OXY: "OXY",
+  PBR: "PBR",
+  E: "E",
+  EQNR: "EQNR",
+  "RELIANCE.NS": "RELIANCE.NS",
+  "ONGC.NS": "ONGC.NS",
   SU: "SU.TO",
-  CNQ: null,
+  CNQ: "CNQ",
 };
 
 const marketCapTickerOf = (symbol: string) => MARKETCAP_TICKER[symbol] ?? null;

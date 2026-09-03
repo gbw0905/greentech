@@ -9,6 +9,8 @@
 export const MARKET_CAP_USD_BN: Record<string, number> = {
   // --- Oil & energy majors ---
   XOM: 480, CVX: 305, SHEL: 225, TTE: 155, "BP.L": 85, "ENI.MI": 50,
+  "2222.SR": 1700, COP: 130, PSX: 60, MPC: 55, OXY: 45, PBR: 90, E: 50,
+  EQNR: 75, "RELIANCE.NS": 230, "ONGC.NS": 40, CNQ: 70, "0883.HK": 110,
   "REP.MC": 19, "OMV.VI": 15, "GALP.LS": 13, "PKN.WA": 12, "MOL.BD": 8,
   "NESTE.HE": 16, "SOL.JO": 6, YPF: 14, "0386.HK": 100, "0857.HK": 220,
   "IOC.NS": 26, "BPCL.NS": 17, "HINDPETRO.NS": 8, "5019.T": 8, "5020.T": 16,
