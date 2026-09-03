@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Linkedin } from "lucide-react";
 import siteLogo from "@/assets/logo.png";
+import { AuthButton } from "@/components/AuthButton";
 
 export function PageShell({
   children,
@@ -37,6 +38,7 @@ export function PageShell({
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            <AuthButton />
             <Link
               to="/"
               className="label-mono pill-motion inline-flex shrink-0 items-center gap-2 border border-menubar-fg/40 bg-menubar-nav px-2.5 py-1.5 font-bold text-menubar-fg hover:border-menubar-fg hover:bg-menubar-fg/10 sm:px-3.5 sm:py-2"

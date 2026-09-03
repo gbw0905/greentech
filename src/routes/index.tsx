@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { RefreshCw, AlertTriangle, Map, Factory, TrendingUp, BellRing, Briefcase, Linkedin } from "lucide-react";
 import { refreshPolicyFeed } from "@/lib/policy.functions";
 import { feedQueryWithInitial, loadFeed } from "@/lib/feed-query";
+import { AuthButton } from "@/components/AuthButton";
 import siteLogo from "@/assets/logo.png";
 import { UpdateCard, formatDate } from "@/components/UpdateCard";
 import { WorldPolicyMap } from "@/components/WorldPolicyMap";
@@ -182,6 +183,7 @@ function Dashboard() {
                 {busy && !feed ? "scanning…" : formatDate(data.fetchedAt)}
               </div>
             </div>
+            <AuthButton />
             <button
               type="button"
               onClick={() => rescan.mutate()}
