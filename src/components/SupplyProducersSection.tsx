@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Fuel, Recycle, Building2, Plane, Truck, Ship, Container, Wheat, Zap, ChevronRight } from "lucide-react";
+import { Fuel, Recycle, Building2, Plane, Truck, Ship, Container, Wheat, Zap, Flame, Layers, Trees, ChevronRight } from "lucide-react";
 import { BiofuelProductionPanel } from "@/components/BiofuelProductionPanel";
 import { UcoSuppliersPanel } from "@/components/UcoSuppliersPanel";
 import { MarineBiofuelPanel } from "@/components/MarineBiofuelPanel";
@@ -9,8 +9,23 @@ import { CarriersPanel } from "@/components/CarriersPanel";
 import { BlendingTerminalsPanel } from "@/components/BlendingTerminalsPanel";
 import { EthanolProductionPanel } from "@/components/EthanolProductionPanel";
 import { BioPowerGeneratorsPanel } from "@/components/BioPowerGeneratorsPanel";
+import { RngProducersPanel } from "@/components/RngProducersPanel";
+import { BiocharProducersPanel } from "@/components/BiocharProducersPanel";
+import { WoodPelletProducersPanel } from "@/components/WoodPelletProducersPanel";
 
-type PanelId = "stations" | "uco" | "ethanol" | "terminals" | "marine" | "oil" | "saf" | "carriers" | "biopower";
+type PanelId =
+  | "stations"
+  | "uco"
+  | "ethanol"
+  | "rng"
+  | "biochar"
+  | "pellets"
+  | "terminals"
+  | "marine"
+  | "oil"
+  | "saf"
+  | "carriers"
+  | "biopower";
 
 const CARDS: {
   id: PanelId;
@@ -56,6 +71,33 @@ const CARDS: {
     stat: "40+",
     statLabel: "generators tracked",
     tone: "var(--chart-9)",
+  },
+  {
+    id: "rng",
+    icon: Flame,
+    title: "RNG producers",
+    blurb: "Renewable natural gas from landfills, dairy digesters, wastewater and food waste.",
+    stat: "45+",
+    statLabel: "producers tracked",
+    tone: "var(--chart-5)",
+  },
+  {
+    id: "biochar",
+    icon: Layers,
+    title: "Biochar producers",
+    blurb: "Pyrolysis operators making durable carbon for soils, industry and removal credits.",
+    stat: "30+",
+    statLabel: "producers tracked",
+    tone: "var(--chart-3)",
+  },
+  {
+    id: "pellets",
+    icon: Trees,
+    title: "Wood pellet producers",
+    blurb: "Industrial and heating pellet mills feeding power stations and district heating.",
+    stat: "40+",
+    statLabel: "producers tracked",
+    tone: "var(--chart-6)",
   },
   {
     id: "terminals",
@@ -108,6 +150,9 @@ function PanelBody({ id }: { id: PanelId }) {
   if (id === "stations") return <BiofuelProductionPanel fuels={[]} />;
   if (id === "uco") return <UcoSuppliersPanel />;
   if (id === "ethanol") return <EthanolProductionPanel />;
+  if (id === "rng") return <RngProducersPanel />;
+  if (id === "biochar") return <BiocharProducersPanel />;
+  if (id === "pellets") return <WoodPelletProducersPanel />;
   if (id === "biopower") return <BioPowerGeneratorsPanel />;
   if (id === "terminals") return <BlendingTerminalsPanel />;
   if (id === "marine") return <MarineBiofuelPanel />;
