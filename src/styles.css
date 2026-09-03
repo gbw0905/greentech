@@ -93,9 +93,9 @@
   --radius: 0.5rem;
   /* Editorial navy on paper — research-desk palette */
   --background: oklch(0.968 0.007 250);
-  --ink: oklch(0.26 0.06 158);
-  --ink-foreground: oklch(0.97 0.008 130);
-  --ink-muted: oklch(0.8 0.03 150);
+  --ink: oklch(0.32 0.09 145);
+  --ink-foreground: oklch(0.97 0.01 140);
+  --ink-muted: oklch(0.78 0.05 145);
   --foreground: oklch(0.22 0.045 265);
   --surface: oklch(1 0 0);
   --surface-1: oklch(0.985 0.004 250);
@@ -147,10 +147,10 @@
   --market-crude: oklch(0.35 0.09 250);
   --market-equity: oklch(0.48 0.12 150);
   --market-gold: oklch(0.62 0.13 85);
-  --menubar-bg: oklch(0.24 0.055 160);
-  --menubar-nav: oklch(0.28 0.06 155);
-  --menubar-fg: oklch(0.97 0.008 130);
-  --menubar-muted: oklch(0.78 0.035 150);
+  --menubar-bg: oklch(0.3 0.08 145);
+  --menubar-nav: oklch(0.35 0.09 145);
+  --menubar-fg: oklch(0.97 0.01 140);
+  --menubar-muted: oklch(0.8 0.05 145);
   --gradient-frost: linear-gradient(135deg, oklch(1 0 0), oklch(0.96 0.008 250));
   --gradient-primary: linear-gradient(120deg, var(--primary), var(--primary-glow));
   --gradient-aurora: linear-gradient(120deg, oklch(0.21 0.05 265) 0%, oklch(0.29 0.075 262) 55%, oklch(0.38 0.09 250) 100%);
@@ -225,10 +225,13 @@
   --market-crude: oklch(0.65 0.14 230);
   --market-equity: oklch(0.72 0.18 145);
   --market-gold: oklch(0.78 0.16 80);
-  --menubar-bg: oklch(0.23 0.05 160);
-  --menubar-nav: oklch(0.26 0.055 155);
-  --menubar-fg: oklch(0.97 0.008 130);
-  --menubar-muted: oklch(0.75 0.035 150);
+  --ink: oklch(0.28 0.08 145);
+  --ink-foreground: oklch(0.96 0.01 140);
+  --ink-muted: oklch(0.75 0.04 145);
+  --menubar-bg: oklch(0.26 0.07 145);
+  --menubar-nav: oklch(0.3 0.08 145);
+  --menubar-fg: oklch(0.97 0.01 140);
+  --menubar-muted: oklch(0.78 0.04 145);
   --gradient-frost: linear-gradient(135deg, oklch(0.23 0.045 264), oklch(0.27 0.05 258));
   --gradient-primary: linear-gradient(120deg, var(--primary), var(--primary-glow));
   --gradient-aurora: linear-gradient(120deg, oklch(0.19 0.04 265) 0%, oklch(0.26 0.05 262) 55%, oklch(0.33 0.06 250) 100%);
@@ -479,12 +482,12 @@ input.chart-select {
   color: var(--muted-foreground);
 }
 
-/** Dark editorial header bar used above sections and page headings. */
+/** Green editorial header bar used above sections and page headings. */
 @utility ink-bar {
   background: linear-gradient(
     100deg,
     var(--ink) 0%,
-    color-mix(in oklab, var(--ink) 88%, var(--primary-glow)) 100%
+    color-mix(in oklab, var(--ink) 80%, var(--accent)) 100%
   );
   color: var(--ink-foreground);
   border-radius: calc(var(--radius) + 4px);
