@@ -547,7 +547,149 @@ export const DATASETS: DatasetMeta[] = [
       "Waste-to-energy plants are included only where the biogenic fraction is separately reported.",
     ],
   },
+  {
+    id: "rng",
+    panel: "Global renewable natural gas (RNG) producers",
+    description:
+      "Biomethane and renewable natural gas producers ranked by annual output and number of production facilities.",
+    reportingYear: 2024,
+    lastReviewed: "2026-09-01",
+    metrics: [
+      {
+        label: "Annual RNG output",
+        unit: "million MMBtu per year",
+        basis: "Pipeline-quality biomethane produced or contracted, as reported by the operator or the EPA RIN/LCFS pathways.",
+      },
+      {
+        label: "Production facilities",
+        unit: "operating plants",
+        basis: "Digesters and landfill upgrading plants in commercial operation.",
+      },
+    ],
+    sources: [
+      {
+        org: "US EPA",
+        title: "RFS RIN generation and D3 cellulosic biogas pathways",
+        url: "https://www.epa.gov/fuels-registration-reporting-and-compliance-help/rin-generation-and-renewable-fuel-volume",
+        year: 2025,
+      },
+      {
+        org: "Coalition for Renewable Natural Gas",
+        title: "RNG production facility database",
+        url: "https://www.rngcoalition.com/rng-production-facilities",
+        year: 2025,
+      },
+      {
+        org: "European Biogas Association",
+        title: "Statistical Report — biomethane plants in Europe",
+        url: "https://www.europeanbiogas.eu/statistical-report/",
+        year: 2025,
+      },
+      ...MARKET_SOURCES,
+    ],
+    coverage:
+      "Producers with pipeline-injected or liquefied biomethane in commercial operation in North America, Europe and Asia Pacific.",
+    limitations: [
+      "Plant counts include joint ventures where the operator reports them, so equity shares may differ.",
+      "Output for private developers is estimated from announced plant capacity and typical utilisation.",
+    ],
+  },
+  {
+    id: "biochar",
+    panel: "Global biochar producers",
+    description:
+      "Pyrolysis operators ranked by annual biochar production capacity and durable CO₂ removal issued.",
+    reportingYear: 2024,
+    lastReviewed: "2026-09-01",
+    metrics: [
+      {
+        label: "Biochar capacity",
+        unit: "tonnes per year",
+        basis: "Nameplate pyrolysis capacity disclosed by the producer or its certifier.",
+      },
+      {
+        label: "Durable CO₂ removal",
+        unit: "tonnes CO₂e per year",
+        basis: "Removals issued or claimed under biochar carbon-removal registries, typically ~2 tCO₂e per tonne of biochar.",
+      },
+    ],
+    sources: [
+      {
+        org: "International Biochar Initiative",
+        title: "Global biochar market report",
+        url: "https://biochar-international.org/",
+        year: 2025,
+      },
+      {
+        org: "European Biochar Certificate",
+        title: "Certified producer register",
+        url: "https://www.european-biochar.org/en",
+        year: 2025,
+      },
+      {
+        org: "Puro.earth / Carbonfuture",
+        title: "Biochar CORC issuance registries",
+        url: "https://puro.earth/registry",
+        year: 2025,
+      },
+      ...MARKET_SOURCES,
+    ],
+    coverage:
+      "Commercial biochar producers with certified output or registry-issued carbon removals.",
+    limitations: [
+      "Most producers are private; capacities are nameplate rather than realised output.",
+      "Removal figures depend on registry methodology and permanence assumptions, which differ between registries.",
+    ],
+  },
+  {
+    id: "wood-pellets",
+    panel: "Global wood pellet producers",
+    description:
+      "Industrial and heating wood pellet producers ranked by nameplate capacity and number of mills.",
+    reportingYear: 2024,
+    lastReviewed: "2026-09-01",
+    metrics: [
+      {
+        label: "Pellet capacity",
+        unit: "thousand tonnes per year",
+        basis: "Nameplate pellet production capacity across the producer's mills.",
+      },
+      {
+        label: "Pellet plants",
+        unit: "operating mills",
+        basis: "Mills in commercial operation as reported by the producer or its national association.",
+      },
+    ],
+    sources: [
+      {
+        org: "FAO",
+        title: "FAOSTAT Forestry Production and Trade — wood pellets",
+        url: "https://www.fao.org/faostat/en/#data/FO",
+        year: 2025,
+      },
+      {
+        org: "Bioenergy Europe",
+        title: "Statistical Report — Pellet",
+        url: "https://bioenergyeurope.org/statistical-report.html",
+        year: 2025,
+      },
+      {
+        org: "Wood Pellet Association of Canada / US Industrial Pellet Association",
+        title: "Member plant capacity listings",
+        url: "https://www.pellet.org/",
+        year: 2025,
+      },
+      ...MARKET_SOURCES,
+    ],
+    coverage:
+      "Industrial exporters and major heating pellet producers in North America, Europe, Asia Pacific and Latin America.",
+    limitations: [
+      "Association aggregates are shown as a single entry where individual member capacities are not published.",
+      "Capacity is nameplate; actual output varies with fibre supply and export demand.",
+    ],
+  },
 ];
+
 
 /** Dataset entry whose panel title matches, including the three carrier variants. */
 export function datasetFor(panel: string): DatasetMeta | undefined {
