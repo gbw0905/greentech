@@ -162,83 +162,145 @@ function PanelBody({ id }: { id: PanelId }) {
 }
 
 /**
- * Previous stacked layout, made dynamic: every dataset is its own panel in one
- * vertical stack, each independently expandable. The first panel opens by
- * default; several can stay open at once.
+ * Cascade layout: an overview card grid, and selecting a dataset cascades the
+ * section into a full-width workspace showing just that panel. Switch datasets
+ * via the tab bar (desktop) or the select (mobile), or return to the overview.
  */
 export function SupplyProducersSection() {
-  const [open, setOpen] = useState<PanelId[]>(["stations"]);
-
-  const toggle = (id: PanelId) =>
-    setOpen((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]));
-
-  const allOpen = open.length === CARDS.length;
+  const [active, setActive] = useState<PanelId | null>(null);
+  const activeCard = active ? CARDS.find((c) => c.id === active)! : null;
 
   return (
-    <div className="flex w-full min-w-0 flex-col gap-3">
-      <div className="flex items-center justify-end gap-2">
-        <button
-          type="button"
-          onClick={() => setOpen(allOpen ? [] : CARDS.map((c) => c.id))}
-          className="label-mono inline-flex items-center gap-1.5 border border-border bg-white px-3 py-1.5 font-bold text-foreground transition-colors hover:bg-muted"
-        >
-          {allOpen ? "Collapse all" : "Expand all"}
-        </button>
-      </div>
-
-      {CARDS.map((c) => {
-        const isOpen = open.includes(c.id);
-        return (
-          <section
-            key={c.id}
-            className="glass-panel flex w-full min-w-0 flex-col overflow-hidden"
+    <div className="flex w-full min-w-0 flex-col gap-4">
+      {/* Mobile dataset selector (visible when a dataset is open) */}
+      {activeCard ? (
+        <div className="flex items-center gap-2 sm:hidden">
+          <button
+            type="button"
+            onClick={() => setActive(null)}
+            className="label-mono inline-flex shrink-0 items-center gap-1 border border-border bg-white px-2.5 py-2 font-bold text-foreground"
           >
+            <ArrowLeft className="size-3.5" /> All
+          </button>
+          <select
+            value={activeCard.id}
+            onChange={(e) => setActive(e.target.value as PanelId)}
+            className="label-mono min-w-0 flex-1 border border-border bg-white px-2.5 py-2 font-bold text-foreground"
+          >
+            {CARDS.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.title}
+              </option>
+            ))}
+          </select>
+        </div>
+      ) : null}
+
+      {/* Overview card grid */}
+      {!activeCard ? (
+        <div className="grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {CARDS.map((c) => (
             <button
+              key={c.id}
               type="button"
-              onClick={() => toggle(c.id)}
-              aria-expanded={isOpen}
-              className="group grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-l-4 px-4 py-3 text-left transition-colors hover:bg-muted/50 sm:px-5"
-              style={{ borderLeftColor: c.tone }}
+              onClick={() => setActive(c.id)}
+              className="glass-panel group relative flex min-w-0 flex-col gap-2 overflow-hidden p-4 text-left transition-shadow hover:shadow-lg"
             >
               <span
-                className="inline-flex size-9 shrink-0 items-center justify-center rounded-md"
-                style={{
-                  background: `color-mix(in oklab, ${c.tone} 14%, white)`,
-                  color: c.tone,
-                }}
-              >
-                <c.icon className="size-4.5" />
-              </span>
-              <span className="min-w-0">
-                <span className="flex flex-wrap items-baseline gap-x-2">
-                  <span className="truncate font-display text-base font-extrabold tracking-tight text-foreground sm:text-lg">
+                className="absolute inset-x-0 top-0 h-1"
+                style={{ background: c.tone }}
+              />
+              <span className="flex items-center gap-2.5">
+                <span
+                  className="inline-flex size-9 shrink-0 items-center justify-center rounded-md"
+                  style={{
+                    background: `color-mix(in oklab, ${c.tone} 14%, white)`,
+                    color: c.tone,
+                  }}
+                >
+                  <c.icon className="size-4.5" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate font-display text-base font-extrabold tracking-tight text-foreground">
                     {c.title}
                   </span>
                   <span className="label-mono text-muted-foreground">
                     {c.stat} {c.statLabel}
                   </span>
                 </span>
-                <span className="mt-0.5 line-clamp-2 block text-xs/relaxed text-muted-foreground sm:text-sm/relaxed">
-                  {c.blurb}
+              </span>
+              <span className="line-clamp-2 text-xs/relaxed text-muted-foreground sm:text-sm/relaxed">
+                {c.blurb}
+              </span>
+              <span
+                className="label-mono mt-auto inline-flex items-center gap-1 font-bold"
+                style={{ color: c.tone }}
+              >
+                Explore dataset <ChevronRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+              </span>
+            </button>
+          ))}
+        </div>
+      ) : (
+        /* Cascaded workspace for the selected dataset */
+        <div className="flex w-full min-w-0 flex-col gap-3">
+          <div className="glass-panel hidden flex-wrap items-center gap-1 overflow-x-auto p-1.5 sm:flex">
+            <button
+              type="button"
+              onClick={() => setActive(null)}
+              className="label-mono inline-flex shrink-0 items-center gap-1.5 px-3 py-2 font-bold text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <ArrowLeft className="size-3.5" /> All datasets
+            </button>
+            {CARDS.map((c) => {
+              const isActive = c.id === activeCard.id;
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setActive(c.id)}
+                  className="label-mono relative shrink-0 px-3 py-2 font-bold transition-colors"
+                  style={{ color: isActive ? c.tone : "var(--muted-foreground)" }}
+                >
+                  {c.title}
+                  <span
+                    className="absolute inset-x-2 bottom-0 h-0.5 transition-opacity"
+                    style={{ background: c.tone, opacity: isActive ? 1 : 0 }}
+                  />
+                </button>
+              );
+            })}
+          </div>
+
+          <section className="glass-panel flex w-full min-w-0 flex-col overflow-hidden">
+            <header
+              className="flex items-center gap-3 border-l-4 px-4 py-3 sm:px-5"
+              style={{ borderLeftColor: activeCard.tone }}
+            >
+              <span
+                className="inline-flex size-9 shrink-0 items-center justify-center rounded-md"
+                style={{
+                  background: `color-mix(in oklab, ${activeCard.tone} 14%, white)`,
+                  color: activeCard.tone,
+                }}
+              >
+                <activeCard.icon className="size-4.5" />
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate font-display text-lg font-extrabold tracking-tight text-foreground">
+                  {activeCard.title}
+                </span>
+                <span className="label-mono text-muted-foreground">
+                  {activeCard.stat} {activeCard.statLabel}
                 </span>
               </span>
-              <ChevronDown
-                className="size-4 shrink-0 transition-transform"
-                style={{
-                  color: c.tone,
-                  transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
-                }}
-              />
-            </button>
-
-            {isOpen ? (
-              <div className="min-w-0 border-t border-border p-4 sm:p-5">
-                <PanelBody id={c.id} />
-              </div>
-            ) : null}
+            </header>
+            <div className="min-w-0 border-t border-border p-4 sm:p-5">
+              <PanelBody id={activeCard.id} />
+            </div>
           </section>
-        );
-      })}
+        </div>
+      )}
     </div>
   );
 }
