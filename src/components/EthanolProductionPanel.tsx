@@ -17,6 +17,7 @@ import { entityLogoByName } from "@/lib/entity-logos";
 import { ETHANOL_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
+import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/lib/market-caps";
 import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 
 type Producer = {
@@ -93,7 +94,7 @@ const PRODUCERS: Producer[] = [
   { name: "Kenya / Agro-Chemical & Food Co.", country: "Kenya", flag: "🇰🇪", capacityMl: 60, plants: 1, feedstock: "Molasses", note: "East African molasses ethanol for blended gasoline" },
 ];
 
-type Metric = "capacity" | "plants" | "price";
+type Metric = "capacity" | "plants" | "price" | "marketcap";
 
 const METRICS: Record<
   Metric,
@@ -120,12 +121,25 @@ const METRICS: Record<
     decimals: 2,
     value: () => 0,
   },
+  marketcap: {
+    label: "Market cap (approx.)",
+    unit: "approximate market capitalisation, USD billions",
+    help: "Approximate latest market capitalisation in USD billions, converted at recent exchange rates. Private, state-owned or unlisted entities rank last.",
+    decimals: 1,
+    value: (p) => marketCapValue(ETHANOL_TICKERS[p.name]),
+  },
 };
 
 function scatterAxes(metricKey: Metric) {
   if (metricKey === "capacity") {
     return {
       x: { metric: METRICS.plants, help: "X-axis shows plant count; Y-axis shows annual ethanol output." },
+      size: { label: "Ethanol output", unit: "Ml/yr", value: (p: Producer) => p.capacityMl },
+    };
+  }
+  if (metricKey === "marketcap") {
+    return {
+      x: { metric: METRICS.capacity, help: "X-axis shows annual ethanol output; Y-axis shows approximate market cap." },
       size: { label: "Ethanol output", unit: "Ml/yr", value: (p: Producer) => p.capacityMl },
     };
   }
@@ -217,6 +231,7 @@ export function EthanolProductionPanel() {
           value: q ? `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%` : "—",
           tone: detailTone(q?.changePct),
         },
+        { label: "Market cap (approx.)", value: marketCapLabel(ETHANOL_TICKERS[p.name]) ?? "Private / state-owned" },
       ],
       news: { name: p.name, query: `"${p.name}" ${NEWS_SUFFIX}` },
     };
@@ -254,6 +269,7 @@ export function EthanolProductionPanel() {
                 "Ticker",
                 "Share price",
                 "1-day change %",
+                "Market cap (approx., USD bn)",
                 "Note",
               ],
               rows: ranked.map((p) => {
@@ -267,6 +283,7 @@ export function EthanolProductionPanel() {
                   ETHANOL_TICKERS[p.name] ?? "",
                   q ? q.price.toFixed(2) : "",
                   q ? q.changePct.toFixed(2) : "",
+                  marketCapLabel(ETHANOL_TICKERS[p.name]) ?? "",
                   p.note,
                 ];
               }),
@@ -299,7 +316,7 @@ export function EthanolProductionPanel() {
             matched={ranked.length}
           />
         }
-        footnote="Indicative ethanol capacities from producer reports, RFA/ePURE/UNICA statistics and national blending-programme filings. Click any tile for the latest news."
+        footnote={`Indicative ethanol capacities from producer reports, RFA/ePURE/UNICA statistics and national blending-programme filings. Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
         assistant={
           <ChartSummaryAssistant
             disabled={rows.length === 0}

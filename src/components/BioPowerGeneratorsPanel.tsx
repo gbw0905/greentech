@@ -17,6 +17,7 @@ import { entityLogoByName } from "@/lib/entity-logos";
 import { BIOPOWER_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
+import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/lib/market-caps";
 import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 
 type Generator = {
@@ -90,7 +91,7 @@ const GENERATORS: Generator[] = [
   { name: "Hitachi Zosen Inova", country: "Switzerland", flag: "🇨🇭", capacityMw: 900, generationGwh: 5200, feedstock: "Municipal waste / biogas", note: "Global EfW EPC and operator with plants on four continents" },
 ];
 
-type Metric = "capacity" | "generation" | "price";
+type Metric = "capacity" | "generation" | "price" | "marketcap";
 
 const METRICS: Record<
   Metric,
@@ -117,12 +118,25 @@ const METRICS: Record<
     decimals: 2,
     value: () => 0,
   },
+  marketcap: {
+    label: "Market cap (approx.)",
+    unit: "approximate market capitalisation, USD billions",
+    help: "Approximate latest market capitalisation in USD billions, converted at recent exchange rates. Private, state-owned or unlisted entities rank last.",
+    decimals: 1,
+    value: (g) => marketCapValue(BIOPOWER_TICKERS[g.name]),
+  },
 };
 
 function scatterAxes(metricKey: Metric) {
   if (metricKey === "capacity") {
     return {
       x: { metric: METRICS.generation, help: "X-axis shows annual biofuel generation; Y-axis shows installed biofuel capacity." },
+      size: { label: "Biofuel capacity", unit: "MW", value: (g: Generator) => g.capacityMw },
+    };
+  }
+  if (metricKey === "marketcap") {
+    return {
+      x: { metric: METRICS.capacity, help: "X-axis shows installed biofuel capacity; Y-axis shows approximate market cap." },
       size: { label: "Biofuel capacity", unit: "MW", value: (g: Generator) => g.capacityMw },
     };
   }
@@ -214,6 +228,7 @@ export function BioPowerGeneratorsPanel() {
           value: q ? `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%` : "—",
           tone: detailTone(q?.changePct),
         },
+        { label: "Market cap (approx.)", value: marketCapLabel(BIOPOWER_TICKERS[g.name]) ?? "Private / state-owned" },
       ],
       news: { name: g.name, query: `"${g.name}" ${NEWS_SUFFIX}` },
     };
@@ -251,6 +266,7 @@ export function BioPowerGeneratorsPanel() {
                 "Ticker",
                 "Share price",
                 "1-day change %",
+                "Market cap (approx., USD bn)",
                 "Note",
               ],
               rows: ranked.map((g) => {
@@ -264,6 +280,7 @@ export function BioPowerGeneratorsPanel() {
                   BIOPOWER_TICKERS[g.name] ?? "",
                   q ? q.price.toFixed(2) : "",
                   q ? q.changePct.toFixed(2) : "",
+                  marketCapLabel(BIOPOWER_TICKERS[g.name]) ?? "",
                   g.note,
                 ];
               }),
@@ -296,7 +313,7 @@ export function BioPowerGeneratorsPanel() {
             matched={ranked.length}
           />
         }
-        footnote="Indicative biofuel-fired capacities from generator annual reports, IEA Bioenergy and national renewables registries. Click any tile for the latest news."
+        footnote={`Indicative biofuel-fired capacities from generator annual reports, IEA Bioenergy and national renewables registries. Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
         assistant={
           <ChartSummaryAssistant
             disabled={rows.length === 0}

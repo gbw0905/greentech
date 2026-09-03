@@ -16,6 +16,7 @@ import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/componen
 import { entityLogoByName } from "@/lib/entity-logos";
 import { CARRIER_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
+import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/lib/market-caps";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 
@@ -75,7 +76,7 @@ const RAIL: Carrier[] = [
   { name: "Amtrak", country: "United States", flag: "🇺🇸", volumeMnL: 35, share: 6.5, note: "Renewable diesel on long-distance diesel routes" },
 ];
 
-type Metric = "volume" | "share" | "price";
+type Metric = "volume" | "share" | "price" | "marketcap";
 
 const METRICS: Record<Metric, { label: string; unit: string; help: string; decimals: number; value: (c: Carrier) => number }> = {
   volume: {
@@ -99,6 +100,13 @@ const METRICS: Record<Metric, { label: string; unit: string; help: string; decim
     decimals: 2,
     value: () => 0,
   },
+  marketcap: {
+    label: "Market cap (approx.)",
+    unit: "approximate market capitalisation, USD billions",
+    help: "Approximate latest market capitalisation in USD billions, converted at recent exchange rates. Private, state-owned or unlisted entities rank last.",
+    decimals: 1,
+    value: (c) => marketCapValue(CARRIER_TICKERS[c.name]),
+  },
 };
 
 /** Defines the scatter-plot axes for each selected metric so X and Y never collide. */
@@ -114,6 +122,13 @@ function scatterAxes(metricKey: Metric) {
     return {
       x: { metric: METRICS.share, help: "X-axis shows biofuel intensity; Y-axis shows share price." },
       y: METRICS.price,
+      size: { label: "Biofuel volume used", unit: "Ml/yr", value: (c: Carrier) => c.volumeMnL },
+    };
+  }
+  if (metricKey === "marketcap") {
+    return {
+      x: { metric: METRICS.volume, help: "X-axis shows absolute biofuel volume; Y-axis shows market cap." },
+      y: METRICS.marketcap,
       size: { label: "Biofuel volume used", unit: "Ml/yr", value: (c: Carrier) => c.volumeMnL },
     };
   }
@@ -212,6 +227,7 @@ function CarrierChart({
         { label: "Biofuel share of fuel burn", value: `${fmt(c.share, 1)}%` },
         { label: "Ticker", value: CARRIER_TICKERS[c.name] ?? "Not listed" },
         { label: "Share price", value: q ? fmt(q.price, 2) : "—" },
+        { label: "Market cap (approx.)", value: marketCapLabel(CARRIER_TICKERS[c.name]) ?? "Private / state-owned" },
         {
           label: "1-day change",
           value: q ? `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%` : "—",
@@ -253,6 +269,7 @@ function CarrierChart({
               "Ticker",
               "Share price",
               "1-day change %",
+              "Market cap (approx., USD bn)",
               "Note",
             ],
             rows: ranked.map((c) => {
@@ -265,6 +282,7 @@ function CarrierChart({
                 CARRIER_TICKERS[c.name] ?? "",
                 q ? q.price.toFixed(2) : "",
                 q ? q.changePct.toFixed(2) : "",
+                marketCapLabel(CARRIER_TICKERS[c.name]) ?? "",
                 c.note,
               ];
             }),
@@ -290,7 +308,7 @@ function CarrierChart({
           matched={ranked.length}
         />
       }
-      footnote={footnote}
+      footnote={`${footnote} ${MARKET_CAP_NOTE}`}
       assistant={
         <ChartSummaryAssistant
           disabled={rows.length === 0}

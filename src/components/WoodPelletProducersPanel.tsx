@@ -16,6 +16,8 @@ import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/componen
 import { entityLogoByName } from "@/lib/entity-logos";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
+import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/lib/market-caps";
+import { PELLET_TICKERS } from "@/lib/entity-tickers";
 
 type Producer = {
   name: string;
@@ -81,7 +83,7 @@ const PRODUCERS: Producer[] = [
   { name: "Rentech / Wawa", country: "Canada", flag: "🇨🇦", capacityKt: 450, plants: 2, feedstock: "Softwood residues", note: "Ontario pellet mills historically contracted to UK utilities" },
 ];
 
-type Metric = "capacity" | "plants";
+type Metric = "capacity" | "plants" | "marketcap";
 
 const METRICS: Record<
   Metric,
@@ -101,12 +103,25 @@ const METRICS: Record<
     decimals: 0,
     value: (p) => p.plants,
   },
+  marketcap: {
+    label: "Market cap (approx.)",
+    unit: "approximate market capitalisation, USD billions",
+    help: "Approximate latest market capitalisation in USD billions, converted at recent exchange rates. Private, state-owned or unlisted entities rank last.",
+    decimals: 1,
+    value: (p) => marketCapValue(PELLET_TICKERS[p.name]),
+  },
 };
 
 function scatterAxes(metricKey: Metric) {
   if (metricKey === "capacity") {
     return {
       x: { metric: METRICS.plants, help: "X-axis shows the mill count; Y-axis shows pellet capacity." },
+      size: { label: "Pellet capacity", unit: "kt/yr", value: (p: Producer) => p.capacityKt },
+    };
+  }
+  if (metricKey === "marketcap") {
+    return {
+      x: { metric: METRICS.capacity, help: "X-axis shows pellet capacity; Y-axis shows approximate market cap." },
       size: { label: "Pellet capacity", unit: "kt/yr", value: (p: Producer) => p.capacityKt },
     };
   }
@@ -183,6 +198,7 @@ export function WoodPelletProducersPanel() {
         { label: "Pellet capacity", value: `${fmt(p.capacityKt, 0)} kt/yr` },
         { label: "Pellet plants", value: `${fmt(p.plants, 0)} mills` },
         { label: "Feedstock", value: p.feedstock },
+        { label: "Market cap (approx.)", value: marketCapLabel(PELLET_TICKERS[p.name]) ?? "Private / state-owned" },
       ],
       news: { name: p.name, query: `"${p.name}" ${NEWS_SUFFIX}` },
     };
@@ -217,6 +233,7 @@ export function WoodPelletProducersPanel() {
                 "Feedstock",
                 "Pellet capacity (kt/yr)",
                 "Pellet plants",
+                "Market cap (approx., USD bn)",
                 "Note",
               ],
               rows: ranked.map((p) => [
@@ -225,6 +242,7 @@ export function WoodPelletProducersPanel() {
                   p.feedstock,
                   p.capacityKt,
                   p.plants,
+                  marketCapValue(PELLET_TICKERS[p.name]),
                   p.note,
                 ]),
             })}
@@ -256,7 +274,7 @@ export function WoodPelletProducersPanel() {
             matched={ranked.length}
           />
         }
-        footnote="Indicative capacities from producer disclosures, FAOSTAT forest-products data, Bioenergy Europe and the Canadian and US pellet associations. Click any tile for the latest news."
+        footnote={`Indicative capacities from producer disclosures, FAOSTAT forest-products data, Bioenergy Europe and the Canadian and US pellet associations. Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
         assistant={
           <ChartSummaryAssistant
             disabled={rows.length === 0}

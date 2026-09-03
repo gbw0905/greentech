@@ -16,6 +16,8 @@ import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/componen
 import { entityLogoByName } from "@/lib/entity-logos";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
+import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/lib/market-caps";
+import { RNG_TICKERS } from "@/lib/entity-tickers";
 
 type Producer = {
   name: string;
@@ -81,7 +83,7 @@ const PRODUCERS: Producer[] = [
   { name: "Raízen biogas", country: "Brazil", flag: "🇧🇷", outputMmbtu: 1.5, facilities: 6, feedstock: "Vinasse / bagasse", note: "Mill-integrated biogas plants supplying fleet fuel and power" },
 ];
 
-type Metric = "output" | "facilities";
+type Metric = "output" | "facilities" | "marketcap";
 
 const METRICS: Record<
   Metric,
@@ -101,12 +103,25 @@ const METRICS: Record<
     decimals: 0,
     value: (p) => p.facilities,
   },
+  marketcap: {
+    label: "Market cap (approx.)",
+    unit: "approximate market capitalisation, USD billions",
+    help: "Approximate latest market capitalisation in USD billions, converted at recent exchange rates. Private, state-owned or unlisted entities rank last.",
+    decimals: 1,
+    value: (p) => marketCapValue(RNG_TICKERS[p.name]),
+  },
 };
 
 function scatterAxes(metricKey: Metric) {
   if (metricKey === "output") {
     return {
       x: { metric: METRICS.facilities, help: "X-axis shows the plant count; Y-axis shows annual RNG output." },
+      size: { label: "RNG output", unit: "million MMBtu/yr", value: (p: Producer) => p.outputMmbtu },
+    };
+  }
+  if (metricKey === "marketcap") {
+    return {
+      x: { metric: METRICS.output, help: "X-axis shows annual RNG output; Y-axis shows approximate market cap." },
       size: { label: "RNG output", unit: "million MMBtu/yr", value: (p: Producer) => p.outputMmbtu },
     };
   }
@@ -183,6 +198,7 @@ export function RngProducersPanel() {
         { label: "RNG output", value: `${fmt(p.outputMmbtu, 1)} million MMBtu/yr` },
         { label: "Production facilities", value: `${fmt(p.facilities, 0)} plants` },
         { label: "Feedstock", value: p.feedstock },
+        { label: "Market cap (approx.)", value: marketCapLabel(RNG_TICKERS[p.name]) ?? "Private / state-owned" },
       ],
       news: { name: p.name, query: `"${p.name}" ${NEWS_SUFFIX}` },
     };
@@ -217,6 +233,7 @@ export function RngProducersPanel() {
                 "Feedstock",
                 "RNG output (million MMBtu/yr)",
                 "Production facilities",
+                "Market cap (approx., USD bn)",
                 "Note",
               ],
               rows: ranked.map((p) => [
@@ -225,6 +242,7 @@ export function RngProducersPanel() {
                   p.feedstock,
                   p.outputMmbtu,
                   p.facilities,
+                  marketCapValue(RNG_TICKERS[p.name]),
                   p.note,
                 ]),
             })}
@@ -256,7 +274,7 @@ export function RngProducersPanel() {
             matched={ranked.length}
           />
         }
-        footnote="Indicative RNG volumes from company disclosures, US EPA RIN generation data, the Coalition for Renewable Natural Gas and the European Biogas Association. Click any tile for the latest news."
+        footnote={`Indicative RNG volumes from company disclosures, US EPA RIN generation data, the Coalition for Renewable Natural Gas and the European Biogas Association. Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
         assistant={
           <ChartSummaryAssistant
             disabled={rows.length === 0}
