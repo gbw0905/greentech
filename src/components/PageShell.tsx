@@ -39,7 +39,7 @@ export function PageShell({
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <Link
               to="/"
-              className="label-mono inline-flex shrink-0 items-center gap-2 border border-menubar-fg/40 bg-menubar-nav px-2.5 py-1.5 font-bold text-menubar-fg transition-all hover:border-menubar-fg hover:bg-menubar-fg/10 sm:px-3.5 sm:py-2"
+              className="label-mono pill-motion inline-flex shrink-0 items-center gap-2 border border-menubar-fg/40 bg-menubar-nav px-2.5 py-1.5 font-bold text-menubar-fg hover:border-menubar-fg hover:bg-menubar-fg/10 sm:px-3.5 sm:py-2"
             >
               <ArrowLeft className="size-3.5" />
               <span className="hidden sm:inline">Back to dashboard</span>
@@ -50,7 +50,7 @@ export function PageShell({
       </header>
 
       <div className="mx-auto max-w-[80rem] px-5 py-6 lg:px-8 lg:py-8">
-        <main className="space-y-6">{children}</main>
+        <main className="reveal space-y-6">{children}</main>
         <footer className="mt-8 space-y-3 border-t border-border pt-6 pb-10">
           <p className="text-xs text-muted-foreground">
             Updates are aggregated from live web sources and auto-classified by jurisdiction and fuel
@@ -100,7 +100,7 @@ export function PageHeading({
   subtitle: string;
 }) {
   return (
-    <div className="ink-bar mb-6 px-5 py-6 sm:px-7">
+    <div className="ink-bar ribbon-sheen mb-6 px-5 py-6 sm:px-7">
       <div className="flex items-center gap-2 text-accent">
         <Icon className="size-3.5" />
         <span className="kicker text-accent">Global Bioenergy Watch</span>
