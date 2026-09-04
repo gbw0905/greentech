@@ -28,6 +28,7 @@ import { Route as AboutTeamRouteImport } from './routes/about.team'
 import { Route as AlertsConfirmRouteImport } from './routes/alerts.confirm'
 import { Route as CountriesSlugRouteImport } from './routes/countries.$slug'
 import { Route as SettingsLinkedinRouteImport } from './routes/settings.linkedin'
+import { Route as SupplyPanelRouteImport } from './routes/supply.$panel'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as ApiPublicDailyFlyerEmailRouteImport } from './routes/api/public/daily-flyer-email'
@@ -139,6 +140,11 @@ const SettingsLinkedinRoute = SettingsLinkedinRouteImport.update({
   path: '/settings/linkedin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SupplyPanelRoute = SupplyPanelRouteImport.update({
+  id: '/supply/$panel',
+  path: '/supply/$panel',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
   path: '/.lovable/oauth/consent',
@@ -234,6 +240,7 @@ export interface FileRoutesByFullPath {
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/countries/$slug': typeof CountriesSlugRoute
   '/settings/linkedin': typeof SettingsLinkedinRoute
+  '/supply/$panel': typeof SupplyPanelRoute
   '/about/': typeof AboutIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -267,6 +274,7 @@ export interface FileRoutesByTo {
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/countries/$slug': typeof CountriesSlugRoute
   '/settings/linkedin': typeof SettingsLinkedinRoute
+  '/supply/$panel': typeof SupplyPanelRoute
   '/about': typeof AboutIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -302,6 +310,7 @@ export interface FileRoutesById {
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/countries/$slug': typeof CountriesSlugRoute
   '/settings/linkedin': typeof SettingsLinkedinRoute
+  '/supply/$panel': typeof SupplyPanelRoute
   '/about/': typeof AboutIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -338,6 +347,7 @@ export interface FileRouteTypes {
     | '/alerts/confirm'
     | '/countries/$slug'
     | '/settings/linkedin'
+    | '/supply/$panel'
     | '/about/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -371,6 +381,7 @@ export interface FileRouteTypes {
     | '/alerts/confirm'
     | '/countries/$slug'
     | '/settings/linkedin'
+    | '/supply/$panel'
     | '/about'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -405,6 +416,7 @@ export interface FileRouteTypes {
     | '/alerts/confirm'
     | '/countries/$slug'
     | '/settings/linkedin'
+    | '/supply/$panel'
     | '/about/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -438,6 +450,7 @@ export interface RootRouteChildren {
   AlertsConfirmRoute: typeof AlertsConfirmRoute
   CountriesSlugRoute: typeof CountriesSlugRoute
   SettingsLinkedinRoute: typeof SettingsLinkedinRoute
+  SupplyPanelRoute: typeof SupplyPanelRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicDailyFlyerEmailRoute: typeof ApiPublicDailyFlyerEmailRoute
@@ -588,6 +601,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsLinkedinRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/supply/$panel': {
+      id: '/supply/$panel'
+      path: '/supply/$panel'
+      fullPath: '/supply/$panel'
+      preLoaderRoute: typeof SupplyPanelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/.lovable/oauth/consent': {
       id: '/.lovable/oauth/consent'
       path: '/.lovable/oauth/consent'
@@ -714,6 +734,7 @@ const rootRouteChildren: RootRouteChildren = {
   AlertsConfirmRoute: AlertsConfirmRoute,
   CountriesSlugRoute: CountriesSlugRoute,
   SettingsLinkedinRoute: SettingsLinkedinRoute,
+  SupplyPanelRoute: SupplyPanelRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicDailyFlyerEmailRoute: ApiPublicDailyFlyerEmailRoute,
