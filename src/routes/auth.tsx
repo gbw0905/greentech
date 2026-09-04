@@ -88,9 +88,6 @@ function AuthPage() {
           <h1 className="font-display text-xl font-extrabold tracking-tight">
             {mode === "signin" ? "Sign in" : "Create your account"}
           </h1>
-          <p className="mt-1 text-xs opacity-90">
-            Required for CSV exports and emailed analyst summaries.
-          </p>
         </div>
 
         <div className="rounded-sm border border-border bg-card p-4">
