@@ -188,10 +188,11 @@ function Dashboard() {
               type="button"
               onClick={() => rescan.mutate()}
               disabled={busy}
-              className="label-mono pill-motion inline-flex items-center gap-2 rounded-md bg-menubar-fg px-3 py-1.5 font-bold text-menubar-bg hover:opacity-90 disabled:opacity-60 sm:px-3.5 sm:py-2"
+              aria-label="Rescan feeds"
+              className="label-mono pill-motion inline-flex items-center gap-2 rounded-md bg-menubar-fg px-2.5 py-1.5 font-bold text-menubar-bg hover:opacity-90 disabled:opacity-60 sm:px-3.5 sm:py-2"
             >
               <RefreshCw className={`size-3.5 ${busy ? "animate-spin" : ""}`} />
-              Rescan
+              <span className="hidden sm:inline">Rescan</span>
             </button>
           </div>
         </div>
