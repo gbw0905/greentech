@@ -18,7 +18,7 @@ export const Route = createFileRoute("/auth")({
       { property: "og:title", content: "Sign in — Global Bioenergy Watch" },
       {
         property: "og:description",
-        content: "Free account access for CSV exports and emailed bioenergy analyst summaries.",
+        content: "Account access for CSV exports and emailed bioenergy analyst summaries.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
