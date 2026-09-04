@@ -18,7 +18,11 @@ import {
   Scatter,
   ReferenceLine,
   ReferenceDot,
+  LineChart,
+  Line,
+  Legend,
 } from "recharts";
+import { panelTrend, totalSeries } from "@/lib/history-series";
 
 
 /** Shared number formatter for every chart in the app. */
