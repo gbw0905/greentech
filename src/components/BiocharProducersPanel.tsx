@@ -72,6 +72,21 @@ const PRODUCERS: Producer[] = [
   { name: "Carbo Cycle Kenya", country: "Kenya", flag: "🇰🇪", capacityT: 1500, co2RemovalT: 3000, feedstock: "Agri residues", note: "East African biochar for soil restoration and cookstove fuel" },
   { name: "Rainbow Bee Eater", country: "Australia", flag: "🇦🇺", capacityT: 2500, co2RemovalT: 5000, feedstock: "Crop / nut residues", note: "ECHO2 pyrolysis units producing biochar, heat and power" },
   { name: "Nippon Biochar / Kuraray", country: "Japan", flag: "🇯🇵", capacityT: 4000, co2RemovalT: 8000, feedstock: "Wood / coconut shell", note: "Industrial carbon producer entering agricultural biochar J-Credits" },
+  // ---------- Added global coverage ----------
+  { name: "Carbofex", country: "Finland", flag: "🇫🇮", capacityT: 2500, co2RemovalT: 6000, feedstock: "Spruce chips", note: "Tampere pyrolysis plant supplying premium removal credits" },
+  { name: "PYREG", country: "Germany", flag: "🇩🇪", capacityT: 5000, co2RemovalT: 11000, feedstock: "Sludge / green waste", note: "Carbonisation plant supplier with operated reference sites" },
+  { name: "Verora", country: "Switzerland", flag: "🇨🇭", capacityT: 2000, co2RemovalT: 4500, feedstock: "Forest residues", note: "Swiss biochar and heat cogeneration for agriculture" },
+  { name: "Carbon Cycle / Schottdorf", country: "Austria", flag: "🇦🇹", capacityT: 2200, co2RemovalT: 5000, feedstock: "Wood chips", note: "Alpine biochar network for livestock and soils" },
+  { name: "Carbonfuture partners (EU)", country: "Germany", flag: "🇩🇪", capacityT: 9000, co2RemovalT: 20000, feedstock: "Mixed biomass", note: "Aggregated European supplier network on the Carbonfuture registry" },
+  { name: "Wakachiku / Nippon biochar", country: "Japan", flag: "🇯🇵", capacityT: 2600, co2RemovalT: 5200, feedstock: "Rice husk / wood", note: "J-Credit registered biochar for paddy soils" },
+  { name: "Varaha", country: "India", flag: "🇮🇳", capacityT: 12000, co2RemovalT: 25000, feedstock: "Agri residues", note: "Smallholder biochar removal programme selling to tech buyers" },
+  { name: "Wahaj / Gulf biochar", country: "United Arab Emirates", flag: "🇦🇪", capacityT: 1500, co2RemovalT: 3000, feedstock: "Date palm residues", note: "Palm-frond pyrolysis for desert soil improvement" },
+  { name: "Carbon Zero Tanzania", country: "Tanzania", flag: "🇹🇿", capacityT: 3000, co2RemovalT: 6000, feedstock: "Agri residues", note: "Smallholder biochar and clean cookstove carbon programme" },
+  { name: "Wangari / Kenya biochar", country: "Kenya", flag: "🇰🇪", capacityT: 2500, co2RemovalT: 5000, feedstock: "Macadamia / coffee husk", note: "Nut-shell pyrolysis producing removal credits and soil carbon" },
+  { name: "Carbon Cycle Ghana", country: "Ghana", flag: "🇬🇭", capacityT: 1800, co2RemovalT: 3600, feedstock: "Cocoa / palm residues", note: "Agro-residue biochar for cocoa farm soils" },
+  { name: "Bolivia Inti / Andes biochar", country: "Peru", flag: "🇵🇪", capacityT: 1400, co2RemovalT: 2800, feedstock: "Coffee husk", note: "Andean coffee-residue biochar for soil restoration" },
+  { name: "NetZero", country: "Cameroon", flag: "🇨🇲", capacityT: 9000, co2RemovalT: 18000, feedstock: "Coffee / cocoa husk", note: "Tropical biochar plants in Cameroon and Brazil for removal credits" },
+  { name: "Carbonaught", country: "Australia", flag: "🇦🇺", capacityT: 5000, co2RemovalT: 10000, feedstock: "Cane trash", note: "Queensland cane-residue biochar applied to farm soils" },
 ];
 
 type Metric = "capacity" | "removal" | "marketcap";

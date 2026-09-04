@@ -501,6 +501,35 @@ export const COUNTRY_FLAG: Record<string, string> = {
   "saudi-arabia": "🇸🇦",
 };
 
+
+/** Emoji flag by plain country name — covers every country used in the supply datasets. */
+export const COUNTRY_NAME_FLAG: Record<string, string> = {
+  "United States": "\u{1F1FA}\u{1F1F8}", Canada: "\u{1F1E8}\u{1F1E6}", Mexico: "\u{1F1F2}\u{1F1FD}",
+  Brazil: "\u{1F1E7}\u{1F1F7}", Argentina: "\u{1F1E6}\u{1F1F7}", Chile: "\u{1F1E8}\u{1F1F1}",
+  Colombia: "\u{1F1E8}\u{1F1F4}", Peru: "\u{1F1F5}\u{1F1EA}", Paraguay: "\u{1F1F5}\u{1F1FE}", Bolivia: "\u{1F1E7}\u{1F1F4}",
+  "United Kingdom": "\u{1F1EC}\u{1F1E7}", Ireland: "\u{1F1EE}\u{1F1EA}", France: "\u{1F1EB}\u{1F1F7}",
+  Germany: "\u{1F1E9}\u{1F1EA}", Netherlands: "\u{1F1F3}\u{1F1F1}", Belgium: "\u{1F1E7}\u{1F1EA}",
+  Luxembourg: "\u{1F1F1}\u{1F1FA}", Switzerland: "\u{1F1E8}\u{1F1ED}", Austria: "\u{1F1E6}\u{1F1F9}",
+  Italy: "\u{1F1EE}\u{1F1F9}", Spain: "\u{1F1EA}\u{1F1F8}", Portugal: "\u{1F1F5}\u{1F1F9}", Greece: "\u{1F1EC}\u{1F1F7}",
+  Poland: "\u{1F1F5}\u{1F1F1}", Czechia: "\u{1F1E8}\u{1F1FF}", Slovakia: "\u{1F1F8}\u{1F1F0}", Hungary: "\u{1F1ED}\u{1F1FA}",
+  Romania: "\u{1F1F7}\u{1F1F4}", Bulgaria: "\u{1F1E7}\u{1F1EC}", Croatia: "\u{1F1ED}\u{1F1F7}",
+  Sweden: "\u{1F1F8}\u{1F1EA}", Norway: "\u{1F1F3}\u{1F1F4}", Denmark: "\u{1F1E9}\u{1F1F0}", Finland: "\u{1F1EB}\u{1F1EE}",
+  Estonia: "\u{1F1EA}\u{1F1EA}", Latvia: "\u{1F1F1}\u{1F1FB}", Lithuania: "\u{1F1F1}\u{1F1F9}",
+  "T\u00fcrkiye": "\u{1F1F9}\u{1F1F7}", Israel: "\u{1F1EE}\u{1F1F1}", Gibraltar: "\u{1F1EC}\u{1F1EE}",
+  "Saudi Arabia": "\u{1F1F8}\u{1F1E6}", "United Arab Emirates": "\u{1F1E6}\u{1F1EA}", Qatar: "\u{1F1F6}\u{1F1E6}",
+  Egypt: "\u{1F1EA}\u{1F1EC}", Morocco: "\u{1F1F2}\u{1F1E6}", Sudan: "\u{1F1F8}\u{1F1E9}",
+  Nigeria: "\u{1F1F3}\u{1F1EC}", Ghana: "\u{1F1EC}\u{1F1ED}", Kenya: "\u{1F1F0}\u{1F1EA}", Uganda: "\u{1F1FA}\u{1F1EC}",
+  Tanzania: "\u{1F1F9}\u{1F1FF}", Ethiopia: "\u{1F1EA}\u{1F1F9}", Cameroon: "\u{1F1E8}\u{1F1F2}",
+  "Sierra Leone": "\u{1F1F8}\u{1F1F1}", Zambia: "\u{1F1FF}\u{1F1F2}", Zimbabwe: "\u{1F1FF}\u{1F1FC}",
+  Malawi: "\u{1F1F2}\u{1F1FC}", "South Africa": "\u{1F1FF}\u{1F1E6}",
+  India: "\u{1F1EE}\u{1F1F3}", China: "\u{1F1E8}\u{1F1F3}", Japan: "\u{1F1EF}\u{1F1F5}",
+  "South Korea": "\u{1F1F0}\u{1F1F7}", Taiwan: "\u{1F1F9}\u{1F1FC}", "Hong Kong": "\u{1F1ED}\u{1F1F0}",
+  Singapore: "\u{1F1F8}\u{1F1EC}", Malaysia: "\u{1F1F2}\u{1F1FE}", Indonesia: "\u{1F1EE}\u{1F1E9}",
+  Thailand: "\u{1F1F9}\u{1F1ED}", Vietnam: "\u{1F1FB}\u{1F1F3}", Philippines: "\u{1F1F5}\u{1F1ED}",
+  Cambodia: "\u{1F1F0}\u{1F1ED}", Kazakhstan: "\u{1F1F0}\u{1F1FF}",
+  Australia: "\u{1F1E6}\u{1F1FA}", "New Zealand": "\u{1F1F3}\u{1F1FF}", "European Union": "\u{1F1EA}\u{1F1FA}",
+};
+
 /** Flag emoji for a country slug, falling back to a globe for unmapped jurisdictions. */
 export function flagFor(slug: string | null | undefined) {
   if (!slug) return "🌐";

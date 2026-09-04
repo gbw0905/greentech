@@ -139,6 +139,21 @@ const STATIONS: Station[] = [
   { name: "Petromoc", country: "Mozambique", flag: "🇲🇿", volumeMnL: 40, sites: 180, fuels: ["Ethanol"], note: "E10 from local sugarcane", color: "var(--primary)" },
   { name: "Zuva Petroleum", country: "Zimbabwe", flag: "🇿🇼", volumeMnL: 70, sites: 130, fuels: ["Ethanol"], note: "E20 mandated blend", color: "var(--accent)" },
   { name: "ADNOC Distribution", country: "United Arab Emirates", flag: "🇦🇪", volumeMnL: 45, sites: 500, fuels: ["Biodiesel"], note: "B5 fleet lanes in Dubai", color: "var(--signal)" },
+  // ---------- Added global coverage ----------
+  { name: "Sasol Retail", country: "South Africa", flag: "🇿🇦", volumeMnL: 160, sites: 400, fuels: ["Biodiesel", "Ethanol"], note: "Synthetic and bio-blended fuels at Sasol sites", color: "var(--accent)" },
+  { name: "TotalEnergies Marketing Africa", country: "Nigeria", flag: "🇳🇬", volumeMnL: 120, sites: 550, fuels: ["Ethanol"], note: "E10 pilot lanes under Nigeria's ethanol policy", color: "var(--signal)" },
+  { name: "Vivo Energy (Shell licensee)", country: "Kenya", flag: "🇰🇪", volumeMnL: 95, sites: 340, fuels: ["Ethanol", "Biodiesel"], note: "Pan-African retailer piloting blended gasoline and B5", color: "var(--primary)" },
+  { name: "OiLibya / Ola Energy", country: "Morocco", flag: "🇲🇦", volumeMnL: 60, sites: 260, fuels: ["Biodiesel"], note: "North African network trialling waste-oil biodiesel blends", color: "var(--accent)" },
+  { name: "Puma Energy Africa", country: "Ghana", flag: "🇬🇭", volumeMnL: 55, sites: 190, fuels: ["Ethanol"], note: "Blended gasoline supply in West African markets", color: "var(--signal)" },
+  { name: "Pertamina Retail", country: "Indonesia", flag: "🇮🇩", volumeMnL: 9500, sites: 7500, fuels: ["Biodiesel"], note: "B35 mandatory biodiesel across the national network", color: "var(--signal)" },
+  { name: "Petronas Dagangan", country: "Malaysia", flag: "🇲🇾", volumeMnL: 1800, sites: 1100, fuels: ["Biodiesel"], note: "B10/B20 palm biodiesel at retail and fleet sites", color: "var(--primary)" },
+  { name: "Shell Malaysia", country: "Malaysia", flag: "🇲🇾", volumeMnL: 900, sites: 950, fuels: ["Biodiesel"], note: "B10 diesel under national blending mandate", color: "var(--accent)" },
+  { name: "Phoenix Petroleum", country: "Philippines", flag: "🇵🇭", volumeMnL: 320, sites: 700, fuels: ["Ethanol", "Biodiesel"], note: "Coconut methyl ester blends at retail sites", color: "var(--primary)" },
+  { name: "Indian Oil Corporation", country: "India", flag: "🇮🇳", volumeMnL: 12500, sites: 39000, fuels: ["Ethanol", "Biodiesel"], note: "E20 rollout across the largest retail network in Asia", color: "var(--accent)" },
+  { name: "MOL Group", country: "Hungary", flag: "🇭🇺", volumeMnL: 780, sites: 2400, fuels: ["Ethanol", "Biodiesel"], note: "E10 and B7 across Central and South-East Europe", color: "var(--signal)" },
+  { name: "OMV / Petrom", country: "Romania", flag: "🇷🇴", volumeMnL: 690, sites: 1800, fuels: ["Ethanol", "Biodiesel"], note: "Regional blending plus co-processed renewable diesel", color: "var(--primary)" },
+  { name: "St1 / Shell Nordics", country: "Finland", flag: "🇫🇮", volumeMnL: 700, sites: 1300, fuels: ["Renewable Diesel", "Ethanol"], note: "RE85 and HVO from own waste-based refineries", color: "var(--signal)" },
+  { name: "Viva Energy", country: "Australia", flag: "🇦🇺", volumeMnL: 190, sites: 1300, fuels: ["Ethanol", "Renewable Diesel"], note: "E10 retail plus renewable diesel trials at Geelong", color: "var(--signal)" },
 ];
 
 

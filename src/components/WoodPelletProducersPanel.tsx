@@ -81,6 +81,27 @@ const PRODUCERS: Producer[] = [
   { name: "Arauco biomass", country: "Chile", flag: "🇨🇱", capacityKt: 250, plants: 3, feedstock: "Radiata pine residues", note: "Pellets and biomass power from integrated forestry operations" },
   { name: "CMPC bioenergy", country: "Chile", flag: "🇨🇱", capacityKt: 200, plants: 2, feedstock: "Pine / eucalyptus", note: "Pellet and biomass energy arm of the Chilean forestry group" },
   { name: "Rentech / Wawa", country: "Canada", flag: "🇨🇦", capacityKt: 450, plants: 2, feedstock: "Softwood residues", note: "Ontario pellet mills historically contracted to UK utilities" },
+  // ---------- Added global coverage ----------
+  { name: "An Viet Phat Energy", country: "Vietnam", flag: "🇻🇳", capacityKt: 1200, plants: 6, feedstock: "Acacia / rubberwood", note: "Vietnam's largest exporter of pellets to Japan and South Korea" },
+  { name: "Vinh Phat Wood Pellet", country: "Vietnam", flag: "🇻🇳", capacityKt: 600, plants: 4, feedstock: "Acacia residues", note: "FSC-certified pellet supply for Asian utilities" },
+  { name: "Thai Pellet Energy", country: "Thailand", flag: "🇹🇭", capacityKt: 350, plants: 3, feedstock: "Rubberwood / cane trash", note: "Agri-residue pellets for domestic and Japanese demand" },
+  { name: "Malaysian Pellet Industries", country: "Malaysia", flag: "🇲🇾", capacityKt: 420, plants: 4, feedstock: "Palm kernel shell / EFB", note: "Palm-residue pellets exported to Japan and Korea" },
+  { name: "Indonesia Wood Pellet (Bio Energi)", country: "Indonesia", flag: "🇮🇩", capacityKt: 700, plants: 5, feedstock: "Energy plantations", note: "Plantation pellets supplying PLN co-firing and Japanese buyers" },
+  { name: "Perum Perhutani biomass", country: "Indonesia", flag: "🇮🇩", capacityKt: 300, plants: 3, feedstock: "Calliandra / sawmill residue", note: "State forestry pellet mills for coal co-firing" },
+  { name: "Vyborgskaya / Baltic mills", country: "Latvia", flag: "🇱🇻", capacityKt: 900, plants: 6, feedstock: "Softwood residues", note: "Baltic pellet cluster supplying EU heating markets" },
+  { name: "SBE / Lithuanian pellets", country: "Lithuania", flag: "🇱🇹", capacityKt: 500, plants: 5, feedstock: "Sawmill residues", note: "Heating pellets traded on the Baltpool exchange" },
+  { name: "Barlinek / Polish pellets", country: "Poland", flag: "🇵🇱", capacityKt: 450, plants: 4, feedstock: "Sawmill residues", note: "Flooring-industry residues pelletised for EU heating" },
+  { name: "Holzindustrie Schweighofer", country: "Romania", flag: "🇷🇴", capacityKt: 600, plants: 4, feedstock: "Spruce residues", note: "Integrated sawmilling and pellet production in the Carpathians" },
+  { name: "Enerstena / Nordic Pellets", country: "Finland", flag: "🇫🇮", capacityKt: 400, plants: 4, feedstock: "Softwood residues", note: "Pellets for Finnish district heating plants" },
+  { name: "Pellets Deutschland / German Pellets successors", country: "Germany", flag: "🇩🇪", capacityKt: 800, plants: 9, feedstock: "Sawmill residues", note: "Domestic heating pellet cluster serving DIN-plus market" },
+  { name: "EO2 / Biosyl", country: "France", flag: "🇫🇷", capacityKt: 320, plants: 4, feedstock: "Softwood residues", note: "French heating-pellet producers with ENplus certification" },
+  { name: "Portucel / Navigator pellets", country: "Portugal", flag: "🇵🇹", capacityKt: 500, plants: 3, feedstock: "Eucalyptus residues", note: "Iberian pellets exported to UK and Northern Europe" },
+  { name: "Rendisa / Spanish pellets", country: "Spain", flag: "🇪🇸", capacityKt: 280, plants: 4, feedstock: "Pine residues", note: "Domestic heating pellets for Iberian boilers" },
+  { name: "Groupe Rémabec pellets", country: "Canada", flag: "🇨🇦", capacityKt: 300, plants: 3, feedstock: "Forest residues", note: "Quebec forestry group with pellet and biochar lines" },
+  { name: "CM Biomass sourcing", country: "Denmark", flag: "🇩🇰", capacityKt: 1500, plants: 8, feedstock: "Mixed residues", note: "Global pellet trader with owned mills in Asia and the Americas" },
+  { name: "Bahia Pellets / Suzano residues", country: "Brazil", flag: "🇧🇷", capacityKt: 350, plants: 3, feedstock: "Eucalyptus residues", note: "Brazilian pellets for industrial heat and export" },
+  { name: "NGE / Chilean pellets", country: "Chile", flag: "🇨🇱", capacityKt: 260, plants: 4, feedstock: "Radiata pine residues", note: "Heating pellets for southern Chile's air-quality programme" },
+  { name: "Sylvamo / South African pellets", country: "South Africa", flag: "🇿🇦", capacityKt: 180, plants: 2, feedstock: "Plantation residues", note: "Pellets for industrial boilers and export to Europe" },
 ];
 
 type Metric = "capacity" | "plants" | "marketcap";
