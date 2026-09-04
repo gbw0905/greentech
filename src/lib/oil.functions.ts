@@ -71,7 +71,7 @@ export const getOilPricesFn = createServerFn({ method: "GET" }).handler(async ()
   return { quotes: merged, stale: true, asOf: cached?.at ?? Date.now() };
 });
 
-/** The twenty largest oil & gas companies worldwide, by their primary listing. */
+/** Listed oil & gas companies worldwide, by their primary listing (global coverage). */
 const OIL_STOCKS: Array<[string, string]> = [
   ["2222.SR", "Saudi Aramco"],
   ["XOM", "ExxonMobil"],
@@ -93,6 +93,33 @@ const OIL_STOCKS: Array<[string, string]> = [
   ["MPC", "Marathon Petroleum"],
   ["SU", "Suncor Energy"],
   ["CNQ", "Canadian Natural"],
+  ["VLO", "Valero Energy"],
+  ["EOG", "EOG Resources"],
+  ["DVN", "Devon Energy"],
+  ["FANG", "Diamondback Energy"],
+  ["HES", "Hess Corporation"],
+  ["APA", "APA Corporation"],
+  ["CVE.TO", "Cenovus Energy"],
+  ["IMO.TO", "Imperial Oil"],
+  ["REP.MC", "Repsol"],
+  ["OMV.VI", "OMV"],
+  ["GALP.LS", "Galp Energia"],
+  ["PKN.WA", "Orlen"],
+  ["MOL.BD", "MOL Group"],
+  ["NESTE.HE", "Neste"],
+  ["1605.T", "Inpex"],
+  ["5020.T", "Eneos Holdings"],
+  ["096770.KS", "SK Innovation"],
+  ["010950.KS", "S-Oil"],
+  ["PTT.BK", "PTT"],
+  ["IOC.NS", "Indian Oil"],
+  ["BPCL.NS", "Bharat Petroleum"],
+  ["HINDPETRO.NS", "Hindustan Petroleum"],
+  ["YPF", "YPF"],
+  ["EC", "Ecopetrol"],
+  ["SOL.JO", "Sasol"],
+  ["WDS", "Woodside Energy"],
+  ["STO.AX", "Santos"],
 ];
 
 export const getOilStocksFn = createServerFn({ method: "GET" }).handler(async () => {
@@ -102,7 +129,7 @@ export const getOilStocksFn = createServerFn({ method: "GET" }).handler(async ()
   );
   const fresh = (quotes.filter(Boolean) as OilQuote[]).sort((a, b) => b.price - a.price);
   const cached = cacheGet<OilQuote[]>("oil-stocks");
-  if (fresh.length >= OIL_STOCKS.length - 2) {
+  if (fresh.length >= Math.floor(OIL_STOCKS.length * 0.8)) {
     cacheSet("oil-stocks", fresh);
     return { quotes: fresh, stale: false, asOf: Date.now() };
   }
