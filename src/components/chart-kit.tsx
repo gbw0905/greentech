@@ -1036,7 +1036,11 @@ export function ChartPanel({
               </select>
             </label>
           ) : null}
-          {actions}
+          {actions
+            ? isValidElement(actions)
+              ? cloneElement(actions as ReactElement<any>, { portalTarget: panelNode })
+              : actions
+            : null}
           {assistant
             ? isValidElement(assistant)
               ? cloneElement(assistant as ReactElement<any>, { portalTarget: panelNode })
