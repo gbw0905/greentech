@@ -11,7 +11,8 @@ import {
   type PanelView,
   type ScatterPoint,
 } from "@/components/chart-kit";
-import { useEntityDetail, type GraphContext } from "@/components/EntityDetailSheet";
+import { detailTone, useEntityDetail, type GraphContext } from "@/components/EntityDetailSheet";
+import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
@@ -104,7 +105,7 @@ const PRODUCERS: Producer[] = [
   { name: "Sylvamo / South African pellets", country: "South Africa", flag: "🇿🇦", capacityKt: 180, plants: 2, feedstock: "Plantation residues", note: "Pellets for industrial boilers and export to Europe" },
 ];
 
-type Metric = "capacity" | "plants" | "marketcap";
+type Metric = "capacity" | "plants" | "marketcap" | "price";
 
 const METRICS: Record<
   Metric,
@@ -123,6 +124,13 @@ const METRICS: Record<
     help: "Number of operating pellet mills. Many small heating mills can rank high here but low on tonnage.",
     decimals: 0,
     value: (p) => p.plants,
+  },
+  price: {
+    label: "Share price (listing currency)",
+    unit: "share price, primary listing currency",
+    help: "Latest traded share price on the producer's primary listing, in that exchange's currency. Private, state-owned or unlisted producers have no price and sit at the end.",
+    decimals: 2,
+    value: () => 0,
   },
   marketcap: {
     label: "Market cap (approx.)",
@@ -159,8 +167,10 @@ export function WoodPelletProducersPanel() {
   const [metricKey, setMetricKey] = useState<Metric>("capacity");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
+  const { get } = useEntityQuotes();
   const metric = METRICS[metricKey];
-  const valueOf = (p: Producer) => metric.value(p);
+  const valueOf = (p: Producer) =>
+    metricKey === "price" ? (get(PELLET_TICKERS[p.name])?.price ?? 0) : metric.value(p);
 
   const f = useChartFilter(PRODUCERS, {
     text: (p) => `${p.name} ${p.country} ${p.feedstock} ${p.note}`,
@@ -181,6 +191,8 @@ export function WoodPelletProducersPanel() {
     size: axes.size.value(p),
     group: p.country,
     logo: entityLogoByName(p.name),
+    meta: priceMeta(get(PELLET_TICKERS[p.name])),
+    changePct: get(PELLET_TICKERS[p.name])?.changePct,
     newsTarget: { name: p.name, query: `"${p.name}" ${NEWS_SUFFIX}` },
   }));
 
@@ -190,6 +202,9 @@ export function WoodPelletProducersPanel() {
     sub: `${p.feedstock} · ${p.note}`,
     value: valueOf(p),
     logo: entityLogoByName(p.name),
+    meta: priceMeta(get(PELLET_TICKERS[p.name])),
+    tone: priceTone(get(PELLET_TICKERS[p.name])),
+    changePct: get(PELLET_TICKERS[p.name])?.changePct,
   }));
   const newsMap = Object.fromEntries(
     rows.map((p) => [p.name, { name: p.name, query: `"${p.name}" ${NEWS_SUFFIX}` }]),
@@ -216,6 +231,18 @@ export function WoodPelletProducersPanel() {
       logo: entityLogoByName(p.name),
       note: p.note,
       stats: [
+        { label: "Ticker", value: PELLET_TICKERS[p.name] ?? "Not listed" },
+        {
+          label: "Share price",
+          value: get(PELLET_TICKERS[p.name]) ? fmt(get(PELLET_TICKERS[p.name])!.price, 2) : "—",
+        },
+        {
+          label: "1-day change",
+          value: get(PELLET_TICKERS[p.name])
+            ? `${get(PELLET_TICKERS[p.name])!.changePct >= 0 ? "+" : ""}${get(PELLET_TICKERS[p.name])!.changePct.toFixed(2)}%`
+            : "—",
+          tone: detailTone(get(PELLET_TICKERS[p.name])?.changePct),
+        },
         { label: "Pellet capacity", value: `${fmt(p.capacityKt, 0)} kt/yr` },
         { label: "Pellet plants", value: `${fmt(p.plants, 0)} mills` },
         { label: "Feedstock", value: p.feedstock },
@@ -249,6 +276,9 @@ export function WoodPelletProducersPanel() {
               filename: "global-wood-pellet-producers",
               note: `Measure shown: ${metric.label}`,
               header: [
+                "Ticker",
+                "Share price",
+                "1-day change %",
                 "Producer",
                 "Country",
                 "Feedstock",
@@ -258,6 +288,9 @@ export function WoodPelletProducersPanel() {
                 "Note",
               ],
               rows: ranked.map((p) => [
+                  PELLET_TICKERS[p.name] ?? "Not listed",
+                  get(PELLET_TICKERS[p.name])?.price ?? "",
+                  get(PELLET_TICKERS[p.name])?.changePct?.toFixed(2) ?? "",
                   p.name,
                   p.country,
                   p.feedstock,
@@ -316,6 +349,7 @@ export function WoodPelletProducersPanel() {
                 label: p.name,
                 sub: `${p.country} · ${p.feedstock} · ${p.note}`,
                 value: valueOf(p),
+                price: get(PELLET_TICKERS[p.name])?.price,
                           })),
             })}
           />
