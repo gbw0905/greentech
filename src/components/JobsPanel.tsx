@@ -2,47 +2,53 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Briefcase, ExternalLink, Newspaper, Search, RotateCcw } from "lucide-react";
 import {
-  CATEGORY_QUERY,
-  FUEL_JOB_QUERY,
   JOB_BOARDS,
   JOB_CATEGORIES,
   JOB_REGIONS,
   SENIORITY_LEVELS,
-  SENIORITY_QUERY,
   type JobCategory,
   type Seniority,
 } from "@/lib/jobs";
-import type { FuelType } from "@/lib/policy-taxonomy";
 import { getHiringNewsFn } from "@/lib/jobs.functions";
 import { logoForDomain } from "@/lib/entity-logos";
 
-const FUELS: FuelType[] = [
-  "Ethanol",
-  "Biodiesel",
-  "Renewable Diesel",
-  "SAF",
-  "Biogas",
-  "Feedstock",
-];
+/** Light pastel tones per filter group — active chips pick up the group's tint. */
+const GROUP_TONES = {
+  function: {
+    active: "border-sky-400 bg-sky-100 text-sky-900 shadow-sm",
+    idle: "border-sky-200 bg-sky-50/60 text-sky-900/80 hover:border-sky-400 hover:bg-sky-100",
+  },
+  seniority: {
+    active: "border-emerald-400 bg-emerald-100 text-emerald-900 shadow-sm",
+    idle: "border-emerald-200 bg-emerald-50/60 text-emerald-900/80 hover:border-emerald-400 hover:bg-emerald-100",
+  },
+  region: {
+    active: "border-amber-400 bg-amber-100 text-amber-900 shadow-sm",
+    idle: "border-amber-200 bg-amber-50/60 text-amber-900/80 hover:border-amber-400 hover:bg-amber-100",
+  },
+} as const;
+
+type ToneKey = keyof typeof GROUP_TONES;
 
 function Chip({
   active,
   onClick,
+  tone,
   children,
 }: {
   active: boolean;
   onClick: () => void;
+  tone: ToneKey;
   children: React.ReactNode;
 }) {
+  const t = GROUP_TONES[tone];
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`border px-3 py-1.5 text-sm font-semibold transition-colors ${
-        active
-          ? "border-primary bg-primary text-primary-foreground"
-          : "border-border bg-surface-1 text-foreground hover:border-primary/40"
+      className={`rounded-full border px-3 py-1.5 text-sm font-semibold transition-all duration-150 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 ${
+        active ? t.active : t.idle
       }`}
     >
       {children}
