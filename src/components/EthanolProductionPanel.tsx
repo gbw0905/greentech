@@ -6,11 +6,13 @@ import {
   ChartPanel,
   ChartScatter,
   ChartTable,
+  ChartTrend,
   PANEL_VIEWS,
   chartFmt as fmt,
   type PanelView,
   type ScatterPoint,
 } from "@/components/chart-kit";
+import { ghgSavingsMt, GHG_NOTE } from "@/lib/ghg-savings";
 import { detailTone, useEntityDetail, type GraphContext } from "@/components/EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
@@ -119,7 +121,7 @@ const PRODUCERS: Producer[] = [
   { name: "Croda / Egypt distilleries", country: "Egypt", flag: "🇪🇬", capacityMl: 110, plants: 2, feedstock: "Molasses", note: "Molasses ethanol largely exported to the EU" },
 ];
 
-type Metric = "capacity" | "plants" | "price" | "marketcap";
+type Metric = "capacity" | "plants" | "price" | "marketcap" | "ghg";
 
 const METRICS: Record<
   Metric,
@@ -152,6 +154,14 @@ const METRICS: Record<
     help: "Approximate latest market capitalisation in USD billions, converted at recent exchange rates. Private, state-owned or unlisted entities rank last.",
     decimals: 1,
     value: (p) => marketCapValue(ETHANOL_TICKERS[p.name]),
+  },
+
+  ghg: {
+    label: "GHG savings (reported)",
+    unit: "million tonnes CO₂e avoided per year",
+    help: GHG_NOTE,
+    decimals: 1,
+    value: (p) => ghgSavingsMt(p.name),
   },
 };
 
@@ -374,7 +384,9 @@ export function EthanolProductionPanel() {
             No ethanol producers listed for this filter — open that country's profile page for its
             policy and market updates.
           </p>
-        ) : view === "scatter" ? (
+        ) : view === "line" ? (
+        <ChartTrend panel="ethanol" />
+      ) : view === "scatter" ? (
           <ChartScatter
             points={scatterPoints}
             xAxis={{ label: axes.x.metric.label, unit: axes.x.metric.unit, help: axes.x.help }}

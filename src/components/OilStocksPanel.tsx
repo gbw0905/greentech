@@ -9,11 +9,13 @@ import {
   ChartPanel,
   ChartScatter,
   ChartTable,
+  ChartTrend,
   PANEL_VIEWS,
   chartFmt,
   type PanelView,
   type ScatterPoint,
 } from "@/components/chart-kit";
+import { ghgSavingsMt, GHG_NOTE } from "@/lib/ghg-savings";
 import { detailTone, useEntityDetail, type GraphContext } from "@/components/EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { type BrandedExport } from "@/lib/branded-export";
@@ -221,7 +223,7 @@ function oilExport(rows: OilQuote[]): BrandedExport {
   };
 }
 
-type StockMetric = "price" | "change" | "capacity" | "marketcap";
+type StockMetric = "price" | "change" | "capacity" | "marketcap" | "ghg";
 
 const STOCK_METRICS: Record<
   StockMetric,
@@ -260,6 +262,14 @@ const STOCK_METRICS: Record<
     help: "Approximate latest market capitalisation in USD billions, converted at recent exchange rates. Private, state-owned or unlisted entities rank last.",
     decimals: 1,
     value: (q) => marketCapValue(marketCapTickerOf(q.symbol)),
+  },
+
+  ghg: {
+    label: "GHG savings (reported)",
+    unit: "million tonnes CO₂e avoided per year",
+    help: GHG_NOTE,
+    decimals: 1,
+    value: (q) => ghgSavingsMt(q.label),
   },
 };
 
@@ -458,6 +468,8 @@ export function OilStocksPanel() {
             ? "Market data is unavailable right now."
             : "No listed oil companies for this filter — open that country's profile page for its policy and market updates."}
         </p>
+      ) : view === "line" ? (
+        <ChartTrend panel="oil" />
       ) : view === "scatter" ? (
         <ChartScatter
           points={scatterPoints}

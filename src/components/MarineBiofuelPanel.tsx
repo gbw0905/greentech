@@ -6,11 +6,13 @@ import {
   ChartPanel,
   ChartScatter,
   ChartTable,
+  ChartTrend,
   PANEL_VIEWS,
   chartFmt as fmt,
   type PanelView,
   type ScatterPoint,
 } from "@/components/chart-kit";
+import { ghgSavingsMt, GHG_NOTE } from "@/lib/ghg-savings";
 import { detailTone, useEntityDetail, type GraphContext } from "@/components/EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
@@ -116,7 +118,7 @@ const ENTITIES: MarineEntity[] = [
   { name: "Bureau Veritas-verified charterers (ZEMBA)", country: "Belgium", flag: "🇧🇪", role: "User", volumeKt: 30, reach: 30, blendPct: 100, note: "Buyers' alliance tendering for e-fuel and biofuel voyages" },
 ];
 
-type Metric = "volume" | "reach" | "blend" | "price" | "marketcap";
+type Metric = "volume" | "reach" | "blend" | "price" | "marketcap" | "ghg";
 
 const METRICS: Record<
   Metric,
@@ -156,6 +158,14 @@ const METRICS: Record<
     help: "Approximate latest market capitalisation in USD billions, converted at recent exchange rates. Private, state-owned or unlisted entities rank last.",
     decimals: 1,
     value: (e) => marketCapValue(MARINE_TICKERS[e.name]),
+  },
+
+  ghg: {
+    label: "GHG savings (reported)",
+    unit: "million tonnes CO₂e avoided per year",
+    help: GHG_NOTE,
+    decimals: 1,
+    value: (e) => ghgSavingsMt(e.name),
   },
 };
 
@@ -376,7 +386,9 @@ export function MarineBiofuelPanel() {
             No marine biofuel suppliers or users listed for this filter — open that country's profile
             page for its policy and market updates.
           </p>
-        ) : view === "scatter" ? (
+        ) : view === "line" ? (
+        <ChartTrend panel="marine" />
+      ) : view === "scatter" ? (
           <ChartScatter
             points={scatterPoints}
             xAxis={{ label: axes.x.metric.label, unit: axes.x.metric.unit, help: axes.x.help }}

@@ -18,7 +18,11 @@ import {
   Scatter,
   ReferenceLine,
   ReferenceDot,
+  LineChart,
+  Line,
+  Legend,
 } from "recharts";
+import { panelTrend, totalSeries } from "@/lib/history-series";
 
 
 /** Shared number formatter for every chart in the app. */
@@ -206,10 +210,119 @@ export const PANEL_VIEWS = [
   { value: "heat", label: "Heat map" },
   { value: "scatter", label: "Scatter plot" },
   { value: "bars", label: "Ranked bars" },
+  { value: "line", label: "Trend line (2000–2026)" },
   { value: "table", label: "Data table" },
 ];
 
-export type PanelView = "heat" | "scatter" | "bars" | "table";
+export type PanelView = "heat" | "scatter" | "bars" | "line" | "table";
+
+const LINE_COLORS = [
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
+  "var(--chart-6)",
+];
+
+/**
+ * Yearly trend view, 2000–2026, for the datasets where official agencies
+ * publish an annual series. Users can switch between one line per
+ * country/region and a single sector-total line.
+ */
+export function ChartTrend({ panel }: { panel: string }) {
+  const [mode, setMode] = useState<"series" | "total">("series");
+  const trend = panelTrend(panel);
+
+  if (!trend) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        No official body publishes a consistent yearly series for this dataset, so there is no
+        2000–2026 trend to show. The other views use the latest verified snapshot instead.
+      </p>
+    );
+  }
+
+  const series = mode === "total" ? [totalSeries(trend)] : trend.series;
+  const years = Array.from(
+    new Set(series.flatMap((sr) => sr.points.map((p) => p.year))),
+  ).sort((a, b) => a - b);
+  const rows = years.map((year) => {
+    const row: Record<string, number | null> = { year };
+    for (const sr of series) row[sr.key] = sr.points.find((p) => p.year === year)?.value ?? null;
+    return row;
+  });
+
+  return (
+    <div className="min-w-0">
+      <div className="mb-2 flex flex-wrap items-center gap-2">
+        {(["series", "total"] as const).map((m) => (
+          <button
+            key={m}
+            type="button"
+            onClick={() => setMode(m)}
+            className={`label-mono border px-2.5 py-1 text-[0.7rem] uppercase tracking-[0.08em] transition-colors ${
+              mode === m
+                ? "border-foreground bg-foreground text-background"
+                : "border-border text-muted-foreground hover:bg-foreground/[0.05]"
+            }`}
+          >
+            {m === "series" ? "By country / region" : "Sector total"}
+          </button>
+        ))}
+      </div>
+
+      <div className="h-[22rem] w-full min-w-0">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={rows} margin={{ top: 8, right: 12, bottom: 26, left: 4 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+            <XAxis
+              dataKey="year"
+              tick={{ fontSize: 11 }}
+              stroke="var(--muted-foreground)"
+              label={{ value: "Year", position: "insideBottom", offset: -14, fontSize: 11 }}
+            />
+            <YAxis
+              tick={{ fontSize: 11 }}
+              stroke="var(--muted-foreground)"
+              width={56}
+              label={{ value: trend.unit, angle: -90, position: "insideLeft", fontSize: 11 }}
+            />
+            <Tooltip
+              formatter={(v: number | string, n: string) => [chartFmt(Number(v), 1), n]}
+              labelFormatter={(l) => `Year ${l}`}
+              contentStyle={{ fontSize: 12 }}
+            />
+            <Legend wrapperStyle={{ fontSize: 11 }} />
+            {series.map((sr, i) => (
+              <Line
+                key={sr.key}
+                type="monotone"
+                dataKey={sr.key}
+                name={sr.label}
+                stroke={LINE_COLORS[i % LINE_COLORS.length]}
+                strokeWidth={2}
+                dot={false}
+                connectNulls
+                isAnimationActive={false}
+              />
+            ))}
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="chart-axis mt-2 flex flex-wrap gap-x-4 gap-y-1">
+        <span>X axis: Year (2000–2026)</span>
+        <span>
+          Y axis: {trend.measure} ({trend.unit})
+        </span>
+      </div>
+      <p className="chart-sub mt-1">
+        Source: {trend.source}. {trend.note}
+      </p>
+    </div>
+  );
+}
 
 /** Plain ranked table view — same data, same typography, no visual encoding. */
 export function ChartTable({
