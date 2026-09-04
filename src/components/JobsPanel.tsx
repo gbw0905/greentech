@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Briefcase, ExternalLink, Newspaper, Search, RotateCcw } from "lucide-react";
 import {
   CATEGORY_QUERY,
-  FUEL_JOB_QUERY,
   JOB_BOARDS,
   JOB_CATEGORIES,
   JOB_REGIONS,
@@ -12,37 +11,46 @@ import {
   type JobCategory,
   type Seniority,
 } from "@/lib/jobs";
-import type { FuelType } from "@/lib/policy-taxonomy";
 import { getHiringNewsFn } from "@/lib/jobs.functions";
 import { logoForDomain } from "@/lib/entity-logos";
 
-const FUELS: FuelType[] = [
-  "Ethanol",
-  "Biodiesel",
-  "Renewable Diesel",
-  "SAF",
-  "Biogas",
-  "Feedstock",
-];
+/** Light pastel tones per filter group — active chips pick up the group's tint. */
+const GROUP_TONES = {
+  function: {
+    active: "border-sky-400 bg-sky-100 text-sky-900 shadow-sm",
+    idle: "border-sky-200 bg-sky-50/60 text-sky-900/80 hover:border-sky-400 hover:bg-sky-100",
+  },
+  seniority: {
+    active: "border-emerald-400 bg-emerald-100 text-emerald-900 shadow-sm",
+    idle: "border-emerald-200 bg-emerald-50/60 text-emerald-900/80 hover:border-emerald-400 hover:bg-emerald-100",
+  },
+  region: {
+    active: "border-amber-400 bg-amber-100 text-amber-900 shadow-sm",
+    idle: "border-amber-200 bg-amber-50/60 text-amber-900/80 hover:border-amber-400 hover:bg-amber-100",
+  },
+} as const;
+
+type ToneKey = keyof typeof GROUP_TONES;
 
 function Chip({
   active,
   onClick,
+  tone,
   children,
 }: {
   active: boolean;
   onClick: () => void;
+  tone: ToneKey;
   children: React.ReactNode;
 }) {
+  const t = GROUP_TONES[tone];
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`border px-3 py-1.5 text-sm font-semibold transition-colors ${
-        active
-          ? "border-primary bg-primary text-primary-foreground"
-          : "border-border bg-surface-1 text-foreground hover:border-primary/40"
+      className={`rounded-full border px-3 py-1.5 text-sm font-semibold transition-all duration-150 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 ${
+        active ? t.active : t.idle
       }`}
     >
       {children}
@@ -72,7 +80,6 @@ function FilterGroup({
 
 export function JobsPanel({ compact = false }: { compact?: boolean }) {
   const [categories, setCategories] = useState<JobCategory[]>([]);
-  const [fuels, setFuels] = useState<FuelType[]>([]);
   const [seniority, setSeniority] = useState<Seniority | null>(null);
   const [regionName, setRegionName] = useState<string>("Worldwide");
   const [remoteOnly, setRemoteOnly] = useState(false);
@@ -86,24 +93,20 @@ export function JobsPanel({ compact = false }: { compact?: boolean }) {
   const query = useMemo(() => {
     const or = (parts: string[]) =>
       parts.length === 0 ? "" : parts.length === 1 ? parts[0]! : `(${parts.join(" OR ")})`;
-    const base = fuels.length
-      ? or(fuels.map((f) => FUEL_JOB_QUERY[f]))
-      : "(biofuel OR bioenergy OR biogas OR \"renewable fuel\")";
+    const base = "(biofuel OR bioenergy OR biogas OR \"renewable fuel\")";
     const fn = or(categories.map((c) => CATEGORY_QUERY[c]));
     const lvl = seniority ? `(${SENIORITY_QUERY[seniority]})` : "";
     return [base, fn, lvl, remoteOnly ? "remote" : "", keyword.trim()]
       .filter(Boolean)
       .join(" ");
-  }, [fuels, categories, seniority, remoteOnly, keyword]);
+  }, [categories, seniority, remoteOnly, keyword]);
 
   const newsKeywords = useMemo(() => {
-    const list = fuels.length
-      ? fuels.map((f) => `${FUEL_JOB_QUERY[f]} hiring jobs`)
-      : ["biofuel hiring jobs", "bioenergy hiring jobs"];
+    const list = ["biofuel hiring jobs", "bioenergy hiring jobs"];
     if (categories.length) list.push(`${CATEGORY_QUERY[categories[0]!]} hiring`);
     if (region.location) list.push(`biofuel jobs ${region.location}`);
     return list.slice(0, 4);
-  }, [fuels, categories, region]);
+  }, [categories, region]);
 
   const news = useQuery({
     queryKey: ["hiring-news", newsKeywords],
@@ -113,7 +116,6 @@ export function JobsPanel({ compact = false }: { compact?: boolean }) {
 
   const activeCount =
     categories.length +
-    fuels.length +
     (seniority ? 1 : 0) +
     (region.location ? 1 : 0) +
     (remoteOnly ? 1 : 0) +
@@ -121,7 +123,6 @@ export function JobsPanel({ compact = false }: { compact?: boolean }) {
 
   const reset = () => {
     setCategories([]);
-    setFuels([]);
     setSeniority(null);
     setRegionName("Worldwide");
     setRemoteOnly(false);
@@ -148,23 +149,13 @@ export function JobsPanel({ compact = false }: { compact?: boolean }) {
 
         <div className="space-y-5 p-5">
           <FilterGroup
-            title="Fuel"
-            value={fuels.length ? fuels.join(", ") : "All fuels"}
-          >
-            {FUELS.map((f) => (
-              <Chip key={f} active={fuels.includes(f)} onClick={() => toggle(fuels, setFuels, f)}>
-                {f}
-              </Chip>
-            ))}
-          </FilterGroup>
-
-          <FilterGroup
             title="Function"
             value={categories.length ? categories.join(", ") : "All functions"}
           >
             {JOB_CATEGORIES.map((c) => (
               <Chip
                 key={c}
+                tone="function"
                 active={categories.includes(c)}
                 onClick={() => toggle(categories, setCategories, c)}
               >
@@ -177,6 +168,7 @@ export function JobsPanel({ compact = false }: { compact?: boolean }) {
             {SENIORITY_LEVELS.map((s) => (
               <Chip
                 key={s}
+                tone="seniority"
                 active={seniority === s}
                 onClick={() => setSeniority(seniority === s ? null : s)}
               >
@@ -187,11 +179,16 @@ export function JobsPanel({ compact = false }: { compact?: boolean }) {
 
           <FilterGroup title="Region" value={region.name}>
             {JOB_REGIONS.map((r) => (
-              <Chip key={r.name} active={region.name === r.name} onClick={() => setRegionName(r.name)}>
+              <Chip
+                key={r.name}
+                tone="region"
+                active={region.name === r.name}
+                onClick={() => setRegionName(r.name)}
+              >
                 {r.name}
               </Chip>
             ))}
-            <Chip active={remoteOnly} onClick={() => setRemoteOnly(!remoteOnly)}>
+            <Chip tone="region" active={remoteOnly} onClick={() => setRemoteOnly(!remoteOnly)}>
               Remote only
             </Chip>
           </FilterGroup>
