@@ -6,11 +6,13 @@ import {
   ChartPanel,
   ChartScatter,
   ChartTable,
+  ChartTrend,
   PANEL_VIEWS,
   chartFmt as fmt,
   type PanelView,
   type ScatterPoint,
 } from "@/components/chart-kit";
+import { ghgSavingsMt, GHG_NOTE } from "@/lib/ghg-savings";
 import { detailTone, useEntityDetail, type GraphContext } from "@/components/EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
@@ -92,7 +94,7 @@ const AIRLINES: Airline[] = [
   { code: "DY", name: "Norwegian", country: "Norway", flag: "🇳🇴", volume: 2.8, share: 0.8, note: "Norwegian SAF blending mandate compliance." },
 ];
 
-type AirlineMetric = "volume" | "share" | "price" | "marketcap";
+type AirlineMetric = "volume" | "share" | "price" | "marketcap" | "ghg";
 
 const AIRLINE_METRICS: Record<
   AirlineMetric,
@@ -125,6 +127,14 @@ const AIRLINE_METRICS: Record<
     help: "Approximate latest market capitalisation in USD billions, converted at recent exchange rates. Private, state-owned or unlisted entities rank last.",
     decimals: 1,
     value: (a) => marketCapValue(AIRLINE_TICKERS[a.code]),
+  },
+
+  ghg: {
+    label: "GHG savings (reported)",
+    unit: "million tonnes CO₂e avoided per year",
+    help: "Greenhouse-gas savings only where the company or an official agency has published a figure. Entities with no published number show as zero / not reported — nothing here is modelled.",
+    decimals: 1,
+    value: (a) => ghgSavingsMt(a.name),
   },
 };
 
@@ -347,6 +357,8 @@ export function SafAirlinesPanel() {
           No listed airlines for this filter — open that country's profile page for its policy and
           market updates.
         </p>
+      ) : view === "line" ? (
+        <ChartTrend panel="saf" />
       ) : view === "scatter" ? (
         <ChartScatter
           points={scatterPoints}
