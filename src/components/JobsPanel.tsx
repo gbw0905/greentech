@@ -2,10 +2,12 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Briefcase, ExternalLink, Newspaper, Search, RotateCcw } from "lucide-react";
 import {
+  CATEGORY_QUERY,
   JOB_BOARDS,
   JOB_CATEGORIES,
   JOB_REGIONS,
   SENIORITY_LEVELS,
+  SENIORITY_QUERY,
   type JobCategory,
   type Seniority,
 } from "@/lib/jobs";
