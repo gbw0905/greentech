@@ -11,7 +11,8 @@ import {
   type PanelView,
   type ScatterPoint,
 } from "@/components/chart-kit";
-import { useEntityDetail, type GraphContext } from "@/components/EntityDetailSheet";
+import { detailTone, useEntityDetail, type GraphContext } from "@/components/EntityDetailSheet";
+import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
@@ -89,7 +90,7 @@ const PRODUCERS: Producer[] = [
   { name: "Carbonaught", country: "Australia", flag: "🇦🇺", capacityT: 5000, co2RemovalT: 10000, feedstock: "Cane trash", note: "Queensland cane-residue biochar applied to farm soils" },
 ];
 
-type Metric = "capacity" | "removal" | "marketcap";
+type Metric = "capacity" | "removal" | "marketcap" | "price";
 
 const METRICS: Record<
   Metric,
@@ -108,6 +109,13 @@ const METRICS: Record<
     help: "Carbon locked away per year, issued or claimed under biochar carbon-removal registries. Roughly two tonnes CO₂e per tonne of biochar.",
     decimals: 0,
     value: (p) => p.co2RemovalT,
+  },
+  price: {
+    label: "Share price (listing currency)",
+    unit: "share price, primary listing currency",
+    help: "Latest traded share price on the producer's primary listing, in that exchange's currency. Private, state-owned or unlisted producers have no price and sit at the end.",
+    decimals: 2,
+    value: () => 0,
   },
   marketcap: {
     label: "Market cap (approx.)",
@@ -144,8 +152,10 @@ export function BiocharProducersPanel() {
   const [metricKey, setMetricKey] = useState<Metric>("capacity");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
+  const { get } = useEntityQuotes();
   const metric = METRICS[metricKey];
-  const valueOf = (p: Producer) => metric.value(p);
+  const valueOf = (p: Producer) =>
+    metricKey === "price" ? (get(BIOCHAR_TICKERS[p.name])?.price ?? 0) : metric.value(p);
 
   const f = useChartFilter(PRODUCERS, {
     text: (p) => `${p.name} ${p.country} ${p.feedstock} ${p.note}`,
@@ -166,6 +176,8 @@ export function BiocharProducersPanel() {
     size: axes.size.value(p),
     group: p.country,
     logo: entityLogoByName(p.name),
+    meta: priceMeta(get(BIOCHAR_TICKERS[p.name])),
+    changePct: get(BIOCHAR_TICKERS[p.name])?.changePct,
     newsTarget: { name: p.name, query: `"${p.name}" ${NEWS_SUFFIX}` },
   }));
 
@@ -175,6 +187,9 @@ export function BiocharProducersPanel() {
     sub: `${p.feedstock} · ${p.note}`,
     value: valueOf(p),
     logo: entityLogoByName(p.name),
+    meta: priceMeta(get(BIOCHAR_TICKERS[p.name])),
+    tone: priceTone(get(BIOCHAR_TICKERS[p.name])),
+    changePct: get(BIOCHAR_TICKERS[p.name])?.changePct,
   }));
   const newsMap = Object.fromEntries(
     rows.map((p) => [p.name, { name: p.name, query: `"${p.name}" ${NEWS_SUFFIX}` }]),
@@ -201,6 +216,18 @@ export function BiocharProducersPanel() {
       logo: entityLogoByName(p.name),
       note: p.note,
       stats: [
+        { label: "Ticker", value: BIOCHAR_TICKERS[p.name] ?? "Not listed" },
+        {
+          label: "Share price",
+          value: get(BIOCHAR_TICKERS[p.name]) ? fmt(get(BIOCHAR_TICKERS[p.name])!.price, 2) : "—",
+        },
+        {
+          label: "1-day change",
+          value: get(BIOCHAR_TICKERS[p.name])
+            ? `${get(BIOCHAR_TICKERS[p.name])!.changePct >= 0 ? "+" : ""}${get(BIOCHAR_TICKERS[p.name])!.changePct.toFixed(2)}%`
+            : "—",
+          tone: detailTone(get(BIOCHAR_TICKERS[p.name])?.changePct),
+        },
         { label: "Biochar capacity", value: `${fmt(p.capacityT, 0)} t/yr` },
         { label: "Durable CO₂ removal", value: `${fmt(p.co2RemovalT, 0)} tCO₂e/yr` },
         { label: "Feedstock", value: p.feedstock },
@@ -234,6 +261,9 @@ export function BiocharProducersPanel() {
               filename: "global-biochar-producers",
               note: `Measure shown: ${metric.label}`,
               header: [
+                "Ticker",
+                "Share price",
+                "1-day change %",
                 "Producer",
                 "Country",
                 "Feedstock",
@@ -243,6 +273,9 @@ export function BiocharProducersPanel() {
                 "Note",
               ],
               rows: ranked.map((p) => [
+                  BIOCHAR_TICKERS[p.name] ?? "Not listed",
+                  get(BIOCHAR_TICKERS[p.name])?.price ?? "",
+                  get(BIOCHAR_TICKERS[p.name])?.changePct?.toFixed(2) ?? "",
                   p.name,
                   p.country,
                   p.feedstock,
@@ -301,6 +334,7 @@ export function BiocharProducersPanel() {
                 label: p.name,
                 sub: `${p.country} · ${p.feedstock} · ${p.note}`,
                 value: valueOf(p),
+                price: get(BIOCHAR_TICKERS[p.name])?.price,
                           })),
             })}
           />
