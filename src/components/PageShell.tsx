@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Linkedin } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import siteLogo from "@/assets/logo.png";
 import { AuthButton } from "@/components/AuthButton";
 
