@@ -81,6 +81,27 @@ const PRODUCERS: Producer[] = [
   { name: "Jemena / LMS Energy", country: "Australia", flag: "🇦🇺", outputMmbtu: 0.8, facilities: 10, feedstock: "Landfill / wastewater", note: "Australian landfill biogas and Malabar biomethane injection" },
   { name: "Bio Bin / Bioenergy Brasil", country: "Brazil", flag: "🇧🇷", outputMmbtu: 1.2, facilities: 12, feedstock: "Vinasse / manure", note: "Sugarcane vinasse biogas upgrading in São Paulo state" },
   { name: "Raízen biogas", country: "Brazil", flag: "🇧🇷", outputMmbtu: 1.5, facilities: 6, feedstock: "Vinasse / bagasse", note: "Mill-integrated biogas plants supplying fleet fuel and power" },
+  // ---------- Added global coverage ----------
+  { name: "Air Liquide Biogas", country: "France", flag: "🇫🇷", outputMmbtu: 4.5, facilities: 20, feedstock: "Agri / food waste", note: "Biomethane production and liquefaction in Europe and the US" },
+  { name: "Scandinavian Biogas", country: "Sweden", flag: "🇸🇪", outputMmbtu: 2.2, facilities: 8, feedstock: "Sludge / food waste", note: "Liquefied biogas for heavy transport in Sweden and Korea" },
+  { name: "Nordsol", country: "Netherlands", flag: "🇳🇱", outputMmbtu: 0.9, facilities: 3, feedstock: "Food / manure", note: "Small-scale bio-LNG plants for trucking and shipping" },
+  { name: "Naturgy renewable gas", country: "Spain", flag: "🇪🇸", outputMmbtu: 2.4, facilities: 12, feedstock: "Landfill / agri waste", note: "Iberian biomethane injection projects" },
+  { name: "Iren / A2A biomethane", country: "Italy", flag: "🇮🇹", outputMmbtu: 2, facilities: 9, feedstock: "Organic municipal waste", note: "Utility-run OFMSW digesters injecting biomethane" },
+  { name: "FortisBC RNG", country: "Canada", flag: "🇨🇦", outputMmbtu: 3, facilities: 15, feedstock: "Landfill / agri", note: "Utility RNG procurement programme in British Columbia" },
+  { name: "Greenlane Renewables", country: "Canada", flag: "🇨🇦", outputMmbtu: 2, facilities: 8, feedstock: "Biogas upgrading", note: "Upgrading technology supplier with owned project stakes" },
+  { name: "IndianOil biogas (CBG)", country: "India", flag: "🇮🇳", outputMmbtu: 3.4, facilities: 25, feedstock: "Paddy straw / press mud", note: "Compressed bio-gas plants under the SATAT programme" },
+  { name: "Adani Total Gas CBG", country: "India", flag: "🇮🇳", outputMmbtu: 1.6, facilities: 10, feedstock: "Agri / municipal waste", note: "CBG plants feeding city gas distribution networks" },
+  { name: "GPS Renewables", country: "India", flag: "🇮🇳", outputMmbtu: 1.1, facilities: 20, feedstock: "Food / agri waste", note: "Bio-CNG developer for municipalities and campuses" },
+  { name: "Sinopec biomethane", country: "China", flag: "🇨🇳", outputMmbtu: 2.8, facilities: 12, feedstock: "Agri residues", note: "Grid-injected biomethane pilots in northern provinces" },
+  { name: "Tokyo Gas biogas", country: "Japan", flag: "🇯🇵", outputMmbtu: 1.2, facilities: 9, feedstock: "Sewage sludge", note: "Sludge biogas upgrading for city gas supply" },
+  { name: "Jeonju Biogas / SK Eco", country: "South Korea", flag: "🇰🇷", outputMmbtu: 0.8, facilities: 6, feedstock: "Food waste", note: "Food-waste digesters supplying city gas and transport fuel" },
+  { name: "Jemena Malabar biomethane", country: "Australia", flag: "🇦🇺", outputMmbtu: 0.6, facilities: 3, feedstock: "Sewage sludge", note: "Australia's first grid-injected biomethane project" },
+  { name: "Ecogas New Zealand", country: "New Zealand", flag: "🇳🇿", outputMmbtu: 0.4, facilities: 2, feedstock: "Food waste", note: "Reporoa organics-to-biomethane facility" },
+  { name: "Bio-Bean / Bidco biogas", country: "Kenya", flag: "🇰🇪", outputMmbtu: 0.3, facilities: 4, feedstock: "Agro-industrial waste", note: "Agro-processing biogas supplying industrial heat and gas" },
+  { name: "Bio2Watt", country: "South Africa", flag: "🇿🇦", outputMmbtu: 0.5, facilities: 3, feedstock: "Feedlot manure", note: "Bronkhorstspruit biogas supplying industrial offtakers" },
+  { name: "Sistema.bio", country: "Mexico", flag: "🇲🇽", outputMmbtu: 0.4, facilities: 30, feedstock: "Farm manure", note: "Distributed farm digesters across Latin America, Africa and Asia" },
+  { name: "Geo Biogas & Tech", country: "Brazil", flag: "🇧🇷", outputMmbtu: 2.6, facilities: 12, feedstock: "Vinasse / manure", note: "Brazilian biomethane developer for agro-industry" },
+  { name: "Zeg Biogas", country: "Brazil", flag: "🇧🇷", outputMmbtu: 1.4, facilities: 8, feedstock: "Agro-industrial waste", note: "Biomethane supply to trucking and industrial clients" },
 ];
 
 type Metric = "output" | "facilities" | "marketcap";

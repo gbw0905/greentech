@@ -96,6 +96,24 @@ const ENTITIES: MarineEntity[] = [
   { name: "Louis Dreyfus Company", country: "Netherlands", flag: "🇳🇱", role: "User", volumeKt: 20, reach: 14, blendPct: 24, note: "Agri-commodity shipper using bio-bunkers on export routes" },
   { name: "Amazon (ocean freight)", country: "United States", flag: "🇺🇸", role: "User", volumeKt: 35, reach: 20, blendPct: 30, note: "Shipper buying biofuel-powered container slots" },
   { name: "IKEA / Inter IKEA", country: "Sweden", flag: "🇸🇪", role: "User", volumeKt: 30, reach: 18, blendPct: 30, note: "Cargo owner committed to biofuel or zero-emission ocean freight" },
+  // ---------- Added global coverage ----------
+  { name: "Sinopec Zhoushan Bunker", country: "China", flag: "🇨🇳", role: "Supplier", volumeKt: 200, reach: 8, blendPct: 24, note: "China's largest B24 bio-bunker hub using domestic UCO" },
+  { name: "PetroChina Fuel Marine", country: "China", flag: "🇨🇳", role: "Supplier", volumeKt: 110, reach: 7, blendPct: 24, note: "Bonded biofuel bunkering at Chinese coastal ports" },
+  { name: "Global Energy Trading (GET)", country: "Singapore", flag: "🇸🇬", role: "Supplier", volumeKt: 85, reach: 6, blendPct: 24, note: "Singapore-licensed supplier of B24 and B30 blends" },
+  { name: "Equatorial Marine Fuel", country: "Singapore", flag: "🇸🇬", role: "Supplier", volumeKt: 75, reach: 5, blendPct: 24, note: "Singapore bunker tanker operator delivering bio-blends" },
+  { name: "ENEOS marine biofuel", country: "Japan", flag: "🇯🇵", role: "Supplier", volumeKt: 60, reach: 8, blendPct: 24, note: "B24 supply at Tokyo Bay and Kansai ports" },
+  { name: "GS Caltex marine", country: "South Korea", flag: "🇰🇷", role: "Supplier", volumeKt: 45, reach: 5, blendPct: 24, note: "Korean bio-bunkering pilots at Busan and Ulsan" },
+  { name: "Vivo Energy Marine", country: "South Africa", flag: "🇿🇦", role: "Supplier", volumeKt: 25, reach: 4, blendPct: 20, note: "Bio-blend bunkering trials at Durban and Cape Town" },
+  { name: "Vitol Bahri / Gulf suppliers", country: "United Arab Emirates", flag: "🇦🇪", role: "Supplier", volumeKt: 55, reach: 6, blendPct: 20, note: "Fujairah biofuel bunkering for Indian Ocean routes" },
+  { name: "Raízen marine fuels", country: "Brazil", flag: "🇧🇷", role: "Supplier", volumeKt: 40, reach: 5, blendPct: 24, note: "Santos-area bio-bunker supply from sugarcane-based streams" },
+  { name: "Wilhelmsen / Topaz bunkering", country: "Norway", flag: "🇳🇴", role: "Supplier", volumeKt: 35, reach: 7, blendPct: 100, note: "HVO100 supply to Norwegian coastal and offshore vessels" },
+  { name: "Hapag-Lloyd Ship Green", country: "Germany", flag: "🇩🇪", role: "User", volumeKt: 180, reach: 260, blendPct: 100, note: "Customer-funded waste-based biofuel product on container services" },
+  { name: "Ocean Network Express", country: "Japan", flag: "🇯🇵", role: "User", volumeKt: 140, reach: 210, blendPct: 24, note: "B24 uplift at Singapore for Asia-Europe loops" },
+  { name: "Evergreen Marine", country: "Taiwan", flag: "🇹🇼", role: "User", volumeKt: 110, reach: 200, blendPct: 24, note: "Bio-bunkering to meet FuelEU Maritime intensity limits" },
+  { name: "Cosco Shipping Lines", country: "China", flag: "🇨🇳", role: "User", volumeKt: 70, reach: 190, blendPct: 24, note: "B24 uplift from Chinese UCO-based supply" },
+  { name: "Fortescue shipping", country: "Australia", flag: "🇦🇺", role: "User", volumeKt: 40, reach: 12, blendPct: 100, note: "Iron-ore carriers trialling 100% biofuel voyages" },
+  { name: "Unilever ocean freight", country: "United Kingdom", flag: "🇬🇧", role: "User", volumeKt: 25, reach: 20, blendPct: 100, note: "Book-and-claim biofuel for consumer-goods shipping" },
+  { name: "Bureau Veritas-verified charterers (ZEMBA)", country: "Belgium", flag: "🇧🇪", role: "User", volumeKt: 30, reach: 30, blendPct: 100, note: "Buyers' alliance tendering for e-fuel and biofuel voyages" },
 ];
 
 type Metric = "volume" | "reach" | "blend" | "price" | "marketcap";

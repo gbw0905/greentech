@@ -44,6 +44,18 @@ const SHIPPING: Carrier[] = [
   { name: "Cosco Shipping", country: "China", flag: "🇨🇳", volumeMnL: 90, share: 0.7, note: "B24 pilots from Chinese used-cooking-oil supply" },
   { name: "ZIM", country: "Israel", flag: "🇮🇱", volumeMnL: 70, share: 1.5, note: "Customer-funded biofuel programme" },
   { name: "Stena Line", country: "Sweden", flag: "🇸🇪", volumeMnL: 65, share: 5.2, note: "Nordic ferries on HVO and bio-blends" },
+  { name: "Hapag-Lloyd Ship Green", country: "Germany", flag: "🇩🇪", volumeMnL: 210, share: 2.4, note: "Customer-funded waste-based biofuel product" },
+  { name: "Grimaldi Group", country: "Italy", flag: "🇮🇹", volumeMnL: 85, share: 2.0, note: "Mediterranean ro-ro fleet blending biofuel for FuelEU" },
+  { name: "DFDS", country: "Denmark", flag: "🇩🇰", volumeMnL: 80, share: 3.6, note: "North Sea ferries and ro-ro on waste-based biofuel" },
+  { name: "Fortescue shipping", country: "Australia", flag: "🇦🇺", volumeMnL: 60, share: 8.0, note: "Iron-ore carriers on 100% biofuel voyages" },
+  { name: "Rio Tinto Marine", country: "Australia", flag: "🇦🇺", volumeMnL: 55, share: 3.2, note: "Bulk carriers running B30 on Asian routes" },
+  { name: "Cargill Ocean Transportation", country: "United States", flag: "🇺🇸", volumeMnL: 90, share: 2.8, note: "Charterer running biofuel voyages across dry bulk" },
+  { name: "Anglo American shipping", country: "United Kingdom", flag: "🇬🇧", volumeMnL: 45, share: 3.0, note: "Bio-LNG and biofuel voyages for bulk exports" },
+  { name: "Yang Ming", country: "Taiwan", flag: "🇹🇼", volumeMnL: 60, share: 1.1, note: "B24 bunkering at Kaohsiung and Singapore" },
+  { name: "PIL (Pacific International Lines)", country: "Singapore", flag: "🇸🇬", volumeMnL: 50, share: 1.4, note: "Biofuel blends on Asia-Africa services" },
+  { name: "Fesco / Asian regional lines", country: "South Korea", flag: "🇰🇷", volumeMnL: 30, share: 0.9, note: "Regional feeder services trialling bio-blends" },
+  { name: "Bahri", country: "Saudi Arabia", flag: "🇸🇦", volumeMnL: 35, share: 0.8, note: "Tanker fleet trialling biofuel bunkering at Fujairah" },
+  { name: "Ultranav / Latin American operators", country: "Chile", flag: "🇨🇱", volumeMnL: 25, share: 1.2, note: "South American coastal shipping using bio-blends" },
 ];
 
 const TRUCKING: Carrier[] = [
@@ -59,6 +71,22 @@ const TRUCKING: Carrier[] = [
   { name: "Kuehne+Nagel", country: "Switzerland", flag: "🇨🇭", volumeMnL: 130, share: 5.1, note: "Biofuel insetting for road freight customers" },
   { name: "Waste Management", country: "United States", flag: "🇺🇸", volumeMnL: 620, share: 70.0, note: "Largest RNG-powered collection fleet worldwide" },
   { name: "Republic Services", country: "United States", flag: "🇺🇸", volumeMnL: 330, share: 42.0, note: "Renewable natural gas refuse fleet" },
+  { name: "Girteka Europe (extended fleet)", country: "Lithuania", flag: "🇱🇹", volumeMnL: 95, share: 5.0, note: "HVO-powered long-haul across Central Europe" },
+  { name: "Geodis", country: "France", flag: "🇫🇷", volumeMnL: 120, share: 6.0, note: "B100 and HVO across French and Iberian road freight" },
+  { name: "STEF", country: "France", flag: "🇫🇷", volumeMnL: 70, share: 8.5, note: "Cold-chain fleet on B100 rapeseed biodiesel" },
+  { name: "Primafrio", country: "Spain", flag: "🇪🇸", volumeMnL: 60, share: 5.5, note: "Refrigerated transport using HVO on EU corridors" },
+  { name: "Gruber Logistics", country: "Italy", flag: "🇮🇹", volumeMnL: 45, share: 6.2, note: "HVO100 fleet across Alpine and Central European lanes" },
+  { name: "Raben Group", country: "Poland", flag: "🇵🇱", volumeMnL: 55, share: 4.4, note: "HVO deployment across Central European distribution" },
+  { name: "Ewals Cargo Care", country: "Netherlands", flag: "🇳🇱", volumeMnL: 40, share: 6.0, note: "Bio-LNG and HVO intermodal road legs" },
+  { name: "PostNL", country: "Netherlands", flag: "🇳🇱", volumeMnL: 35, share: 7.0, note: "HVO in urban and regional delivery fleets" },
+  { name: "Toll Group", country: "Australia", flag: "🇦🇺", volumeMnL: 50, share: 3.5, note: "Renewable diesel trials across Australian linehaul" },
+  { name: "Linfox", country: "Australia", flag: "🇦🇺", volumeMnL: 45, share: 3.2, note: "Renewable diesel and bio-blends in retail distribution" },
+  { name: "JSL Logística", country: "Brazil", flag: "🇧🇷", volumeMnL: 260, share: 12.0, note: "B15 mandated biodiesel plus dedicated B100 fleets" },
+  { name: "Grupo André Maggi transport", country: "Brazil", flag: "🇧🇷", volumeMnL: 180, share: 11.0, note: "Agri-commodity trucking on high biodiesel blends" },
+  { name: "VRL Logistics", country: "India", flag: "🇮🇳", volumeMnL: 110, share: 5.5, note: "B7 blends and CBG trucks under Indian fuel policy" },
+  { name: "Delhivery", country: "India", flag: "🇮🇳", volumeMnL: 70, share: 4.0, note: "Bio-CNG and blended diesel in line-haul fleets" },
+  { name: "SF Express", country: "China", flag: "🇨🇳", volumeMnL: 90, share: 2.5, note: "Bio-LNG and blended diesel pilots on trunk routes" },
+  { name: "Imperial Logistics", country: "South Africa", flag: "🇿🇦", volumeMnL: 40, share: 3.0, note: "B5 blends and biodiesel pilots in Southern Africa" },
 ];
 
 const RAIL: Carrier[] = [
@@ -74,6 +102,18 @@ const RAIL: Carrier[] = [
   { name: "Rio Tinto Rail", country: "Australia", flag: "🇦🇺", volumeMnL: 40, share: 4.0, note: "HVO in Pilbara iron-ore rail fleet" },
   { name: "Indian Railways (diesel fleet)", country: "India", flag: "🇮🇳", volumeMnL: 210, share: 5.0, note: "B5–B20 blending on the remaining diesel fleet" },
   { name: "Amtrak", country: "United States", flag: "🇺🇸", volumeMnL: 35, share: 6.5, note: "Renewable diesel on long-distance diesel routes" },
+  { name: "Kansas City Southern de México", country: "Mexico", flag: "🇲🇽", volumeMnL: 55, share: 3.5, note: "Cross-border biodiesel blending on CPKC corridors" },
+  { name: "Rumo Logística", country: "Brazil", flag: "🇧🇷", volumeMnL: 210, share: 14.0, note: "Grain corridors running mandated biodiesel blends" },
+  { name: "VLI Multimodal", country: "Brazil", flag: "🇧🇷", volumeMnL: 120, share: 13.0, note: "Mining and agri rail on B15 biodiesel" },
+  { name: "Ferrocarril Central Andino", country: "Peru", flag: "🇵🇪", volumeMnL: 20, share: 5.0, note: "B5 blends on Andean freight lines" },
+  { name: "Transnet Freight Rail", country: "South Africa", flag: "🇿🇦", volumeMnL: 60, share: 4.0, note: "B5 diesel blending across the South African network" },
+  { name: "PKP Cargo", country: "Poland", flag: "🇵🇱", volumeMnL: 35, share: 6.0, note: "Bio-blended diesel on non-electrified Polish lines" },
+  { name: "Green Cargo", country: "Sweden", flag: "🇸🇪", volumeMnL: 30, share: 40.0, note: "HVO100 across the Swedish diesel locomotive fleet" },
+  { name: "VR Transpoint", country: "Finland", flag: "🇫🇮", volumeMnL: 25, share: 25.0, note: "Renewable diesel on Finnish freight shunting and haulage" },
+  { name: "ÖBB Rail Cargo", country: "Austria", flag: "🇦🇹", volumeMnL: 22, share: 18.0, note: "HVO for diesel traction on unelectrified branches" },
+  { name: "KTZ (Kazakhstan Temir Zholy)", country: "Kazakhstan", flag: "🇰🇿", volumeMnL: 40, share: 2.0, note: "Biodiesel blending trials on trans-Caspian corridors" },
+  { name: "China Railway diesel fleet", country: "China", flag: "🇨🇳", volumeMnL: 80, share: 1.5, note: "B5 pilots on remaining diesel-hauled freight lines" },
+  { name: "KiwiRail", country: "New Zealand", flag: "🇳🇿", volumeMnL: 18, share: 5.0, note: "Renewable diesel trials on South Island freight" },
 ];
 
 type Metric = "volume" | "share" | "price" | "marketcap";
