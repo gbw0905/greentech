@@ -58,17 +58,8 @@ export function PageShell({
             Updates are aggregated from live web sources and auto-classified by jurisdiction and fuel
             type. Verify against primary legislation before use in compliance decisions.
           </p>
-          <p className="flex flex-wrap items-center gap-2 text-sm font-bold text-foreground">
-            <span>© 2026 All rights reserved — Global Bioenergy Watch —</span>
-            <a
-              href="https://www.linkedin.com/in/asifulalam0905024/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-md bg-[#0A66C2]/10 px-2 py-1 text-[#0A66C2] transition-colors hover:bg-[#0A66C2]/15"
-            >
-              <Linkedin className="size-4 fill-current" />
-              <span>Syed Asiful Alam, PhD</span>
-            </a>
+          <p className="text-sm font-bold text-foreground">
+            © 2026 All rights reserved — Global Bioenergy Watch
           </p>
           <p className="text-sm">
             <Link
@@ -85,7 +76,6 @@ export function PageShell({
               Data sources
             </Link>
           </p>
-
         </footer>
       </div>
     </div>

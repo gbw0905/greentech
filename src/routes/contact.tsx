@@ -124,17 +124,8 @@ function ContactPage() {
             Updates are aggregated from live web sources and auto-classified by jurisdiction and fuel type. Verify
             against primary legislation before use in compliance decisions.
           </p>
-          <p className="mt-3 flex flex-wrap items-center gap-2 text-sm font-bold text-menubar-fg">
-            <span>© 2026 All rights reserved — Global Bioenergy Watch —</span>
-            <a
-              href="https://www.linkedin.com/in/asifulalam0905024/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-md bg-[#0A66C2]/20 px-2 py-1 text-[#93C5FD] transition-colors hover:bg-[#0A66C2]/30"
-            >
-              <Linkedin className="size-4 fill-current" />
-              <span>Syed Asiful Alam, PhD</span>
-            </a>
+          <p className="mt-3 text-sm font-bold text-menubar-fg">
+            © 2026 All rights reserved — Global Bioenergy Watch
           </p>
         </div>
       </footer>
