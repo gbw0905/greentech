@@ -67,48 +67,109 @@ export const EMPLOYERS: Employer[] = [
   { name: "Praj Industries", hq: "India", focus: ["Ethanol", "SAF"], careers: "https://www.praj.net/careers/" },
 ];
 
+export type Seniority = "Internship" | "Entry level" | "Mid level" | "Senior" | "Director / Head";
+
+export const SENIORITY_LEVELS: Seniority[] = [
+  "Internship",
+  "Entry level",
+  "Mid level",
+  "Senior",
+  "Director / Head",
+];
+
+export const SENIORITY_QUERY: Record<Seniority, string> = {
+  Internship: "intern OR internship OR graduate",
+  "Entry level": "junior OR \"entry level\" OR associate",
+  "Mid level": "engineer OR specialist OR manager",
+  Senior: "senior OR lead OR principal",
+  "Director / Head": "director OR head OR vice president",
+};
+
+export interface JobRegion {
+  name: string;
+  /** Location string passed to boards that support a location field. */
+  location: string;
+}
+
+export const JOB_REGIONS: JobRegion[] = [
+  { name: "Worldwide", location: "" },
+  { name: "North America", location: "United States" },
+  { name: "Latin America", location: "Brazil" },
+  { name: "Europe", location: "European Union" },
+  { name: "United Kingdom", location: "United Kingdom" },
+  { name: "Middle East & Africa", location: "United Arab Emirates" },
+  { name: "Asia", location: "India" },
+  { name: "Oceania", location: "Australia" },
+];
+
+export interface JobQuery {
+  keywords: string;
+  location: string;
+}
+
 export interface JobBoard {
   name: string;
   note: string;
   domain: string;
-  url: (q: string) => string;
+  url: (q: JobQuery) => string;
 }
+
+const enc = encodeURIComponent;
 
 export const JOB_BOARDS: JobBoard[] = [
   {
     name: "LinkedIn Jobs",
     note: "Largest pool of bioenergy roles worldwide",
     domain: "linkedin.com",
-    url: (q) => `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(q)}`,
+    url: ({ keywords, location }) =>
+      `https://www.linkedin.com/jobs/search/?keywords=${enc(keywords)}${location ? `&location=${enc(location)}` : ""}`,
   },
   {
     name: "Indeed",
     note: "Plant, operations and technician openings",
     domain: "indeed.com",
-    url: (q) => `https://www.indeed.com/jobs?q=${encodeURIComponent(q)}`,
+    url: ({ keywords, location }) =>
+      `https://www.indeed.com/jobs?q=${enc(keywords)}${location ? `&l=${enc(location)}` : ""}`,
   },
   {
     name: "Google Jobs",
     note: "Aggregated listings across employer sites",
     domain: "google.com",
-    url: (q) => `https://www.google.com/search?q=${encodeURIComponent(`${q} jobs`)}&ibp=htl;jobs`,
+    url: ({ keywords, location }) =>
+      `https://www.google.com/search?q=${enc(`${keywords} ${location} jobs`)}&ibp=htl;jobs`,
   },
   {
     name: "Climatebase",
     note: "Climate and clean-energy focused board",
     domain: "climatebase.org",
-    url: (q) => `https://climatebase.org/jobs?query=${encodeURIComponent(q)}`,
+    url: ({ keywords }) => `https://climatebase.org/jobs?query=${enc(keywords)}`,
   },
   {
     name: "EURES (EU)",
     note: "European public employment network",
     domain: "europa.eu",
-    url: (q) => `https://europa.eu/eures/portal/jv-se/search?keywords=${encodeURIComponent(q)}&lang=en`,
+    url: ({ keywords }) =>
+      `https://europa.eu/eures/portal/jv-se/search?keywords=${enc(keywords)}&lang=en`,
   },
   {
     name: "UN / IRENA careers",
     note: "Policy and multilateral bioenergy roles",
     domain: "irena.org",
-    url: (q) => `https://www.google.com/search?q=${encodeURIComponent(`${q} site:irena.org OR site:careers.un.org`)}`,
+    url: ({ keywords }) =>
+      `https://www.google.com/search?q=${enc(`${keywords} site:irena.org OR site:careers.un.org`)}`,
+  },
+  {
+    name: "Glassdoor",
+    note: "Roles with pay ranges and employer reviews",
+    domain: "glassdoor.com",
+    url: ({ keywords }) =>
+      `https://www.glassdoor.com/Job/jobs.htm?sc.keyword=${enc(keywords)}`,
+  },
+  {
+    name: "Idealist / NGO",
+    note: "Non-profit and development bioenergy roles",
+    domain: "idealist.org",
+    url: ({ keywords }) => `https://www.idealist.org/en/jobs?q=${enc(keywords)}`,
   },
 ];
+
