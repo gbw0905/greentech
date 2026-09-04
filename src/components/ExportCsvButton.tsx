@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { Download, Lock } from "lucide-react";
 import { downloadBrandedCsv, type BrandedExport } from "@/lib/branded-export";
 import { useAuthSession } from "@/hooks/useAuthSession";
@@ -8,12 +9,19 @@ import { SignInPrompt } from "@/components/SignInPrompt";
 export function ExportCsvButton({
   build,
   disabled,
+  portalTarget,
 }: {
   build: () => BrandedExport;
   disabled?: boolean;
+  /** When supplied, the sign-in prompt is rendered here instead of inline. */
+  portalTarget?: HTMLElement | null;
 }) {
   const { signedIn, loading } = useAuthSession();
   const [askSignIn, setAskSignIn] = useState(false);
+
+  const prompt = askSignIn && !signedIn ? (
+    <SignInPrompt action="download this data as CSV" />
+  ) : null;
 
   return (
     <>
@@ -34,7 +42,7 @@ export function ExportCsvButton({
         Export CSV
       </button>
 
-      {askSignIn && !signedIn ? <SignInPrompt action="download this data as CSV" /> : null}
+      {portalTarget && prompt ? createPortal(prompt, portalTarget) : prompt}
     </>
   );
 }
