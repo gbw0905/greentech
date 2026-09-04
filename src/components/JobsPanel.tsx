@@ -80,7 +80,6 @@ function FilterGroup({
 
 export function JobsPanel({ compact = false }: { compact?: boolean }) {
   const [categories, setCategories] = useState<JobCategory[]>([]);
-  const [fuels, setFuels] = useState<FuelType[]>([]);
   const [seniority, setSeniority] = useState<Seniority | null>(null);
   const [regionName, setRegionName] = useState<string>("Worldwide");
   const [remoteOnly, setRemoteOnly] = useState(false);
@@ -94,24 +93,20 @@ export function JobsPanel({ compact = false }: { compact?: boolean }) {
   const query = useMemo(() => {
     const or = (parts: string[]) =>
       parts.length === 0 ? "" : parts.length === 1 ? parts[0]! : `(${parts.join(" OR ")})`;
-    const base = fuels.length
-      ? or(fuels.map((f) => FUEL_JOB_QUERY[f]))
-      : "(biofuel OR bioenergy OR biogas OR \"renewable fuel\")";
+    const base = "(biofuel OR bioenergy OR biogas OR \"renewable fuel\")";
     const fn = or(categories.map((c) => CATEGORY_QUERY[c]));
     const lvl = seniority ? `(${SENIORITY_QUERY[seniority]})` : "";
     return [base, fn, lvl, remoteOnly ? "remote" : "", keyword.trim()]
       .filter(Boolean)
       .join(" ");
-  }, [fuels, categories, seniority, remoteOnly, keyword]);
+  }, [categories, seniority, remoteOnly, keyword]);
 
   const newsKeywords = useMemo(() => {
-    const list = fuels.length
-      ? fuels.map((f) => `${FUEL_JOB_QUERY[f]} hiring jobs`)
-      : ["biofuel hiring jobs", "bioenergy hiring jobs"];
+    const list = ["biofuel hiring jobs", "bioenergy hiring jobs"];
     if (categories.length) list.push(`${CATEGORY_QUERY[categories[0]!]} hiring`);
     if (region.location) list.push(`biofuel jobs ${region.location}`);
     return list.slice(0, 4);
-  }, [fuels, categories, region]);
+  }, [categories, region]);
 
   const news = useQuery({
     queryKey: ["hiring-news", newsKeywords],
@@ -121,7 +116,6 @@ export function JobsPanel({ compact = false }: { compact?: boolean }) {
 
   const activeCount =
     categories.length +
-    fuels.length +
     (seniority ? 1 : 0) +
     (region.location ? 1 : 0) +
     (remoteOnly ? 1 : 0) +
@@ -129,7 +123,6 @@ export function JobsPanel({ compact = false }: { compact?: boolean }) {
 
   const reset = () => {
     setCategories([]);
-    setFuels([]);
     setSeniority(null);
     setRegionName("Worldwide");
     setRemoteOnly(false);
@@ -156,23 +149,13 @@ export function JobsPanel({ compact = false }: { compact?: boolean }) {
 
         <div className="space-y-5 p-5">
           <FilterGroup
-            title="Fuel"
-            value={fuels.length ? fuels.join(", ") : "All fuels"}
-          >
-            {FUELS.map((f) => (
-              <Chip key={f} active={fuels.includes(f)} onClick={() => toggle(fuels, setFuels, f)}>
-                {f}
-              </Chip>
-            ))}
-          </FilterGroup>
-
-          <FilterGroup
             title="Function"
             value={categories.length ? categories.join(", ") : "All functions"}
           >
             {JOB_CATEGORIES.map((c) => (
               <Chip
                 key={c}
+                tone="function"
                 active={categories.includes(c)}
                 onClick={() => toggle(categories, setCategories, c)}
               >
@@ -185,6 +168,7 @@ export function JobsPanel({ compact = false }: { compact?: boolean }) {
             {SENIORITY_LEVELS.map((s) => (
               <Chip
                 key={s}
+                tone="seniority"
                 active={seniority === s}
                 onClick={() => setSeniority(seniority === s ? null : s)}
               >
@@ -195,11 +179,16 @@ export function JobsPanel({ compact = false }: { compact?: boolean }) {
 
           <FilterGroup title="Region" value={region.name}>
             {JOB_REGIONS.map((r) => (
-              <Chip key={r.name} active={region.name === r.name} onClick={() => setRegionName(r.name)}>
+              <Chip
+                key={r.name}
+                tone="region"
+                active={region.name === r.name}
+                onClick={() => setRegionName(r.name)}
+              >
                 {r.name}
               </Chip>
             ))}
-            <Chip active={remoteOnly} onClick={() => setRemoteOnly(!remoteOnly)}>
+            <Chip tone="region" active={remoteOnly} onClick={() => setRemoteOnly(!remoteOnly)}>
               Remote only
             </Chip>
           </FilterGroup>
