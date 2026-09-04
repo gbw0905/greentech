@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { Building2, Download } from "lucide-react";
+import { Building2 } from "lucide-react";
 import { getOilStocksFn, type OilQuote } from "@/lib/oil.functions";
 import { entityLogo } from "@/lib/entity-logos";
 import {
@@ -16,7 +16,8 @@ import {
 } from "@/components/chart-kit";
 import { detailTone, useEntityDetail, type GraphContext } from "@/components/EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
-import { downloadBrandedCsv, type BrandedExport } from "@/lib/branded-export";
+import { type BrandedExport } from "@/lib/branded-export";
+import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/lib/market-caps";
 
