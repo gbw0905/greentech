@@ -145,7 +145,7 @@ const METRICS: Record<
   ghg: {
     label: "GHG savings (reported)",
     unit: "million tonnes CO₂e avoided per year",
-    help: "Greenhouse-gas savings only where the company or an official agency has published a figure. Entities with no published number show as zero / not reported — nothing here is modelled.",
+    help: GHG_NOTE,
     decimals: 1,
     value: (p) => ghgSavingsMt(p.name),
   },
