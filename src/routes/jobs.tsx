@@ -31,7 +31,7 @@ function JobsPage() {
       <PageHeading
         icon={Briefcase}
         title="Bioenergy jobs desk"
-        subtitle="Roles across biorefineries, policy teams, trading floors and R&D labs — filtered by fuel and function."
+        subtitle="Roles across biorefineries, policy teams, trading floors and R&D labs — refined by function, seniority and region."
       />
       <JobsPanel />
     </PageShell>

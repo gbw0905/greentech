@@ -334,7 +334,7 @@ function Dashboard() {
               kicker="Careers"
               icon={Briefcase}
               title="Biofuel and bioenergy jobs"
-              subtitle="Live openings across biorefineries, policy teams, trading desks and R&D labs — filtered by fuel and function, with the employers hiring right now."
+              subtitle="Live openings across biorefineries, policy teams, trading desks and R&D labs — refined by function, seniority and region."
             />
             <JobsPanel compact />
           </section>
