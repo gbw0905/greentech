@@ -166,7 +166,7 @@ function Dashboard() {
                 href="https://www.linkedin.com/company/global-bioenergy-watch/?viewAsMember=true"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="brand-gradient-text block truncate font-display text-base leading-none font-extrabold tracking-tight sm:text-xl lg:text-[1.4rem]"
+                className="brand-gradient-text block truncate font-display text-[0.8125rem] leading-none font-extrabold tracking-tight sm:text-xl lg:text-[1.4rem]"
               >
                 Global Bioenergy Watch
               </a>
@@ -188,10 +188,11 @@ function Dashboard() {
               type="button"
               onClick={() => rescan.mutate()}
               disabled={busy}
-              className="label-mono pill-motion inline-flex items-center gap-2 rounded-md bg-menubar-fg px-3 py-1.5 font-bold text-menubar-bg hover:opacity-90 disabled:opacity-60 sm:px-3.5 sm:py-2"
+              aria-label="Rescan feeds"
+              className="label-mono pill-motion inline-flex items-center gap-2 rounded-md bg-menubar-fg px-2.5 py-1.5 font-bold text-menubar-bg hover:opacity-90 disabled:opacity-60 sm:px-3.5 sm:py-2"
             >
               <RefreshCw className={`size-3.5 ${busy ? "animate-spin" : ""}`} />
-              Rescan
+              <span className="hidden sm:inline">Rescan</span>
             </button>
           </div>
         </div>
@@ -334,7 +335,7 @@ function Dashboard() {
               kicker="Careers"
               icon={Briefcase}
               title="Biofuel and bioenergy jobs"
-              subtitle="Live openings across biorefineries, policy teams, trading desks and R&D labs — filtered by fuel and function, with the employers hiring right now."
+              subtitle="Live openings across biorefineries, policy teams, trading desks and R&D labs — refined by function, seniority and region."
             />
             <JobsPanel compact />
           </section>
