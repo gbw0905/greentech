@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Briefcase, ExternalLink, Newspaper, Search, RotateCcw } from "lucide-react";
+import { Briefcase, Check, ChevronDown, ExternalLink, Newspaper, Search, RotateCcw } from "lucide-react";
+import { createPortal } from "react-dom";
 import {
   CATEGORY_QUERY,
   JOB_BOARDS,
@@ -14,69 +15,140 @@ import {
 import { getHiringNewsFn } from "@/lib/jobs.functions";
 import { logoForDomain } from "@/lib/entity-logos";
 
-/** Light pastel tones per filter group — active chips pick up the group's tint. */
+/** Light pastel tones per filter group — active picks up the group's tint. */
 const GROUP_TONES = {
   function: {
-    active: "border-sky-400 bg-sky-100 text-sky-900 shadow-sm",
-    idle: "border-sky-200 bg-sky-50/60 text-sky-900/80 hover:border-sky-400 hover:bg-sky-100",
+    ring: "ring-sky-200",
+    border: "border-sky-300",
+    bg: "bg-sky-50",
+    text: "text-sky-900",
+    muted: "text-sky-700/70",
+    badge: "bg-sky-100 text-sky-900 ring-sky-200",
+    check: "text-sky-700",
   },
   seniority: {
-    active: "border-emerald-400 bg-emerald-100 text-emerald-900 shadow-sm",
-    idle: "border-emerald-200 bg-emerald-50/60 text-emerald-900/80 hover:border-emerald-400 hover:bg-emerald-100",
+    ring: "ring-emerald-200",
+    border: "border-emerald-300",
+    bg: "bg-emerald-50",
+    text: "text-emerald-900",
+    muted: "text-emerald-700/70",
+    badge: "bg-emerald-100 text-emerald-900 ring-emerald-200",
+    check: "text-emerald-700",
   },
   region: {
-    active: "border-amber-400 bg-amber-100 text-amber-900 shadow-sm",
-    idle: "border-amber-200 bg-amber-50/60 text-amber-900/80 hover:border-amber-400 hover:bg-amber-100",
+    ring: "ring-amber-200",
+    border: "border-amber-300",
+    bg: "bg-amber-50",
+    text: "text-amber-900",
+    muted: "text-amber-700/70",
+    badge: "bg-amber-100 text-amber-900 ring-amber-200",
+    check: "text-amber-700",
   },
 } as const;
 
 type ToneKey = keyof typeof GROUP_TONES;
 
-function Chip({
-  active,
-  onClick,
-  tone,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  tone: ToneKey;
-  children: React.ReactNode;
-}) {
-  const t = GROUP_TONES[tone];
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={`rounded-full border px-3 py-1.5 text-sm font-semibold transition-all duration-150 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 ${
-        active ? t.active : t.idle
-      }`}
-    >
-      {children}
-    </button>
-  );
+interface DropdownOption {
+  value: string;
+  label: string;
 }
 
-function FilterGroup({
-  title,
-  value,
-  children,
+function Dropdown({
+  tone,
+  label,
+  valueLabel,
+  options,
+  selected,
+  multi = false,
+  onSelect,
 }: {
-  title: string;
-  value: string;
-  children: React.ReactNode;
+  tone: ToneKey;
+  label: string;
+  valueLabel: string;
+  options: DropdownOption[];
+  selected: string[];
+  multi?: boolean;
+  onSelect: (value: string) => void;
 }) {
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ top: 0, left: 0, width: 0 });
+  const t = GROUP_TONES[tone];
+
+  useEffect(() => {
+    if (!open) return;
+    const rect = triggerRef.current?.getBoundingClientRect();
+    if (rect) {
+      const width = Math.max(rect.width, 220);
+      const left = Math.max(8, Math.min(rect.left, window.innerWidth - width - 8));
+      setPos({ top: rect.bottom + 6, left, width });
+    }
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target as Node;
+      if (triggerRef.current?.contains(target) || menuRef.current?.contains(target)) return;
+      setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
   return (
-    <div>
-      <div className="mb-2 flex flex-wrap items-baseline gap-2">
-        <span className="font-display text-sm font-bold tracking-tight text-foreground">{title}</span>
-        <span className="label-mono text-muted-foreground/70">{value}</span>
-      </div>
-      <div className="flex flex-wrap gap-2">{children}</div>
+    <div className="relative min-w-0 flex-1">
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        className={`flex w-full items-center justify-between gap-2 rounded-lg border ${t.border} ${t.bg} px-3 py-2.5 text-left shadow-sm ring-1 ring-transparent transition-all hover:shadow-md focus:outline-none focus:ring-2 ${t.ring}`}
+      >
+        <span className="min-w-0">
+          <span className={`block text-[0.65rem] font-bold uppercase tracking-wider ${t.muted}`}>{label}</span>
+          <span className={`block truncate text-sm font-semibold ${t.text}`}>{valueLabel}</span>
+        </span>
+        <ChevronDown className={`size-4 shrink-0 ${t.text} transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      {open &&
+        createPortal(
+          <div
+            ref={menuRef}
+            role="listbox"
+            aria-multiselectable={multi}
+            className="fixed z-50 max-h-72 overflow-y-auto rounded-lg border border-border bg-surface-1 shadow-xl"
+            style={{ top: pos.top, left: pos.left, width: pos.width }}
+          >
+            {options.map((opt) => {
+              const isSelected = selected.includes(opt.value);
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  role="option"
+                  aria-selected={isSelected}
+                  onClick={() => onSelect(opt.value)}
+                  className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-surface-2"
+                >
+                  <span className="truncate">{opt.label}</span>
+                  {isSelected && <Check className={`size-4 ${t.check}`} />}
+                </button>
+              );
+            })}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }
+
 
 export function JobsPanel({ compact = false }: { compact?: boolean }) {
   const [categories, setCategories] = useState<JobCategory[]>([]);
@@ -147,68 +219,72 @@ export function JobsPanel({ compact = false }: { compact?: boolean }) {
           </button>
         </div>
 
-        <div className="space-y-5 p-5">
-          <FilterGroup
-            title="Function"
-            value={categories.length ? categories.join(", ") : "All functions"}
-          >
-            {JOB_CATEGORIES.map((c) => (
-              <Chip
-                key={c}
-                tone="function"
-                active={categories.includes(c)}
-                onClick={() => toggle(categories, setCategories, c)}
-              >
-                {c}
-              </Chip>
-            ))}
-          </FilterGroup>
-
-          <FilterGroup title="Seniority" value={seniority ?? "Any level"}>
-            {SENIORITY_LEVELS.map((s) => (
-              <Chip
-                key={s}
-                tone="seniority"
-                active={seniority === s}
-                onClick={() => setSeniority(seniority === s ? null : s)}
-              >
-                {s}
-              </Chip>
-            ))}
-          </FilterGroup>
-
-          <FilterGroup title="Region" value={region.name}>
-            {JOB_REGIONS.map((r) => (
-              <Chip
-                key={r.name}
-                tone="region"
-                active={region.name === r.name}
-                onClick={() => setRegionName(r.name)}
-              >
-                {r.name}
-              </Chip>
-            ))}
-            <Chip tone="region" active={remoteOnly} onClick={() => setRemoteOnly(!remoteOnly)}>
-              Remote only
-            </Chip>
-          </FilterGroup>
-
-          <div>
-            <label
-              htmlFor="job-keyword"
-              className="mb-2 block font-display text-sm font-bold tracking-tight text-foreground"
-            >
-              Keyword
-            </label>
-            <input
-              id="job-keyword"
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              placeholder="e.g. fermentation, HVO, carbon intensity"
-              className="w-full border border-border bg-surface-1 px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-primary"
+        <div className="space-y-4 p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+            <Dropdown
+              tone="function"
+              label="Function"
+              valueLabel={
+                categories.length === 0
+                  ? "All functions"
+                  : categories.length === 1
+                    ? categories[0]!
+                    : `${categories[0]!} +${categories.length - 1}`
+              }
+              options={JOB_CATEGORIES.map((c) => ({ value: c, label: c }))}
+              selected={categories}
+              multi
+              onSelect={(v) => toggle(categories, setCategories, v as JobCategory)}
+            />
+            <Dropdown
+              tone="seniority"
+              label="Seniority"
+              valueLabel={seniority ?? "Any level"}
+              options={SENIORITY_LEVELS.map((s) => ({ value: s, label: s }))}
+              selected={seniority ? [seniority] : []}
+              onSelect={(v) => setSeniority(seniority === v ? null : (v as Seniority))}
+            />
+            <Dropdown
+              tone="region"
+              label="Region"
+              valueLabel={region.name}
+              options={JOB_REGIONS.map((r) => ({ value: r.name, label: r.name }))}
+              selected={[region.name]}
+              onSelect={(v) => setRegionName(v)}
             />
           </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div className="min-w-0 flex-1">
+              <label
+                htmlFor="job-keyword"
+                className="mb-1.5 block text-[0.65rem] font-bold uppercase tracking-wider text-muted-foreground"
+              >
+                Keyword
+              </label>
+              <input
+                id="job-keyword"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                placeholder="e.g. fermentation, HVO, carbon intensity"
+                className="w-full rounded-lg border border-border bg-surface-1 px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-primary focus:ring-1 focus:ring-primary/20"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setRemoteOnly((v) => !v)}
+              aria-pressed={remoteOnly}
+              className={`shrink-0 rounded-lg border px-4 py-2 text-sm font-semibold transition-all ${
+                remoteOnly
+                  ? "border-emerald-400 bg-emerald-100 text-emerald-900 shadow-sm"
+                  : "border-border bg-surface-1 text-foreground hover:bg-surface-2"
+              }`}
+            >
+              {remoteOnly ? "Remote only ✓" : "Remote only"}
+            </button>
+          </div>
         </div>
+
       </div>
 
       <div className="glass-panel">
