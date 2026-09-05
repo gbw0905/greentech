@@ -66,6 +66,7 @@ const NAME_ALIASES: Record<string, string> = {
   "european commission": "ec.europa.eu",
   "european commission energy": "ec.europa.eu",
   "european parliament": "europarl.europa.eu",
+  "gov.uk": "gov.uk",
 };
 
 const normalise = (s: string) => s.toLowerCase().trim().replace(/^www\./, "");
@@ -103,4 +104,31 @@ export function isTrustedOutlet(source: string, link: string): boolean {
     const root = t.split(".")[0]!;
     return root.length >= 4 && (root === compact || compact.includes(root) || root.includes(compact));
   });
+}
+
+/** True when the publisher is a government, parliament or intergovernmental body. */
+export function isOfficialSource(source: string, link: string): boolean {
+  const candidates: string[] = [];
+  const s = normalise(source);
+  if (s) {
+    candidates.push(s);
+    const alias = NAME_ALIASES[s];
+    if (alias) candidates.push(alias);
+  }
+  try {
+    candidates.push(normalise(new URL(link).hostname));
+  } catch {
+    /* ignore malformed links */
+  }
+  const OFFICIAL_HOSTS = [
+    "federalregister.gov", "epa.gov", "irs.gov", "energy.gov", "usda.gov", "treasury.gov",
+    "whitehouse.gov", "congress.gov", "arb.ca.gov", "ca.gov", "gov.uk", "canada.ca",
+    "europa.eu", "ec.europa.eu", "europarl.europa.eu", "consilium.europa.eu",
+    "pib.gov.in", "gov.in", "gov.br", "iea.org", "irena.org", "icao.int", "unfccc.int",
+  ];
+  return candidates.some(
+    (c) =>
+      GOV_SUFFIXES.some((g) => c.endsWith(g) || c.includes(g + ".")) ||
+      OFFICIAL_HOSTS.some((h) => c === h || c.endsWith(`.${h}`)),
+  );
 }

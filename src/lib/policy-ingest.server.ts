@@ -5,7 +5,7 @@ import {
   type FuelType,
 } from "./policy-taxonomy";
 import { FEED_SOURCES, backfillSources } from "./policy-sources";
-import { isTrustedOutlet } from "./policy-outlets";
+import { isTrustedOutlet, isOfficialSource } from "./policy-outlets";
 
 interface FeedItem {
   title: string;
@@ -135,13 +135,29 @@ const BIO_SIGNALS = [
   "renewable fuel standard", "e15 ", "rin credit", "rins",
 ];
 
+/** Named official instruments — the document itself signals a government act. */
+const OFFICIAL_DOCUMENTS = [
+  "federal register", "official journal", "gazette", "statutory instrument",
+  "notice of proposed rulemaking", "final rule", "proposed rule", "delegated act",
+  "implementing regulation", "royal decree", "executive order", "presidential decree",
+  "ministerial order", "ministerial decree", "ordinance", "public consultation",
+  "draft regulation", "signed into law", "enters into force", "council directive",
+  "council regulation", "national gazette", "notification issued",
+];
+
 export type UpdateCategory = "policy" | "market";
 
-/** Classify an item as a government policy move, a market update, or noise. */
-export function categorise(text: string): UpdateCategory | null {
+/**
+ * Classify an item as a government policy move, a market update, or noise.
+ * Anything published by an official body (federal register notices, ministry
+ * releases, EU institutions) counts as policy on the strength of the publisher.
+ */
+export function categorise(text: string, source = "", link = ""): UpdateCategory | null {
   const t = ` ${text.toLowerCase()} `;
   if (!BIO_SIGNALS.some((s) => t.includes(s))) return null;
   if (NOISE_SIGNALS.some((s) => t.includes(s))) return null;
+  if (isOfficialSource(source, link)) return "policy";
+  if (OFFICIAL_DOCUMENTS.some((s) => t.includes(s))) return "policy";
   if (GOVERNMENT_ACTORS.some((s) => t.includes(s)) && POLICY_ACTIONS.some((s) => t.includes(s))) {
     return "policy";
   }
@@ -150,8 +166,8 @@ export function categorise(text: string): UpdateCategory | null {
 }
 
 /** Kept for existing callers: true when the item is publishable at all. */
-export function isRelevant(text: string): boolean {
-  return categorise(text) !== null;
+export function isRelevant(text: string, source = "", link = ""): boolean {
+  return categorise(text, source, link) !== null;
 }
 
 function hostOf(url: string): string {
@@ -212,7 +228,7 @@ export async function ingestPolicyUpdates(): Promise<IngestResult> {
 
   for (const item of all) {
     const text = `${item.title} ${item.summary}`;
-    const category = categorise(text);
+    const category = categorise(text, item.source, item.link);
     if (!category) continue;
     // Only authentic global media, trade journals and official publishers.
     if (!isTrustedOutlet(item.source, item.link)) continue;
@@ -267,7 +283,7 @@ export async function ingestPolicyUpdates(): Promise<IngestResult> {
     const stale = (existing ?? [])
       .filter(
         (r) =>
-          !isRelevant(`${r.title} ${r.summary ?? ""}`) ||
+          !isRelevant(`${r.title} ${r.summary ?? ""}`, r.source ?? "", r.url) ||
           !isTrustedOutlet(r.source ?? "", r.url),
       )
       .map((r) => r.url);
