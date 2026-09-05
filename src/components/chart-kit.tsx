@@ -216,14 +216,20 @@ export const PANEL_VIEWS = [
 
 export type PanelView = "heat" | "scatter" | "bars" | "line" | "table";
 
+/** Vivid, clearly separated RGB palette so trend lines never blend together. */
 const LINE_COLORS = [
-  "var(--chart-1)",
-  "var(--chart-2)",
-  "var(--chart-3)",
-  "var(--chart-4)",
-  "var(--chart-5)",
-  "var(--chart-6)",
+  "rgb(220, 38, 38)", // red
+  "rgb(37, 99, 235)", // blue
+  "rgb(22, 163, 74)", // green
+  "rgb(217, 119, 6)", // amber
+  "rgb(147, 51, 234)", // purple
+  "rgb(8, 145, 178)", // cyan
+  "rgb(219, 39, 119)", // pink
+  "rgb(77, 124, 15)", // olive
 ];
+
+/** Max simultaneous lines in "by region" mode before overlap hurts readability. */
+const MAX_TREND_LINES = 6;
 
 /**
  * Yearly trend view, 2000–2026, for the datasets where official agencies
