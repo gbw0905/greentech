@@ -2,7 +2,7 @@ import { geoNaturalEarth1, geoPath, geoGraticule10 } from "d3-geo";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { feature } from "topojson-client";
 import { Link } from "@tanstack/react-router";
-import { Minus, Plus, Maximize2, PlaneTakeoff } from "lucide-react";
+import { Minus, Plus, Maximize2 } from "lucide-react";
 import {
   COUNTRIES,
   POLICY_STATUS_COLOR,
@@ -11,13 +11,6 @@ import {
 } from "@/lib/policy-taxonomy";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { getCountryIndicesFn } from "@/lib/country-markets.functions";
-import {
-  SAF_AIRPORTS,
-  SAF_STATUS_LABEL,
-  SAF_STATUS_RADIUS,
-  type SafAirport,
-} from "@/lib/saf-airports";
-
 interface GeoFeature {
   type: "Feature";
   properties: { name: string };
@@ -26,7 +19,6 @@ interface GeoFeature {
 
 const WIDTH = 900;
 const HEIGHT = 400;
-const SAF_AIRPORT_COLOR = "var(--chart-2, oklch(0.62 0.17 250))";
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 8;
 
@@ -52,8 +44,6 @@ export function WorldPolicyMap({
   });
   const indices = marketData?.indices ?? {};
   const [hover, setHover] = useState<string | null>(null);
-  const [hoverAirport, setHoverAirport] = useState<SafAirport | null>(null);
-  const [showAirports, setShowAirports] = useState(true);
   const [tip, setTip] = useState<{ x: number; y: number } | null>(null);
   const [view, setView] = useState({ z: 1, x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -82,16 +72,6 @@ export function WorldPolicyMap({
     const p = geoPath(proj);
     return { path: p, graticule: p(geoGraticule10()) ?? "", projection: proj };
   }, []);
-
-  const airportPoints = useMemo(
-    () =>
-      SAF_AIRPORTS.map((a) => {
-        const xy = projection([a.lon, a.lat]);
-        return xy ? { airport: a, x: xy[0], y: xy[1] } : null;
-      }).filter(Boolean) as { airport: SafAirport; x: number; y: number }[],
-    [projection],
-  );
-
 
   const byMapName = useMemo(() => {
     const m = new Map<string, (typeof COUNTRIES)[number]>();
@@ -158,7 +138,6 @@ export function WorldPolicyMap({
         onPointerLeave={() => {
           drag.current = null;
           setHover(null);
-          setHoverAirport(null);
           setTip(null);
         }}
       >
@@ -209,75 +188,10 @@ export function WorldPolicyMap({
               );
             })}
 
-            {showAirports &&
-              airportPoints.map(({ airport, x, y }) => {
-                const isHover = hoverAirport?.iata === airport.iata;
-                const r = SAF_STATUS_RADIUS[airport.status] / Math.sqrt(view.z);
-                return (
-                  <g
-                    key={airport.iata}
-                    transform={`translate(${x},${y}) rotate(45)`}
-                    className="cursor-pointer"
-                    onMouseEnter={() => {
-                      setHoverAirport(airport);
-                      setHover(null);
-                    }}
-                    onMouseLeave={() => setHoverAirport(null)}
-                    onClick={() => {
-                      if (moved.current || !airport.countrySlug) return;
-                      onSelect(airport.countrySlug === activeCountry ? null : airport.countrySlug);
-                    }}
-                  >
-                    <rect
-                      x={-r}
-                      y={-r}
-                      width={r * 2}
-                      height={r * 2}
-                      rx={r * 0.3}
-                      fill={SAF_AIRPORT_COLOR}
-                      fillOpacity={airport.status === "announced" ? 0.55 : 0.9}
-                      stroke="var(--background)"
-                      strokeWidth={0.8 / view.z}
-                    />
-                    {isHover && (
-                      <rect
-                        x={-r * 2}
-                        y={-r * 2}
-                        width={r * 4}
-                        height={r * 4}
-                        fill="none"
-                        stroke={SAF_AIRPORT_COLOR}
-                        strokeWidth={1 / view.z}
-                      />
-                    )}
-                  </g>
-                );
-              })}
           </g>
         </svg>
 
-        {hoverAirport && tip && (
-          <div
-            className="pointer-events-none absolute z-10 w-56 -translate-x-1/2 -translate-y-[calc(100%+10px)] rounded-md border border-border bg-surface px-2.5 py-1.5 shadow-[var(--shadow-lift)]"
-            style={{ left: tip.x, top: tip.y }}
-          >
-            <div className="font-display text-xs font-semibold">
-              {hoverAirport.name} ({hoverAirport.iata})
-            </div>
-            <div className="label-mono text-muted-foreground">
-              {hoverAirport.city} · {hoverAirport.country}
-            </div>
-            <div className="label-mono mt-1 inline-flex items-center gap-1.5" style={{ color: SAF_AIRPORT_COLOR }}>
-              <span className="size-2 rotate-45 rounded-[1px]" style={{ background: SAF_AIRPORT_COLOR }} />
-              SAF · {SAF_STATUS_LABEL[hoverAirport.status]}
-            </div>
-            <p className="mt-1.5 border-t border-border pt-1.5 font-mono text-[10px] leading-snug text-muted-foreground">
-              {hoverAirport.suppliers}
-            </p>
-          </div>
-        )}
-
-        {hovered && !hoverAirport && tip && (
+        {hovered && tip && (
 
           <div
             className="pointer-events-none absolute z-10 w-56 -translate-x-1/2 -translate-y-[calc(100%+10px)] rounded-md border border-border bg-surface px-2.5 py-1.5 shadow-[var(--shadow-lift)]"
@@ -355,19 +269,6 @@ export function WorldPolicyMap({
               <Icon className="size-3.5" />
             </button>
           ))}
-          <button
-            type="button"
-            aria-label={showAirports ? "Hide SAF airports" : "Show SAF airports"}
-            aria-pressed={showAirports}
-            title={showAirports ? "Hide SAF airports" : "Show SAF airports"}
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={() => setShowAirports((v) => !v)}
-            className={`grid size-7 place-items-center rounded-md border border-border bg-surface/90 backdrop-blur transition-colors hover:text-primary ${
-              showAirports ? "text-primary" : "text-muted-foreground"
-            }`}
-          >
-            <PlaneTakeoff className="size-3.5" />
-          </button>
           {zoomed && (
             <button
               type="button"
@@ -402,13 +303,6 @@ export function WorldPolicyMap({
               {s}
             </span>
           ))}
-          <span className="inline-flex items-center gap-1.5" style={{ color: SAF_AIRPORT_COLOR }}>
-            <span
-              className="size-2 rotate-45 rounded-[1px]"
-              style={{ background: SAF_AIRPORT_COLOR }}
-            />
-            SAF airport ({SAF_AIRPORTS.length})
-          </span>
         </div>
 
         {hovered ? (
@@ -434,10 +328,6 @@ export function WorldPolicyMap({
         )}
         <div className="label-mono font-mono text-muted-foreground">{view.z.toFixed(1)}×</div>
       </div>
-      <p className="mt-1.5 font-mono text-[10px] leading-snug text-muted-foreground">
-        SAF airport layer: curated from published airport, fuel-supplier and airline disclosures —
-        indicative, not exhaustive. Toggle it with the plane button on the map.
-      </p>
 
     </div>
   );
