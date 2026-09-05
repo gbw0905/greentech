@@ -219,68 +219,72 @@ export function JobsPanel({ compact = false }: { compact?: boolean }) {
           </button>
         </div>
 
-        <div className="space-y-5 p-5">
-          <FilterGroup
-            title="Function"
-            value={categories.length ? categories.join(", ") : "All functions"}
-          >
-            {JOB_CATEGORIES.map((c) => (
-              <Chip
-                key={c}
-                tone="function"
-                active={categories.includes(c)}
-                onClick={() => toggle(categories, setCategories, c)}
-              >
-                {c}
-              </Chip>
-            ))}
-          </FilterGroup>
-
-          <FilterGroup title="Seniority" value={seniority ?? "Any level"}>
-            {SENIORITY_LEVELS.map((s) => (
-              <Chip
-                key={s}
-                tone="seniority"
-                active={seniority === s}
-                onClick={() => setSeniority(seniority === s ? null : s)}
-              >
-                {s}
-              </Chip>
-            ))}
-          </FilterGroup>
-
-          <FilterGroup title="Region" value={region.name}>
-            {JOB_REGIONS.map((r) => (
-              <Chip
-                key={r.name}
-                tone="region"
-                active={region.name === r.name}
-                onClick={() => setRegionName(r.name)}
-              >
-                {r.name}
-              </Chip>
-            ))}
-            <Chip tone="region" active={remoteOnly} onClick={() => setRemoteOnly(!remoteOnly)}>
-              Remote only
-            </Chip>
-          </FilterGroup>
-
-          <div>
-            <label
-              htmlFor="job-keyword"
-              className="mb-2 block font-display text-sm font-bold tracking-tight text-foreground"
-            >
-              Keyword
-            </label>
-            <input
-              id="job-keyword"
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              placeholder="e.g. fermentation, HVO, carbon intensity"
-              className="w-full border border-border bg-surface-1 px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-primary"
+        <div className="space-y-4 p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+            <Dropdown
+              tone="function"
+              label="Function"
+              valueLabel={
+                categories.length === 0
+                  ? "All functions"
+                  : categories.length === 1
+                    ? categories[0]!
+                    : `${categories[0]!} +${categories.length - 1}`
+              }
+              options={JOB_CATEGORIES.map((c) => ({ value: c, label: c }))}
+              selected={categories}
+              multi
+              onSelect={(v) => toggle(categories, setCategories, v as JobCategory)}
+            />
+            <Dropdown
+              tone="seniority"
+              label="Seniority"
+              valueLabel={seniority ?? "Any level"}
+              options={SENIORITY_LEVELS.map((s) => ({ value: s, label: s }))}
+              selected={seniority ? [seniority] : []}
+              onSelect={(v) => setSeniority(seniority === v ? null : (v as Seniority))}
+            />
+            <Dropdown
+              tone="region"
+              label="Region"
+              valueLabel={region.name}
+              options={JOB_REGIONS.map((r) => ({ value: r.name, label: r.name }))}
+              selected={[region.name]}
+              onSelect={(v) => setRegionName(v)}
             />
           </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div className="min-w-0 flex-1">
+              <label
+                htmlFor="job-keyword"
+                className="mb-1.5 block text-[0.65rem] font-bold uppercase tracking-wider text-muted-foreground"
+              >
+                Keyword
+              </label>
+              <input
+                id="job-keyword"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                placeholder="e.g. fermentation, HVO, carbon intensity"
+                className="w-full rounded-lg border border-border bg-surface-1 px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-primary focus:ring-1 focus:ring-primary/20"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setRemoteOnly((v) => !v)}
+              aria-pressed={remoteOnly}
+              className={`shrink-0 rounded-lg border px-4 py-2 text-sm font-semibold transition-all ${
+                remoteOnly
+                  ? "border-emerald-400 bg-emerald-100 text-emerald-900 shadow-sm"
+                  : "border-border bg-surface-1 text-foreground hover:bg-surface-2"
+              }`}
+            >
+              {remoteOnly ? "Remote only ✓" : "Remote only"}
+            </button>
+          </div>
         </div>
+
       </div>
 
       <div className="glass-panel">
