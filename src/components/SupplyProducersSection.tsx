@@ -1,5 +1,17 @@
 import { Link } from "@tanstack/react-router";
 import { Fuel, Recycle, Building2, Plane, Truck, Ship, Container, Wheat, Zap, Flame, Layers, Trees, ChevronRight } from "lucide-react";
+import imgStations from "@/assets/supply-stations.jpg";
+import imgUco from "@/assets/supply-uco.jpg";
+import imgEthanol from "@/assets/supply-ethanol.jpg";
+import imgBiopower from "@/assets/supply-biopower.jpg";
+import imgRng from "@/assets/supply-rng.jpg";
+import imgBiochar from "@/assets/supply-biochar.jpg";
+import imgPellets from "@/assets/supply-pellets.jpg";
+import imgTerminals from "@/assets/supply-terminals.jpg";
+import imgMarine from "@/assets/supply-marine.jpg";
+import imgOil from "@/assets/supply-oil.jpg";
+import imgSaf from "@/assets/supply-saf.jpg";
+import imgCarriers from "@/assets/supply-carriers.jpg";
 import { BiofuelProductionPanel } from "@/components/BiofuelProductionPanel";
 import { UcoSuppliersPanel } from "@/components/UcoSuppliersPanel";
 import { MarineBiofuelPanel } from "@/components/MarineBiofuelPanel";
