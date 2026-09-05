@@ -9,6 +9,7 @@ export const recordVisitFn = createServerFn({ method: "POST" })
         path: z.string().max(200),
         visitorId: z.string().min(1).max(64),
         referrer: z.string().max(200).optional(),
+        utmSource: z.string().max(100).optional(),
       })
       .parse(data);
     const { getRequestHeader } = await import("@tanstack/react-start/server");
@@ -17,10 +18,13 @@ export const recordVisitFn = createServerFn({ method: "POST" })
       (getRequestHeader("cf-ipcountry" as never) as string | undefined) ??
       (getRequestHeader("x-vercel-ip-country" as never) as string | undefined) ??
       undefined;
+    // A tagged link (utm_source) is the true origin even when the browser
+    // strips the referrer (email apps, messaging, privacy mode).
+    const source = parsed.utmSource ?? parsed.referrer;
     await supabaseAdmin.rpc("record_visit", {
       _path: parsed.path,
       _visitor_id: parsed.visitorId,
-      ...(parsed.referrer ? { _referrer: parsed.referrer } : {}),
+      ...(source ? { _referrer: source.slice(0, 200) } : {}),
       ...(country ? { _country: country } : {}),
     } as never);
     return { ok: true };
