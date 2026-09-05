@@ -289,16 +289,19 @@ export function ChartTrend({ panel }: { panel: string }) {
       <div className="h-[22rem] w-full min-w-0">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={rows} margin={{ top: 8, right: 12, bottom: 26, left: 4 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
             <XAxis
               dataKey="year"
               tick={{ fontSize: 11 }}
               stroke="var(--muted-foreground)"
+              tickLine={false}
               label={{ value: "Year", position: "insideBottom", offset: -14, fontSize: 11 }}
             />
             <YAxis
               tick={{ fontSize: 11 }}
               stroke="var(--muted-foreground)"
+              tickLine={false}
+              axisLine={false}
               width={56}
               label={{ value: trend.unit, angle: -90, position: "insideLeft", fontSize: 11 }}
             />
@@ -307,7 +310,11 @@ export function ChartTrend({ panel }: { panel: string }) {
               labelFormatter={(l) => `Year ${l}`}
               contentStyle={{ fontSize: 12 }}
             />
-            <Legend wrapperStyle={{ fontSize: 11 }} />
+            <Legend
+              wrapperStyle={{ fontSize: 11, paddingTop: 8 }}
+              iconType="plainline"
+              iconSize={18}
+            />
             {series.map((sr, i) => (
               <Line
                 key={sr.key}
@@ -315,8 +322,10 @@ export function ChartTrend({ panel }: { panel: string }) {
                 dataKey={sr.key}
                 name={sr.label}
                 stroke={LINE_COLORS[i % LINE_COLORS.length]}
-                strokeWidth={2}
+                strokeWidth={mode === "total" ? 2.5 : 1.8}
+                strokeOpacity={0.95}
                 dot={false}
+                activeDot={{ r: 4 }}
                 connectNulls
                 isAnimationActive={false}
               />
