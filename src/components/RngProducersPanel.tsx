@@ -13,6 +13,7 @@ import {
   type ScatterPoint,
 } from "@/components/chart-kit";
 import { ghgSavingsMt, GHG_NOTE } from "@/lib/ghg-savings";
+import { GhgEmptyNotice } from "@/components/GhgEmptyNotice";
 import { detailTone, useEntityDetail, type GraphContext } from "@/components/EntityDetailSheet";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
