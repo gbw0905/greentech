@@ -208,6 +208,20 @@ export function SupplyProducersSection() {
             className="absolute inset-x-0 top-0 h-1"
             style={{ background: c.tone }}
           />
+          <span className="relative -mx-4 -mt-4 block h-28 overflow-hidden">
+            <img
+              src={c.image}
+              alt={`${c.title} illustration`}
+              loading="lazy"
+              width={768}
+              height={512}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+            <span
+              className="absolute inset-0"
+              style={{ background: `linear-gradient(to top, color-mix(in oklab, ${c.tone} 25%, transparent), transparent 60%)` }}
+            />
+          </span>
           <span className="flex items-center gap-2.5">
             <span
               className="inline-flex size-9 shrink-0 items-center justify-center rounded-md"
