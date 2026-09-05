@@ -47,6 +47,7 @@ export const SUPPLY_PANELS: {
   stat: string;
   statLabel: string;
   tone: string;
+  image: string;
 }[] = [
   {
     id: "stations",
@@ -56,6 +57,7 @@ export const SUPPLY_PANELS: {
     stat: "100+",
     statLabel: "networks tracked",
     tone: "var(--chart-6)",
+    image: imgStations,
   },
   {
     id: "uco",
