@@ -288,7 +288,7 @@ export function ChartTrend({ panel }: { panel: string }) {
 
       <div className="h-[22rem] w-full min-w-0">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={rows} margin={{ top: 8, right: 12, bottom: 26, left: 4 }}>
+          <LineChart data={rows} margin={{ top: 8, right: 12, bottom: 34, left: 4 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
             <XAxis
               dataKey="year"
