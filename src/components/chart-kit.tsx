@@ -342,6 +342,9 @@ export function ChartTrend({ panel }: { panel: string }) {
       </div>
       <p className="chart-sub mt-1">
         Source: {trend.source}. {trend.note}
+        {mode === "series" && capped
+          ? ` Showing the top ${MAX_TREND_LINES} of ${rankedSeries.length} regions by latest value to keep the lines readable — switch to “Sector total” for the full aggregate.`
+          : ""}
       </p>
     </div>
   );
