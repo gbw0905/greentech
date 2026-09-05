@@ -186,6 +186,8 @@ export function SafAirlinesPanel() {
   // applied we show every matching airline in that selection (capped at 20).
   const isFiltered = Boolean(f.a || f.b || f.query.trim());
   const sorted = view === "table" ? ranked : ranked.slice(0, isFiltered ? 20 : 10);
+  const ghgEmpty =
+    metricKey === "ghg" && ranked.length > 0 && !ranked.some((x) => ghgSavingsMt(x.name) > 0);
 
   const axes = scatterAxes(metricKey);
   const scatterPoints: ScatterPoint[] = sorted.map((a) => ({
@@ -353,7 +355,9 @@ export function SafAirlinesPanel() {
           : `Estimates from airline sustainability reports, offtake announcements and regulatory disclosures. Click any row for the latest SAF news for that carrier. ${MARKET_CAP_NOTE}`
       }
     >
-      {sorted.length === 0 ? (
+      {ghgEmpty ? (
+        <GhgEmptyNotice />
+      ) : sorted.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           No listed airlines for this filter — open that country's profile page for its policy and
           market updates.
