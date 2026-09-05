@@ -216,14 +216,20 @@ export const PANEL_VIEWS = [
 
 export type PanelView = "heat" | "scatter" | "bars" | "line" | "table";
 
+/** Vivid, clearly separated RGB palette so trend lines never blend together. */
 const LINE_COLORS = [
-  "var(--chart-1)",
-  "var(--chart-2)",
-  "var(--chart-3)",
-  "var(--chart-4)",
-  "var(--chart-5)",
-  "var(--chart-6)",
+  "rgb(220, 38, 38)", // red
+  "rgb(37, 99, 235)", // blue
+  "rgb(22, 163, 74)", // green
+  "rgb(217, 119, 6)", // amber
+  "rgb(147, 51, 234)", // purple
+  "rgb(8, 145, 178)", // cyan
+  "rgb(219, 39, 119)", // pink
+  "rgb(77, 124, 15)", // olive
 ];
+
+/** Max simultaneous lines in "by region" mode before overlap hurts readability. */
+const MAX_TREND_LINES = 6;
 
 /**
  * Yearly trend view, 2000–2026, for the datasets where official agencies
@@ -243,7 +249,15 @@ export function ChartTrend({ panel }: { panel: string }) {
     );
   }
 
-  const series = mode === "total" ? [totalSeries(trend)] : trend.series;
+  // In "by region" mode keep only the strongest lines (ranked by their latest
+  // value) so the chart stays readable instead of a tangle of overlapping
+  // lines. "Sector total" is always a single line.
+  const rankedSeries = [...trend.series].sort(
+    (a, b) => (b.points.at(-1)?.value ?? 0) - (a.points.at(-1)?.value ?? 0),
+  );
+  const capped = rankedSeries.length > MAX_TREND_LINES;
+  const series =
+    mode === "total" ? [totalSeries(trend)] : rankedSeries.slice(0, MAX_TREND_LINES);
   const years = Array.from(
     new Set(series.flatMap((sr) => sr.points.map((p) => p.year))),
   ).sort((a, b) => a - b);
@@ -274,17 +288,20 @@ export function ChartTrend({ panel }: { panel: string }) {
 
       <div className="h-[22rem] w-full min-w-0">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={rows} margin={{ top: 8, right: 12, bottom: 26, left: 4 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+          <LineChart data={rows} margin={{ top: 8, right: 12, bottom: 34, left: 4 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
             <XAxis
               dataKey="year"
               tick={{ fontSize: 11 }}
               stroke="var(--muted-foreground)"
+              tickLine={false}
               label={{ value: "Year", position: "insideBottom", offset: -14, fontSize: 11 }}
             />
             <YAxis
               tick={{ fontSize: 11 }}
               stroke="var(--muted-foreground)"
+              tickLine={false}
+              axisLine={false}
               width={56}
               label={{ value: trend.unit, angle: -90, position: "insideLeft", fontSize: 11 }}
             />
@@ -293,7 +310,11 @@ export function ChartTrend({ panel }: { panel: string }) {
               labelFormatter={(l) => `Year ${l}`}
               contentStyle={{ fontSize: 12 }}
             />
-            <Legend wrapperStyle={{ fontSize: 11 }} />
+            <Legend
+              wrapperStyle={{ fontSize: 11, paddingTop: 8 }}
+              iconType="plainline"
+              iconSize={18}
+            />
             {series.map((sr, i) => (
               <Line
                 key={sr.key}
@@ -301,8 +322,10 @@ export function ChartTrend({ panel }: { panel: string }) {
                 dataKey={sr.key}
                 name={sr.label}
                 stroke={LINE_COLORS[i % LINE_COLORS.length]}
-                strokeWidth={2}
+                strokeWidth={mode === "total" ? 2.5 : 1.8}
+                strokeOpacity={0.95}
                 dot={false}
+                activeDot={{ r: 4 }}
                 connectNulls
                 isAnimationActive={false}
               />
@@ -319,6 +342,9 @@ export function ChartTrend({ panel }: { panel: string }) {
       </div>
       <p className="chart-sub mt-1">
         Source: {trend.source}. {trend.note}
+        {mode === "series" && capped
+          ? ` Showing the top ${MAX_TREND_LINES} of ${rankedSeries.length} regions by latest value to keep the lines readable — switch to “Sector total” for the full aggregate.`
+          : ""}
       </p>
     </div>
   );
