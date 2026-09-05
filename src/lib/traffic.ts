@@ -29,12 +29,19 @@ export async function recordVisit(path: string): Promise<void> {
   if (!visitorId) return;
   const referrer =
     typeof document !== "undefined" && document.referrer ? document.referrer : "";
+  // Tagged sharing links carry utm_source in the landing URL; capture it so
+  // email/messaging visits stop showing up as unknown "Direct".
+  const utmSource =
+    typeof window !== "undefined"
+      ? (new URLSearchParams(window.location.search).get("utm_source") ?? "").slice(0, 100)
+      : "";
   try {
     await recordVisitFn({
       data: {
         path: path.slice(0, 200),
         visitorId,
         ...(referrer ? { referrer: referrer.slice(0, 200) } : {}),
+        ...(utmSource ? { utmSource } : {}),
       },
     });
   } catch {
