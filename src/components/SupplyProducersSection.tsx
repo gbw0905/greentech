@@ -67,6 +67,7 @@ export const SUPPLY_PANELS: {
     stat: "65",
     statLabel: "collectors & traders",
     tone: "var(--chart-3)",
+    image: imgUco,
   },
   {
     id: "ethanol",
@@ -76,6 +77,7 @@ export const SUPPLY_PANELS: {
     stat: "69",
     statLabel: "producers tracked",
     tone: "var(--chart-1)",
+    image: imgEthanol,
   },
   {
     id: "biopower",
@@ -85,6 +87,7 @@ export const SUPPLY_PANELS: {
     stat: "74",
     statLabel: "generators tracked",
     tone: "var(--chart-9)",
+    image: imgBiopower,
   },
   {
     id: "rng",
@@ -94,6 +97,7 @@ export const SUPPLY_PANELS: {
     stat: "59",
     statLabel: "producers tracked",
     tone: "var(--chart-5)",
+    image: imgRng,
   },
   {
     id: "biochar",
@@ -103,6 +107,7 @@ export const SUPPLY_PANELS: {
     stat: "44",
     statLabel: "producers tracked",
     tone: "var(--chart-3)",
+    image: imgBiochar,
   },
   {
     id: "pellets",
@@ -112,6 +117,7 @@ export const SUPPLY_PANELS: {
     stat: "60",
     statLabel: "producers tracked",
     tone: "var(--chart-6)",
+    image: imgPellets,
   },
   {
     id: "terminals",
@@ -121,6 +127,7 @@ export const SUPPLY_PANELS: {
     stat: "70+",
     statLabel: "terminal operators",
     tone: "var(--chart-8)",
+    image: imgTerminals,
   },
   {
     id: "marine",
@@ -130,6 +137,7 @@ export const SUPPLY_PANELS: {
     stat: "68",
     statLabel: "suppliers & users",
     tone: "var(--chart-5)",
+    image: imgMarine,
   },
   {
     id: "oil",
@@ -139,6 +147,7 @@ export const SUPPLY_PANELS: {
     stat: "20",
     statLabel: "listed majors",
     tone: "var(--chart-2)",
+    image: imgOil,
   },
   {
     id: "saf",
@@ -148,6 +157,7 @@ export const SUPPLY_PANELS: {
     stat: "52",
     statLabel: "airlines ranked",
     tone: "var(--chart-4)",
+    image: imgSaf,
   },
   {
     id: "carriers",
@@ -157,6 +167,7 @@ export const SUPPLY_PANELS: {
     stat: "76",
     statLabel: "carriers across 3 modes",
     tone: "var(--chart-7)",
+    image: imgCarriers,
   },
 ];
 
