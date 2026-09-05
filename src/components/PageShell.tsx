@@ -100,7 +100,7 @@ export function PageHeading({
       <h1 className="mt-2 font-display text-3xl leading-[1.05] font-extrabold tracking-[-0.03em] text-ink-foreground sm:text-[2.6rem]">
         {title}
       </h1>
-      <p className="mt-2 max-w-3xl text-sm/relaxed text-ink-muted">{subtitle}</p>
+      <p className="mt-2 w-full text-sm text-ink-muted sm:truncate">{subtitle}</p>
       <div className="mt-4 h-0.5 w-24 rounded-full bg-accent" />
     </div>
   );
