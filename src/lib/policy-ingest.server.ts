@@ -154,7 +154,11 @@ export type UpdateCategory = "policy" | "market";
  */
 export function categorise(text: string, source = "", link = ""): UpdateCategory | null {
   const t = ` ${text.toLowerCase()} `;
-  if (!BIO_SIGNALS.some((s) => t.includes(s))) return null;
+  // Short acronyms must match whole words, so "safety" never reads as "SAF".
+  const hasBio = BIO_SIGNALS.some((sig) =>
+    sig.length <= 4 ? new RegExp(`\\b${sig}\\b`).test(t) : t.includes(sig),
+  );
+  if (!hasBio) return null;
   if (NOISE_SIGNALS.some((s) => t.includes(s))) return null;
   if (isOfficialSource(source, link)) return "policy";
   if (OFFICIAL_DOCUMENTS.some((s) => t.includes(s))) return "policy";
