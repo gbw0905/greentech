@@ -15,6 +15,7 @@ import {
   type ScatterPoint,
 } from "@/components/chart-kit";
 import { ghgSavingsMt, GHG_NOTE } from "@/lib/ghg-savings";
+import { GhgEmptyNotice } from "@/components/GhgEmptyNotice";
 import { detailTone, useEntityDetail, type GraphContext } from "@/components/EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
@@ -273,6 +274,8 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
   // applied we show every matching station in that selection (capped at 20).
   const isFiltered = Boolean(f.a || f.b || f.query.trim());
   const stations = view === "table" ? ranked : ranked.slice(0, isFiltered ? 20 : 10);
+  const ghgEmpty =
+    stationMetric === "ghg" && ranked.length > 0 && !ranked.some((x) => ghgSavingsMt(x.name) > 0);
 
   const axes = scatterAxes(stationMetric);
   const scatterPoints: ScatterPoint[] = stations.map((s) => ({
@@ -447,7 +450,9 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
         />
       }
     >
-      {stations.length === 0 ? (
+      {ghgEmpty ? (
+        <GhgEmptyNotice />
+      ) : stations.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           No listed station networks for this filter — open that country's profile page for its
           policy and market updates.

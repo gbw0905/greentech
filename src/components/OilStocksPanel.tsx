@@ -16,6 +16,7 @@ import {
   type ScatterPoint,
 } from "@/components/chart-kit";
 import { ghgSavingsMt, GHG_NOTE } from "@/lib/ghg-savings";
+import { GhgEmptyNotice } from "@/components/GhgEmptyNotice";
 import { detailTone, useEntityDetail, type GraphContext } from "@/components/EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { type BrandedExport } from "@/lib/branded-export";
@@ -331,6 +332,8 @@ export function OilStocksPanel() {
   // applied we show every matching company in that selection (capped at 20).
   const isFiltered = Boolean(f.a || f.b || f.query.trim());
   const sorted = view === "table" ? ranked : ranked.slice(0, isFiltered ? 20 : 10);
+  const ghgEmpty =
+    metricKey === "ghg" && ranked.length > 0 && !ranked.some((x) => ghgSavingsMt(x.label) > 0);
 
   const axes = scatterAxes(metricKey);
   const scatterPoints: ScatterPoint[] = sorted.map((q) => ({
@@ -462,7 +465,9 @@ export function OilStocksPanel() {
           : `Capacity is approximate annual output in million barrels of oil equivalent per year (upstream production, or crude throughput for refiners). Prices refresh every five minutes and are quoted in each company's primary listing currency. Click any row for that company's latest news. ${MARKET_CAP_NOTE}`
       }
     >
-      {sorted.length === 0 && !isLoading ? (
+      {ghgEmpty && !isLoading ? (
+        <GhgEmptyNotice />
+      ) : sorted.length === 0 && !isLoading ? (
         <p className="text-sm text-muted-foreground">
           {quotes.length === 0
             ? "Market data is unavailable right now."

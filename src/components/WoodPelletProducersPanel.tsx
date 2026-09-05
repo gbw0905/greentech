@@ -13,6 +13,7 @@ import {
   type ScatterPoint,
 } from "@/components/chart-kit";
 import { ghgSavingsMt, GHG_NOTE } from "@/lib/ghg-savings";
+import { GhgEmptyNotice } from "@/components/GhgEmptyNotice";
 import { detailTone, useEntityDetail, type GraphContext } from "@/components/EntityDetailSheet";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
@@ -190,6 +191,8 @@ export function WoodPelletProducersPanel() {
   const ranked = f.filtered.slice().sort((a, b) => valueOf(b) - valueOf(a));
   const isFiltered = Boolean(f.a || f.b || f.query.trim());
   const rows = view === "table" ? ranked : ranked.slice(0, isFiltered ? 20 : 10);
+  const ghgEmpty =
+    metricKey === "ghg" && ranked.length > 0 && !ranked.some((x) => ghgSavingsMt(x.name) > 0);
 
   const axes = scatterAxes(metricKey);
   const scatterPoints: ScatterPoint[] = rows.map((p) => ({
@@ -365,7 +368,9 @@ export function WoodPelletProducersPanel() {
           />
         }
       >
-        {rows.length === 0 ? (
+        {ghgEmpty ? (
+          <GhgEmptyNotice />
+        ) : rows.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             No pellet producers listed for this filter — open that country's profile page for its
             policy and market updates.
