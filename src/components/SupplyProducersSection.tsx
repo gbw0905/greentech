@@ -1,5 +1,17 @@
 import { Link } from "@tanstack/react-router";
 import { Fuel, Recycle, Building2, Plane, Truck, Ship, Container, Wheat, Zap, Flame, Layers, Trees, ChevronRight } from "lucide-react";
+import imgStations from "@/assets/supply-stations.jpg";
+import imgUco from "@/assets/supply-uco.jpg";
+import imgEthanol from "@/assets/supply-ethanol.jpg";
+import imgBiopower from "@/assets/supply-biopower.jpg";
+import imgRng from "@/assets/supply-rng.jpg";
+import imgBiochar from "@/assets/supply-biochar.jpg";
+import imgPellets from "@/assets/supply-pellets.jpg";
+import imgTerminals from "@/assets/supply-terminals.jpg";
+import imgMarine from "@/assets/supply-marine.jpg";
+import imgOil from "@/assets/supply-oil.jpg";
+import imgSaf from "@/assets/supply-saf.jpg";
+import imgCarriers from "@/assets/supply-carriers.jpg";
 import { BiofuelProductionPanel } from "@/components/BiofuelProductionPanel";
 import { UcoSuppliersPanel } from "@/components/UcoSuppliersPanel";
 import { MarineBiofuelPanel } from "@/components/MarineBiofuelPanel";
@@ -35,6 +47,7 @@ export const SUPPLY_PANELS: {
   stat: string;
   statLabel: string;
   tone: string;
+  image: string;
 }[] = [
   {
     id: "stations",
@@ -44,6 +57,7 @@ export const SUPPLY_PANELS: {
     stat: "100+",
     statLabel: "networks tracked",
     tone: "var(--chart-6)",
+    image: imgStations,
   },
   {
     id: "uco",
@@ -53,6 +67,7 @@ export const SUPPLY_PANELS: {
     stat: "65",
     statLabel: "collectors & traders",
     tone: "var(--chart-3)",
+    image: imgUco,
   },
   {
     id: "ethanol",
@@ -62,6 +77,7 @@ export const SUPPLY_PANELS: {
     stat: "69",
     statLabel: "producers tracked",
     tone: "var(--chart-1)",
+    image: imgEthanol,
   },
   {
     id: "biopower",
@@ -71,6 +87,7 @@ export const SUPPLY_PANELS: {
     stat: "74",
     statLabel: "generators tracked",
     tone: "var(--chart-9)",
+    image: imgBiopower,
   },
   {
     id: "rng",
@@ -80,6 +97,7 @@ export const SUPPLY_PANELS: {
     stat: "59",
     statLabel: "producers tracked",
     tone: "var(--chart-5)",
+    image: imgRng,
   },
   {
     id: "biochar",
@@ -89,6 +107,7 @@ export const SUPPLY_PANELS: {
     stat: "44",
     statLabel: "producers tracked",
     tone: "var(--chart-3)",
+    image: imgBiochar,
   },
   {
     id: "pellets",
@@ -98,6 +117,7 @@ export const SUPPLY_PANELS: {
     stat: "60",
     statLabel: "producers tracked",
     tone: "var(--chart-6)",
+    image: imgPellets,
   },
   {
     id: "terminals",
@@ -107,6 +127,7 @@ export const SUPPLY_PANELS: {
     stat: "70+",
     statLabel: "terminal operators",
     tone: "var(--chart-8)",
+    image: imgTerminals,
   },
   {
     id: "marine",
@@ -116,6 +137,7 @@ export const SUPPLY_PANELS: {
     stat: "68",
     statLabel: "suppliers & users",
     tone: "var(--chart-5)",
+    image: imgMarine,
   },
   {
     id: "oil",
@@ -125,6 +147,7 @@ export const SUPPLY_PANELS: {
     stat: "20",
     statLabel: "listed majors",
     tone: "var(--chart-2)",
+    image: imgOil,
   },
   {
     id: "saf",
@@ -134,6 +157,7 @@ export const SUPPLY_PANELS: {
     stat: "52",
     statLabel: "airlines ranked",
     tone: "var(--chart-4)",
+    image: imgSaf,
   },
   {
     id: "carriers",
@@ -143,6 +167,7 @@ export const SUPPLY_PANELS: {
     stat: "76",
     statLabel: "carriers across 3 modes",
     tone: "var(--chart-7)",
+    image: imgCarriers,
   },
 ];
 
@@ -183,6 +208,20 @@ export function SupplyProducersSection() {
             className="absolute inset-x-0 top-0 h-1"
             style={{ background: c.tone }}
           />
+          <span className="relative -mx-4 -mt-4 block h-28 overflow-hidden">
+            <img
+              src={c.image}
+              alt={`${c.title} illustration`}
+              loading="lazy"
+              width={768}
+              height={512}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+            <span
+              className="absolute inset-0"
+              style={{ background: `linear-gradient(to top, color-mix(in oklab, ${c.tone} 25%, transparent), transparent 60%)` }}
+            />
+          </span>
           <span className="flex items-center gap-2.5">
             <span
               className="inline-flex size-9 shrink-0 items-center justify-center rounded-md"
