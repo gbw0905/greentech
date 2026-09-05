@@ -249,7 +249,15 @@ export function ChartTrend({ panel }: { panel: string }) {
     );
   }
 
-  const series = mode === "total" ? [totalSeries(trend)] : trend.series;
+  // In "by region" mode keep only the strongest lines (ranked by their latest
+  // value) so the chart stays readable instead of a tangle of overlapping
+  // lines. "Sector total" is always a single line.
+  const rankedSeries = [...trend.series].sort(
+    (a, b) => (b.points.at(-1)?.value ?? 0) - (a.points.at(-1)?.value ?? 0),
+  );
+  const capped = rankedSeries.length > MAX_TREND_LINES;
+  const series =
+    mode === "total" ? [totalSeries(trend)] : rankedSeries.slice(0, MAX_TREND_LINES);
   const years = Array.from(
     new Set(series.flatMap((sr) => sr.points.map((p) => p.year))),
   ).sort((a, b) => a - b);
