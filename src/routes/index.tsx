@@ -285,7 +285,7 @@ function Dashboard() {
             </p>
           )}
 
-          <section id="markets" className="reveal">
+          <section id="markets" className="story-slide reveal">
             <SectionHeading
               tone="var(--chart-2)"
               kicker="Markets"
