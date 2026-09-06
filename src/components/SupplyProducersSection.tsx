@@ -191,7 +191,16 @@ export function SupplyPanelBody({ id }: { id: PanelId }) {
  * Overview grid: each card links to a dedicated page for that dataset so
  * visitors can focus on (and share) a single supply dataset at a time.
  */
-export function SupplyProducersSection() {
+export function SupplyProducersSection({ isRefreshing = false }: { isRefreshing?: boolean }) {
+  const [shimmer, setShimmer] = useState(false);
+
+  useEffect(() => {
+    if (!isRefreshing) return;
+    setShimmer(true);
+    const t = setTimeout(() => setShimmer(false), 1200);
+    return () => clearTimeout(t);
+  }, [isRefreshing]);
+
   return (
     <div
       className="grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
