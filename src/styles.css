@@ -811,6 +811,29 @@ input.chart-select {
   }
 }
 
+/* ---------- motion: chart view swap ----------------------------------- */
+@keyframes view-swap {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/** Brief fade-and-rise when a chart panel switches view mode. */
+@utility view-swap {
+  animation: view-swap 0.2s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .view-swap {
+    animation: none;
+  }
+}
+
 /* ---------- motion: live marquee -------------------------------------- */
 
 @keyframes marquee-slide {
