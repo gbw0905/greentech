@@ -810,3 +810,86 @@ input.chart-select {
     transform: none;
   }
 }
+
+/* ---------- motion: live marquee -------------------------------------- */
+
+@keyframes marquee-slide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/** Horizontally scrolling ticker track. Content must be duplicated inside. */
+@utility marquee-track {
+  display: flex;
+  width: max-content;
+  gap: 1.5rem;
+  animation: marquee-slide 45s linear infinite;
+  &:hover {
+    animation-play-state: paused;
+  }
+}
+
+/** Single marquee item with a trailing separator. */
+@utility marquee-item {
+  position: relative;
+  padding-right: 1.5rem;
+  &::after {
+    content: "•";
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.35;
+  }
+}
+
+/* ---------- motion: data refresh shimmer ----------------------------- */
+
+@keyframes shimmer-sweep {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+/** Subtle sheen that sweeps across a card when its data refreshes. */
+@utility data-shimmer {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklab, var(--background) 28%, transparent),
+      transparent
+    );
+    transform: translateX(-120%);
+    pointer-events: none;
+  }
+  &.shimmer-active::after {
+    animation: shimmer-sweep 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+  .data-shimmer::after,
+  .data-shimmer.shimmer-active::after {
+    animation: none;
+    transform: none;
+    opacity: 0;
+  }
+}
