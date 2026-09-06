@@ -52,12 +52,12 @@ export function LiveMarquee() {
 
   const { data: feedData } = useQuery({
     queryKey: ["policy-feed"],
-    queryFn: () => loadFeed(),
+    queryFn: () => getPolicyFeed(),
     refetchInterval: 60_000,
   });
 
   const quotes = oilData?.quotes ?? [];
-  const latest = feedData?.updates?.slice(0, 4) ?? [];
+  const latest = (feedData?.updates as PolicyUpdate[] | undefined)?.slice(0, 4) ?? [];
   const liveNow = trafficData?.live_now ?? 0;
   const totalViews = trafficData?.total_views ?? 0;
 
