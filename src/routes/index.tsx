@@ -216,6 +216,12 @@ function Dashboard() {
           >
             Data sources
           </Link>
+          <Link
+            to="/videos"
+            className="label-mono pill-motion group inline-flex min-w-max items-center justify-center gap-2 text-center whitespace-nowrap border border-menubar-fg/40 bg-menubar-nav px-3 py-1.5 text-xs font-extrabold text-menubar-fg shadow-sm hover:border-menubar-fg hover:bg-menubar-fg/10 sm:flex-1 sm:px-4 sm:py-2"
+          >
+            Videos
+          </Link>
           <AboutMenu />
         </nav>
       </header>
