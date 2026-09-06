@@ -11,6 +11,7 @@ import { WorldPolicyMap } from "@/components/WorldPolicyMap";
 
 import { OilPricePanel } from "@/components/OilPricePanel";
 import { SupplyProducersSection } from "@/components/SupplyProducersSection";
+import { LiveMarquee } from "@/components/LiveMarquee";
 
 import { AlertSignup } from "@/components/AlertSignup";
 import { JobsPanel } from "@/components/JobsPanel";
