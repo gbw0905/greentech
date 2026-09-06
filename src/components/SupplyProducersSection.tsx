@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Fuel, Recycle, Building2, Plane, Truck, Ship, Container, Wheat, Zap, Flame, Layers, Trees, ChevronRight } from "lucide-react";
 import imgStations from "@/assets/supply-stations.jpg";
@@ -190,7 +191,16 @@ export function SupplyPanelBody({ id }: { id: PanelId }) {
  * Overview grid: each card links to a dedicated page for that dataset so
  * visitors can focus on (and share) a single supply dataset at a time.
  */
-export function SupplyProducersSection() {
+export function SupplyProducersSection({ isRefreshing = false }: { isRefreshing?: boolean }) {
+  const [shimmer, setShimmer] = useState(false);
+
+  useEffect(() => {
+    if (!isRefreshing) return;
+    setShimmer(true);
+    const t = setTimeout(() => setShimmer(false), 1200);
+    return () => clearTimeout(t);
+  }, [isRefreshing]);
+
   return (
     <div
       className="grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
@@ -201,7 +211,7 @@ export function SupplyProducersSection() {
           key={c.id}
           to="/supply/$panel"
           params={{ panel: c.id }}
-          className="glass-panel flip-in flip-tilt group relative flex min-w-0 flex-col gap-2 overflow-hidden p-4 text-left"
+          className={`glass-panel flip-in flip-tilt data-shimmer group relative flex min-w-0 flex-col gap-2 overflow-hidden p-4 text-left ${shimmer ? "shimmer-active" : ""}`}
           style={{ animationDelay: `${i * 55}ms` }}
         >
           <span
