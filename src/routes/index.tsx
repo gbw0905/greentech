@@ -332,7 +332,7 @@ function Dashboard() {
             <SupplyProducersSection />
           </section>
 
-          <section id="jobs" className="reveal pt-4">
+          <section id="jobs" className="story-slide reveal pt-4">
             <SectionHeading
               tone="var(--chart-7)"
               kicker="Careers"
