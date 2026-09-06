@@ -211,7 +211,7 @@ export function SupplyProducersSection({ isRefreshing = false }: { isRefreshing?
           key={c.id}
           to="/supply/$panel"
           params={{ panel: c.id }}
-          className="glass-panel flip-in flip-tilt group relative flex min-w-0 flex-col gap-2 overflow-hidden p-4 text-left"
+          className={`glass-panel flip-in flip-tilt data-shimmer group relative flex min-w-0 flex-col gap-2 overflow-hidden p-4 text-left ${shimmer ? "shimmer-active" : ""}`}
           style={{ animationDelay: `${i * 55}ms` }}
         >
           <span
