@@ -1,87 +1,52 @@
-# Going paid: biggest blockers and a readiness plan
+# Dynamic UI layout options for Global Bioenergy Watch
 
-## Current state
+Goal: make the whole site feel more alive and navigable without breaking the editorial green/navy theme or overwhelming the data.
 
-- The site has email-based policy alerts and on-demand AI briefs, but **no payment provider, no paywall, and no paid-tier gating**.
-- `alert_subscribers` already has a `plan` column (defaults to `free`) and `brief_sends` logs every send, so usage tracking is partly wired.
-- Auth exists for CSV export and email summaries, but it is **not tied to subscription status**.
-- Traffic is small: ~148 visitors and ~356 page views in the last 7 days.
+## Option A — Horizontal swipeable "story" homepage
 
-## Biggest problems to solve before taking money
+Turn the homepage into a swipeable horizontal story deck (mouse drag, touch swipe, and keyboard arrows).
+- Each "story" slide maps to one existing section: Markets → Map → Supply → Jobs → Alerts → Method.
+- A pinned bottom dot/tab bar lets users jump to any section.
+- The current masthead nav stays, but clicking a section link smoothly scrolls the horizontal deck to that slide.
+- On desktop it can optionally be a 2-column split: left fixed narrative, right scrollable content.
+- Pros: dramatic, mobile-native feel, keeps each section focused.
+- Cons: hides the full page at once, may hurt SEO scanability if not handled with proper semantic sections and URLs.
 
-### 1. No payment infrastructure or feature gating
-- Paddle/Stripe has not been enabled, and no checkout, customer portal, or webhook handler exists.
-- There is no code that checks `plan` before allowing a feature.
-- Need to decide: what exactly does a paid subscriber get that free users do not?
+## Option B — Scroll-driven pinned storytelling
 
-### 2. Legal and content-licensing risk is high
-- The paid product would be **AI summaries of third-party news and policy documents**.
-- Summarizing paywalled or copyrighted articles and charging for the summary can create licensing/"substantial similarity" risk.
-- The site needs:
-  - Terms of Service (including payment, refund, and cancellation terms)
-  - Privacy Policy (emails, IP/visit tracking, AI processing)
-  - A clear fair-use / transformative-use disclaimer
-  - A process for DMCA/takedown requests
-- Data sources such as EIA, IEA, Yahoo Finance, company filings, etc. may have their own commercial-use restrictions. `src/lib/datasets/provenance.ts` tracks sources but does not yet flag commercial licenses.
+Keep vertical scrolling, but pin each major section while its content phases in/out.
+- As the user scrolls, the Markets strip pins and charts animate in, then the Map pins and regions highlight, then Supply cards cascade in.
+- Use Intersection Observer / scroll-progress triggers, not heavy scroll listeners.
+- Each pinned section has a subtle progress indicator on the right edge.
+- Pros: keeps the long-form page but makes scrolling feel like a guided tour.
+- Cons: harder to make fully responsive at 390px; needs careful reduced-motion support.
 
-### 3. No clear paid product definition
-- Possible paid tiers:
-  - **Premium alerts**: instant briefs instead of daily/weekly digest
-  - **Unlimited AI briefs**: free users get N briefs/month, paid users get unlimited
-  - **CSV/data export**: currently requires sign-in but not payment
-  - **Analyst summaries / chart summaries**: currently free to signed-in users
-  - **Ad-free / early access / country deep-dives**
-- Each tier changes the database schema, the UI, and the email-sending logic.
+## Option C — Bento command-center dashboard
 
-### 4. Usage metering and enforcement are missing
-- `brief_sends` logs sends, but there is no per-user/per-month count, no cap logic, and no billing-grade audit trail.
-- Rate limits are per email per hour, not per plan.
+Rearrange the homepage into a draggable/resizable bento grid of live widgets.
+- Widgets: Latest updates ticker, WTI/Gold mini sparklines, Jurisdiction map thumbnail, top Supply dataset, Jobs badge, Traffic counter.
+- Each widget is a card that can be expanded to full focus (like the Supply dataset pages already do).
+- On mobile it becomes a single-column stack of widgets.
+- Pros: information-dense, feels like a terminal, lets power users customize.
+- Cons: more complex state management; drag/resizing may not be worth it for a content site.
 
-### 5. Cancellation, refunds, and customer support
-- No self-service cancellation, no refund workflow, no dunning/retry logic.
-- No support email/address or process for billing disputes.
+## Option D — Live-data marquee + cascaded cards (lightweight)
 
-### 6. Tax and compliance
-- Selling subscriptions globally requires VAT/sales-tax handling, invoices, and proper tax codes.
-- Lovable’s built-in Paddle or Stripe integration can handle this, but it must be configured and tested.
+Keep the current vertical page structure but add motion where data changes.
+- A slim top marquee auto-scrolls live prices, latest policy headlines, and recent visitor count.
+- Each section heading has a subtle "reveal" animation on scroll.
+- The Supply cards keep their flip/tilt but add a "data updated" shimmer pulse when the feed refreshes.
+- Chart panels fade/swap datasets with a shared layout animation when switching views.
+- Pros: lowest risk, works with current architecture, reinforces "live desk" identity.
+- Cons: less of a layout change, more of a motion upgrade.
 
-### 7. Audience size is not yet validated
-- 148 visitors/week is a thin funnel. Paid conversion at 2–5% would be 3–7 subscribers/week.
-- Recommendation: grow the free list first, then gate a high-value feature.
+## Recommendation
 
-## Proposed roadmap
+Start with **Option D as a foundation** (safe, keeps SEO and mobile intact), then layer **Option A's horizontal swipe only on mobile** so phone users get a story-like browse while desktop keeps the full vertical dashboard. Scroll-story pinned sections (Option B) can be added last if analytics show users are scrolling rather than clicking nav.
 
-### Phase 0 — Decide the paid tier (before any code)
-1. Choose the single paid value proposition (recommendation: **unlimited instant AI briefs + analyst summaries**).
-2. Define free limits: e.g., 3 on-demand briefs/month, daily digest free, instant/weekly requires paid.
-3. Set price and billing interval (recommend starting with one plan: e.g., $9/month or $89/year).
-
-### Phase 1 — Legal foundation
-1. Add `/terms`, `/privacy`, and `/refund` pages with plain-language copy.
-2. Flag commercial-use restrictions in `src/lib/datasets/provenance.ts` and add an AI-summary source-attribution notice.
-3. Add a billing-specific footer/disclosure on the checkout page.
-
-### Phase 2 — Payments and subscription plumbing
-1. Enable Lovable Payments (Paddle recommended because it handles global tax and acts as merchant of record).
-2. Create a "Premium" product + price in the dashboard.
-3. Add webhook handlers to sync subscription status to `alert_subscribers.plan`.
-4. Add server-side helpers to check `plan` before serving paid features.
-
-### Phase 3 — Gate the features
-1. Limit free on-demand briefs to N per rolling month; show upgrade prompt when exhausted.
-2. Make instant/weekly cadence paid-only.
-3. Keep CSV export and chart summaries as sign-in-only but add them to the premium tier (or keep them as a free sign-up perk).
-4. Add a `/settings/billing` page with plan status, invoice link, and cancel/upgrade actions.
-
-### Phase 4 — Operations and growth
-1. Add monthly usage email and in-app meter.
-2. Set up dunning emails for failed payments.
-3. A/B test pricing and free-limit messaging.
-4. Continue free list growth (SEO, LinkedIn, directories) before relying on paid revenue.
-
-## Open questions
-
-- What is the one paid feature you want to launch with?
-- What monthly/yearly price feels right?
-- Are you comfortable using Paddle (simpler global tax handling) or do you prefer Stripe?
-- Do you have draft Terms of Service / Privacy Policy text, or should the site generate standard ones?
+## Technical notes
+- Use CSS scroll-snap for horizontal swipe, not a custom drag library, to stay lightweight.
+- Keep every section in the DOM and accessible; animation must be decorative.
+- Respect `prefers-reduced-motion`.
+- No backend/data changes needed; all options use existing data and routes.
+- Files likely touched: `src/routes/index.tsx`, `src/components/SupplyProducersSection.tsx`, `src/styles.css`, possibly a new `src/components/HorizontalStory.tsx`.
