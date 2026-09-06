@@ -296,7 +296,7 @@ function Dashboard() {
             <OilPricePanel />
           </section>
 
-          <section id="map" className="reveal pt-4">
+          <section id="map" className="story-slide reveal pt-4">
             <SectionHeading
               tone="var(--chart-3)"
               kicker="Jurisdiction map"
