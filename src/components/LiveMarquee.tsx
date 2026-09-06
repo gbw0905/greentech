@@ -2,7 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Activity, TrendingDown, TrendingUp } from "lucide-react";
 import { getOilPricesFn } from "@/lib/oil.functions";
 import { fetchTrafficStats } from "@/lib/traffic";
-import { feedQueryWithInitial, loadFeed } from "@/lib/feed-query";
+import { getPolicyFeed } from "@/lib/policy.functions";
+import type { PolicyUpdate } from "@/lib/policy-types";
 
 function PricePill({
   label,
