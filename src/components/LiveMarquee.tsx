@@ -82,7 +82,7 @@ export function LiveMarquee() {
 
         {latest.map((u) => (
           <span key={u.id} className="marquee-item shrink-0 max-w-[28ch] truncate opacity-90">
-            <span className="font-mono text-[10px] opacity-70">{u.country ?? "Global"}</span>
+            <span className="font-mono text-[10px] opacity-70">{u.countryName ?? "Global"}</span>
             <span className="mx-1.5 opacity-40">·</span>
             <span className="truncate">{u.title}</span>
           </span>
