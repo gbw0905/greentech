@@ -402,21 +402,21 @@ function Dashboard() {
               ))}
             </div>
           </section>
-
-          <footer className="space-y-3 border-t border-border pt-6 pb-10">
-            <p className="text-sm font-semibold text-foreground">
-              <a
-                href="https://www.linkedin.com/company/global-bioenergy-watch/?viewAsMember=true"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 underline underline-offset-4 hover:text-primary"
-              >
-                <Linkedin className="size-4 fill-current" />
-                Contact us
-              </a>
-            </p>
-          </footer>
         </main>
+
+        <footer className="space-y-3 border-t border-border pt-6 pb-10">
+          <p className="text-sm font-semibold text-foreground">
+            <a
+              href="https://www.linkedin.com/company/global-bioenergy-watch/?viewAsMember=true"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 underline underline-offset-4 hover:text-primary"
+            >
+              <Linkedin className="size-4 fill-current" />
+              Contact us
+            </a>
+          </p>
+        </footer>
       </div>
     </div>
   );
