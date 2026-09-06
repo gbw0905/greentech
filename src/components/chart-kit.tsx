@@ -1190,7 +1190,11 @@ export function ChartPanel({
 
       <div ref={setPanelNode} className="relative" />
 
-      <div className="min-h-0 flex-1">{children}</div>
+      <div className="min-h-0 flex-1">
+        <div key={viewValue ?? "default"} className="view-swap h-full">
+          {children}
+        </div>
+      </div>
 
       {footnote ? (
         <p className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">{footnote}</p>
