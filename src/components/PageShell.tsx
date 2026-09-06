@@ -75,6 +75,13 @@ export function PageShell({
             >
               Data sources
             </Link>
+            <span className="mx-2 text-muted-foreground">·</span>
+            <Link
+              to="/videos"
+              className="font-semibold text-foreground underline underline-offset-4 hover:text-primary"
+            >
+              Videos
+            </Link>
           </p>
         </footer>
       </div>
