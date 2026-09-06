@@ -356,9 +356,11 @@ function Dashboard() {
             </section>
           </div>
 
-          <TrafficPanel />
+          <div className="story-slide">
+            <TrafficPanel />
+          </div>
 
-          <section id="disclaimer" className="reveal">
+          <section id="disclaimer" className="story-slide reveal">
             <SectionHeading
               tone="var(--chart-8)"
               kicker="Editorial standards"
