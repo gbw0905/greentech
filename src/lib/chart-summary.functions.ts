@@ -12,11 +12,15 @@ function validPayload(input: SummaryRequest): SummaryRequest {
 }
 
 export const summariseChartFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator(validPayload)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const { generateChartSummary } = await import("./chart-summary.server");
+    const { assertAiQuota } = await import("./ai-quota.server");
+    assertAiQuota(`summary:${context.userId}`);
     return { summary: await generateChartSummary(data) };
   });
+
 
 /** Generates the analyst summary for the current view and emails it with references. */
 export const emailChartSummaryFn = createServerFn({ method: "POST" })
