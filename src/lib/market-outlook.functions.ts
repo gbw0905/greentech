@@ -1,4 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
 
 export interface MarketOutlookPoint {
   t: number;
@@ -24,10 +26,14 @@ function valid(input: MarketOutlookInput): MarketOutlookInput {
 }
 
 export const marketOutlookFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator(valid)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const { assertAiQuota } = await import("./ai-quota.server");
+    assertAiQuota(`outlook:${context.userId}`);
     const apiKey = process.env["LOVABLE_API_KEY"];
     if (!apiKey) throw new Error("AI is not configured for this site.");
+
 
     const first = data.series[0]?.c ?? data.price;
     const last = data.series[data.series.length - 1]?.c ?? data.price;

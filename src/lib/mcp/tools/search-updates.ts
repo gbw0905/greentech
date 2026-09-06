@@ -27,7 +27,13 @@ export default defineTool({
     if (region) q = q.eq("region", region);
     if (category) q = q.eq("category", category);
     if (fuel) q = q.contains("fuels", [fuel]);
-    if (query) q = q.or(`title.ilike.%${query}%,summary.ilike.%${query}%`);
+    if (query) {
+      // Treat the query as literal text: strip PostgREST filter metacharacters
+      // so it cannot inject extra conditions into the .or() expression.
+      const safe = query.replace(/[,.()*%\\"']/g, " ").trim().slice(0, 120);
+      if (safe) q = q.or(`title.ilike.%${safe}%,summary.ilike.%${safe}%`);
+    }
+
 
     const { data, error } = await q;
     if (error) return { content: [{ type: "text" as const, text: error.message }], isError: true };

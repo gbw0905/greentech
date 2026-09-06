@@ -224,8 +224,12 @@ export function OilPricePanel() {
       setOutlook((s) => ({ ...s, [q.symbol]: { text, loading: false } }));
     } catch (e) {
       setOutlook((s) => ({ ...s, [q.symbol]: { text: "", loading: false } }));
-      toast.error(e instanceof Error ? e.message : "Outlook failed");
+      const msg = e instanceof Error ? e.message : "Outlook failed";
+      toast.error(
+        /unauthori[sz]ed|401/i.test(msg) ? "Please sign in to generate an AI outlook." : msg,
+      );
     }
+
   };
 
   const quotes = data?.quotes ?? [];
