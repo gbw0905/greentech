@@ -224,8 +224,8 @@ function Dashboard() {
 
       <div className="mx-auto max-w-[80rem] px-5 py-5 lg:px-8 lg:py-6">
 
-        <main className="story-scroll space-y-8 md:space-y-8">
-          <section className="story-slide grid items-stretch gap-5 lg:grid-cols-[1.1fr_minmax(0,1fr)]">
+        <main className="space-y-8">
+          <section className="grid items-stretch gap-5 lg:grid-cols-[1.1fr_minmax(0,1fr)]">
             <div className="card-motion h-full rounded-lg border border-border bg-white px-6 py-6 shadow-sm sm:px-8 sm:py-7">
               <div className="kicker inline-flex items-center gap-2 text-muted-foreground">
                 <span className="size-1.5 rounded-full bg-accent" />
@@ -285,7 +285,7 @@ function Dashboard() {
             </p>
           )}
 
-          <section id="markets" className="story-slide reveal">
+          <section id="markets" className="reveal">
             <SectionHeading
               tone="var(--chart-2)"
               kicker="Markets"
@@ -296,7 +296,7 @@ function Dashboard() {
             <OilPricePanel />
           </section>
 
-          <section id="map" className="story-slide reveal pt-4">
+          <section id="map" className="reveal pt-4">
             <SectionHeading
               tone="var(--chart-3)"
               kicker="Jurisdiction map"
@@ -321,7 +321,7 @@ function Dashboard() {
             </div>
           </section>
 
-          <section id="production" className="story-slide reveal pt-4">
+          <section id="production" className="reveal pt-4">
             <SectionHeading
               tone="var(--chart-6)"
               kicker="Supply & producers"
@@ -332,7 +332,7 @@ function Dashboard() {
             <SupplyProducersSection isRefreshing={busy} />
           </section>
 
-          <section id="jobs" className="story-slide reveal pt-4">
+          <section id="jobs" className="reveal pt-4">
             <SectionHeading
               tone="var(--chart-7)"
               kicker="Careers"
@@ -343,7 +343,7 @@ function Dashboard() {
             <JobsPanel compact />
           </section>
 
-          <div className="story-slide reveal pt-4">
+          <div className="reveal pt-4">
             <section id="alerts">
               <SectionHeading
                 tone="var(--chart-4)"
@@ -356,11 +356,11 @@ function Dashboard() {
             </section>
           </div>
 
-          <div className="story-slide">
+          <div className="">
             <TrafficPanel />
           </div>
 
-          <section id="disclaimer" className="story-slide reveal">
+          <section id="disclaimer" className="reveal">
             <SectionHeading
               tone="var(--chart-8)"
               kicker="Editorial standards"
