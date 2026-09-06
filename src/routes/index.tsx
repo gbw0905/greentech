@@ -343,7 +343,7 @@ function Dashboard() {
             <JobsPanel compact />
           </section>
 
-          <div className="reveal pt-4">
+          <div className="story-slide reveal pt-4">
             <section id="alerts">
               <SectionHeading
                 tone="var(--chart-4)"
