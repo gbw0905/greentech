@@ -893,3 +893,30 @@ input.chart-select {
     opacity: 0;
   }
 }
+
+/* ---------- motion: mobile horizontal story scroll -------------------- */
+
+.story-scroll {
+  display: block;
+}
+
+@media (max-width: 767px) {
+  .story-scroll {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+  }
+  .story-scroll::-webkit-scrollbar {
+    display: none;
+  }
+  .story-slide {
+    flex: 0 0 100%;
+    width: 100%;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+}
