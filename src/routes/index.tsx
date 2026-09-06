@@ -329,7 +329,7 @@ function Dashboard() {
               title="Global Biofuel Suppliers and Users"
               subtitle="Pick a dataset to open its full workspace — heat map, scatter plot, ranked bars or data table, with per-entity detail."
             />
-            <SupplyProducersSection />
+            <SupplyProducersSection isRefreshing={busy} />
           </section>
 
           <section id="jobs" className="story-slide reveal pt-4">
