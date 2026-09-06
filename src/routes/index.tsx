@@ -224,7 +224,7 @@ function Dashboard() {
 
       <div className="mx-auto max-w-[80rem] px-5 py-5 lg:px-8 lg:py-6">
 
-        <main className="story-scroll space-y-8 md:space-y-8">
+        <main className="space-y-8">
           <section className="grid items-stretch gap-5 lg:grid-cols-[1.1fr_minmax(0,1fr)]">
             <div className="card-motion h-full rounded-lg border border-border bg-white px-6 py-6 shadow-sm sm:px-8 sm:py-7">
               <div className="kicker inline-flex items-center gap-2 text-muted-foreground">
