@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ChartMap } from "@/components/ChartMap";
 import { Plane } from "lucide-react";
 import {
   ChartBars,
@@ -375,6 +376,21 @@ export function SafAirlinesPanel() {
           formatSize={(n) => fmt(n, 0)}
           onSelect={onSelect}
           indexLabel="Global listed airlines index"
+        />
+      ) : view === "map" ? (
+        <ChartMap
+          points={sorted.map((a) => ({
+            key: a.code,
+            label: a.name,
+            country: a.country,
+            value: valueOf(a),
+            sub: a.note,
+            newsTarget: { name: a.name, query: `${a.name} sustainable aviation fuel OR SAF` },
+          }))}
+          measureLabel={metric.label}
+          unitLabel={metric.unit}
+          format={(n: number) => fmt(n, metric.decimals)}
+          onSelect={onSelect}
         />
       ) : view === "bars" ? (
         <ChartBars

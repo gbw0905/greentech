@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ChartMap } from "@/components/ChartMap";
 import { Layers } from "lucide-react";
 import {
   ChartBars,
@@ -373,6 +374,21 @@ export function BiocharProducersPanel() {
             formatSize={(n) => fmt(n, 0)}
             onSelect={onSelect}
             indexLabel="Global biochar production index"
+          />
+        ) : view === "map" ? (
+          <ChartMap
+            points={rows.map((p) => ({
+              key: p.name,
+              label: p.name,
+              country: p.country,
+              value: valueOf(p),
+              sub: p.note,
+              newsTarget: { name: p.name, query: `"${p.name}" ${NEWS_SUFFIX}` },
+            }))}
+            measureLabel={metric.label}
+            unitLabel={metric.unit}
+            format={(n: number) => fmt(n, metric.decimals)}
+            onSelect={onSelect}
           />
         ) : view === "bars" ? (
           <ChartBars

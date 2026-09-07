@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ChartMap } from "@/components/ChartMap";
 import { Ship, Truck, TrainFront } from "lucide-react";
 import {
   ChartBars,
@@ -405,6 +406,21 @@ function CarrierChart({
           formatSize={(n) => fmt(n, 0)}
           onSelect={onSelect}
           indexLabel="Listed freight carriers index"
+        />
+      ) : view === "map" ? (
+        <ChartMap
+          points={rows.map((c) => ({
+            key: c.name,
+            label: c.name,
+            country: c.country,
+            value: valueOf(c),
+            sub: c.note,
+            newsTarget: { name: c.name, query: `"${c.name}" ${newsSuffix}` },
+          }))}
+          measureLabel={metric.label}
+          unitLabel={metric.unit}
+          format={(n: number) => fmt(n, metric.decimals)}
+          onSelect={onSelect}
         />
       ) : view === "bars" ? (
         <ChartBars

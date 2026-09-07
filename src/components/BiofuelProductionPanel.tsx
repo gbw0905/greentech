@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ChartMap } from "@/components/ChartMap";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 import { Fuel } from "lucide-react";
@@ -470,6 +471,21 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
           formatSize={(n) => fmt(n, 0)}
           onSelect={onSelect}
           indexLabel="Listed fuel retailers & producers index"
+        />
+      ) : view === "map" ? (
+        <ChartMap
+          points={stations.map((s) => ({
+            key: s.name,
+            label: s.name,
+            country: s.country,
+            value: valueOf(s),
+            sub: s.note,
+            newsTarget: { name: s.name, query: `"${s.name}" biofuel OR ethanol OR renewable diesel station` },
+          }))}
+          measureLabel={metric.label}
+          unitLabel={metric.unit}
+          format={(n: number) => fmt(n, metric.decimals)}
+          onSelect={onSelect}
         />
       ) : view === "bars" ? (
         <ChartBars

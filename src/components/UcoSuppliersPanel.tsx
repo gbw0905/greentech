@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ChartMap } from "@/components/ChartMap";
 import { Recycle } from "lucide-react";
 import {
   ChartBars,
@@ -383,6 +384,21 @@ export function UcoSuppliersPanel() {
           formatSize={(n) => fmt(n, 0)}
           onSelect={onSelect}
           indexLabel="Global UCO suppliers index"
+        />
+      ) : view === "map" ? (
+        <ChartMap
+          points={rows.map((s) => ({
+            key: s.name,
+            label: s.name,
+            country: s.country,
+            value: valueOf(s),
+            sub: s.note,
+            newsTarget: { name: s.name, query: `"${s.name}" ${NEWS_SUFFIX}` },
+          }))}
+          measureLabel={metric.label}
+          unitLabel={metric.unit}
+          format={(n: number) => fmt(n, metric.decimals)}
+          onSelect={onSelect}
         />
       ) : view === "bars" ? (
         <ChartBars

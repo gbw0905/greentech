@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ChartMap } from "@/components/ChartMap";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Building2 } from "lucide-react";
 import { getOilStocksFn, type OilQuote } from "@/lib/oil.functions";
@@ -486,6 +487,21 @@ export function OilStocksPanel() {
           formatSize={(n) => chartFmt(n, 0)}
           onSelect={onSelect}
           indexLabel="NYSE / global energy majors index"
+        />
+      ) : view === "map" ? (
+        <ChartMap
+          points={sorted.map((q) => ({
+            key: q.symbol,
+            label: q.label,
+            country: countryOf(q.symbol),
+            value: metric.value(q),
+            sub: q.label,
+            newsTarget: { name: q.label, query: `"${q.label}" oil company news` },
+          }))}
+          measureLabel={metric.label}
+          unitLabel={metric.unit}
+          format={(n: number) => chartFmt(n, metric.decimals)}
+          onSelect={onSelect}
         />
       ) : view === "bars" ? (
         <ChartBars
