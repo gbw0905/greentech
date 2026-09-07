@@ -89,6 +89,13 @@ export function PageShell({
             >
               Videos
             </Link>
+            <span className="mx-2 text-muted-foreground">·</span>
+            <Link
+              to="/mandates"
+              className="font-semibold text-foreground underline underline-offset-4 hover:text-primary"
+            >
+              Mandate tracker
+            </Link>
           </p>
         </footer>
       </div>
