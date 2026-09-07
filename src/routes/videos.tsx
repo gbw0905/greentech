@@ -67,6 +67,22 @@ function VideosPage() {
         subtitle="YouTube channels and official video hubs, linked to the countries and policies they cover."
       />
 
+      <section className="glass-panel overflow-hidden">
+        <div className="panel-head">
+          <h2 className="label-mono text-muted-foreground">What is Global Bioenergy Watch?</h2>
+          <span className="label-mono text-accent">23-second explainer</span>
+        </div>
+        <video
+          controls
+          preload="none"
+          poster="/videos/explainer-poster.jpg"
+          className="aspect-video w-full bg-black"
+        >
+          <source src="/videos/explainer.mp4" type="video/mp4" />
+        </video>
+      </section>
+
+
       <div className="glass-panel flex flex-wrap items-center gap-2 p-3">
         <span className="label-mono mr-1 text-muted-foreground">Fuel type</span>
         {FUEL_TYPES.map((f) => {
