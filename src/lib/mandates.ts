@@ -53,6 +53,10 @@ export interface Mandate {
   timeline: MandateMilestone[];
   sourceName: string;
   sourceUrl: string;
+  /** Extra official government / administrator websites for this obligation. */
+  officialSites?: { label: string; url: string }[];
+  /** Terms used to attach live news items to this obligation. */
+  keywords?: string[];
   lastReviewed: string;
 }
 
