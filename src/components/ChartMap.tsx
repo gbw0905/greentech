@@ -273,11 +273,11 @@ export function ChartMap({
             type: "Polygon",
             coordinates: [
               [
-                [box[0], box[1]],
-                [box[2], box[1]],
-                [box[2], box[3]],
                 [box[0], box[3]],
+                [box[2], box[3]],
+                [box[2], box[1]],
                 [box[0], box[1]],
+                [box[0], box[3]],
               ],
             ],
           } as const)
