@@ -91,7 +91,7 @@ function GetAlertsPage() {
 
         <div id="subscribe" className="lg:sticky lg:top-24">
           <div className="ink-bar ribbon-sheen mb-4 border-l-4 border-l-primary px-4 py-3">
-            <span className="kicker inline-flex items-center gap-1.5 text-accent-foreground">
+            <span className="kicker inline-flex items-center gap-1.5 text-accent">
               <BellRing className="size-3" />
               Subscribe free
             </span>
