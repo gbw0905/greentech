@@ -93,16 +93,23 @@ function Dropdown({
       if (e.key === "Escape") setOpen(false);
     };
     // The menu is fixed-positioned; close it when the page scrolls or the
-    // window resizes so it never floats detached from its trigger.
+    // window resizes so it never floats detached from its trigger. Ignore
+    // scroll events that originate inside the menu itself (e.g. scrolling a
+    // long option list).
     const close = () => setOpen(false);
+    const onScroll = (e: Event) => {
+      const target = e.target as Node;
+      if (menuRef.current?.contains(target)) return;
+      setOpen(false);
+    };
     document.addEventListener("pointerdown", onPointerDown);
     document.addEventListener("keydown", onKey);
-    window.addEventListener("scroll", close, true);
+    window.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", close);
     return () => {
       document.removeEventListener("pointerdown", onPointerDown);
       document.removeEventListener("keydown", onKey);
-      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("scroll", onScroll, true);
       window.removeEventListener("resize", close);
     };
   }, [open]);
