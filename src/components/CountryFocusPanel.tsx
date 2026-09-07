@@ -16,6 +16,8 @@ import { UpdateCard } from "@/components/UpdateCard";
 import { CountryFlag } from "@/components/CountryFlag";
 import { VideoLibrary } from "@/components/VideoLibrary";
 import { LiveMediaFeed } from "@/components/LiveMediaFeed";
+import { MandateDetailCard } from "@/components/MandateDetailCard";
+import { mandatesForCountry } from "@/lib/mandates";
 
 type Tab = "profile" | "updates" | "videos";
 
