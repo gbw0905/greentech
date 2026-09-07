@@ -6,6 +6,7 @@ import {
   SupplyPanelBody,
   type PanelId,
 } from "@/components/SupplyProducersSection";
+import { SUPPLY_SEO } from "@/lib/supply-seo";
 
 function findPanel(id: string) {
   return SUPPLY_PANELS.find((p) => p.id === id);
@@ -17,16 +18,46 @@ export const Route = createFileRoute("/supply/$panel")({
     if (!panel) throw notFound();
     return { panelId: panel.id as PanelId, title: panel.title, blurb: panel.blurb };
   },
-  head: ({ loaderData }) => ({
-    meta: [
-      { title: `${loaderData?.title ?? "Dataset"} — Global Bioenergy Watch` },
-      { name: "description", content: loaderData?.blurb ?? "Global biofuel supply dataset." },
-      { property: "og:title", content: `${loaderData?.title ?? "Dataset"} — Global Bioenergy Watch` },
-      { property: "og:description", content: loaderData?.blurb ?? "Global biofuel supply dataset." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  head: ({ loaderData, params }) => {
+    const seo = SUPPLY_SEO[(loaderData?.panelId ?? params.panel) as PanelId];
+    const title = seo ? `${seo.title} | Global Bioenergy Watch` : "Dataset — Global Bioenergy Watch";
+    const description = seo?.description ?? loaderData?.blurb ?? "Global biofuel supply dataset.";
+    const url = `https://globalbioenergywatch.org/supply/${params.panel}`;
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        ...(seo ? [{ name: "keywords", content: seo.keywords }] : []),
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:url", content: url },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary_large_image" },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: seo
+        ? [
+            {
+              type: "application/ld+json",
+              children: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "Dataset",
+                name: seo.title,
+                description,
+                url,
+                keywords: seo.keywords,
+                creator: {
+                  "@type": "Organization",
+                  name: "Global Bioenergy Watch",
+                  url: "https://globalbioenergywatch.org/",
+                },
+                isAccessibleForFree: true,
+              }),
+            },
+          ]
+        : [],
+    };
+  },
   component: SupplyDatasetPage,
   notFoundComponent: SupplyNotFound,
 });

@@ -9,7 +9,14 @@ import { useVisitTracker } from "@/hooks/useVisitTracker";
 
 const TITLE = "Video briefing room | Global Bioenergy Watch";
 const DESCRIPTION =
-  "Curated YouTube channels and official video hubs on biofuel policy, linked to the countries and fuel types they cover.";
+  "Watch our explainer and curated YouTube channels and official video hubs on biofuel policy, linked to the countries and fuel types they cover.";
+
+const EXPLAINER = {
+  url: "https://globalbioenergywatch.org/videos/explainer.mp4",
+  poster: "https://globalbioenergywatch.org/videos/explainer-poster.jpg",
+  uploadDate: "2026-09-03",
+  duration: "PT23S",
+};
 
 export const Route = createFileRoute("/videos")({
   head: () => ({
@@ -23,6 +30,23 @@ export const Route = createFileRoute("/videos")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: "https://globalbioenergywatch.org/videos" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "VideoObject",
+          name: "Global Bioenergy Watch — explainer",
+          description:
+            "A 23-second explainer: how Global Bioenergy Watch tracks worldwide biofuel policy, markets, supply datasets and jobs in one live dashboard.",
+          thumbnailUrl: EXPLAINER.poster,
+          uploadDate: EXPLAINER.uploadDate,
+          duration: EXPLAINER.duration,
+          contentUrl: EXPLAINER.url,
+          embedUrl: "https://globalbioenergywatch.org/videos",
+        }),
+      },
+    ],
   }),
   component: VideosPage,
 });
@@ -42,6 +66,22 @@ function VideosPage() {
         title="Video briefing room"
         subtitle="YouTube channels and official video hubs, linked to the countries and policies they cover."
       />
+
+      <section className="glass-panel overflow-hidden">
+        <div className="panel-head">
+          <h2 className="label-mono text-muted-foreground">What is Global Bioenergy Watch?</h2>
+          <span className="label-mono text-accent">23-second explainer</span>
+        </div>
+        <video
+          controls
+          preload="none"
+          poster="/videos/explainer-poster.jpg"
+          className="aspect-video w-full bg-black"
+        >
+          <source src="/videos/explainer.mp4" type="video/mp4" />
+        </video>
+      </section>
+
 
       <div className="glass-panel flex flex-wrap items-center gap-2 p-3">
         <span className="label-mono mr-1 text-muted-foreground">Fuel type</span>
