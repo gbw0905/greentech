@@ -113,6 +113,14 @@ function CountryPage() {
       return new Date(bDate).getTime() - new Date(aDate).getTime();
     });
 
+  const govSites = governmentSitesForCountry(slug);
+  const mandateGroups = trackedMandates.map((mandate) => ({
+    mandate,
+    items: updates.filter((u) => updateMatchesMandate(mandate, `${u.title} ${u.summary ?? ""}`)),
+  }));
+  const grouped = new Set(mandateGroups.flatMap((g) => g.items.map((u) => u.id)));
+  const otherUpdates = updates.filter((u) => !grouped.has(u.id));
+
   return (
     <main className="mx-auto max-w-5xl px-6 py-10">
       <Link to="/" className="label-mono inline-flex items-center gap-2 text-muted-foreground hover:text-primary">
