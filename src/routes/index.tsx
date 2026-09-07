@@ -318,12 +318,6 @@ function Dashboard() {
             <div className="glass-panel flex w-full min-w-0 flex-col">
               <div className="panel-head">
                 <h3 className="label-mono text-muted-foreground">Jurisdiction map</h3>
-                <Link
-                  to="/mandates"
-                  className="label-mono inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-primary transition-transform hover:-translate-y-0.5"
-                >
-                  Mandate tracker
-                </Link>
                 <span className="label-mono text-accent">Click a country to open its profile</span>
               </div>
               <div className="min-h-0 w-full flex-1 p-5">

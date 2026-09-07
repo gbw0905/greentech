@@ -11,6 +11,8 @@ import {
   POLICY_STATUS_COLOR,
 } from "@/lib/policy-taxonomy";
 import { UpdateCard } from "@/components/UpdateCard";
+import { MandateDetailCard } from "@/components/MandateDetailCard";
+import { mandatesForCountry } from "@/lib/mandates";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
 
 
@@ -94,6 +96,7 @@ function CountryPage() {
   const country = countryBySlug(slug)!;
   const { feed: initialFeed } = Route.useLoaderData();
   const { data, isFetching } = useQuery(feedQueryWithInitial(initialFeed));
+  const trackedMandates = mandatesForCountry(slug);
   const keywords = (country.updateKeywords ?? []).map((k) => k.toLowerCase());
   const updates = (data?.updates ?? [])
     .filter((u) => {
@@ -163,6 +166,25 @@ function CountryPage() {
           ))}
         </dl>
       </section>
+
+      {trackedMandates.length > 0 && (
+        <section className="mt-10">
+          <h2 className="label-mono text-muted-foreground">
+            Mandate tracker · {trackedMandates.length} obligation
+            {trackedMandates.length === 1 ? "" : "s"}
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+            Timeline, legal requirements and compliance status for each active obligation in this
+            jurisdiction, taken from the primary legal instrument.
+          </p>
+          <div className="mt-4 space-y-5">
+            {trackedMandates.map((m) => (
+              <MandateDetailCard key={m.id} mandate={m} />
+            ))}
+          </div>
+        </section>
+      )}
+
 
       <section className="mt-10">
         <h2 className="label-mono text-muted-foreground">

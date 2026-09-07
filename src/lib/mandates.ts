@@ -897,3 +897,8 @@ export function mandateStatusTone(status: MandateStatus): string {
       return "border-orange-300 bg-orange-50 text-orange-900";
   }
 }
+
+/** Mandates whose jurisdiction is this country slug. */
+export function mandatesForCountry(slug: string): Mandate[] {
+  return MANDATES.filter((m) => m.countrySlug === slug);
+}

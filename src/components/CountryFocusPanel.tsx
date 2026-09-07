@@ -16,6 +16,8 @@ import { UpdateCard } from "@/components/UpdateCard";
 import { CountryFlag } from "@/components/CountryFlag";
 import { VideoLibrary } from "@/components/VideoLibrary";
 import { LiveMediaFeed } from "@/components/LiveMediaFeed";
+import { MandateDetailCard } from "@/components/MandateDetailCard";
+import { mandatesForCountry } from "@/lib/mandates";
 
 type Tab = "profile" | "updates" | "videos";
 
@@ -62,6 +64,7 @@ export function CountryFocusPanel({
   }, [updates, country, fuels, profile]);
 
   const status = profile ? policyStatusFor(profile) : null;
+  const trackedMandates = profile ? mandatesForCountry(profile.slug) : [];
 
   if (!profile) {
     return (
@@ -188,6 +191,17 @@ export function CountryFocusPanel({
                   </div>
                 ))}
               </dl>
+              {trackedMandates.length > 0 && (
+                <div className="space-y-4">
+                  <h4 className="label-mono text-muted-foreground">
+                    Mandate tracker · {trackedMandates.length} obligation
+                    {trackedMandates.length === 1 ? "" : "s"}
+                  </h4>
+                  {trackedMandates.map((m) => (
+                    <MandateDetailCard key={m.id} mandate={m} />
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
