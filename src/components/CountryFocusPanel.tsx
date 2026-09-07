@@ -64,6 +64,7 @@ export function CountryFocusPanel({
   }, [updates, country, fuels, profile]);
 
   const status = profile ? policyStatusFor(profile) : null;
+  const trackedMandates = profile ? mandatesForCountry(profile.slug) : [];
 
   if (!profile) {
     return (
