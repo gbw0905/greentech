@@ -2,6 +2,7 @@ import { cloneElement, isValidElement, useMemo, useState } from "react";
 import type { ReactElement } from "react";
 import { Link } from "@tanstack/react-router";
 import { REFERENCE_NOTE, sourcesFor } from "@/lib/data-sources";
+import { certificationLabel } from "@/lib/certifications";
 import { datasetFor } from "@/lib/datasets/provenance";
 
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -359,6 +360,7 @@ export function ChartTable({
   news,
   onSelect,
   metaHeader = "Market",
+  complianceHeader = "Compliance & certification",
 }: {
   items: ChartItem[];
   measureLabel: string;
@@ -367,10 +369,11 @@ export function ChartTable({
   news?: Record<string, NewsTarget>;
   onSelect?: (t: NewsTarget) => void;
   metaHeader?: string;
+  complianceHeader?: string;
 }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[32rem] border-collapse text-left">
+      <table className="w-full min-w-[46rem] border-collapse text-left">
         <caption className="chart-axis pb-2 text-left">
           {measureLabel} — {unitLabel}
         </caption>
@@ -387,6 +390,9 @@ export function ChartTable({
             </th>
             <th scope="col" className="chart-axis py-1.5 text-right uppercase tracking-[0.1em]">
               {metaHeader}
+            </th>
+            <th scope="col" className="chart-axis py-1.5 pl-4 uppercase tracking-[0.1em]">
+              {complianceHeader}
             </th>
           </tr>
         </thead>
@@ -424,6 +430,9 @@ export function ChartTable({
                   }`}
                 >
                   {item.meta ?? "—"}
+                </td>
+                <td className="chart-sub max-w-56 py-1.5 pl-4 text-muted-foreground">
+                  <span className="line-clamp-2">{certificationLabel(item.label)}</span>
                 </td>
               </tr>
             );
