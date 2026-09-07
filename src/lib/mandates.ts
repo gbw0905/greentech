@@ -60,7 +60,7 @@ export const MANDATES: Mandate[] = [
   {
     id: "eu-red-iii",
     jurisdiction: "European Union",
-    countrySlug: null,
+    countrySlug: "european-union",
     instrument: "Renewable Energy Directive III (EU) 2023/2413",
     fuels: ["Multi-fuel"],
     status: "Phasing in",
@@ -94,7 +94,7 @@ export const MANDATES: Mandate[] = [
   {
     id: "eu-refuel-aviation",
     jurisdiction: "European Union",
-    countrySlug: null,
+    countrySlug: "european-union",
     instrument: "ReFuelEU Aviation Regulation (EU) 2023/2405",
     fuels: ["SAF"],
     status: "Phasing in",
@@ -126,7 +126,7 @@ export const MANDATES: Mandate[] = [
   {
     id: "eu-fueleu-maritime",
     jurisdiction: "European Union",
-    countrySlug: null,
+    countrySlug: "european-union",
     instrument: "FuelEU Maritime Regulation (EU) 2023/1805",
     fuels: ["Multi-fuel"],
     status: "Phasing in",
@@ -611,7 +611,7 @@ export const MANDATES: Mandate[] = [
   {
     id: "no-omsetningskrav",
     jurisdiction: "Norway",
-    countrySlug: "norway",
+    countrySlug: null,
     instrument: "Omsetningskrav — Product Regulations Chapter 3",
     fuels: ["Multi-fuel", "SAF"],
     status: "In force",
