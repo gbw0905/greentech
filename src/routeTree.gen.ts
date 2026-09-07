@@ -14,6 +14,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DataSourcesRouteImport } from './routes/data-sources'
+import { Route as GetAlertsRouteImport } from './routes/get-alerts'
 import { Route as JobsRouteImport } from './routes/jobs'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as ProfilesRouteImport } from './routes/profiles'
@@ -66,6 +67,11 @@ const ContactRoute = ContactRouteImport.update({
 const DataSourcesRoute = DataSourcesRouteImport.update({
   id: '/data-sources',
   path: '/data-sources',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GetAlertsRoute = GetAlertsRouteImport.update({
+  id: '/get-alerts',
+  path: '/get-alerts',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JobsRoute = JobsRouteImport.update({
@@ -227,6 +233,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/data-sources': typeof DataSourcesRoute
+  '/get-alerts': typeof GetAlertsRoute
   '/jobs': typeof JobsRoute
   '/mcp': typeof McpRoute
   '/profiles': typeof ProfilesRoute
@@ -261,6 +268,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/data-sources': typeof DataSourcesRoute
+  '/get-alerts': typeof GetAlertsRoute
   '/jobs': typeof JobsRoute
   '/mcp': typeof McpRoute
   '/profiles': typeof ProfilesRoute
@@ -297,6 +305,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/data-sources': typeof DataSourcesRoute
+  '/get-alerts': typeof GetAlertsRoute
   '/jobs': typeof JobsRoute
   '/mcp': typeof McpRoute
   '/profiles': typeof ProfilesRoute
@@ -334,6 +343,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/contact'
     | '/data-sources'
+    | '/get-alerts'
     | '/jobs'
     | '/mcp'
     | '/profiles'
@@ -368,6 +378,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/contact'
     | '/data-sources'
+    | '/get-alerts'
     | '/jobs'
     | '/mcp'
     | '/profiles'
@@ -403,6 +414,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/contact'
     | '/data-sources'
+    | '/get-alerts'
     | '/jobs'
     | '/mcp'
     | '/profiles'
@@ -439,6 +451,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ContactRoute: typeof ContactRoute
   DataSourcesRoute: typeof DataSourcesRoute
+  GetAlertsRoute: typeof GetAlertsRoute
   JobsRoute: typeof JobsRoute
   McpRoute: typeof McpRoute
   ProfilesRoute: typeof ProfilesRoute
@@ -501,6 +514,13 @@ declare module '@tanstack/react-router' {
       path: '/data-sources'
       fullPath: '/data-sources'
       preLoaderRoute: typeof DataSourcesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/get-alerts': {
+      id: '/get-alerts'
+      path: '/get-alerts'
+      fullPath: '/get-alerts'
+      preLoaderRoute: typeof GetAlertsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/jobs': {
@@ -722,6 +742,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ContactRoute: ContactRoute,
   DataSourcesRoute: DataSourcesRoute,
+  GetAlertsRoute: GetAlertsRoute,
   JobsRoute: JobsRoute,
   McpRoute: McpRoute,
   ProfilesRoute: ProfilesRoute,
