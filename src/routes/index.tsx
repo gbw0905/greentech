@@ -95,7 +95,11 @@ function SectionHeading({
 }) {
   return (
     <div
-      className="ink-bar ribbon-sheen mb-4 overflow-hidden border-l-4 px-4 py-3 sm:px-5"
+      className={`ink-bar ribbon-sheen mb-4 border-l-4 px-4 py-3 sm:px-5 ${
+        singleLine
+          ? "overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          : "overflow-hidden"
+      }`}
       style={{
         ["--tone" as string]: `color-mix(in oklab, ${tone} 62%, white)`,
         borderLeftColor: "var(--tone)",
@@ -115,9 +119,7 @@ function SectionHeading({
       </div>
       <p
         className={`mt-1 w-full max-w-3xl text-xs/relaxed text-ink-muted sm:text-sm/relaxed ${
-          singleLine
-            ? "whitespace-nowrap overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-            : ""
+          singleLine ? "whitespace-nowrap" : ""
         }`}
       >
         {subtitle}
