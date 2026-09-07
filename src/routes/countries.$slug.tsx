@@ -203,12 +203,12 @@ function CountryPage() {
           </h2>
           <ul className="mt-4 grid gap-2 sm:grid-cols-2">
             {govSites.map((s) => (
-              <li key={s.url}>
+              <li key={s.url} className="min-w-0">
                 <a
                   href={s.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="glass-panel lift flex items-center justify-between gap-3 p-3 text-sm text-foreground hover:text-primary"
+                  className="glass-panel lift flex w-full min-w-0 items-center justify-between gap-3 p-3 text-sm text-foreground hover:text-primary"
                 >
                   <span className="min-w-0 truncate">{s.label}</span>
                   <ExternalLink className="size-3.5 shrink-0" />
