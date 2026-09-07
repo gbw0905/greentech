@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { openEntityNews, type NewsTarget } from "@/lib/open-news";
 import { getEntityNewsFn } from "@/lib/videos.functions";
+import { CERTIFICATION_NOTE, certificationFor } from "@/lib/certifications";
 
 /** Live headline list for the entity, fetched from the news index on open. */
 function EntityNews({ target }: { target: NewsTarget }) {
@@ -175,7 +176,12 @@ export function useEntityDetail() {
       (t: NewsTarget) => {
         if (!t) return;
         const d = lookup(t);
-        if (d) setDetail(graph ? enrichDetail(d, graph) : d);
+        if (d)
+          setDetail(
+            graph
+              ? enrichDetail(d, graph)
+              : { ...d, sections: [...(d.sections ?? []), complianceSection(d.name)] },
+          );
         else openEntityNews(t);
       },
     sheet: <EntityDetailSheet detail={detail} onClose={close} />,
@@ -287,6 +293,8 @@ export function EntityDetailSheet({
             </dl>
           </div>
         ))}
+
+        <p className="mt-4 text-xs/relaxed text-muted-foreground">{CERTIFICATION_NOTE}</p>
 
         <EntityNews target={detail.news} />
 
