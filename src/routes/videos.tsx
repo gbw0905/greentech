@@ -9,7 +9,14 @@ import { useVisitTracker } from "@/hooks/useVisitTracker";
 
 const TITLE = "Video briefing room | Global Bioenergy Watch";
 const DESCRIPTION =
-  "Curated YouTube channels and official video hubs on biofuel policy, linked to the countries and fuel types they cover.";
+  "Watch our explainer and curated YouTube channels and official video hubs on biofuel policy, linked to the countries and fuel types they cover.";
+
+const EXPLAINER = {
+  url: "https://globalbioenergywatch.org/videos/explainer.mp4",
+  poster: "https://globalbioenergywatch.org/videos/explainer-poster.jpg",
+  uploadDate: "2026-09-03",
+  duration: "PT23S",
+};
 
 export const Route = createFileRoute("/videos")({
   head: () => ({
@@ -23,6 +30,23 @@ export const Route = createFileRoute("/videos")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: "https://globalbioenergywatch.org/videos" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "VideoObject",
+          name: "Global Bioenergy Watch — explainer",
+          description:
+            "A 23-second explainer: how Global Bioenergy Watch tracks worldwide biofuel policy, markets, supply datasets and jobs in one live dashboard.",
+          thumbnailUrl: EXPLAINER.poster,
+          uploadDate: EXPLAINER.uploadDate,
+          duration: EXPLAINER.duration,
+          contentUrl: EXPLAINER.url,
+          embedUrl: "https://globalbioenergywatch.org/videos",
+        }),
+      },
+    ],
   }),
   component: VideosPage,
 });
