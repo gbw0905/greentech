@@ -244,21 +244,60 @@ export function ChartMap({
   const focusFeature = focus ? featureFor(focus) : undefined;
 
   const { path, projection } = useMemo(() => {
-    if (focusFeature) {
-      const proj = geoMercator().fitExtent(
-        [
-          [28, 28],
-          [WIDTH - 28, HEIGHT - 28],
-        ],
-        focusFeature as never,
-      );
-      return { path: geoPath(proj), projection: proj };
+    if (focus) {
+      const box = FOCUS_BBOX[MAP_ALIAS[focus] ?? focus] ?? FOCUS_BBOX[focus];
+      const fitTarget = box
+        ? ({
+            type: "Polygon",
+            coordinates: [
+              [
+                [box[0], box[1]],
+                [box[2], box[1]],
+                [box[2], box[3]],
+                [box[0], box[3]],
+                [box[0], box[1]],
+              ],
+            ],
+          } as const)
+        : focusFeature;
+      if (fitTarget) {
+        const proj = geoMercator().fitExtent(
+          [
+            [28, 28],
+            [WIDTH - 28, HEIGHT - 28],
+          ],
+          fitTarget as never,
+        );
+        return { path: geoPath(proj), projection: proj };
+      }
     }
     const proj = geoNaturalEarth1().fitSize([WIDTH, HEIGHT], { type: "Sphere" });
     return { path: geoPath(proj), projection: proj };
-  }, [focusFeature]);
+  }, [focus, focusFeature]);
 
   const max = Math.max(...points.map((p) => p.value), 0) || 1;
+
+  /** Projected pixel anchor for a dataset country, preferring curated coordinates. */
+  const anchorFor = (country: string): [number, number, number] | null => {
+    const ll = COUNTRY_LATLON[country] ?? COUNTRY_LATLON[MAP_ALIAS[country] ?? country];
+    const f = featureFor(country);
+    let xy: [number, number] | null = null;
+    if (ll) {
+      const q = projection(ll);
+      if (q && Number.isFinite(q[0]) && Number.isFinite(q[1])) xy = [q[0], q[1]];
+    }
+    if (!xy && f) {
+      const c = path.centroid(f as never);
+      if (Number.isFinite(c[0]) && Number.isFinite(c[1])) xy = [c[0], c[1]];
+    }
+    if (!xy) return null;
+    let width = 40;
+    if (f) {
+      const b = path.bounds(f as never);
+      if (Number.isFinite(b[0][0])) width = b[1][0] - b[0][0];
+    }
+    return [xy[0], xy[1], width];
+  };
 
   const placed = useMemo(() => {
     const perCountry = new Map<string, MapPoint[]>();
@@ -269,15 +308,10 @@ export function ChartMap({
     }
     const out: { p: MapPoint; x: number; y: number; r: number }[] = [];
     for (const [country, list] of perCountry) {
-      const f = featureFor(country);
-      if (!f) continue;
-      const c = path.centroid(f as never);
-      if (!Number.isFinite(c[0]) || !Number.isFinite(c[1])) continue;
-      const bounds = path.bounds(f as never);
-      const spread = Math.min(
-        Math.max((bounds[1][0] - bounds[0][0]) * 0.28, 14),
-        focus ? 150 : 34,
-      );
+      const anchor = anchorFor(country);
+      if (!anchor) continue;
+      const c: [number, number] = [anchor[0], anchor[1]];
+      const spread = Math.min(Math.max(anchor[2] * 0.22, 12), focus ? 140 : 30);
       list.forEach((p, i) => {
         if (list.length === 1) {
           out.push({ p, x: c[0], y: c[1], r: 6 + 12 * Math.sqrt(p.value / max) });
