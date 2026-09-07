@@ -84,16 +84,22 @@ function SectionHeading({
   subtitle,
   tone,
   kicker,
+  singleLine,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   title: string;
   subtitle: string;
   tone: string;
   kicker: string;
+  singleLine?: boolean;
 }) {
   return (
     <div
-      className="ink-bar ribbon-sheen mb-4 border-l-4 px-4 py-3 sm:px-5"
+      className={`ink-bar ribbon-sheen mb-4 border-l-4 px-4 py-3 sm:px-5 ${
+        singleLine
+          ? "overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          : "overflow-hidden"
+      }`}
       style={{
         ["--tone" as string]: `color-mix(in oklab, ${tone} 62%, white)`,
         borderLeftColor: "var(--tone)",
@@ -111,7 +117,11 @@ function SectionHeading({
           {title}
         </h2>
       </div>
-      <p className="mt-1 w-full max-w-3xl text-xs/relaxed text-ink-muted sm:text-sm/relaxed">
+      <p
+        className={`mt-1 w-full text-xs/relaxed text-ink-muted sm:text-sm/relaxed ${
+          singleLine ? "whitespace-nowrap" : "max-w-3xl"
+        }`}
+      >
         {subtitle}
       </p>
     </div>
@@ -303,6 +313,7 @@ function Dashboard() {
               icon={Map}
               title="Policy activity by jurisdiction"
               subtitle="Government mandates and market moves side by side — including jurisdictions still developing their frameworks. Click any country to open its full profile."
+              singleLine
             />
             <div className="glass-panel flex w-full min-w-0 flex-col">
               <div className="panel-head">
