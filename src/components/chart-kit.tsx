@@ -2,6 +2,7 @@ import { cloneElement, isValidElement, useMemo, useState } from "react";
 import type { ReactElement } from "react";
 import { Link } from "@tanstack/react-router";
 import { REFERENCE_NOTE, sourcesFor } from "@/lib/data-sources";
+import { certificationLabel } from "@/lib/certifications";
 import { datasetFor } from "@/lib/datasets/provenance";
 
 import { useIsMobile } from "@/hooks/use-mobile";
