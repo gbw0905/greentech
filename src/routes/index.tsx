@@ -405,7 +405,7 @@ function Dashboard() {
         </main>
 
         <footer className="space-y-3 border-t border-border pt-6 pb-10">
-          <p className="text-sm font-semibold text-foreground">
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold text-foreground">
             <a
               href="https://www.linkedin.com/company/global-bioenergy-watch/?viewAsMember=true"
               target="_blank"
@@ -415,6 +415,13 @@ function Dashboard() {
               <Linkedin className="size-4 fill-current" />
               Contact us
             </a>
+            <span className="text-muted-foreground">·</span>
+            <Link
+              to="/terms"
+              className="underline underline-offset-4 hover:text-primary"
+            >
+              Terms of Use
+            </Link>
           </p>
         </footer>
       </div>
