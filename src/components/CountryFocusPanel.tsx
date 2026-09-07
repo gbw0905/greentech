@@ -188,6 +188,17 @@ export function CountryFocusPanel({
                   </div>
                 ))}
               </dl>
+              {trackedMandates.length > 0 && (
+                <div className="space-y-4">
+                  <h4 className="label-mono text-muted-foreground">
+                    Mandate tracker · {trackedMandates.length} obligation
+                    {trackedMandates.length === 1 ? "" : "s"}
+                  </h4>
+                  {trackedMandates.map((m) => (
+                    <MandateDetailCard key={m.id} mandate={m} />
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
