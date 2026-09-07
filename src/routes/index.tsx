@@ -118,8 +118,8 @@ function SectionHeading({
         </h2>
       </div>
       <p
-        className={`mt-1 w-full max-w-3xl text-xs/relaxed text-ink-muted sm:text-sm/relaxed ${
-          singleLine ? "whitespace-nowrap" : ""
+        className={`mt-1 w-full text-xs/relaxed text-ink-muted sm:text-sm/relaxed ${
+          singleLine ? "whitespace-nowrap" : "max-w-3xl"
         }`}
       >
         {subtitle}
