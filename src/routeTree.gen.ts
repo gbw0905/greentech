@@ -16,6 +16,7 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DataSourcesRouteImport } from './routes/data-sources'
 import { Route as GetAlertsRouteImport } from './routes/get-alerts'
 import { Route as JobsRouteImport } from './routes/jobs'
+import { Route as MandatesRouteImport } from './routes/mandates'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as ProfilesRouteImport } from './routes/profiles'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -78,6 +79,11 @@ const GetAlertsRoute = GetAlertsRouteImport.update({
 const JobsRoute = JobsRouteImport.update({
   id: '/jobs',
   path: '/jobs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MandatesRoute = MandatesRouteImport.update({
+  id: '/mandates',
+  path: '/mandates',
   getParentRoute: () => rootRouteImport,
 } as any)
 const McpRoute = McpRouteImport.update({
@@ -241,6 +247,7 @@ export interface FileRoutesByFullPath {
   '/data-sources': typeof DataSourcesRoute
   '/get-alerts': typeof GetAlertsRoute
   '/jobs': typeof JobsRoute
+  '/mandates': typeof MandatesRoute
   '/mcp': typeof McpRoute
   '/profiles': typeof ProfilesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -277,6 +284,7 @@ export interface FileRoutesByTo {
   '/data-sources': typeof DataSourcesRoute
   '/get-alerts': typeof GetAlertsRoute
   '/jobs': typeof JobsRoute
+  '/mandates': typeof MandatesRoute
   '/mcp': typeof McpRoute
   '/profiles': typeof ProfilesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -315,6 +323,7 @@ export interface FileRoutesById {
   '/data-sources': typeof DataSourcesRoute
   '/get-alerts': typeof GetAlertsRoute
   '/jobs': typeof JobsRoute
+  '/mandates': typeof MandatesRoute
   '/mcp': typeof McpRoute
   '/profiles': typeof ProfilesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -354,6 +363,7 @@ export interface FileRouteTypes {
     | '/data-sources'
     | '/get-alerts'
     | '/jobs'
+    | '/mandates'
     | '/mcp'
     | '/profiles'
     | '/sitemap.xml'
@@ -390,6 +400,7 @@ export interface FileRouteTypes {
     | '/data-sources'
     | '/get-alerts'
     | '/jobs'
+    | '/mandates'
     | '/mcp'
     | '/profiles'
     | '/sitemap.xml'
@@ -427,6 +438,7 @@ export interface FileRouteTypes {
     | '/data-sources'
     | '/get-alerts'
     | '/jobs'
+    | '/mandates'
     | '/mcp'
     | '/profiles'
     | '/sitemap.xml'
@@ -465,6 +477,7 @@ export interface RootRouteChildren {
   DataSourcesRoute: typeof DataSourcesRoute
   GetAlertsRoute: typeof GetAlertsRoute
   JobsRoute: typeof JobsRoute
+  MandatesRoute: typeof MandatesRoute
   McpRoute: typeof McpRoute
   ProfilesRoute: typeof ProfilesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -541,6 +554,13 @@ declare module '@tanstack/react-router' {
       path: '/jobs'
       fullPath: '/jobs'
       preLoaderRoute: typeof JobsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mandates': {
+      id: '/mandates'
+      path: '/mandates'
+      fullPath: '/mandates'
+      preLoaderRoute: typeof MandatesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mcp': {
@@ -764,6 +784,7 @@ const rootRouteChildren: RootRouteChildren = {
   DataSourcesRoute: DataSourcesRoute,
   GetAlertsRoute: GetAlertsRoute,
   JobsRoute: JobsRoute,
+  MandatesRoute: MandatesRoute,
   McpRoute: McpRoute,
   ProfilesRoute: ProfilesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,

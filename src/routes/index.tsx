@@ -221,6 +221,12 @@ function Dashboard() {
             </a>
           ))}
           <Link
+            to="/mandates"
+            className="label-mono pill-motion group inline-flex min-w-max items-center justify-center gap-2 text-center whitespace-nowrap border border-menubar-fg/40 bg-menubar-nav px-3 py-1.5 text-xs font-extrabold text-menubar-fg shadow-sm hover:border-menubar-fg hover:bg-menubar-fg/10 sm:flex-1 sm:px-4 sm:py-2"
+          >
+            Mandates
+          </Link>
+          <Link
             to="/videos"
             className="label-mono pill-motion group inline-flex min-w-max items-center justify-center gap-2 text-center whitespace-nowrap border border-menubar-fg/40 bg-menubar-nav px-3 py-1.5 text-xs font-extrabold text-menubar-fg shadow-sm hover:border-menubar-fg hover:bg-menubar-fg/10 sm:flex-1 sm:px-4 sm:py-2"
           >
@@ -432,6 +438,13 @@ function Dashboard() {
               className="underline underline-offset-4 hover:text-primary"
             >
               Terms of Use
+            </Link>
+            <span className="text-muted-foreground">·</span>
+            <Link
+              to="/mandates"
+              className="underline underline-offset-4 hover:text-primary"
+            >
+              Mandate tracker
             </Link>
           </p>
         </footer>
