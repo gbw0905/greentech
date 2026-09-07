@@ -92,10 +92,31 @@ export type GraphContext = {
   format: (n: number) => string;
 };
 
+/** Adds the published certification / compliance block for the entity. */
+function complianceSection(name: string): { title: string; stats: Stat[] } {
+  const rec = certificationFor(name);
+  if (!rec) {
+    return {
+      title: "Environmental compliance & certification",
+      stats: [
+        { label: "Certification", value: "No published certification found" },
+        { label: "How to check", value: "ISCC, RSB, Bonsucro or SBP public registers" },
+      ],
+    };
+  }
+  const stats: Stat[] = [];
+  if (rec.schemes.length) stats.push({ label: "Certification schemes", value: rec.schemes.join(", ") });
+  if (rec.regulatory?.length) stats.push({ label: "Regulatory programmes", value: rec.regulatory.join(", ") });
+  if (rec.source) stats.push({ label: "Source", value: rec.source });
+  return { title: "Environmental compliance & certification", stats };
+}
+
 /** Derives rank, share, range and percentile for the clicked entity. */
 function enrichDetail(d: EntityDetail, g: GraphContext): EntityDetail {
   const idx = g.items.findIndex((i) => i.name === d.name);
   const sections: { title: string; stats: Stat[] }[] = [...(d.sections ?? [])];
+  sections.push(complianceSection(d.name));
+
   if (idx >= 0) {
     const v = g.items[idx]!.value;
     const values = g.items.map((i) => i.value);
