@@ -156,7 +156,11 @@ function CountryPage() {
       </header>
 
       <section className="mt-8">
-        <h2 className="label-mono text-muted-foreground">Mandates &amp; targets</h2>
+        <h2 className="label-mono text-muted-foreground">
+          Mandates &amp; targets
+          {trackedMandates.length > 0 &&
+            ` · ${trackedMandates.length} tracked obligation${trackedMandates.length === 1 ? "" : "s"}`}
+        </h2>
         <dl className="mt-4 grid gap-3 sm:grid-cols-2">
           {country.mandates.map((m) => (
             <div key={m.label} className="glass-panel lift p-4">
@@ -165,25 +169,14 @@ function CountryPage() {
             </div>
           ))}
         </dl>
-      </section>
-
-      {trackedMandates.length > 0 && (
-        <section className="mt-10">
-          <h2 className="label-mono text-muted-foreground">
-            Mandate tracker · {trackedMandates.length} obligation
-            {trackedMandates.length === 1 ? "" : "s"}
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Timeline, legal requirements and compliance status for each active obligation in this
-            jurisdiction, taken from the primary legal instrument.
-          </p>
-          <div className="mt-4 space-y-5">
+        {trackedMandates.length > 0 && (
+          <div className="mt-5 space-y-5">
             {trackedMandates.map((m) => (
               <MandateDetailCard key={m.id} mandate={m} />
             ))}
           </div>
-        </section>
-      )}
+        )}
+      </section>
 
 
       <section className="mt-10">
