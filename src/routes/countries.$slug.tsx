@@ -11,6 +11,8 @@ import {
   POLICY_STATUS_COLOR,
 } from "@/lib/policy-taxonomy";
 import { UpdateCard } from "@/components/UpdateCard";
+import { MandateDetailCard } from "@/components/MandateDetailCard";
+import { mandatesForCountry } from "@/lib/mandates";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
 
 
