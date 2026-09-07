@@ -319,11 +319,6 @@ const CERTS: Record<string, CertificationRecord> = {
     regulatory: ["US RFS (EPA)", "LCFS (CARB)"],
     source: "bp/Archaea Energy disclosures; EPA RFS registration",
   },
-  Nature: {
-    schemes: [],
-    regulatory: [],
-    source: "",
-  },
   "Nature Energy": {
     schemes: ["ISCC EU"],
     regulatory: ["EU RED III"],
