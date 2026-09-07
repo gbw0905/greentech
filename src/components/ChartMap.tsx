@@ -180,6 +180,28 @@ const COUNTRY_LATLON: Record<string, [number, number]> = {
   Fiji: [178, -17.8],
 };
 
+/**
+ * Zoom windows [west, south, east, north] for countries whose map shape
+ * includes far-away territories, so zooming shows the mainland, not an ocean.
+ */
+const FOCUS_BBOX: Record<string, [number, number, number, number]> = {
+  "United States of America": [-125, 24, -66, 50],
+  France: [-5.2, 41, 9.7, 51.3],
+  Netherlands: [3.2, 50.6, 7.4, 53.7],
+  Norway: [4, 57.8, 31.5, 71.3],
+  Portugal: [-9.7, 36.8, -6, 42.3],
+  Spain: [-9.5, 35.8, 3.5, 44],
+  Denmark: [7.9, 54.4, 13.2, 57.9],
+  Ecuador: [-81.2, -5.2, -74.9, 1.6],
+  "New Zealand": [166, -47.5, 179, -34],
+  Russia: [20, 41, 180, 78],
+  Australia: [112, -44, 154, -10],
+  Chile: [-76, -56, -66, -17],
+  Singapore: [103.6, 1.15, 104.05, 1.5],
+  Gibraltar: [-5.42, 36.06, -5.28, 36.2],
+  "Hong Kong": [113.8, 22.1, 114.5, 22.6],
+};
+
 /** Deterministic pseudo-random in [0,1) from a string, so markers never jump. */
 function hash01(s: string) {
   let h = 2166136261;
