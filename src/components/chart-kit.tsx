@@ -212,10 +212,11 @@ export const PANEL_VIEWS = [
   { value: "scatter", label: "Scatter plot" },
   { value: "bars", label: "Ranked bars" },
   { value: "line", label: "Trend line (2000–2026)" },
+  { value: "map", label: "Location map" },
   { value: "table", label: "Data table" },
 ];
 
-export type PanelView = "heat" | "scatter" | "bars" | "line" | "table";
+export type PanelView = "heat" | "scatter" | "bars" | "line" | "map" | "table";
 
 /** Vivid, clearly separated RGB palette so trend lines never blend together. */
 const LINE_COLORS = [
