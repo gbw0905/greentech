@@ -92,11 +92,18 @@ function Dropdown({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
     };
+    // The menu is fixed-positioned; close it when the page scrolls or the
+    // window resizes so it never floats detached from its trigger.
+    const close = () => setOpen(false);
     document.addEventListener("pointerdown", onPointerDown);
     document.addEventListener("keydown", onKey);
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
     return () => {
       document.removeEventListener("pointerdown", onPointerDown);
       document.removeEventListener("keydown", onKey);
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", close);
     };
   }, [open]);
 
@@ -134,7 +141,10 @@ function Dropdown({
                   type="button"
                   role="option"
                   aria-selected={isSelected}
-                  onClick={() => onSelect(opt.value)}
+                  onClick={() => {
+                    onSelect(opt.value);
+                    if (!multi) setOpen(false);
+                  }}
                   className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-surface-2"
                 >
                   <span className="truncate">{opt.label}</span>
