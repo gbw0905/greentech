@@ -23,26 +23,183 @@ interface GeoFeature {
 const WIDTH = 900;
 const HEIGHT = 460;
 
-/** Dataset country names that differ from the Natural Earth map names. */
+/** Dataset country names that differ from the Natural Earth 110m map names. */
 const MAP_ALIAS: Record<string, string> = {
   "United States": "United States of America",
+  "United States of America": "United States of America",
   USA: "United States of America",
+  US: "United States of America",
   UK: "United Kingdom",
-  Czechia: "Czech Republic",
+  "Great Britain": "United Kingdom",
+  "Czech Republic": "Czechia",
   "Ivory Coast": "Côte d'Ivoire",
   "Republic of Korea": "South Korea",
   Korea: "South Korea",
-  "South Korea": "South Korea",
   "Hong Kong": "China",
-  Taiwan: "Taiwan",
-  Serbia: "Republic of Serbia",
-  Tanzania: "United Republic of Tanzania",
-  Bosnia: "Bosnia and Herzegovina",
+  Macau: "China",
+  Türkiye: "Turkey",
+  Turkiye: "Turkey",
+  Bosnia: "Bosnia and Herz.",
+  "Bosnia and Herzegovina": "Bosnia and Herz.",
   Eswatini: "eSwatini",
+  Swaziland: "eSwatini",
   "North Macedonia": "Macedonia",
-  Myanmar: "Myanmar",
+  "Democratic Republic of the Congo": "Dem. Rep. Congo",
+  "DR Congo": "Dem. Rep. Congo",
+  "Dominican Republic": "Dominican Rep.",
+  "South Sudan": "S. Sudan",
+  "Central African Republic": "Central African Rep.",
+  "Equatorial Guinea": "Eq. Guinea",
+  "Timor Leste": "Timor-Leste",
   UAE: "United Arab Emirates",
-  Singapore: "Singapore",
+  "Western Sahara": "W. Sahara",
+  Burma: "Myanmar",
+  Laos: "Laos",
+  Russia: "Russia",
+  "Russian Federation": "Russia",
+};
+
+/**
+ * Representative land coordinates [lon, lat] for placing markers. Polygon
+ * centroids are unreliable for countries with distant overseas territories
+ * (France, Norway, the United States, the Netherlands) and for micro-states
+ * that the 110m basemap omits entirely (Singapore, Gibraltar, Malta).
+ */
+const COUNTRY_LATLON: Record<string, [number, number]> = {
+  "United States": [-98.5, 39.5],
+  Canada: [-106, 56],
+  Mexico: [-102, 23.5],
+  Brazil: [-51, -11],
+  Argentina: [-64, -35],
+  Chile: [-71, -35],
+  Colombia: [-74, 4.5],
+  Peru: [-75.5, -9.5],
+  Ecuador: [-78.5, -1.5],
+  Bolivia: [-64.5, -16.5],
+  Paraguay: [-58, -23.4],
+  Uruguay: [-56, -32.8],
+  "United Kingdom": [-1.8, 53],
+  Ireland: [-8, 53.2],
+  France: [2.4, 46.6],
+  Germany: [10.4, 51.2],
+  Netherlands: [5.5, 52.2],
+  Belgium: [4.6, 50.6],
+  Luxembourg: [6.1, 49.8],
+  Spain: [-3.7, 40.3],
+  Portugal: [-8.2, 39.6],
+  Italy: [12.5, 42.8],
+  Switzerland: [8.2, 46.8],
+  Austria: [14.1, 47.6],
+  Poland: [19.4, 52],
+  Czechia: [15.4, 49.8],
+  Slovakia: [19.5, 48.7],
+  Hungary: [19.4, 47.1],
+  Romania: [25, 45.9],
+  Bulgaria: [25.3, 42.7],
+  Greece: [22.5, 39.2],
+  Denmark: [9.5, 56],
+  Norway: [9.5, 61.3],
+  Sweden: [15.5, 62],
+  Finland: [26, 63.5],
+  Estonia: [25.5, 58.7],
+  Latvia: [24.8, 56.9],
+  Lithuania: [23.9, 55.3],
+  Ukraine: [31.5, 49],
+  Russia: [55, 57],
+  Turkey: [35.3, 39],
+  Türkiye: [35.3, 39],
+  Serbia: [20.8, 44],
+  Croatia: [16.4, 45.2],
+  Slovenia: [14.8, 46.1],
+  Iceland: [-18.5, 64.9],
+  Gibraltar: [-5.35, 36.14],
+  Malta: [14.4, 35.9],
+  Cyprus: [33.2, 35],
+  China: [104, 35],
+  "Hong Kong": [114.17, 22.32],
+  Taiwan: [121, 23.7],
+  Japan: [138, 36.5],
+  "South Korea": [127.8, 36.5],
+  India: [79, 22],
+  Pakistan: [69.5, 30],
+  Bangladesh: [90.3, 23.8],
+  "Sri Lanka": [80.7, 7.6],
+  Nepal: [84.2, 28.3],
+  Thailand: [101, 15.3],
+  Vietnam: [106.5, 16],
+  Malaysia: [102.3, 3.9],
+  Singapore: [103.82, 1.35],
+  Indonesia: [113, -2.5],
+  Philippines: [122, 12],
+  Cambodia: [105, 12.6],
+  Laos: [103.8, 18.5],
+  Myanmar: [96.5, 20.5],
+  Kazakhstan: [67, 48],
+  Uzbekistan: [64, 41.5],
+  Mongolia: [104, 46.8],
+  "Saudi Arabia": [45, 24],
+  "United Arab Emirates": [54.3, 24.2],
+  UAE: [54.3, 24.2],
+  Qatar: [51.2, 25.3],
+  Kuwait: [47.7, 29.3],
+  Oman: [56.5, 21.5],
+  Bahrain: [50.6, 26.1],
+  Israel: [35, 31.4],
+  Jordan: [36.5, 31.3],
+  Iraq: [43.7, 33.2],
+  Iran: [53.5, 32.5],
+  Egypt: [30.5, 27],
+  Morocco: [-6.5, 32],
+  Algeria: [2.8, 28.2],
+  Tunisia: [9.6, 34.5],
+  Libya: [17.5, 27],
+  Sudan: [30.2, 15.5],
+  Ethiopia: [39.5, 9.2],
+  Kenya: [37.8, 0.3],
+  Uganda: [32.4, 1.3],
+  Tanzania: [34.9, -6.4],
+  Rwanda: [29.9, -1.95],
+  Nigeria: [8.3, 9.4],
+  Ghana: [-1.2, 7.9],
+  "Ivory Coast": [-5.5, 7.6],
+  "Côte d'Ivoire": [-5.5, 7.6],
+  Senegal: [-14.5, 14.5],
+  Cameroon: [12.5, 5.7],
+  "Sierra Leone": [-11.8, 8.5],
+  Malawi: [34, -13.3],
+  Mozambique: [35.5, -17.5],
+  Zambia: [27.8, -13.5],
+  Zimbabwe: [29.9, -19],
+  "South Africa": [24.7, -29],
+  Angola: [17.9, -12.3],
+  Namibia: [17.2, -22],
+  Botswana: [24.7, -22.3],
+  Australia: [134, -25.5],
+  "New Zealand": [172.5, -41.5],
+  "Papua New Guinea": [144.5, -6.3],
+  Fiji: [178, -17.8],
+};
+
+/**
+ * Zoom windows [west, south, east, north] for countries whose map shape
+ * includes far-away territories, so zooming shows the mainland, not an ocean.
+ */
+const FOCUS_BBOX: Record<string, [number, number, number, number]> = {
+  "United States of America": [-125, 24, -66, 50],
+  France: [-5.2, 41, 9.7, 51.3],
+  Netherlands: [3.2, 50.6, 7.4, 53.7],
+  Norway: [4, 57.8, 31.5, 71.3],
+  Portugal: [-9.7, 36.8, -6, 42.3],
+  Spain: [-9.5, 35.8, 3.5, 44],
+  Denmark: [7.9, 54.4, 13.2, 57.9],
+  Ecuador: [-81.2, -5.2, -74.9, 1.6],
+  "New Zealand": [166, -47.5, 179, -34],
+  Russia: [20, 41, 180, 78],
+  Australia: [112, -44, 154, -10],
+  Chile: [-76, -56, -66, -17],
+  Singapore: [103.6, 1.15, 104.05, 1.5],
+  Gibraltar: [-5.42, 36.06, -5.28, 36.2],
+  "Hong Kong": [113.8, 22.1, 114.5, 22.6],
 };
 
 /** Deterministic pseudo-random in [0,1) from a string, so markers never jump. */
@@ -109,21 +266,60 @@ export function ChartMap({
   const focusFeature = focus ? featureFor(focus) : undefined;
 
   const { path, projection } = useMemo(() => {
-    if (focusFeature) {
-      const proj = geoMercator().fitExtent(
-        [
-          [28, 28],
-          [WIDTH - 28, HEIGHT - 28],
-        ],
-        focusFeature as never,
-      );
-      return { path: geoPath(proj), projection: proj };
+    if (focus) {
+      const box = FOCUS_BBOX[MAP_ALIAS[focus] ?? focus] ?? FOCUS_BBOX[focus];
+      const fitTarget = box
+        ? ({
+            type: "Polygon",
+            coordinates: [
+              [
+                [box[0], box[3]],
+                [box[2], box[3]],
+                [box[2], box[1]],
+                [box[0], box[1]],
+                [box[0], box[3]],
+              ],
+            ],
+          } as const)
+        : focusFeature;
+      if (fitTarget) {
+        const proj = geoMercator().fitExtent(
+          [
+            [28, 28],
+            [WIDTH - 28, HEIGHT - 28],
+          ],
+          fitTarget as never,
+        );
+        return { path: geoPath(proj), projection: proj };
+      }
     }
     const proj = geoNaturalEarth1().fitSize([WIDTH, HEIGHT], { type: "Sphere" });
     return { path: geoPath(proj), projection: proj };
-  }, [focusFeature]);
+  }, [focus, focusFeature]);
 
   const max = Math.max(...points.map((p) => p.value), 0) || 1;
+
+  /** Projected pixel anchor for a dataset country, preferring curated coordinates. */
+  const anchorFor = (country: string): [number, number, number] | null => {
+    const ll = COUNTRY_LATLON[country] ?? COUNTRY_LATLON[MAP_ALIAS[country] ?? country];
+    const f = featureFor(country);
+    let xy: [number, number] | null = null;
+    if (ll) {
+      const q = projection(ll);
+      if (q && Number.isFinite(q[0]) && Number.isFinite(q[1])) xy = [q[0], q[1]];
+    }
+    if (!xy && f) {
+      const c = path.centroid(f as never);
+      if (Number.isFinite(c[0]) && Number.isFinite(c[1])) xy = [c[0], c[1]];
+    }
+    if (!xy) return null;
+    let width = 40;
+    if (f) {
+      const b = path.bounds(f as never);
+      if (Number.isFinite(b[0][0])) width = b[1][0] - b[0][0];
+    }
+    return [xy[0], xy[1], width];
+  };
 
   const placed = useMemo(() => {
     const perCountry = new Map<string, MapPoint[]>();
@@ -134,15 +330,10 @@ export function ChartMap({
     }
     const out: { p: MapPoint; x: number; y: number; r: number }[] = [];
     for (const [country, list] of perCountry) {
-      const f = featureFor(country);
-      if (!f) continue;
-      const c = path.centroid(f as never);
-      if (!Number.isFinite(c[0]) || !Number.isFinite(c[1])) continue;
-      const bounds = path.bounds(f as never);
-      const spread = Math.min(
-        Math.max((bounds[1][0] - bounds[0][0]) * 0.28, 14),
-        focus ? 150 : 34,
-      );
+      const anchor = anchorFor(country);
+      if (!anchor) continue;
+      const c: [number, number] = [anchor[0], anchor[1]];
+      const spread = Math.min(Math.max(anchor[2] * 0.22, 12), focus ? 140 : 30);
       list.forEach((p, i) => {
         if (list.length === 1) {
           out.push({ p, x: c[0], y: c[1], r: 6 + 12 * Math.sqrt(p.value / max) });
