@@ -53,6 +53,10 @@ export interface Mandate {
   timeline: MandateMilestone[];
   sourceName: string;
   sourceUrl: string;
+  /** Extra official government / administrator websites for this obligation. */
+  officialSites?: { label: string; url: string }[];
+  /** Terms used to attach live news items to this obligation. */
+  keywords?: string[];
   lastReviewed: string;
 }
 
@@ -867,7 +871,349 @@ export const MANDATES: Mandate[] = [
     sourceUrl: "https://www.imo.org/en/OurWork/Environment/Pages/Cutting-GHG-emissions.aspx",
     lastReviewed: "2026-09",
   },
+  {
+    id: "kr-rfs",
+    jurisdiction: "South Korea",
+    countrySlug: "south-korea",
+    instrument: "Renewable Fuel Standard under the Petroleum and Alternative Fuel Business Act",
+    fuels: ["Biodiesel"],
+    status: "Phasing in",
+    currentObligation:
+      "Refiners and importers must blend biodiesel into automotive diesel under a stepped national Renewable Fuel Standard, rising toward 5%.",
+    requirements: [
+      "Obligation falls on refiners and importers placing automotive diesel on the domestic market.",
+      "Blending share is set by presidential decree and steps up every two to three years.",
+      "Feedstock and GHG criteria applied through the administering agency's verification rules.",
+    ],
+    compliance: {
+      administrator: "Ministry of Trade, Industry and Energy with the Korea Energy Agency",
+      mechanism: "Annual reporting of diesel volumes and blended biodiesel to the Korea Energy Agency.",
+      penalty: "Corrective orders and administrative fines under the Petroleum and Alternative Fuel Business Act.",
+      unit: null,
+    },
+    timeline: [
+      { period: "2015", target: "RFS starts at a 2.5% biodiesel blending obligation.", reached: true },
+      { period: "2021", target: "Obligation raised to 3.5%.", reached: true },
+      { period: "2024", target: "Obligation raised to 4.0%.", reached: true },
+      { period: "2030", target: "Step-up path toward 5% under the announced schedule.", reached: false },
+    ],
+    sourceName: "Ministry of Trade, Industry and Energy (MOTIE)",
+    sourceUrl: "https://english.motie.go.kr/",
+    officialSites: [
+      { label: "Korea Energy Agency", url: "https://www.energy.or.kr/eng/" },
+      { label: "Korea Law Information Center", url: "https://www.law.go.kr/LSW/eng/engMain.do" },
+    ],
+    keywords: ["renewable fuel standard", "rfs", "biodiesel blending", "motie", "korea energy agency"],
+    lastReviewed: "2026-09",
+  },
+  {
+    id: "kr-saf",
+    jurisdiction: "South Korea",
+    countrySlug: "south-korea",
+    instrument: "SAF blending programme for international departures",
+    fuels: ["SAF"],
+    status: "Adopted — not yet applicable",
+    currentObligation:
+      "Korea plans a 1% sustainable aviation fuel blend for international flights departing Korean airports from 2027.",
+    requirements: [
+      "Applies to jet fuel uplifted for international departures.",
+      "Domestic co-processed SAF approved for commercial supply ahead of the mandate.",
+      "Implementation detail set jointly by the transport and energy ministries.",
+    ],
+    compliance: {
+      administrator: "Ministry of Land, Infrastructure and Transport with MOTIE",
+      mechanism: "Supplier and airline reporting of SAF uplift at Korean international airports.",
+      penalty: "To be defined in the implementing rules.",
+      unit: null,
+    },
+    timeline: [
+      { period: "2024", target: "SAF expansion strategy announced with a 1% 2027 target.", reached: true },
+      { period: "2026", target: "Implementing rules and supply arrangements being prepared.", reached: true },
+      { period: "2027", target: "1% SAF blend for international departures.", reached: false },
+    ],
+    sourceName: "Ministry of Land, Infrastructure and Transport",
+    sourceUrl: "https://www.molit.go.kr/english/intro.do",
+    officialSites: [{ label: "MOTIE", url: "https://english.motie.go.kr/" }],
+    keywords: ["saf", "sustainable aviation fuel", "molit", "korean air"],
+    lastReviewed: "2026-09",
+  },
+  {
+    id: "my-biodiesel",
+    jurisdiction: "Malaysia",
+    countrySlug: "malaysia",
+    instrument: "National biodiesel blending programme (B10 / B20)",
+    fuels: ["Biodiesel"],
+    status: "Phasing in",
+    currentObligation:
+      "B10 palm biodiesel is required for the transport sector and B20 applies in designated states, with a B30 programme under preparation.",
+    requirements: [
+      "Petroleum companies must blend palm methyl ester into diesel sold for road transport.",
+      "B20 rollout applied state by state as storage and blending facilities are upgraded.",
+      "B7 applies to the industrial sector.",
+    ],
+    compliance: {
+      administrator: "Ministry of Plantation and Commodities with the Malaysian Palm Oil Board",
+      mechanism: "Licensed blending facilities report volumes; enforcement through petroleum licensing.",
+      penalty: "Licence conditions and administrative action under commodity and petroleum regulations.",
+      unit: null,
+    },
+    timeline: [
+      { period: "2019", target: "B10 mandate for transport in force nationwide.", reached: true },
+      { period: "2020–2022", target: "B20 rollout completed across the designated states.", reached: true },
+      { period: "2026", target: "B30 feasibility and phased implementation under government review.", reached: false },
+    ],
+    sourceName: "Ministry of Plantation and Commodities",
+    sourceUrl: "https://www.kpk.gov.my/kpk/index.php/en/",
+    officialSites: [{ label: "Malaysian Palm Oil Board", url: "https://mpob.gov.my/" }],
+    keywords: ["b10", "b20", "b30", "palm biodiesel", "mpob", "plantation and commodities"],
+    lastReviewed: "2026-09",
+  },
+  {
+    id: "ph-biofuels",
+    jurisdiction: "Philippines",
+    countrySlug: "philippines",
+    instrument: "Biofuels Act of 2006 (Republic Act 9367) blending mandates",
+    fuels: ["Multi-fuel"],
+    status: "Phasing in",
+    currentObligation:
+      "All gasoline sold must contain 10% bioethanol and all diesel a coconut methyl ester blend that is stepping up from B3 toward B5.",
+    requirements: [
+      "Oil companies must blend bioethanol into every litre of gasoline placed on the market.",
+      "Diesel must carry the prescribed coconut methyl ester share set by the National Biofuels Board.",
+      "Locally produced bioethanol has first call on the mandated volume.",
+    ],
+    compliance: {
+      administrator: "Department of Energy with the National Biofuels Board",
+      mechanism: "Monthly reporting of blended volumes by oil industry participants to the Department of Energy.",
+      penalty: "Fines and suspension of business permits under RA 9367.",
+      unit: null,
+    },
+    timeline: [
+      { period: "2007", target: "B1 biodiesel blend takes effect under the Biofuels Act.", reached: true },
+      { period: "2009", target: "E10 gasoline and B2 diesel blends take effect.", reached: true },
+      { period: "2024", target: "Biodiesel blend raised to B3.", reached: true },
+      { period: "2026", target: "Step-up toward B5 subject to Department of Energy circulars.", reached: false },
+    ],
+    sourceName: "Philippine Department of Energy",
+    sourceUrl: "https://doe.gov.ph/",
+    officialSites: [{ label: "Official Gazette of the Philippines", url: "https://www.officialgazette.gov.ph/" }],
+    keywords: ["biofuels act", "coconut methyl ester", "cme", "e10", "b3", "b5", "department of energy"],
+    lastReviewed: "2026-09",
+  },
+  {
+    id: "za-blending",
+    jurisdiction: "South Africa",
+    countrySlug: "south-africa",
+    instrument: "Biofuels regulatory framework under the Petroleum Products Act",
+    fuels: ["Multi-fuel"],
+    status: "Adopted — not yet applicable",
+    currentObligation:
+      "Mandatory blending of 5% biodiesel and 2–10% bioethanol is provided for in regulation but has not been switched on pending a pricing and support framework.",
+    requirements: [
+      "Licensed manufacturers would have to blend at the prescribed rates once implementation is triggered.",
+      "A biofuels pricing framework and support mechanism must be published first.",
+      "Biofuels Regulatory Framework sets out feedstock and licensing conditions.",
+    ],
+    compliance: {
+      administrator: "Department of Mineral Resources and Energy",
+      mechanism: "Petroleum manufacturing and wholesale licences with volume reporting.",
+      penalty: "Licence enforcement under the Petroleum Products Act.",
+      unit: null,
+    },
+    timeline: [
+      { period: "2012", target: "Mandatory blending regulations gazetted.", reached: true },
+      { period: "2020", target: "Biofuels Regulatory Framework published.", reached: true },
+      { period: "2026", target: "Commencement still awaiting the pricing and support framework.", reached: false },
+    ],
+    sourceName: "Department of Mineral and Petroleum Resources",
+    sourceUrl: "https://www.dmre.gov.za/",
+    officialSites: [{ label: "South African Government Gazettes", url: "https://www.gov.za/documents/gazettes" }],
+    keywords: ["blending regulations", "biofuels regulatory framework", "dmre", "petroleum products act"],
+    lastReviewed: "2026-09",
+  },
+  {
+    id: "ng-e10",
+    jurisdiction: "Nigeria",
+    countrySlug: "nigeria",
+    instrument: "Nigerian Bio-Fuel Policy and Incentives (E10 / B20 targets)",
+    fuels: ["Multi-fuel"],
+    status: "Adopted — not yet applicable",
+    currentObligation:
+      "National policy sets an E10 gasoline and B20 diesel blending ambition, delivered so far through project development rather than an enforced blending obligation.",
+    requirements: [
+      "Domestic feedstock and ethanol plants developed under the NNPC-led programme.",
+      "Blending to be introduced as domestic production capacity comes online.",
+      "Fiscal incentives available to approved biofuel projects.",
+    ],
+    compliance: {
+      administrator: "Federal Ministry of Petroleum Resources with NNPC Limited",
+      mechanism: "Project approvals and off-take arrangements; no enforced supplier obligation yet.",
+      penalty: "Not applicable until a blending obligation is gazetted.",
+      unit: null,
+    },
+    timeline: [
+      { period: "2007", target: "Nigerian Bio-Fuel Policy and Incentives published in the Official Gazette.", reached: true },
+      { period: "2021–2024", target: "Ethanol and biodiesel project development advanced with partners.", reached: true },
+      { period: "2026", target: "E10 blending still awaiting domestic supply and an enforcement instrument.", reached: false },
+    ],
+    sourceName: "Federal Ministry of Petroleum Resources",
+    sourceUrl: "https://petroleumresources.gov.ng/",
+    officialSites: [{ label: "NNPC Limited", url: "https://nnpcgroup.com/" }],
+    keywords: ["bio-fuel policy", "e10", "b20", "nnpc", "petroleum resources"],
+    lastReviewed: "2026-09",
+  },
+  {
+    id: "ke-e10",
+    jurisdiction: "Kenya",
+    countrySlug: "kenya",
+    instrument: "E10 ethanol blending programme and Bioenergy Strategy",
+    fuels: ["Ethanol"],
+    status: "Phasing in",
+    currentObligation:
+      "Kenya is rolling out E10 gasoline nationally, extending a blending requirement first applied in the western region.",
+    requirements: [
+      "Oil marketing companies blend ethanol into gasoline at designated depots.",
+      "Ethanol quality and blending specifications set by the national standards body.",
+      "Rollout sequenced by depot as blending infrastructure is installed.",
+    ],
+    compliance: {
+      administrator: "Ministry of Energy and Petroleum with EPRA",
+      mechanism: "Depot-level blending records and fuel quality inspections by EPRA.",
+      penalty: "Licence sanctions and penalties under the Energy Act.",
+      unit: null,
+    },
+    timeline: [
+      { period: "2010s", target: "E10 applied in the Kisumu supply region.", reached: true },
+      { period: "2020", target: "Kenya Bioenergy Strategy sets out wider blending ambition.", reached: true },
+      { period: "2024–2026", target: "Phased national E10 rollout by depot.", reached: false },
+    ],
+    sourceName: "Energy and Petroleum Regulatory Authority (EPRA)",
+    sourceUrl: "https://www.epra.go.ke/",
+    officialSites: [{ label: "Ministry of Energy and Petroleum", url: "https://energy.go.ke/" }],
+    keywords: ["e10", "ethanol blending", "epra", "bioenergy strategy", "kisumu"],
+    lastReviewed: "2026-09",
+  },
+  {
+    id: "ae-saf",
+    jurisdiction: "United Arab Emirates",
+    countrySlug: "united-arab-emirates",
+    instrument: "National Sustainable Aviation Fuel Policy",
+    fuels: ["SAF"],
+    status: "Phasing in",
+    currentObligation:
+      "A 1% SAF share of jet fuel uplifted by national carriers applies from 2031 under the national SAF policy, starting with locally produced fuel.",
+    requirements: [
+      "Applies to fuel uplifted by UAE national carriers at UAE airports.",
+      "Emphasis on domestically produced SAF from waste and residue feedstock.",
+      "Supported by a national SAF roadmap and certification arrangements.",
+    ],
+    compliance: {
+      administrator: "Ministry of Energy and Infrastructure with the General Civil Aviation Authority",
+      mechanism: "Reporting of SAF uplift volumes by carriers and fuel suppliers.",
+      penalty: "To be set out in implementing regulations.",
+      unit: null,
+    },
+    timeline: [
+      { period: "2023", target: "National SAF policy approved with a 2031 blending target.", reached: true },
+      { period: "2026", target: "Domestic SAF production and supply arrangements being built out.", reached: true },
+      { period: "2031", target: "1% SAF share for national carriers.", reached: false },
+    ],
+    sourceName: "UAE Ministry of Energy and Infrastructure",
+    sourceUrl: "https://www.moei.gov.ae/en/",
+    officialSites: [{ label: "General Civil Aviation Authority", url: "https://www.gcaa.gov.ae/" }],
+    keywords: ["saf", "sustainable aviation fuel", "gcaa", "etihad", "emirates"],
+    lastReviewed: "2026-09",
+  },
 ];
+
+/** Official government / administrator websites per tracked jurisdiction. */
+export const GOVERNMENT_SITES: Record<string, { label: string; url: string }[]> = {
+  "european-union": [
+    { label: "European Commission — Energy", url: "https://energy.ec.europa.eu/" },
+    { label: "EUR-Lex (Official Journal)", url: "https://eur-lex.europa.eu/" },
+  ],
+  "united-states": [
+    { label: "US EPA — Renewable Fuel Standard", url: "https://www.epa.gov/renewable-fuel-standard-program" },
+    { label: "Federal Register", url: "https://www.federalregister.gov/" },
+    { label: "California Air Resources Board", url: "https://ww2.arb.ca.gov/our-work/programs/low-carbon-fuel-standard" },
+  ],
+  canada: [
+    { label: "Environment and Climate Change Canada", url: "https://www.canada.ca/en/environment-climate-change.html" },
+    { label: "Canada Gazette", url: "https://gazette.gc.ca/" },
+  ],
+  brazil: [
+    { label: "ANP — National Petroleum Agency", url: "https://www.gov.br/anp/" },
+    { label: "Ministry of Mines and Energy", url: "https://www.gov.br/mme/" },
+  ],
+  argentina: [{ label: "Secretaría de Energía", url: "https://www.argentina.gob.ar/economia/energia" }],
+  colombia: [{ label: "Ministerio de Minas y Energía", url: "https://www.minenergia.gov.co/" }],
+  "united-kingdom": [
+    { label: "Department for Transport", url: "https://www.gov.uk/government/organisations/department-for-transport" },
+    { label: "GOV.UK — RTFO guidance", url: "https://www.gov.uk/guidance/renewable-transport-fuels-obligation" },
+  ],
+  germany: [
+    { label: "Federal Ministry for the Environment", url: "https://www.bmuv.de/en/" },
+    { label: "Hauptzollamt — GHG quota", url: "https://www.zoll.de/" },
+  ],
+  france: [{ label: "Ministère de la Transition écologique", url: "https://www.ecologie.gouv.fr/" }],
+  netherlands: [{ label: "Nederlandse Emissieautoriteit (NEa)", url: "https://www.emissionsauthority.nl/" }],
+  sweden: [{ label: "Swedish Energy Agency", url: "https://www.energimyndigheten.se/en/" }],
+  india: [
+    { label: "Ministry of Petroleum and Natural Gas", url: "https://mopng.gov.in/" },
+    { label: "NITI Aayog — Ethanol Blending", url: "https://www.niti.gov.in/" },
+  ],
+  indonesia: [{ label: "Ministry of Energy and Mineral Resources", url: "https://www.esdm.go.id/" }],
+  china: [{ label: "National Development and Reform Commission", url: "https://www.ndrc.gov.cn/" }],
+  japan: [{ label: "METI — Agency for Natural Resources and Energy", url: "https://www.enecho.meti.go.jp/en/" }],
+  "south-korea": [
+    { label: "MOTIE", url: "https://english.motie.go.kr/" },
+    { label: "Korea Energy Agency", url: "https://www.energy.or.kr/eng/" },
+  ],
+  australia: [{ label: "Department of Climate Change and Energy", url: "https://www.dcceew.gov.au/" }],
+  thailand: [{ label: "Department of Alternative Energy Development", url: "https://www.dede.go.th/" }],
+  malaysia: [
+    { label: "Ministry of Plantation and Commodities", url: "https://www.kpk.gov.my/kpk/index.php/en/" },
+    { label: "Malaysian Palm Oil Board", url: "https://mpob.gov.my/" },
+  ],
+  philippines: [{ label: "Department of Energy", url: "https://doe.gov.ph/" }],
+  "south-africa": [{ label: "Department of Mineral and Petroleum Resources", url: "https://www.dmre.gov.za/" }],
+  nigeria: [{ label: "Federal Ministry of Petroleum Resources", url: "https://petroleumresources.gov.ng/" }],
+  kenya: [
+    { label: "EPRA", url: "https://www.epra.go.ke/" },
+    { label: "Ministry of Energy and Petroleum", url: "https://energy.go.ke/" },
+  ],
+  "united-arab-emirates": [{ label: "Ministry of Energy and Infrastructure", url: "https://www.moei.gov.ae/en/" }],
+  "saudi-arabia": [{ label: "Ministry of Energy", url: "https://www.moenergy.gov.sa/en/" }],
+};
+
+/** Every official site linked from a country's tracked obligations, de-duplicated. */
+export function governmentSitesForCountry(slug: string): { label: string; url: string }[] {
+  const out = new Map<string, string>();
+  for (const s of GOVERNMENT_SITES[slug] ?? []) out.set(s.url, s.label);
+  for (const m of mandatesForCountry(slug)) {
+    out.set(m.sourceUrl, m.sourceName);
+    for (const s of m.officialSites ?? []) out.set(s.url, s.label);
+  }
+  return [...out].map(([url, label]) => ({ url, label }));
+}
+
+/** Terms used to attach a live news item to an obligation. */
+export function mandateKeywords(m: Mandate): string[] {
+  const derived = [m.instrument, ...m.fuels]
+    .join(" ")
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((w) => w.length > 4);
+  return [...new Set([...(m.keywords ?? []), ...derived])];
+}
+
+/** True when a headline/summary mentions this obligation. */
+export function updateMatchesMandate(m: Mandate, text: string): boolean {
+  const t = ` ${text.toLowerCase()} `;
+  return mandateKeywords(m).some((k) =>
+    k.length <= 4 ? new RegExp(`\\b${k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`).test(t) : t.includes(k),
+  );
+}
 
 export const MANDATE_FUELS: MandateFuel[] = [
   "Ethanol",

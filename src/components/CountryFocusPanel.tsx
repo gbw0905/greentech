@@ -17,7 +17,7 @@ import { CountryFlag } from "@/components/CountryFlag";
 import { VideoLibrary } from "@/components/VideoLibrary";
 import { LiveMediaFeed } from "@/components/LiveMediaFeed";
 import { MandateDetailCard } from "@/components/MandateDetailCard";
-import { mandatesForCountry } from "@/lib/mandates";
+import { mandatesForCountry, governmentSitesForCountry } from "@/lib/mandates";
 
 type Tab = "profile" | "updates" | "videos";
 
@@ -65,6 +65,7 @@ export function CountryFocusPanel({
 
   const status = profile ? policyStatusFor(profile) : null;
   const trackedMandates = profile ? mandatesForCountry(profile.slug) : [];
+  const govSites = profile ? governmentSitesForCountry(profile.slug) : [];
 
   if (!profile) {
     return (
@@ -191,6 +192,25 @@ export function CountryFocusPanel({
                   </div>
                 ))}
               </dl>
+              {govSites.length > 0 && (
+                <div>
+                  <p className="label-mono text-muted-foreground">Government &amp; regulator sources</p>
+                  <ul className="mt-2 flex flex-wrap gap-2">
+                    {govSites.map((s) => (
+                      <li key={s.url}>
+                        <a
+                          href={s.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="label-mono inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-2 px-3 py-1 hover:text-primary"
+                        >
+                          {s.label} <ExternalLink className="size-3" />
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               {trackedMandates.length > 0 && (
                 <div className="space-y-4">
                   {trackedMandates.map((m) => (
