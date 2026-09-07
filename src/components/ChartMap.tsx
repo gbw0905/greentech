@@ -187,7 +187,7 @@ export function ChartMap({
             );
           })}
 
-          {placed.map(({ p, x, y, r }) => (
+          {placed.map(({ p, x, y, r }, i) => (
             <g
               key={p.key}
               className={p.newsTarget ? "cursor-pointer" : ""}
@@ -207,7 +207,7 @@ export function ChartMap({
               {focus ? (
                 <text
                   x={x}
-                  y={y - r - 4}
+                  y={i % 2 === 0 ? y - r - 5 : y + r + 12}
                   textAnchor="middle"
                   fontSize={11}
                   fontWeight={600}
