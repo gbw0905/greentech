@@ -1,7 +1,7 @@
 import { CountryFlag } from "@/components/CountryFlag";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 import { feedQueryWithInitial, loadFeed } from "@/lib/feed-query";
 import {
   countryBySlug,
@@ -12,7 +12,11 @@ import {
 } from "@/lib/policy-taxonomy";
 import { UpdateCard } from "@/components/UpdateCard";
 import { MandateDetailCard } from "@/components/MandateDetailCard";
-import { mandatesForCountry } from "@/lib/mandates";
+import {
+  mandatesForCountry,
+  governmentSitesForCountry,
+  updateMatchesMandate,
+} from "@/lib/mandates";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
 
 
