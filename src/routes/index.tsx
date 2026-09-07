@@ -111,7 +111,7 @@ function SectionHeading({
           {title}
         </h2>
       </div>
-      <p className="mt-1 w-full text-xs text-ink-muted sm:truncate sm:text-sm">
+      <p className="mt-1 w-full max-w-3xl text-xs/relaxed text-ink-muted sm:text-sm/relaxed">
         {subtitle}
       </p>
     </div>
