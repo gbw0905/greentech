@@ -50,11 +50,12 @@ const BENEFITS = [
 function GetAlertsPage() {
   useVisitTracker();
   return (
-    <PageShell
-      kicker="Free email alerts"
-      title="Never miss a biofuel policy change again"
-      subtitle="A free daily digest of global bioenergy policy and market updates — mandates, blending targets, tax credits and SAF incentives, classified by AI and delivered to your inbox."
-    >
+    <PageShell>
+      <PageHeading
+        icon={BellRing}
+        title="Never miss a biofuel policy change again"
+        subtitle="A free daily digest of global bioenergy policy and market updates — mandates, blending targets, tax credits and SAF incentives, classified by AI."
+      />
       <div className="grid items-start gap-6 lg:grid-cols-[1.05fr_minmax(0,1fr)]">
         <div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
