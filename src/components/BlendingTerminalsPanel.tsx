@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ChartMap } from "@/components/ChartMap";
 import { Container } from "lucide-react";
 import {
   ChartBars,
@@ -384,6 +385,21 @@ export function BlendingTerminalsPanel() {
             formatSize={(n) => fmt(n, 0)}
             onSelect={onSelect}
             indexLabel="Global blending terminals index"
+          />
+        ) : view === "map" ? (
+          <ChartMap
+            points={rows.map((t) => ({
+              key: t.name,
+              label: t.name,
+              country: t.country,
+              value: valueOf(t),
+              sub: t.note,
+              newsTarget: { name: t.name, query: `"${t.name}" ${NEWS_SUFFIX}` },
+            }))}
+            measureLabel={metric.label}
+            unitLabel={metric.unit}
+            format={(n: number) => fmt(n, metric.decimals)}
+            onSelect={onSelect}
           />
         ) : view === "bars" ? (
           <ChartBars

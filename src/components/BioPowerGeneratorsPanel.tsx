@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ChartMap } from "@/components/ChartMap";
 import { Zap } from "lucide-react";
 import {
   ChartBars,
@@ -407,6 +408,21 @@ export function BioPowerGeneratorsPanel() {
             formatSize={(n) => fmt(n, 0)}
             onSelect={onSelect}
             indexLabel="Global biofuel power generation index"
+          />
+        ) : view === "map" ? (
+          <ChartMap
+            points={rows.map((g) => ({
+              key: g.name,
+              label: g.name,
+              country: g.country,
+              value: valueOf(g),
+              sub: g.note,
+              newsTarget: { name: g.name, query: `"${g.name}" ${NEWS_SUFFIX}` },
+            }))}
+            measureLabel={metric.label}
+            unitLabel={metric.unit}
+            format={(n: number) => fmt(n, metric.decimals)}
+            onSelect={onSelect}
           />
         ) : view === "bars" ? (
           <ChartBars

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ChartMap } from "@/components/ChartMap";
 import { Flame } from "lucide-react";
 import {
   ChartBars,
@@ -388,6 +389,21 @@ export function RngProducersPanel() {
             formatSize={(n) => fmt(n, 1)}
             onSelect={onSelect}
             indexLabel="Global RNG production index"
+          />
+        ) : view === "map" ? (
+          <ChartMap
+            points={rows.map((p) => ({
+              key: p.name,
+              label: p.name,
+              country: p.country,
+              value: valueOf(p),
+              sub: p.note,
+              newsTarget: { name: p.name, query: `"${p.name}" ${NEWS_SUFFIX}` },
+            }))}
+            measureLabel={metric.label}
+            unitLabel={metric.unit}
+            format={(n: number) => fmt(n, metric.decimals)}
+            onSelect={onSelect}
           />
         ) : view === "bars" ? (
           <ChartBars

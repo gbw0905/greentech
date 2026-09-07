@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ChartMap } from "@/components/ChartMap";
 import { Ship } from "lucide-react";
 import {
   ChartBars,
@@ -404,6 +405,21 @@ export function MarineBiofuelPanel() {
             formatSize={(n) => fmt(n, 0)}
             onSelect={onSelect}
             indexLabel="Global marine biofuel index"
+          />
+        ) : view === "map" ? (
+          <ChartMap
+            points={rows.map((e) => ({
+              key: e.name,
+              label: e.name,
+              country: e.country,
+              value: valueOf(e),
+              sub: e.note,
+              newsTarget: { name: e.name, query: `"${e.name}" ${NEWS_SUFFIX}` },
+            }))}
+            measureLabel={metric.label}
+            unitLabel={metric.unit}
+            format={(n: number) => fmt(n, metric.decimals)}
+            onSelect={onSelect}
           />
         ) : view === "bars" ? (
           <ChartBars
