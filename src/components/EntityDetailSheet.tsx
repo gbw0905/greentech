@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { openEntityNews, type NewsTarget } from "@/lib/open-news";
 import { getEntityNewsFn } from "@/lib/videos.functions";
+import { CERTIFICATION_NOTE, certificationFor } from "@/lib/certifications";
 
 /** Live headline list for the entity, fetched from the news index on open. */
 function EntityNews({ target }: { target: NewsTarget }) {
@@ -92,10 +93,31 @@ export type GraphContext = {
   format: (n: number) => string;
 };
 
+/** Adds the published certification / compliance block for the entity. */
+function complianceSection(name: string): { title: string; stats: Stat[] } {
+  const rec = certificationFor(name);
+  if (!rec) {
+    return {
+      title: "Environmental compliance & certification",
+      stats: [
+        { label: "Certification", value: "No published certification found" },
+        { label: "How to check", value: "ISCC, RSB, Bonsucro or SBP public registers" },
+      ],
+    };
+  }
+  const stats: Stat[] = [];
+  if (rec.schemes.length) stats.push({ label: "Certification schemes", value: rec.schemes.join(", ") });
+  if (rec.regulatory?.length) stats.push({ label: "Regulatory programmes", value: rec.regulatory.join(", ") });
+  if (rec.source) stats.push({ label: "Source", value: rec.source });
+  return { title: "Environmental compliance & certification", stats };
+}
+
 /** Derives rank, share, range and percentile for the clicked entity. */
 function enrichDetail(d: EntityDetail, g: GraphContext): EntityDetail {
   const idx = g.items.findIndex((i) => i.name === d.name);
   const sections: { title: string; stats: Stat[] }[] = [...(d.sections ?? [])];
+  sections.push(complianceSection(d.name));
+
   if (idx >= 0) {
     const v = g.items[idx]!.value;
     const values = g.items.map((i) => i.value);
@@ -154,7 +176,12 @@ export function useEntityDetail() {
       (t: NewsTarget) => {
         if (!t) return;
         const d = lookup(t);
-        if (d) setDetail(graph ? enrichDetail(d, graph) : d);
+        if (d)
+          setDetail(
+            graph
+              ? enrichDetail(d, graph)
+              : { ...d, sections: [...(d.sections ?? []), complianceSection(d.name)] },
+          );
         else openEntityNews(t);
       },
     sheet: <EntityDetailSheet detail={detail} onClose={close} />,
@@ -266,6 +293,8 @@ export function EntityDetailSheet({
             </dl>
           </div>
         ))}
+
+        <p className="mt-4 text-xs/relaxed text-muted-foreground">{CERTIFICATION_NOTE}</p>
 
         <EntityNews target={detail.news} />
 
