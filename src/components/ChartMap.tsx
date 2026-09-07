@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { geoNaturalEarth1, geoMercator, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
 import { heatColor } from "@/components/chart-kit";
-import type { NewsTarget } from "@/components/chart-kit";
+import type { NewsTarget } from "@/lib/open-news";
 
 export type MapPoint = {
   key: string;
