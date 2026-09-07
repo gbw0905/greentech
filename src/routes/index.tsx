@@ -311,6 +311,7 @@ function Dashboard() {
               icon={Map}
               title="Policy activity by jurisdiction"
               subtitle="Government mandates and market moves side by side — including jurisdictions still developing their frameworks. Click any country to open its full profile."
+              singleLine
             />
             <div className="glass-panel flex w-full min-w-0 flex-col">
               <div className="panel-head">
