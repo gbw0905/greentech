@@ -96,6 +96,7 @@ function CountryPage() {
   const country = countryBySlug(slug)!;
   const { feed: initialFeed } = Route.useLoaderData();
   const { data, isFetching } = useQuery(feedQueryWithInitial(initialFeed));
+  const trackedMandates = mandatesForCountry(slug);
   const keywords = (country.updateKeywords ?? []).map((k) => k.toLowerCase());
   const updates = (data?.updates ?? [])
     .filter((u) => {
