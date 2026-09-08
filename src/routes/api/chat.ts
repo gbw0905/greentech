@@ -74,7 +74,7 @@ export const Route = createFileRoute("/api/chat")({
         });
 
         const result = streamText({
-          model: openai(ASSISTANT_MODEL),
+          model: openai.chat(ASSISTANT_MODEL),
           system: SYSTEM_PROMPT,
           messages: await convertToModelMessages(messages.slice(-30)),
           tools: assistantTools,
