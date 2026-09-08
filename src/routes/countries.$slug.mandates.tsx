@@ -5,6 +5,7 @@ import { CountryProfileHeader } from "@/components/CountryProfileHeader";
 import { MandateDetailCard } from "@/components/MandateDetailCard";
 import { governmentSitesForCountry, mandatesForCountry } from "@/lib/mandates";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
+import { CountryTrackingStrip } from "@/components/CountryTrackingStrip";
 
 export const Route = createFileRoute("/countries/$slug/mandates")({
   head: ({ params }) => {
@@ -31,23 +32,24 @@ export const Route = createFileRoute("/countries/$slug/mandates")({
 function CountryMandatesPage() {
   useVisitTracker();
   const { slug } = Route.useParams();
-  const country = countryBySlug(slug)!;
+  const country = countryBySlug(slug);
+  if (!country) return null;
   const trackedMandates = mandatesForCountry(slug);
   const govSites = governmentSitesForCountry(slug);
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-10">
+    <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10">
       <CountryProfileHeader country={country} compact />
+      <div className="mt-5"><CountryTrackingStrip mandates={trackedMandates.length} targets={country.mandates.length} sources={govSites.length} /></div>
 
-      <section className="mt-8">
-        <h2 className="label-mono text-muted-foreground">
-          Mandates &amp; targets
-          {trackedMandates.length > 0 &&
-            ` · ${trackedMandates.length} tracked obligation${trackedMandates.length === 1 ? "" : "s"}`}
-        </h2>
+      <div className="mt-7 grid gap-7 lg:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
+      <section>
+        <p className="label-mono text-muted-foreground">Mandate register</p>
+        <h2 className="mt-1 font-display text-2xl font-extrabold">Requirements, timelines &amp; compliance</h2>
+        <p className="mt-2 max-w-3xl text-sm/relaxed text-muted-foreground">Each obligation is tied to its administering authority and primary published source.</p>
         <dl className="mt-4 grid gap-3 sm:grid-cols-2">
           {country.mandates.map((m) => (
-            <div key={m.label} className="glass-panel lift p-4">
+            <div key={m.label} className="rounded-lg border border-border bg-card p-4 shadow-[var(--shadow-card)]">
               <dt className="label-mono text-muted-foreground">{m.label}</dt>
               <dd className="mt-1 font-mono text-sm text-foreground">{m.value}</dd>
             </div>
@@ -68,18 +70,16 @@ function CountryMandatesPage() {
       </section>
 
       {govSites.length > 0 && (
-        <section className="mt-10">
-          <h2 className="label-mono text-muted-foreground">
-            Government &amp; regulator sources · {govSites.length}
-          </h2>
-          <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+        <aside className="h-fit overflow-hidden rounded-lg bg-ink text-ink-foreground shadow-[var(--shadow-lift)] lg:sticky lg:top-5">
+          <div className="border-b border-ink-foreground/15 px-5 py-4"><p className="label-mono text-ink-muted">Evidence library</p><h2 className="mt-1 font-display text-lg font-bold">Government &amp; regulator sources</h2></div>
+          <ul className="divide-y divide-ink-foreground/10 p-2">
             {govSites.map((s) => (
               <li key={s.url} className="min-w-0">
                 <a
                   href={s.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="glass-panel lift flex w-full min-w-0 items-center justify-between gap-3 p-3 text-sm text-foreground hover:text-primary"
+                  className="flex w-full min-w-0 items-center justify-between gap-3 rounded-md p-3 text-sm text-ink-foreground transition-colors hover:bg-ink-foreground/10"
                 >
                   <span className="min-w-0 truncate">{s.label}</span>
                   <ExternalLink className="size-3.5 shrink-0" />
@@ -87,8 +87,9 @@ function CountryMandatesPage() {
               </li>
             ))}
           </ul>
-        </section>
+        </aside>
       )}
+      </div>
     </main>
   );
 }
