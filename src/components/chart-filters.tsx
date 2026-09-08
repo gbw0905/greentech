@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Search, X } from "lucide-react";
+import { X } from "lucide-react";
 import { COUNTRIES, COUNTRY_FLAG,
   COUNTRY_NAME_FLAG } from "@/lib/policy-taxonomy";
 
@@ -43,7 +43,7 @@ export function countryFilterOptions(dataCountries: string[]): ChartFilterOption
 const asOption = (o: string | ChartFilterOption): ChartFilterOption =>
   typeof o === "string" ? { value: o, label: o } : o;
 
-/** Shared search + dropdown filter bar used above every treemap. */
+/** Shared dropdown filter bar used above every Supply & producers visualization. */
 export function ChartFilterBar({
   query,
   onQueryChange,
@@ -65,30 +65,18 @@ export function ChartFilterBar({
   /** Render without its own boxed wrapper, so it can sit inside a shared toolbar. */
   bare?: boolean;
 }) {
-  const dirty = query.trim().length > 0 || selects.some((s) => s.value !== "");
+  const dirty = selects.some((s) => s.value !== "");
 
   const content = (
     <>
-      <div className="relative w-full shrink-0 sm:w-44">
-        <Search className="pointer-events-none absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => onQueryChange(e.target.value)}
-          placeholder={placeholder}
-          aria-label={placeholder}
-          className="chart-select w-full pl-7"
-        />
-      </div>
-
       {selects.map((s) => {
         const opts = s.options.map(asOption);
         const groups = [...new Set(opts.map((o) => o.group ?? ""))];
         return (
-          <label key={s.label} className="flex w-full shrink-0 items-center gap-1.5 sm:w-auto">
+          <label key={s.label} className="flex w-auto shrink-0 items-center gap-1.5">
             <span className="label-mono shrink-0 text-muted-foreground">{s.label}</span>
             <select
-              className="chart-select min-w-0 flex-1 sm:w-36 sm:flex-none"
+              className="chart-select w-36 shrink-0"
               value={s.value}
               aria-label={`Filter by ${s.label.toLowerCase()}`}
               onChange={(e) => s.onChange(e.target.value)}
@@ -141,7 +129,7 @@ export function ChartFilterBar({
   if (bare) return content;
 
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-sm border border-border bg-surface-2/60 p-2 sm:flex-nowrap sm:overflow-x-auto sm:whitespace-nowrap">
+    <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap rounded-sm border border-border bg-surface-2/60 p-2">
       {content}
     </div>
   );
