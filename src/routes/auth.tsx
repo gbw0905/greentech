@@ -81,6 +81,15 @@ function AuthPage() {
     }
   }
 
+  async function microsoft() {
+    setError("");
+    try {
+      await lovable.auth.signInWithOAuth("microsoft", { redirect_uri: window.location.origin });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Microsoft sign-in failed.");
+    }
+  }
+
   return (
     <PageShell>
       <div className="mx-auto w-full max-w-md">
@@ -91,13 +100,22 @@ function AuthPage() {
         </div>
 
         <div className="rounded-sm border border-border bg-card p-4">
-          <button
-            type="button"
-            onClick={google}
-            className="mb-4 inline-flex w-full items-center justify-center gap-2 border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground transition-opacity hover:opacity-85"
-          >
-            Continue with Google
-          </button>
+          <div className="mb-4 space-y-2">
+            <button
+              type="button"
+              onClick={google}
+              className="inline-flex w-full items-center justify-center gap-2 border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground transition-opacity hover:opacity-85"
+            >
+              Continue with Google
+            </button>
+            <button
+              type="button"
+              onClick={microsoft}
+              className="inline-flex w-full items-center justify-center gap-2 border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground transition-opacity hover:opacity-85"
+            >
+              Continue with Microsoft
+            </button>
+          </div>
 
           <div className="mb-4 flex items-center gap-3 text-xs text-muted-foreground">
             <span className="h-px flex-1 bg-border" />
