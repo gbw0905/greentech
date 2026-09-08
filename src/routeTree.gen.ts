@@ -44,6 +44,7 @@ import { Route as ApiPublicInstantBriefAlertsRouteImport } from './routes/api/pu
 import { Route as ApiPublicLinkedinPublishRouteImport } from './routes/api/public/linkedin-publish'
 import { Route as ApiPublicPolicyAlertDigestRouteImport } from './routes/api/public/policy-alert-digest'
 import { Route as CountriesSlugIndexRouteImport } from './routes/countries.$slug.index'
+import { Route as CountriesSlugMandatesRouteImport } from './routes/countries.$slug.mandates'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as ApiPublicLinkedinOauthCallbackRouteImport } from './routes/api/public/linkedin/oauth/callback'
 
@@ -232,6 +233,11 @@ const CountriesSlugIndexRoute = CountriesSlugIndexRouteImport.update({
   path: '/',
   getParentRoute: () => CountriesSlugRoute,
 } as any)
+const CountriesSlugMandatesRoute = CountriesSlugMandatesRouteImport.update({
+  id: '/mandates',
+  path: '/mandates',
+  getParentRoute: () => CountriesSlugRoute,
+} as any)
 const LovableEmailTransactionalPreviewRoute =
   LovableEmailTransactionalPreviewRouteImport.update({
     id: '/lovable/email/transactional/preview',
@@ -280,6 +286,7 @@ export interface FileRoutesByFullPath {
   '/api/public/instant-brief-alerts': typeof ApiPublicInstantBriefAlertsRoute
   '/api/public/linkedin-publish': typeof ApiPublicLinkedinPublishRoute
   '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
+  '/countries/$slug/mandates': typeof CountriesSlugMandatesRoute
   '/countries/$slug/': typeof CountriesSlugIndexRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/api/public/linkedin/oauth/callback': typeof ApiPublicLinkedinOauthCallbackRoute
@@ -317,6 +324,7 @@ export interface FileRoutesByTo {
   '/api/public/instant-brief-alerts': typeof ApiPublicInstantBriefAlertsRoute
   '/api/public/linkedin-publish': typeof ApiPublicLinkedinPublishRoute
   '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
+  '/countries/$slug/mandates': typeof CountriesSlugMandatesRoute
   '/countries/$slug': typeof CountriesSlugIndexRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/api/public/linkedin/oauth/callback': typeof ApiPublicLinkedinOauthCallbackRoute
@@ -357,6 +365,7 @@ export interface FileRoutesById {
   '/api/public/instant-brief-alerts': typeof ApiPublicInstantBriefAlertsRoute
   '/api/public/linkedin-publish': typeof ApiPublicLinkedinPublishRoute
   '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
+  '/countries/$slug/mandates': typeof CountriesSlugMandatesRoute
   '/countries/$slug/': typeof CountriesSlugIndexRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/api/public/linkedin/oauth/callback': typeof ApiPublicLinkedinOauthCallbackRoute
@@ -398,6 +407,7 @@ export interface FileRouteTypes {
     | '/api/public/instant-brief-alerts'
     | '/api/public/linkedin-publish'
     | '/api/public/policy-alert-digest'
+    | '/countries/$slug/mandates'
     | '/countries/$slug/'
     | '/lovable/email/transactional/preview'
     | '/api/public/linkedin/oauth/callback'
@@ -435,6 +445,7 @@ export interface FileRouteTypes {
     | '/api/public/instant-brief-alerts'
     | '/api/public/linkedin-publish'
     | '/api/public/policy-alert-digest'
+    | '/countries/$slug/mandates'
     | '/countries/$slug'
     | '/lovable/email/transactional/preview'
     | '/api/public/linkedin/oauth/callback'
@@ -474,6 +485,7 @@ export interface FileRouteTypes {
     | '/api/public/instant-brief-alerts'
     | '/api/public/linkedin-publish'
     | '/api/public/policy-alert-digest'
+    | '/countries/$slug/mandates'
     | '/countries/$slug/'
     | '/lovable/email/transactional/preview'
     | '/api/public/linkedin/oauth/callback'
@@ -762,6 +774,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CountriesSlugIndexRouteImport
       parentRoute: typeof CountriesSlugRoute
     }
+    '/countries/$slug/mandates': {
+      id: '/countries/$slug/mandates'
+      path: '/mandates'
+      fullPath: '/countries/$slug/mandates'
+      preLoaderRoute: typeof CountriesSlugMandatesRouteImport
+      parentRoute: typeof CountriesSlugRoute
+    }
     '/lovable/email/transactional/preview': {
       id: '/lovable/email/transactional/preview'
       path: '/lovable/email/transactional/preview'
@@ -794,10 +813,12 @@ const AboutRouteChildren: AboutRouteChildren = {
 const AboutRouteWithChildren = AboutRoute._addFileChildren(AboutRouteChildren)
 
 interface CountriesSlugRouteChildren {
+  CountriesSlugMandatesRoute: typeof CountriesSlugMandatesRoute
   CountriesSlugIndexRoute: typeof CountriesSlugIndexRoute
 }
 
 const CountriesSlugRouteChildren: CountriesSlugRouteChildren = {
+  CountriesSlugMandatesRoute: CountriesSlugMandatesRoute,
   CountriesSlugIndexRoute: CountriesSlugIndexRoute,
 }
 
