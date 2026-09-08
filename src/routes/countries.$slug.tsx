@@ -104,7 +104,9 @@ function CountryPage() {
   const { data, isFetching } = useQuery(feedQueryWithInitial(initialFeed));
   const trackedMandates = mandatesForCountry(slug);
   const keywords = (country.updateKeywords ?? []).map((k) => k.toLowerCase());
+  const [range, setRange] = useState(EMPTY_RANGE);
   const updates = (data?.updates ?? [])
+    .filter((u) => withinRange(u.publishedAt ?? u.createdAt, range))
     .filter((u) => {
       if (u.countrySlug === slug) return true;
       if (keywords.length === 0) return false;
