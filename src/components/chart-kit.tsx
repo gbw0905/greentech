@@ -1127,17 +1127,17 @@ export function ChartPanel({
 
       {metricOptions || limitOptions || viewOptions || actions || filters || assistant ? (
         <div className="mb-2 flex flex-col gap-2 rounded-sm border border-border bg-surface-2/60 p-2">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap pb-1">
           {filters
             ? isValidElement(filters)
               ? cloneElement(filters as ReactElement<any>, { bare: true })
               : filters
             : null}
           {viewOptions ? (
-            <label className="flex w-full shrink-0 items-center gap-1.5 sm:w-auto">
+            <label className="flex w-auto shrink-0 items-center gap-1.5">
               <span className="label-mono shrink-0 text-muted-foreground">{viewLabel}</span>
               <select
-                className="chart-select min-w-0 flex-1 sm:w-auto sm:flex-none"
+                className="chart-select w-auto shrink-0"
                 value={viewValue}
                 onChange={(e) => onViewChange?.(e.target.value)}
                 aria-label={`Choose the chart type for ${title}`}
@@ -1151,10 +1151,10 @@ export function ChartPanel({
             </label>
           ) : null}
           {metricOptions ? (
-            <label className="flex w-full shrink-0 items-center gap-1.5 sm:w-auto">
+            <label className="flex w-auto shrink-0 items-center gap-1.5">
               <span className="label-mono shrink-0 text-muted-foreground">{metricLabel}</span>
               <select
-                className="chart-select min-w-0 flex-1 sm:w-auto sm:flex-none"
+                className="chart-select w-auto shrink-0"
                 value={metricValue}
                 onChange={(e) => onMetricChange?.(e.target.value)}
                 aria-label={`Choose the value shown in the ${title} chart`}
@@ -1168,10 +1168,10 @@ export function ChartPanel({
             </label>
           ) : null}
           {limitOptions ? (
-            <label className="flex w-full shrink-0 items-center gap-1.5 sm:w-auto">
+            <label className="flex w-auto shrink-0 items-center gap-1.5">
               <span className="label-mono shrink-0 text-muted-foreground">Show</span>
               <select
-                className="chart-select min-w-0 flex-1 sm:w-auto sm:flex-none"
+                className="chart-select w-auto shrink-0"
                 value={limitValue}
                 onChange={(e) => onLimitChange?.(e.target.value)}
                 aria-label={`Choose how many entities the ${title} chart shows`}
