@@ -2,8 +2,6 @@ import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Flag, Layers, Newspaper, Radar } from "lucide-react";
 import { CountryFlag } from "@/components/CountryFlag";
 import {
-  REGION_ACCENT,
-  POLICY_STATUS_COLOR,
   policyStatusFor,
   type CountryProfile,
 } from "@/lib/policy-taxonomy";
