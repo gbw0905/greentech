@@ -80,6 +80,7 @@
   --color-market-crude: var(--market-crude);
   --color-market-equity: var(--market-equity);
   --color-market-gold: var(--market-gold);
+  --color-market-gas: var(--market-gas);
   --color-ink: var(--ink);
   --color-ink-foreground: var(--ink-foreground);
   --color-ink-muted: var(--ink-muted);
@@ -152,6 +153,7 @@
   --market-crude: oklch(0.35 0.09 250);
   --market-equity: oklch(0.48 0.12 150);
   --market-gold: oklch(0.62 0.13 85);
+  --market-gas: oklch(0.55 0.12 300);
   --menubar-bg: oklch(0.3 0.08 145);
   --menubar-nav: oklch(0.35 0.09 145);
   --menubar-fg: oklch(0.97 0.01 140);
@@ -233,6 +235,7 @@
   --market-crude: oklch(0.65 0.14 230);
   --market-equity: oklch(0.72 0.18 145);
   --market-gold: oklch(0.78 0.16 80);
+  --market-gas: oklch(0.72 0.15 300);
   --ink: oklch(0.28 0.08 145);
   --ink-foreground: oklch(0.96 0.01 140);
   --ink-muted: oklch(0.75 0.04 145);

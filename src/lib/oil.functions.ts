@@ -53,12 +53,12 @@ async function loadSymbol(symbol: string, label: string, unit: string): Promise<
 
 export const getOilPricesFn = createServerFn({ method: "GET" }).handler(async () => {
   const { cacheGet, cacheSet } = await import("./market-cache.server");
-  const [wti, spx, gold] = await Promise.all([
+  const [wti, spx, gas] = await Promise.all([
     loadSymbol("CL=F", "WTI Crude", "/bbl"),
     loadSymbol("^GSPC", "S&P 500", "index"),
-    loadSymbol("GC=F", "Gold", "/oz"),
+    loadSymbol("NG=F", "Natural Gas", "/MMBtu"),
   ]);
-  const fresh = [wti, spx, gold].filter(Boolean) as OilQuote[];
+  const fresh = [wti, spx, gas].filter(Boolean) as OilQuote[];
   const cached = cacheGet<OilQuote[]>("oil-prices");
   if (fresh.length === 3) {
     cacheSet("oil-prices", fresh);

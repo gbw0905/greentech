@@ -45,7 +45,7 @@ function AboutPage() {
           </p>
           <p>
             Beyond the news feed, the platform maps policy mandates by country, benchmarks crude
-            oil, equities and gold, profiles the companies moving the sector — oil majors, SAF
+            oil, equities and natural gas, profiles the companies moving the sector — oil majors, SAF
             airlines, fuel retailers, marine suppliers, and UCO traders — and connects readers to
             bioenergy careers. AI-powered summaries turn dense regulatory filings into readable
             briefings delivered by email on demand.
