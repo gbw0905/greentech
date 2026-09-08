@@ -49,6 +49,12 @@ export type PanelId =
   | "methanol"
   | "biopower";
 
+const RGB_CARD_TONES = [
+  "var(--tracker-red)",
+  "var(--tracker-green)",
+  "var(--tracker-blue)",
+] as const;
+
 
 export const SUPPLY_PANELS: {
   id: PanelId;
@@ -250,14 +256,21 @@ export function SupplyProducersSection({ isRefreshing = false }: { isRefreshing?
       className="grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
       style={{ perspective: "900px" }}
     >
-      {SUPPLY_PANELS.map((c, i) => (
-        <Link
-          key={c.id}
-          to="/supply/$panel"
-          params={{ panel: c.id }}
-          className={`glass-panel flip-in flip-tilt data-shimmer group relative flex min-w-0 flex-col gap-2 overflow-hidden p-4 text-left ${shimmer ? "shimmer-active" : ""}`}
-          style={{ animationDelay: `${i * 55}ms` }}
-        >
+      {SUPPLY_PANELS.map((c, i) => {
+        const rgbTone = RGB_CARD_TONES[i % RGB_CARD_TONES.length];
+
+        return (
+          <Link
+            key={c.id}
+            to="/supply/$panel"
+            params={{ panel: c.id }}
+            className={`glass-panel flip-in flip-tilt data-shimmer group relative flex min-w-0 flex-col gap-2 overflow-hidden p-4 text-left ${shimmer ? "shimmer-active" : ""}`}
+            style={{
+              animationDelay: `${i * 55}ms`,
+              background: `linear-gradient(145deg, color-mix(in oklab, ${rgbTone} 15%, var(--surface)), color-mix(in oklab, ${rgbTone} 6%, var(--surface)))`,
+              borderColor: `color-mix(in oklab, ${rgbTone} 34%, var(--border))`,
+            }}
+          >
           <span
             className="absolute inset-x-0 top-0 h-1"
             style={{ background: c.tone }}
@@ -304,8 +317,9 @@ export function SupplyProducersSection({ isRefreshing = false }: { isRefreshing?
           >
             Open dataset <ChevronRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
           </span>
-        </Link>
-      ))}
+          </Link>
+        );
+      })}
     </div>
   );
 }
