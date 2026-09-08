@@ -18,7 +18,7 @@ export function CountryProfileHeader({
   country,
   compact = false,
 }: {
-  country: Country;
+  country: CountryProfile;
   compact?: boolean;
 }) {
   const status = policyStatusFor(country);
