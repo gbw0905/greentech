@@ -88,6 +88,9 @@
   --color-menubar-nav: var(--menubar-nav);
   --color-menubar-fg: var(--menubar-fg);
   --color-menubar-muted: var(--menubar-muted);
+  --color-tracker-red: var(--tracker-red);
+  --color-tracker-green: var(--tracker-green);
+  --color-tracker-blue: var(--tracker-blue);
 }
 
 :root {
@@ -153,6 +156,9 @@
   --menubar-nav: oklch(0.35 0.09 145);
   --menubar-fg: oklch(0.97 0.01 140);
   --menubar-muted: oklch(0.8 0.05 145);
+  --tracker-red: oklch(0.55 0.2 25);
+  --tracker-green: oklch(0.48 0.13 150);
+  --tracker-blue: oklch(0.5 0.17 255);
   --gradient-frost: linear-gradient(135deg, oklch(1 0 0), oklch(0.96 0.008 250));
   --gradient-primary: linear-gradient(120deg, var(--primary), var(--primary-glow));
   --gradient-aurora: linear-gradient(120deg, oklch(0.21 0.05 265) 0%, oklch(0.29 0.075 262) 55%, oklch(0.38 0.09 250) 100%);
@@ -235,6 +241,9 @@
   --menubar-nav: oklch(0.3 0.08 145);
   --menubar-fg: oklch(0.97 0.01 140);
   --menubar-muted: oklch(0.78 0.04 145);
+  --tracker-red: oklch(0.68 0.18 25);
+  --tracker-green: oklch(0.72 0.16 150);
+  --tracker-blue: oklch(0.7 0.17 250);
   --gradient-frost: linear-gradient(135deg, oklch(0.23 0.045 264), oklch(0.27 0.05 258));
   --gradient-primary: linear-gradient(120deg, var(--primary), var(--primary-glow));
   --gradient-aurora: linear-gradient(120deg, oklch(0.19 0.04 265) 0%, oklch(0.26 0.05 262) 55%, oklch(0.33 0.06 250) 100%);

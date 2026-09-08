@@ -9,6 +9,7 @@ import { CalendarRangeFilter } from "@/components/CalendarRangeFilter";
 import { EMPTY_RANGE, withinRange } from "@/components/DateRangeFilter";
 import { mandatesForCountry, updateMatchesMandate } from "@/lib/mandates";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
+import { Activity, CalendarDays, FileCheck2 } from "lucide-react";
 
 export const Route = createFileRoute("/countries/$slug/updates")({
   head: ({ params }) => {
@@ -36,7 +37,8 @@ export const Route = createFileRoute("/countries/$slug/updates")({
 function CountryUpdatesPage() {
   useVisitTracker();
   const { slug } = Route.useParams();
-  const country = countryBySlug(slug)!;
+  const country = countryBySlug(slug);
+  if (!country) return null;
   const { feed: initialFeed } = Route.useLoaderData();
   const { data, isFetching } = useQuery(feedQueryWithInitial(initialFeed));
   const [range, setRange] = useState(EMPTY_RANGE);
@@ -70,14 +72,22 @@ function CountryUpdatesPage() {
   const otherUpdates = updates.filter((u) => !grouped.has(u.id));
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-10">
+    <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10">
       <CountryProfileHeader country={country} compact />
 
-      <section className="mt-8">
-        <h2 className="label-mono text-muted-foreground">
-          Live updates by mandate · {updates.length} matched
-        </h2>
-        <CalendarRangeFilter value={range} onChange={setRange} className="mt-3" />
+      <section className="mt-5 overflow-hidden rounded-lg border border-border bg-card shadow-[var(--shadow-card)]">
+        <div className="grid gap-4 p-4 sm:grid-cols-[1fr_auto] sm:items-center sm:p-5">
+          <div>
+            <p className="label-mono inline-flex items-center gap-1.5 text-muted-foreground"><Activity className="size-3.5 text-destructive" /> Live monitoring</p>
+            <h2 className="mt-1 font-display text-xl font-extrabold">Updates by mandate</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{updates.length} matched item{updates.length === 1 ? "" : "s"} across {trackedMandates.length} tracked obligation{trackedMandates.length === 1 ? "" : "s"}.</p>
+          </div>
+          <CalendarRangeFilter value={range} onChange={setRange} />
+        </div>
+        <div className="flex items-center gap-2 border-t border-border bg-surface-1 px-4 py-2.5 text-xs text-muted-foreground sm:px-5"><CalendarDays className="size-3.5 text-chart-1" /> Select a preset or exact dates to review policy changes over time.</div>
+      </section>
+
+      <section>
 
         {updates.length === 0 && (
           <p className="mt-4 text-sm text-muted-foreground">
@@ -87,16 +97,17 @@ function CountryUpdatesPage() {
           </p>
         )}
 
-        <div className="mt-6 space-y-8">
+        <div className="mt-6 space-y-5">
           {mandateGroups.map(({ mandate, items }) => (
-            <div key={mandate.id}>
-              <h3 className="font-display text-base font-extrabold tracking-tight">
+            <div key={mandate.id} className="overflow-hidden rounded-lg border border-border bg-card shadow-[var(--shadow-card)]">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-surface-1 px-4 py-3 sm:px-5">
+              <div><h3 className="font-display text-base font-extrabold">
                 {mandate.instrument}
-              </h3>
-              <p className="label-mono mt-1 text-muted-foreground">
+              </h3><p className="label-mono mt-1 text-muted-foreground">
                 {items.length} update{items.length === 1 ? "" : "s"}
-              </p>
-              <div className="mt-3 space-y-3">
+              </p></div><FileCheck2 className="size-4 text-chart-2" />
+              </div>
+              <div className="space-y-3 p-3 sm:p-4">
                 {items.length === 0 ? (
                   <p className="text-sm text-muted-foreground">
                     No news items mention this obligation in the current scan window.
@@ -109,14 +120,15 @@ function CountryUpdatesPage() {
           ))}
 
           {otherUpdates.length > 0 && (
-            <div>
+            <div className="overflow-hidden rounded-lg border border-border bg-card shadow-[var(--shadow-card)]">
+              <div className="border-b border-border bg-surface-1 px-4 py-3 sm:px-5">
               <h3 className="font-display text-base font-extrabold tracking-tight">
                 Other {country.name} bioenergy updates
               </h3>
               <p className="label-mono mt-1 text-muted-foreground">
                 {otherUpdates.length} update{otherUpdates.length === 1 ? "" : "s"}
               </p>
-              <div className="mt-3 space-y-3">
+              </div><div className="space-y-3 p-3 sm:p-4">
                 {otherUpdates.map((u) => (
                   <UpdateCard key={u.id} update={u} />
                 ))}
