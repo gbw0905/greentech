@@ -45,9 +45,7 @@ const asOption = (o: string | ChartFilterOption): ChartFilterOption =>
 
 /** Shared dropdown filter bar used above every Supply & producers visualization. */
 export function ChartFilterBar({
-  query,
   onQueryChange,
-  placeholder = "Search companies…",
   selects = [],
   shown,
   total,
