@@ -80,7 +80,11 @@ export const Route = createFileRoute("/api/chat")({
           tools: assistantTools,
           stopWhen: stepCountIs(50),
           
-          onError: ({ error }) => console.error("assistant stream error", error),
+          onError: ({ error }) =>
+            console.error(
+              "assistant stream error",
+              (error as { responseBody?: string })?.responseBody ?? error,
+            ),
         });
 
         const threadId = typeof body.id === "string" ? body.id : null;
