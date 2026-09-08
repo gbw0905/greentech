@@ -74,12 +74,11 @@ export const Route = createFileRoute("/api/chat")({
         });
 
         const result = streamText({
-          model: openai.chat(ASSISTANT_MODEL),
+          model: openai.responses(ASSISTANT_MODEL),
           system: SYSTEM_PROMPT,
           messages: await convertToModelMessages(messages.slice(-30)),
           tools: assistantTools,
           stopWhen: stepCountIs(50),
-          providerOptions: { openai: { reasoningEffort: "none" } },
           
           onError: ({ error }) => console.error("assistant stream error", error),
         });
