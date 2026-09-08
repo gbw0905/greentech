@@ -1126,18 +1126,18 @@ export function ChartPanel({
       </div>
 
       {metricOptions || limitOptions || viewOptions || actions || filters || assistant ? (
-        <div className="mb-2 flex flex-col gap-2 rounded-sm border border-border bg-surface-2/60 p-2">
-          <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap pb-1">
+        <div className="mb-3 flex flex-col gap-3 rounded-md border border-border bg-surface-2/60 p-3">
+          <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-2 xl:flex xl:flex-wrap">
           {filters
             ? isValidElement(filters)
               ? cloneElement(filters as ReactElement<any>, { bare: true })
               : filters
             : null}
           {viewOptions ? (
-            <label className="flex w-auto shrink-0 items-center gap-1.5">
-              <span className="label-mono shrink-0 text-muted-foreground">{viewLabel}</span>
+            <label className="order-2 flex min-w-0 flex-col gap-1.5 sm:min-w-40 sm:flex-1 xl:w-auto xl:flex-none">
+              <span className="label-mono text-muted-foreground">{viewLabel}</span>
               <select
-                className="chart-select w-auto shrink-0"
+                className="chart-select h-10 w-full min-w-0 xl:w-44"
                 value={viewValue}
                 onChange={(e) => onViewChange?.(e.target.value)}
                 aria-label={`Choose the chart type for ${title}`}
@@ -1151,10 +1151,10 @@ export function ChartPanel({
             </label>
           ) : null}
           {metricOptions ? (
-            <label className="flex w-auto shrink-0 items-center gap-1.5">
-              <span className="label-mono shrink-0 text-muted-foreground">{metricLabel}</span>
+            <label className="order-3 flex min-w-0 flex-col gap-1.5 sm:min-w-40 sm:flex-1 xl:w-auto xl:flex-none">
+              <span className="label-mono text-muted-foreground">{metricLabel}</span>
               <select
-                className="chart-select w-auto shrink-0"
+                className="chart-select h-10 w-full min-w-0 xl:min-w-52"
                 value={metricValue}
                 onChange={(e) => onMetricChange?.(e.target.value)}
                 aria-label={`Choose the value shown in the ${title} chart`}
@@ -1168,10 +1168,10 @@ export function ChartPanel({
             </label>
           ) : null}
           {limitOptions ? (
-            <label className="flex w-auto shrink-0 items-center gap-1.5">
-              <span className="label-mono shrink-0 text-muted-foreground">Show</span>
+            <label className="order-4 flex min-w-0 flex-col gap-1.5 sm:min-w-40 sm:flex-1 xl:w-auto xl:flex-none">
+              <span className="label-mono text-muted-foreground">Show</span>
               <select
-                className="chart-select w-auto shrink-0"
+                className="chart-select h-10 w-full min-w-0 xl:w-40"
                 value={limitValue}
                 onChange={(e) => onLimitChange?.(e.target.value)}
                 aria-label={`Choose how many entities the ${title} chart shows`}
@@ -1186,8 +1186,8 @@ export function ChartPanel({
           ) : null}
           </div>
           {actions || assistant ? (
-            <div className="flex flex-wrap items-center gap-2 border-t border-border/70 pt-2">
-              <span className="label-mono mr-auto text-muted-foreground">Download &amp; share</span>
+            <div className="grid grid-cols-2 items-center gap-2 border-t border-border/70 pt-3 sm:flex sm:justify-end [&>button]:h-10 [&>button]:w-full [&>button]:justify-center sm:[&>button]:w-auto">
+              <span className="label-mono col-span-2 mr-auto text-muted-foreground">Download &amp; share</span>
               {actions
                 ? isValidElement(actions)
                   ? cloneElement(actions as ReactElement<any>, { portalTarget: panelNode })

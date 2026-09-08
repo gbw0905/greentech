@@ -71,10 +71,13 @@ export function ChartFilterBar({
         const opts = s.options.map(asOption);
         const groups = [...new Set(opts.map((o) => o.group ?? ""))];
         return (
-          <label key={s.label} className="flex w-auto shrink-0 items-center gap-1.5">
-            <span className="label-mono shrink-0 text-muted-foreground">{s.label}</span>
+          <label
+            key={s.label}
+            className="order-1 flex min-w-0 flex-col gap-1.5 sm:min-w-40 sm:flex-1 xl:w-auto xl:flex-none"
+          >
+            <span className="label-mono text-muted-foreground">{s.label}</span>
             <select
-              className="chart-select w-36 shrink-0"
+              className="chart-select h-10 w-full min-w-0 xl:w-44"
               value={s.value}
               aria-label={`Filter by ${s.label.toLowerCase()}`}
               onChange={(e) => s.onChange(e.target.value)}
@@ -102,10 +105,13 @@ export function ChartFilterBar({
         );
       })}
 
-      <span className="label-mono shrink-0 text-muted-foreground">
-        {typeof matched === "number" && matched !== shown
-          ? `${shown}/${matched}`
-          : `${shown}/${total}`}
+      <span className="order-5 flex h-10 min-w-20 flex-col justify-center border-l border-border pl-3">
+        <span className="label-mono text-muted-foreground">Results</span>
+        <strong className="text-sm font-bold tabular-nums text-foreground">
+          {typeof matched === "number" && matched !== shown
+            ? `${shown} of ${matched}`
+            : `${shown} of ${total}`}
+        </strong>
       </span>
 
       {dirty ? (
@@ -115,7 +121,7 @@ export function ChartFilterBar({
             onQueryChange("");
             selects.forEach((s) => s.onChange(""));
           }}
-          className="label-mono inline-flex shrink-0 items-center gap-1 rounded-sm border border-border px-2 py-1 text-muted-foreground transition-colors hover:bg-surface-2"
+          className="order-6 inline-flex h-10 shrink-0 items-center gap-1.5 px-2 text-xs font-semibold text-primary transition-colors hover:text-foreground"
         >
           <X className="size-3" />
           Clear
@@ -127,7 +133,7 @@ export function ChartFilterBar({
   if (bare) return content;
 
   return (
-    <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap rounded-sm border border-border bg-surface-2/60 p-2">
+    <div className="grid grid-cols-1 items-end gap-3 rounded-sm border border-border bg-surface-2/60 p-3 sm:grid-cols-2 xl:flex">
       {content}
     </div>
   );
