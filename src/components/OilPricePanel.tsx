@@ -8,7 +8,7 @@ import { marketOutlookFn } from "@/lib/market-outlook.functions";
 const assetColor = (symbol: string) => {
   if (symbol === "CL=F") return "var(--market-crude)";
   if (symbol === "^GSPC") return "var(--market-equity)";
-  if (symbol === "GC=F") return "var(--market-gold)";
+  if (symbol === "NG=F") return "var(--market-gas)";
   return "var(--primary)";
 };
 
@@ -251,13 +251,13 @@ export function OilPricePanel() {
         <div className="min-w-0">
           <p className="label-mono text-muted-foreground">Benchmark markets</p>
           <h2 className="mt-0.5 font-display text-base font-bold tracking-tight text-foreground sm:text-lg">
-            Crude Oil, Equities &amp; Gold
+            Crude Oil, Equities &amp; Natural Gas
           </h2>
           <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
             {[
               ["CL=F", "WTI crude"],
               ["^GSPC", "S&P 500"],
-              ["GC=F", "Gold"],
+              ["NG=F", "Natural Gas"],
             ].map(([sym, name]) => (
               <span
                 key={sym}

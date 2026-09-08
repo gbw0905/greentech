@@ -300,7 +300,7 @@ function Dashboard() {
               tone="var(--chart-2)"
               kicker="Markets"
               icon={TrendingUp}
-              title="Real time Crude Oil price, S&P 500 Index and Gold Price"
+              title="Real time Crude Oil price, S&P 500 Index and Natural Gas Price"
               subtitle="Live benchmark markets that move biofuel economics — 30-day trend, daily change and last close for each."
             />
             <OilPricePanel />
