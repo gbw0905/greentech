@@ -582,6 +582,21 @@ export const COUNTRY_FLAG: Record<string, string> = {
   kenya: "🇰🇪",
   "united-arab-emirates": "🇦🇪",
   "saudi-arabia": "🇸🇦",
+  mexico: "🇲🇽", chile: "🇨🇱", peru: "🇵🇪", paraguay: "🇵🇾", uruguay: "🇺🇾", ecuador: "🇪🇨",
+  bolivia: "🇧🇴", guatemala: "🇬🇹", "costa-rica": "🇨🇷", "dominican-republic": "🇩🇴",
+  spain: "🇪🇸", italy: "🇮🇹", poland: "🇵🇱", austria: "🇦🇹", belgium: "🇧🇪", denmark: "🇩🇰",
+  finland: "🇫🇮", norway: "🇳🇴", ireland: "🇮🇪", portugal: "🇵🇹", czechia: "🇨🇿", hungary: "🇭🇺",
+  romania: "🇷🇴", bulgaria: "🇧🇬", croatia: "🇭🇷", slovakia: "🇸🇰", slovenia: "🇸🇮", greece: "🇬🇷",
+  lithuania: "🇱🇹", latvia: "🇱🇻", estonia: "🇪🇪", switzerland: "🇨🇭", ukraine: "🇺🇦",
+  serbia: "🇷🇸", turkey: "🇹🇷", russia: "🇷🇺",
+  vietnam: "🇻🇳", singapore: "🇸🇬", taiwan: "🇹🇼", "new-zealand": "🇳🇿", pakistan: "🇵🇰",
+  bangladesh: "🇧🇩", "sri-lanka": "🇱🇰", nepal: "🇳🇵", kazakhstan: "🇰🇿", mongolia: "🇲🇳",
+  cambodia: "🇰🇭", laos: "🇱🇦", myanmar: "🇲🇲", "papua-new-guinea": "🇵🇬", fiji: "🇫🇯",
+  ghana: "🇬🇭", ethiopia: "🇪🇹", tanzania: "🇹🇿", uganda: "🇺🇬", zambia: "🇿🇲", zimbabwe: "🇿🇼",
+  mozambique: "🇲🇿", malawi: "🇲🇼", egypt: "🇪🇬", morocco: "🇲🇦", tunisia: "🇹🇳", algeria: "🇩🇿",
+  senegal: "🇸🇳", "cote-divoire": "🇨🇮", rwanda: "🇷🇼", angola: "🇦🇴", namibia: "🇳🇦",
+  botswana: "🇧🇼", cameroon: "🇨🇲", sudan: "🇸🇩",
+  israel: "🇮🇱", qatar: "🇶🇦", oman: "🇴🇲", kuwait: "🇰🇼", jordan: "🇯🇴",
 };
 
 
