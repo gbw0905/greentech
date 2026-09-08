@@ -64,7 +64,7 @@ export function CountryFocusPanel({
         const bDate = b.publishedAt ?? b.createdAt;
         return new Date(bDate).getTime() - new Date(aDate).getTime();
       });
-  }, [updates, country, fuels, profile]);
+  }, [updates, country, fuels, profile, range]);
 
   const status = profile ? policyStatusFor(profile) : null;
   const trackedMandates = profile ? mandatesForCountry(profile.slug) : [];
