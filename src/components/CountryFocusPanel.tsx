@@ -18,6 +18,7 @@ import { VideoLibrary } from "@/components/VideoLibrary";
 import { LiveMediaFeed } from "@/components/LiveMediaFeed";
 import { MandateDetailCard } from "@/components/MandateDetailCard";
 import { mandatesForCountry, governmentSitesForCountry } from "@/lib/mandates";
+import { DateRangeFilter, EMPTY_RANGE, withinRange } from "@/components/DateRangeFilter";
 
 type Tab = "profile" | "updates" | "videos";
 
@@ -37,6 +38,7 @@ export function CountryFocusPanel({
   onSelectCountry: (slug: string | null) => void;
 }) {
   const [tab, setTab] = useState<Tab>("updates");
+  const [range, setRange] = useState(EMPTY_RANGE);
   const { data: feed, isFetching } = useQuery(feedQuery);
   const profile = country ? countryBySlug(country) : null;
   const updates = feed?.updates ?? [];
@@ -44,6 +46,7 @@ export function CountryFocusPanel({
   const matched = useMemo(() => {
     const keywords = (profile?.updateKeywords ?? []).map((k) => k.toLowerCase());
     return updates
+      .filter((u) => withinRange(u.publishedAt ?? u.createdAt, range))
       .filter((u) => (fuels.length === 0 || u.fuels.some((f) => fuels.includes(f))))
       .filter((u) => {
         if (!country) return true;
@@ -61,7 +64,7 @@ export function CountryFocusPanel({
         const bDate = b.publishedAt ?? b.createdAt;
         return new Date(bDate).getTime() - new Date(aDate).getTime();
       });
-  }, [updates, country, fuels, profile]);
+  }, [updates, country, fuels, profile, range]);
 
   const status = profile ? policyStatusFor(profile) : null;
   const trackedMandates = profile ? mandatesForCountry(profile.slug) : [];
@@ -223,6 +226,7 @@ export function CountryFocusPanel({
 
         {tab === "updates" && (
           <div className="space-y-3">
+            <DateRangeFilter value={range} onChange={setRange} />
             {matched.length === 0 && (
               <p className="text-sm text-muted-foreground">
                 {isFetching ? "Scanning global sources…" : "No updates match this selection yet."}

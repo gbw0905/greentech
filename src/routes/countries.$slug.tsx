@@ -18,6 +18,8 @@ import {
   updateMatchesMandate,
 } from "@/lib/mandates";
 import { useVisitTracker } from "@/hooks/useVisitTracker";
+import { useState } from "react";
+import { DateRangeFilter, EMPTY_RANGE, withinRange } from "@/components/DateRangeFilter";
 
 
 export const Route = createFileRoute("/countries/$slug")({
@@ -102,7 +104,9 @@ function CountryPage() {
   const { data, isFetching } = useQuery(feedQueryWithInitial(initialFeed));
   const trackedMandates = mandatesForCountry(slug);
   const keywords = (country.updateKeywords ?? []).map((k) => k.toLowerCase());
+  const [range, setRange] = useState(EMPTY_RANGE);
   const updates = (data?.updates ?? [])
+    .filter((u) => withinRange(u.publishedAt ?? u.createdAt, range))
     .filter((u) => {
       if (u.countrySlug === slug) return true;
       if (keywords.length === 0) return false;
@@ -223,11 +227,12 @@ function CountryPage() {
         <h2 className="label-mono text-muted-foreground">
           Live updates by mandate · {updates.length} matched
         </h2>
+        <DateRangeFilter value={range} onChange={setRange} className="mt-3" />
         {updates.length === 0 && (
           <p className="mt-4 text-sm text-muted-foreground">
             {isFetching
               ? "Scanning global sources…"
-              : "No recent items matched this jurisdiction in the current scan window."}
+              : "No items matched this jurisdiction in the selected date range."}
           </p>
         )}
         <div className="mt-4 space-y-8">
