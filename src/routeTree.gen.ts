@@ -43,6 +43,7 @@ import { Route as ApiPublicIngestPolicyRouteImport } from './routes/api/public/i
 import { Route as ApiPublicInstantBriefAlertsRouteImport } from './routes/api/public/instant-brief-alerts'
 import { Route as ApiPublicLinkedinPublishRouteImport } from './routes/api/public/linkedin-publish'
 import { Route as ApiPublicPolicyAlertDigestRouteImport } from './routes/api/public/policy-alert-digest'
+import { Route as CountriesSlugIndexRouteImport } from './routes/countries.$slug.index'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as ApiPublicLinkedinOauthCallbackRouteImport } from './routes/api/public/linkedin/oauth/callback'
 
@@ -226,6 +227,11 @@ const ApiPublicPolicyAlertDigestRoute =
     path: '/api/public/policy-alert-digest',
     getParentRoute: () => rootRouteImport,
   } as any)
+const CountriesSlugIndexRoute = CountriesSlugIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CountriesSlugRoute,
+} as any)
 const LovableEmailTransactionalPreviewRoute =
   LovableEmailTransactionalPreviewRouteImport.update({
     id: '/lovable/email/transactional/preview',
@@ -259,7 +265,7 @@ export interface FileRoutesByFullPath {
   '/about/mission-vision': typeof AboutMissionVisionRoute
   '/about/team': typeof AboutTeamRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
-  '/countries/$slug': typeof CountriesSlugRoute
+  '/countries/$slug': typeof CountriesSlugRouteWithChildren
   '/settings/linkedin': typeof SettingsLinkedinRoute
   '/supply/$panel': typeof SupplyPanelRoute
   '/about/': typeof AboutIndexRoute
@@ -274,6 +280,7 @@ export interface FileRoutesByFullPath {
   '/api/public/instant-brief-alerts': typeof ApiPublicInstantBriefAlertsRoute
   '/api/public/linkedin-publish': typeof ApiPublicLinkedinPublishRoute
   '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
+  '/countries/$slug/': typeof CountriesSlugIndexRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/api/public/linkedin/oauth/callback': typeof ApiPublicLinkedinOauthCallbackRoute
 }
@@ -296,7 +303,6 @@ export interface FileRoutesByTo {
   '/about/mission-vision': typeof AboutMissionVisionRoute
   '/about/team': typeof AboutTeamRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
-  '/countries/$slug': typeof CountriesSlugRoute
   '/settings/linkedin': typeof SettingsLinkedinRoute
   '/supply/$panel': typeof SupplyPanelRoute
   '/about': typeof AboutIndexRoute
@@ -311,6 +317,7 @@ export interface FileRoutesByTo {
   '/api/public/instant-brief-alerts': typeof ApiPublicInstantBriefAlertsRoute
   '/api/public/linkedin-publish': typeof ApiPublicLinkedinPublishRoute
   '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
+  '/countries/$slug': typeof CountriesSlugIndexRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/api/public/linkedin/oauth/callback': typeof ApiPublicLinkedinOauthCallbackRoute
 }
@@ -335,7 +342,7 @@ export interface FileRoutesById {
   '/about/mission-vision': typeof AboutMissionVisionRoute
   '/about/team': typeof AboutTeamRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
-  '/countries/$slug': typeof CountriesSlugRoute
+  '/countries/$slug': typeof CountriesSlugRouteWithChildren
   '/settings/linkedin': typeof SettingsLinkedinRoute
   '/supply/$panel': typeof SupplyPanelRoute
   '/about/': typeof AboutIndexRoute
@@ -350,6 +357,7 @@ export interface FileRoutesById {
   '/api/public/instant-brief-alerts': typeof ApiPublicInstantBriefAlertsRoute
   '/api/public/linkedin-publish': typeof ApiPublicLinkedinPublishRoute
   '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
+  '/countries/$slug/': typeof CountriesSlugIndexRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/api/public/linkedin/oauth/callback': typeof ApiPublicLinkedinOauthCallbackRoute
 }
@@ -390,6 +398,7 @@ export interface FileRouteTypes {
     | '/api/public/instant-brief-alerts'
     | '/api/public/linkedin-publish'
     | '/api/public/policy-alert-digest'
+    | '/countries/$slug/'
     | '/lovable/email/transactional/preview'
     | '/api/public/linkedin/oauth/callback'
   fileRoutesByTo: FileRoutesByTo
@@ -412,7 +421,6 @@ export interface FileRouteTypes {
     | '/about/mission-vision'
     | '/about/team'
     | '/alerts/confirm'
-    | '/countries/$slug'
     | '/settings/linkedin'
     | '/supply/$panel'
     | '/about'
@@ -427,6 +435,7 @@ export interface FileRouteTypes {
     | '/api/public/instant-brief-alerts'
     | '/api/public/linkedin-publish'
     | '/api/public/policy-alert-digest'
+    | '/countries/$slug'
     | '/lovable/email/transactional/preview'
     | '/api/public/linkedin/oauth/callback'
   id:
@@ -465,6 +474,7 @@ export interface FileRouteTypes {
     | '/api/public/instant-brief-alerts'
     | '/api/public/linkedin-publish'
     | '/api/public/policy-alert-digest'
+    | '/countries/$slug/'
     | '/lovable/email/transactional/preview'
     | '/api/public/linkedin/oauth/callback'
   fileRoutesById: FileRoutesById
@@ -487,7 +497,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   AlertsConfirmRoute: typeof AlertsConfirmRoute
-  CountriesSlugRoute: typeof CountriesSlugRoute
+  CountriesSlugRoute: typeof CountriesSlugRouteWithChildren
   SettingsLinkedinRoute: typeof SettingsLinkedinRoute
   SupplyPanelRoute: typeof SupplyPanelRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
@@ -745,6 +755,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPolicyAlertDigestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/countries/$slug/': {
+      id: '/countries/$slug/'
+      path: '/'
+      fullPath: '/countries/$slug/'
+      preLoaderRoute: typeof CountriesSlugIndexRouteImport
+      parentRoute: typeof CountriesSlugRoute
+    }
     '/lovable/email/transactional/preview': {
       id: '/lovable/email/transactional/preview'
       path: '/lovable/email/transactional/preview'
@@ -776,6 +793,18 @@ const AboutRouteChildren: AboutRouteChildren = {
 
 const AboutRouteWithChildren = AboutRoute._addFileChildren(AboutRouteChildren)
 
+interface CountriesSlugRouteChildren {
+  CountriesSlugIndexRoute: typeof CountriesSlugIndexRoute
+}
+
+const CountriesSlugRouteChildren: CountriesSlugRouteChildren = {
+  CountriesSlugIndexRoute: CountriesSlugIndexRoute,
+}
+
+const CountriesSlugRouteWithChildren = CountriesSlugRoute._addFileChildren(
+  CountriesSlugRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRouteWithChildren,
@@ -795,7 +824,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   AlertsConfirmRoute: AlertsConfirmRoute,
-  CountriesSlugRoute: CountriesSlugRoute,
+  CountriesSlugRoute: CountriesSlugRouteWithChildren,
   SettingsLinkedinRoute: SettingsLinkedinRoute,
   SupplyPanelRoute: SupplyPanelRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
