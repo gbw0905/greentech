@@ -51,6 +51,10 @@ export const Route = createFileRoute("/sitemap.xml")({
             "oil",
             "saf",
             "carriers",
+            "hydrogen",
+            "rlpg",
+            "methanol",
+
           ].map((panel) => ({
             path: `/supply/${panel}`,
             changefreq: "weekly" as const,
