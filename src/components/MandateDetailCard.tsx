@@ -13,7 +13,7 @@ function Row({ label, value }: { label: string; value: string }) {
 export function MandateDetailCard({ mandate: m }: { mandate: Mandate }) {
   return (
     <article className="card-motion overflow-hidden rounded-lg border border-border bg-card shadow-[var(--shadow-card)]">
-      <div className="h-1 bg-chart-2" aria-hidden />
+      <div className="h-1 bg-gradient-to-r from-tracker-red via-tracker-green to-tracker-blue" aria-hidden />
       <div className="p-4 sm:p-5">
       <header className="border-b border-border pb-4">
         <div className="flex flex-wrap items-center gap-2">
