@@ -79,7 +79,7 @@ export const Route = createFileRoute("/api/chat")({
           messages: await convertToModelMessages(messages.slice(-30)),
           tools: assistantTools,
           stopWhen: stepCountIs(50),
-          providerOptions: { openai: { reasoningEffort: "low" } },
+          
           onError: ({ error }) => console.error("assistant stream error", error),
         });
 
