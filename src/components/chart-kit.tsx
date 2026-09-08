@@ -1126,7 +1126,8 @@ export function ChartPanel({
       </div>
 
       {metricOptions || limitOptions || viewOptions || actions || filters || assistant ? (
-        <div className="mb-2 flex flex-wrap items-center gap-2 rounded-sm border border-border bg-surface-2/60 p-2 sm:flex-nowrap sm:overflow-x-auto sm:whitespace-nowrap">
+        <div className="mb-2 flex flex-col gap-2 rounded-sm border border-border bg-surface-2/60 p-2">
+          <div className="flex flex-wrap items-center gap-2">
           {filters
             ? isValidElement(filters)
               ? cloneElement(filters as ReactElement<any>, { bare: true })
