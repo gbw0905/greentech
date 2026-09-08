@@ -46,6 +46,7 @@ export function CountryFocusPanel({
   const matched = useMemo(() => {
     const keywords = (profile?.updateKeywords ?? []).map((k) => k.toLowerCase());
     return updates
+      .filter((u) => withinRange(u.publishedAt ?? u.createdAt, range))
       .filter((u) => (fuels.length === 0 || u.fuels.some((f) => fuels.includes(f))))
       .filter((u) => {
         if (!country) return true;
