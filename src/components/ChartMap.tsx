@@ -380,37 +380,44 @@ export function ChartMap({
             );
           })}
 
-          {placed.map(({ p, x, y, r }, i) => (
-            <g
-              key={p.key}
-              className={p.newsTarget ? "cursor-pointer" : ""}
-              onMouseEnter={() => setHover({ x, y, p })}
-              onMouseLeave={() => setHover(null)}
-              onClick={() => p.newsTarget && onSelect?.(p.newsTarget)}
-            >
-              <circle
-                cx={x}
-                cy={y}
-                r={r}
-                fill={heatColor(p.value / max)}
-                fillOpacity={0.82}
-                stroke="var(--card)"
-                strokeWidth={1.4}
-              />
-              {focus ? (
-                <text
-                  x={x}
-                  y={i % 2 === 0 ? y - r - 5 : y + r + 12}
-                  textAnchor="middle"
-                  fontSize={11}
-                  fontWeight={600}
-                  fill="var(--foreground)"
-                >
-                  {p.label}
-                </text>
-              ) : null}
-            </g>
-          ))}
+          {placed.map(({ p, x, y, r }, i) => {
+            const s = r / 8;
+            return (
+              <g
+                key={p.key}
+                className={p.newsTarget ? "cursor-pointer" : ""}
+                onMouseEnter={() => setHover({ x, y: y - r * 2.4, p })}
+                onMouseLeave={() => setHover(null)}
+                onClick={() => p.newsTarget && onSelect?.(p.newsTarget)}
+              >
+                {/* Ground shadow so the pin reads as standing on its country */}
+                <ellipse cx={x} cy={y} rx={r * 0.5} ry={r * 0.18} fill="rgb(15,23,42)" opacity={0.22} />
+                {/* Map pin: tip sits exactly on the country anchor */}
+                <g transform={`translate(${x - 12 * s} ${y - 22 * s}) scale(${s})`}>
+                  <path
+                    d="M12 22s7-7.75 7-13A7 7 0 0 0 5 9c0 5.25 7 13 7 13z"
+                    fill={heatColor(p.value / max)}
+                    stroke="var(--card)"
+                    strokeWidth={1.6}
+                    strokeLinejoin="round"
+                  />
+                  <circle cx={12} cy={9} r={2.6} fill="var(--card)" />
+                </g>
+                {focus ? (
+                  <text
+                    x={x}
+                    y={i % 2 === 0 ? y - r * 3 - 4 : y + 12}
+                    textAnchor="middle"
+                    fontSize={11}
+                    fontWeight={600}
+                    fill="var(--foreground)"
+                  >
+                    {p.label}
+                  </text>
+                ) : null}
+              </g>
+            );
+          })}
         </svg>
 
         {hover ? (
