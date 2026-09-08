@@ -225,7 +225,7 @@ function CarrierChart({
   // Default view is the global top 10; once a country or search filter is
   // applied we show every matching operator in that selection (capped at 20).
   const isFiltered = Boolean(f.a || f.b || f.query.trim());
-  const rows = view === "table" ? ranked : ranked.slice(0, isFiltered ? 20 : 10);
+  const rows = view === "table" || view === "map" ? ranked : ranked.slice(0, isFiltered ? 20 : 10);
   const ghgEmpty =
     metricKey === "ghg" && ranked.length > 0 && !ranked.some((x) => ghgSavingsMt(x.name) > 0);
 

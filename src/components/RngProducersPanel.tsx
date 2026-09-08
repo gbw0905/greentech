@@ -191,7 +191,7 @@ export function RngProducersPanel() {
   });
   const ranked = f.filtered.slice().sort((a, b) => valueOf(b) - valueOf(a));
   const isFiltered = Boolean(f.a || f.b || f.query.trim());
-  const rows = view === "table" ? ranked : ranked.slice(0, isFiltered ? 20 : 10);
+  const rows = view === "table" || view === "map" ? ranked : ranked.slice(0, isFiltered ? 20 : 10);
   const ghgEmpty =
     metricKey === "ghg" && ranked.length > 0 && !ranked.some((x) => ghgSavingsMt(x.name) > 0);
 
