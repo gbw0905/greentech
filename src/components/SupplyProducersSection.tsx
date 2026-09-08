@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Fuel, Recycle, Building2, Plane, Truck, Ship, Container, Wheat, Zap, Flame, Layers, Trees, ChevronRight } from "lucide-react";
+import { Fuel, Recycle, Building2, Plane, Truck, Ship, Container, Wheat, Zap, Flame, Layers, Trees, Atom, Cylinder, FlaskConical, ChevronRight } from "lucide-react";
 import imgStations from "@/assets/supply-stations.jpg";
 import imgUco from "@/assets/supply-uco.jpg";
 import imgEthanol from "@/assets/supply-ethanol.jpg";
@@ -13,6 +13,9 @@ import imgMarine from "@/assets/supply-marine.jpg";
 import imgOil from "@/assets/supply-oil.jpg";
 import imgSaf from "@/assets/supply-saf.jpg";
 import imgCarriers from "@/assets/supply-carriers.jpg";
+import imgHydrogen from "@/assets/supply-hydrogen.jpg";
+import imgRlpg from "@/assets/supply-rlpg.jpg";
+import imgMethanol from "@/assets/supply-methanol.jpg";
 import { BiofuelProductionPanel } from "@/components/BiofuelProductionPanel";
 import { UcoSuppliersPanel } from "@/components/UcoSuppliersPanel";
 import { MarineBiofuelPanel } from "@/components/MarineBiofuelPanel";
@@ -25,6 +28,9 @@ import { BioPowerGeneratorsPanel } from "@/components/BioPowerGeneratorsPanel";
 import { RngProducersPanel } from "@/components/RngProducersPanel";
 import { BiocharProducersPanel } from "@/components/BiocharProducersPanel";
 import { WoodPelletProducersPanel } from "@/components/WoodPelletProducersPanel";
+import { RenewableHydrogenPanel } from "@/components/RenewableHydrogenPanel";
+import { RenewableLpgPanel } from "@/components/RenewableLpgPanel";
+import { BioMethanolPanel } from "@/components/BioMethanolPanel";
 
 export type PanelId =
   | "stations"
@@ -38,7 +44,11 @@ export type PanelId =
   | "oil"
   | "saf"
   | "carriers"
+  | "hydrogen"
+  | "rlpg"
+  | "methanol"
   | "biopower";
+
 
 export const SUPPLY_PANELS: {
   id: PanelId;
@@ -170,6 +180,36 @@ export const SUPPLY_PANELS: {
     tone: "var(--chart-7)",
     image: imgCarriers,
   },
+  {
+    id: "hydrogen",
+    icon: Atom,
+    title: "Renewable hydrogen producers",
+    blurb: "Electrolytic and biomass hydrogen for refineries, ammonia, e-fuels and heavy transport.",
+    stat: "64",
+    statLabel: "producers tracked",
+    tone: "var(--chart-5)",
+    image: imgHydrogen,
+  },
+  {
+    id: "rlpg",
+    icon: Cylinder,
+    title: "Renewable LPG suppliers",
+    blurb: "BioLPG and rDME producers plus the distributors serving off-grid heating and autogas.",
+    stat: "48",
+    statLabel: "producers & distributors",
+    tone: "var(--chart-8)",
+    image: imgRlpg,
+  },
+  {
+    id: "methanol",
+    icon: FlaskConical,
+    title: "Bio-methanol producers",
+    blurb: "Biomass, waste and green-hydrogen methanol plants supplying shipping and chemicals.",
+    stat: "46",
+    statLabel: "producers tracked",
+    tone: "var(--chart-1)",
+    image: imgMethanol,
+  },
 ];
 
 export function SupplyPanelBody({ id }: { id: PanelId }) {
@@ -184,8 +224,12 @@ export function SupplyPanelBody({ id }: { id: PanelId }) {
   if (id === "marine") return <MarineBiofuelPanel />;
   if (id === "oil") return <OilStocksPanel />;
   if (id === "saf") return <SafAirlinesPanel />;
+  if (id === "hydrogen") return <RenewableHydrogenPanel />;
+  if (id === "rlpg") return <RenewableLpgPanel />;
+  if (id === "methanol") return <BioMethanolPanel />;
   return <CarriersPanel />;
 }
+
 
 /**
  * Overview grid: each card links to a dedicated page for that dataset so

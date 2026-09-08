@@ -96,4 +96,26 @@ export const SUPPLY_SEO: Record<PanelId, SupplySeo> = {
     keywords:
       "biofuel trucking, renewable diesel fleets, biodiesel shipping lines, rail biofuel, freight decarbonisation",
   },
+  hydrogen: {
+    title: "Renewable Hydrogen Producers — Global Green Hydrogen & Electrolyser Projects",
+    description:
+      "Global directory of renewable hydrogen producers: electrolytic green hydrogen output, electrolyser capacity, production routes, market caps and live share prices.",
+    keywords:
+      "renewable hydrogen producers, green hydrogen companies, electrolyser capacity, green ammonia projects, hydrogen production capacity",
+  },
+  rlpg: {
+    title: "Renewable LPG Suppliers — BioLPG & rDME Producers and Distributors",
+    description:
+      "Renewable LPG worldwide: bioLPG produced alongside HVO and SAF, rDME plants, and the distributors delivering renewable propane to heating, cooking and autogas.",
+    keywords:
+      "renewable LPG, bioLPG producers, rDME, renewable propane, biopropane suppliers, renewable autogas",
+  },
+  methanol: {
+    title: "Bio-Methanol Producers — Green & E-Methanol Plants Worldwide",
+    description:
+      "Bio-methanol and e-methanol producers by capacity: biomass and waste gasification, black liquor and green-hydrogen routes supplying shipping fuel and chemicals.",
+    keywords:
+      "bio-methanol producers, green methanol, e-methanol plants, renewable methanol capacity, methanol marine fuel",
+  },
 };
+
