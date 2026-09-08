@@ -81,6 +81,15 @@ function AuthPage() {
     }
   }
 
+  async function microsoft() {
+    setError("");
+    try {
+      await lovable.auth.signInWithOAuth("microsoft", { redirect_uri: window.location.origin });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Microsoft sign-in failed.");
+    }
+  }
+
   return (
     <PageShell>
       <div className="mx-auto w-full max-w-md">
