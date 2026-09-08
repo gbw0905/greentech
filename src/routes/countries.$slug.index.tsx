@@ -83,7 +83,7 @@ function CountryOverviewPage() {
             <p className="mt-3 max-w-3xl text-base/relaxed text-foreground">{country.blurb}</p>
             <div className="mt-4 flex flex-wrap gap-2">
               {country.frameworks.map((f) => (
-                <span key={f} className="label-mono rounded-md border border-chart-1/25 bg-chart-1/10 px-2.5 py-1 text-chart-1">{f}</span>
+                <span key={f} className="label-mono rounded-md border border-tracker-green/30 bg-tracker-green/10 px-2.5 py-1 text-tracker-green">{f}</span>
               ))}
             </div>
           </section>
@@ -132,7 +132,7 @@ function CountryOverviewPage() {
 
           <nav className="space-y-2" aria-label="Country tracking shortcuts">
             <Link to="/countries/$slug/mandates" params={{ slug }} className="group flex items-center gap-3 rounded-lg border border-border bg-card p-4 shadow-[var(--shadow-card)] transition-transform hover:-translate-y-0.5">
-              <span className="grid size-9 place-items-center rounded-md bg-chart-2/10 text-chart-2"><Layers className="size-4" /></span>
+              <span className="grid size-9 place-items-center rounded-md bg-tracker-blue/10 text-tracker-blue"><Layers className="size-4" /></span>
               <span className="min-w-0 flex-1"><span className="block text-sm font-bold">Mandates &amp; targets</span><span className="block text-xs text-muted-foreground">Timeline and compliance</span></span>
               <ArrowRight className="size-4 text-muted-foreground group-hover:text-primary" />
             </Link>
@@ -144,7 +144,7 @@ function CountryOverviewPage() {
           </nav>
 
           <div className="flex items-start gap-3 border-t border-border pt-4 text-xs/relaxed text-muted-foreground">
-            <FileText className="mt-0.5 size-4 shrink-0 text-chart-1" />
+            <FileText className="mt-0.5 size-4 shrink-0 text-tracker-red" />
             Information is compiled from the linked government records and reviewed against published timelines.
           </div>
         </aside>

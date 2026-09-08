@@ -84,7 +84,7 @@ function CountryUpdatesPage() {
           </div>
           <CalendarRangeFilter value={range} onChange={setRange} />
         </div>
-        <div className="flex items-center gap-2 border-t border-border bg-surface-1 px-4 py-2.5 text-xs text-muted-foreground sm:px-5"><CalendarDays className="size-3.5 text-chart-1" /> Select a preset or exact dates to review policy changes over time.</div>
+        <div className="flex items-center gap-2 border-t border-border bg-surface-1 px-4 py-2.5 text-xs text-muted-foreground sm:px-5"><CalendarDays className="size-3.5 text-tracker-blue" /> Select a preset or exact dates to review policy changes over time.</div>
       </section>
 
       <section>
@@ -105,7 +105,7 @@ function CountryUpdatesPage() {
                 {mandate.instrument}
               </h3><p className="label-mono mt-1 text-muted-foreground">
                 {items.length} update{items.length === 1 ? "" : "s"}
-              </p></div><FileCheck2 className="size-4 text-chart-2" />
+              </p></div><FileCheck2 className="size-4 text-tracker-green" />
               </div>
               <div className="space-y-3 p-3 sm:p-4">
                 {items.length === 0 ? (

@@ -24,7 +24,7 @@ export function CountryProfileHeader({
   const status = policyStatusFor(country);
   return (
     <header className="rise overflow-hidden rounded-lg border border-border bg-card shadow-[var(--shadow-card)]">
-      <div className="h-1.5 bg-ink" aria-hidden />
+      <div className="h-1.5 bg-gradient-to-r from-tracker-red via-tracker-green to-tracker-blue" aria-hidden />
       <div className="px-4 pt-4 sm:px-6 sm:pt-5">
       <Link
         to="/"
