@@ -1184,16 +1184,22 @@ export function ChartPanel({
               </select>
             </label>
           ) : null}
-          {actions
-            ? isValidElement(actions)
-              ? cloneElement(actions as ReactElement<any>, { portalTarget: panelNode })
-              : actions
-            : null}
-          {assistant
-            ? isValidElement(assistant)
-              ? cloneElement(assistant as ReactElement<any>, { portalTarget: panelNode })
-              : assistant
-            : null}
+          </div>
+          {actions || assistant ? (
+            <div className="flex flex-wrap items-center gap-2 border-t border-border/70 pt-2">
+              <span className="label-mono mr-auto text-muted-foreground">Download &amp; share</span>
+              {actions
+                ? isValidElement(actions)
+                  ? cloneElement(actions as ReactElement<any>, { portalTarget: panelNode })
+                  : actions
+                : null}
+              {assistant
+                ? isValidElement(assistant)
+                  ? cloneElement(assistant as ReactElement<any>, { portalTarget: panelNode })
+                  : assistant
+                : null}
+            </div>
+          ) : null}
         </div>
       ) : null}
 
