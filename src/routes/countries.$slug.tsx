@@ -227,11 +227,12 @@ function CountryPage() {
         <h2 className="label-mono text-muted-foreground">
           Live updates by mandate · {updates.length} matched
         </h2>
+        <DateRangeFilter value={range} onChange={setRange} className="mt-3" />
         {updates.length === 0 && (
           <p className="mt-4 text-sm text-muted-foreground">
             {isFetching
               ? "Scanning global sources…"
-              : "No recent items matched this jurisdiction in the current scan window."}
+              : "No items matched this jurisdiction in the selected date range."}
           </p>
         )}
         <div className="mt-4 space-y-8">
