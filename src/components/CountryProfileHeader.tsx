@@ -5,7 +5,7 @@ import {
   REGION_ACCENT,
   POLICY_STATUS_COLOR,
   policyStatusFor,
-  type Country,
+  type CountryProfile,
 } from "@/lib/policy-taxonomy";
 
 const TABS = [
