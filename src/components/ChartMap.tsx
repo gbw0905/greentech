@@ -178,6 +178,58 @@ const COUNTRY_LATLON: Record<string, [number, number]> = {
   "New Zealand": [172.5, -41.5],
   "Papua New Guinea": [144.5, -6.3],
   Fiji: [178, -17.8],
+  Belarus: [28, 53.7],
+  Moldova: [28.6, 47.2],
+  Georgia: [43.4, 42],
+  Armenia: [45, 40.2],
+  Azerbaijan: [47.8, 40.3],
+  Albania: [20.1, 41],
+  Montenegro: [19.3, 42.8],
+  "North Macedonia": [21.7, 41.6],
+  "Bosnia and Herzegovina": [17.8, 44],
+  Kosovo: [20.9, 42.6],
+  Guatemala: [-90.4, 15.5],
+  Honduras: [-86.6, 14.8],
+  "El Salvador": [-88.9, 13.8],
+  Nicaragua: [-85.2, 12.9],
+  "Costa Rica": [-84, 9.9],
+  Panama: [-80.3, 8.6],
+  Belize: [-88.7, 17.2],
+  Cuba: [-79, 21.7],
+  Jamaica: [-77.3, 18.1],
+  "Dominican Republic": [-70.5, 18.8],
+  "Trinidad and Tobago": [-61.3, 10.4],
+  Venezuela: [-66.5, 7.5],
+  Guyana: [-58.9, 5.5],
+  Suriname: [-55.9, 4.3],
+  Mauritius: [57.55, -20.28],
+  Madagascar: [46.8, -19],
+  Gabon: [11.8, -0.6],
+  "Republic of the Congo": [15.5, -1],
+  "Democratic Republic of the Congo": [23.5, -2.9],
+  Mali: [-3.5, 17.5],
+  "Burkina Faso": [-1.7, 12.3],
+  Niger: [9, 17.5],
+  Chad: [18.7, 15.3],
+  Somalia: [46.5, 5.5],
+  Benin: [2.3, 9.6],
+  Togo: [1, 8.6],
+  Guinea: [-11.3, 10.5],
+  Liberia: [-9.4, 6.5],
+  Gambia: [-15.4, 13.4],
+  Brunei: [114.7, 4.5],
+  Bhutan: [90.4, 27.4],
+  Maldives: [73.5, 3.2],
+  Afghanistan: [66.5, 34],
+  Turkmenistan: [59.5, 39.3],
+  Kyrgyzstan: [74.5, 41.5],
+  Tajikistan: [71, 38.8],
+  Syria: [38.5, 35],
+  Lebanon: [35.9, 33.9],
+  Yemen: [47.5, 15.5],
+  "New Caledonia": [165.6, -21.3],
+  Vanuatu: [167.6, -16.3],
+  "Solomon Islands": [160, -9.5],
 };
 
 /**
@@ -329,27 +381,29 @@ export function ChartMap({
       perCountry.set(p.country, list);
     }
     const out: { p: MapPoint; x: number; y: number; r: number }[] = [];
+    /** Marker size varies only slightly, so a large value never swamps the map. */
+    const sizeOf = (v: number) => 6 + 3 * Math.sqrt(Math.max(v, 0) / max);
     for (const [country, list] of perCountry) {
       const anchor = anchorFor(country);
       if (!anchor) continue;
       const c: [number, number] = [anchor[0], anchor[1]];
-      const spread = Math.min(Math.max(anchor[2] * 0.22, 12), focus ? 140 : 30);
+      const spread = Math.min(Math.max(anchor[2] * 0.22, 14), focus ? 150 : 34);
       list.forEach((p, i) => {
         if (list.length === 1) {
-          out.push({ p, x: c[0], y: c[1], r: 6 + 12 * Math.sqrt(p.value / max) });
+          out.push({ p, x: c[0], y: c[1], r: sizeOf(p.value) });
           return;
         }
         const angle = (i / list.length) * Math.PI * 2 + hash01(p.key) * 0.9;
-        const ring = 0.45 + 0.55 * hash01(p.key + country);
+        const ring = 0.5 + 0.5 * hash01(p.key + country);
         out.push({
           p,
           x: c[0] + Math.cos(angle) * spread * ring,
           y: c[1] + Math.sin(angle) * spread * ring * 0.7,
-          r: 5 + 11 * Math.sqrt(p.value / max),
+          r: sizeOf(p.value),
         });
       });
     }
-    return out.sort((a, b) => b.r - a.r);
+    return out.sort((a, b) => a.y - b.y);
   }, [points, path, max, focus, byName]);
 
   if (!features) {
@@ -378,37 +432,44 @@ export function ChartMap({
             );
           })}
 
-          {placed.map(({ p, x, y, r }, i) => (
-            <g
-              key={p.key}
-              className={p.newsTarget ? "cursor-pointer" : ""}
-              onMouseEnter={() => setHover({ x, y, p })}
-              onMouseLeave={() => setHover(null)}
-              onClick={() => p.newsTarget && onSelect?.(p.newsTarget)}
-            >
-              <circle
-                cx={x}
-                cy={y}
-                r={r}
-                fill={heatColor(p.value / max)}
-                fillOpacity={0.82}
-                stroke="var(--card)"
-                strokeWidth={1.4}
-              />
-              {focus ? (
-                <text
-                  x={x}
-                  y={i % 2 === 0 ? y - r - 5 : y + r + 12}
-                  textAnchor="middle"
-                  fontSize={11}
-                  fontWeight={600}
-                  fill="var(--foreground)"
-                >
-                  {p.label}
-                </text>
-              ) : null}
-            </g>
-          ))}
+          {placed.map(({ p, x, y, r }, i) => {
+            const s = r / 8;
+            return (
+              <g
+                key={p.key}
+                className={p.newsTarget ? "cursor-pointer" : ""}
+                onMouseEnter={() => setHover({ x, y: y - r * 2.4, p })}
+                onMouseLeave={() => setHover(null)}
+                onClick={() => p.newsTarget && onSelect?.(p.newsTarget)}
+              >
+                {/* Ground shadow so the pin reads as standing on its country */}
+                <ellipse cx={x} cy={y} rx={r * 0.5} ry={r * 0.18} fill="rgb(15,23,42)" opacity={0.22} />
+                {/* Map pin: tip sits exactly on the country anchor */}
+                <g transform={`translate(${x - 12 * s} ${y - 22 * s}) scale(${s})`}>
+                  <path
+                    d="M12 22s7-7.75 7-13A7 7 0 0 0 5 9c0 5.25 7 13 7 13z"
+                    fill={heatColor(p.value / max)}
+                    stroke="var(--card)"
+                    strokeWidth={1.6}
+                    strokeLinejoin="round"
+                  />
+                  <circle cx={12} cy={9} r={2.6} fill="var(--card)" />
+                </g>
+                {focus ? (
+                  <text
+                    x={x}
+                    y={i % 2 === 0 ? y - r * 3 - 4 : y + 12}
+                    textAnchor="middle"
+                    fontSize={11}
+                    fontWeight={600}
+                    fill="var(--foreground)"
+                  >
+                    {p.label}
+                  </text>
+                ) : null}
+              </g>
+            );
+          })}
         </svg>
 
         {hover ? (
