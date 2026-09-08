@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { List, Maximize2, MessageSquare, X } from "lucide-react";
 import { useAuthSession } from "@/hooks/useAuthSession";
-import { AssistantChat } from "./AssistantChat";
 import { ThreadList } from "./ThreadList";
 import { useAssistantThreads } from "./useAssistantThreads";
 import assistantMark from "@/assets/logo.png";
+
+const AssistantChat = lazy(() =>
+  import("./AssistantChat").then((module) => ({ default: module.AssistantChat })),
+);
 
 /** Floating Watch Assistant available on every page. */
 export function ChatDock() {
@@ -92,13 +95,21 @@ export function ChatDock() {
       ) : null}
 
       <div className="min-h-0 flex-1">
-        <AssistantChat
-          key={activeId ?? "guest"}
-          threadId={signedIn ? activeId : null}
-          initialMessages={messages}
-          onActivity={() => void refresh()}
-          compact
-        />
+        <Suspense
+          fallback={
+            <div className="flex h-full items-center justify-center px-4 text-sm text-muted-foreground">
+              Opening assistant…
+            </div>
+          }
+        >
+          <AssistantChat
+            key={activeId ?? "guest"}
+            threadId={signedIn ? activeId : null}
+            initialMessages={messages}
+            onActivity={() => void refresh()}
+            compact
+          />
+        </Suspense>
       </div>
     </div>
   );
