@@ -209,8 +209,6 @@ export function ChartBars({
 /** The four chart types every Supply & producers panel offers. */
 export const PANEL_VIEWS = [
   { value: "heat", label: "Heat map" },
-  { value: "scatter", label: "Scatter plot" },
-  { value: "bars", label: "Ranked bars" },
   { value: "line", label: "Trend line (2000–2026)" },
   { value: "map", label: "Location map" },
   { value: "table", label: "Data table" },
