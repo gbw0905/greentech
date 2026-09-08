@@ -329,27 +329,29 @@ export function ChartMap({
       perCountry.set(p.country, list);
     }
     const out: { p: MapPoint; x: number; y: number; r: number }[] = [];
+    /** Marker size varies only slightly, so a large value never swamps the map. */
+    const sizeOf = (v: number) => 6 + 3 * Math.sqrt(Math.max(v, 0) / max);
     for (const [country, list] of perCountry) {
       const anchor = anchorFor(country);
       if (!anchor) continue;
       const c: [number, number] = [anchor[0], anchor[1]];
-      const spread = Math.min(Math.max(anchor[2] * 0.22, 12), focus ? 140 : 30);
+      const spread = Math.min(Math.max(anchor[2] * 0.22, 14), focus ? 150 : 34);
       list.forEach((p, i) => {
         if (list.length === 1) {
-          out.push({ p, x: c[0], y: c[1], r: 6 + 12 * Math.sqrt(p.value / max) });
+          out.push({ p, x: c[0], y: c[1], r: sizeOf(p.value) });
           return;
         }
         const angle = (i / list.length) * Math.PI * 2 + hash01(p.key) * 0.9;
-        const ring = 0.45 + 0.55 * hash01(p.key + country);
+        const ring = 0.5 + 0.5 * hash01(p.key + country);
         out.push({
           p,
           x: c[0] + Math.cos(angle) * spread * ring,
           y: c[1] + Math.sin(angle) * spread * ring * 0.7,
-          r: 5 + 11 * Math.sqrt(p.value / max),
+          r: sizeOf(p.value),
         });
       });
     }
-    return out.sort((a, b) => b.r - a.r);
+    return out.sort((a, b) => a.y - b.y);
   }, [points, path, max, focus, byName]);
 
   if (!features) {
