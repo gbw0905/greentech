@@ -1,5 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { AssistantWorkspace } from "@/components/assistant/AssistantWorkspace";
+import { lazy, Suspense } from "react";
+import { ClientOnly, createFileRoute } from "@tanstack/react-router";
+
+const AssistantWorkspace = lazy(() =>
+  import("@/components/assistant/AssistantWorkspace").then((module) => ({
+    default: module.AssistantWorkspace,
+  })),
+);
 
 export const Route = createFileRoute("/assistant/$threadId")({
   head: () => ({
@@ -25,5 +31,15 @@ export const Route = createFileRoute("/assistant/$threadId")({
 
 function ThreadPage() {
   const { threadId } = Route.useParams();
-  return <AssistantWorkspace threadIdFromRoute={threadId} />;
+  return (
+    <ClientOnly fallback={<AssistantLoading />}>
+      <Suspense fallback={<AssistantLoading />}>
+        <AssistantWorkspace threadIdFromRoute={threadId} />
+      </Suspense>
+    </ClientOnly>
+  );
+}
+
+function AssistantLoading() {
+  return <main className="min-h-screen bg-background" aria-label="Loading Watch Assistant" />;
 }
