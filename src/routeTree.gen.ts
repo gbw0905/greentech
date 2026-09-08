@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as AssistantRouteImport } from './routes/assistant'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DataSourcesRouteImport } from './routes/data-sources'
@@ -29,6 +30,8 @@ import { Route as AboutIndexRouteImport } from './routes/about.index'
 import { Route as AboutMissionVisionRouteImport } from './routes/about.mission-vision'
 import { Route as AboutTeamRouteImport } from './routes/about.team'
 import { Route as AlertsConfirmRouteImport } from './routes/alerts.confirm'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as AssistantThreadIdRouteImport } from './routes/assistant.$threadId'
 import { Route as CountriesSlugRouteImport } from './routes/countries.$slug'
 import { Route as SettingsLinkedinRouteImport } from './routes/settings.linkedin'
 import { Route as SupplyPanelRouteImport } from './routes/supply.$panel'
@@ -57,6 +60,11 @@ const IndexRoute = IndexRouteImport.update({
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AssistantRoute = AssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -150,6 +158,16 @@ const AlertsConfirmRoute = AlertsConfirmRouteImport.update({
   id: '/alerts/confirm',
   path: '/alerts/confirm',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AssistantThreadIdRoute = AssistantThreadIdRouteImport.update({
+  id: '/$threadId',
+  path: '/$threadId',
+  getParentRoute: () => AssistantRoute,
 } as any)
 const CountriesSlugRoute = CountriesSlugRouteImport.update({
   id: '/countries/$slug',
@@ -260,6 +278,7 @@ const ApiPublicLinkedinOauthCallbackRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRouteWithChildren
+  '/assistant': typeof AssistantRouteWithChildren
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/data-sources': typeof DataSourcesRoute
@@ -277,6 +296,8 @@ export interface FileRoutesByFullPath {
   '/about/mission-vision': typeof AboutMissionVisionRoute
   '/about/team': typeof AboutTeamRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
+  '/api/chat': typeof ApiChatRoute
+  '/assistant/$threadId': typeof AssistantThreadIdRoute
   '/countries/$slug': typeof CountriesSlugRouteWithChildren
   '/settings/linkedin': typeof SettingsLinkedinRoute
   '/supply/$panel': typeof SupplyPanelRoute
@@ -300,6 +321,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/assistant': typeof AssistantRouteWithChildren
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/data-sources': typeof DataSourcesRoute
@@ -317,6 +339,8 @@ export interface FileRoutesByTo {
   '/about/mission-vision': typeof AboutMissionVisionRoute
   '/about/team': typeof AboutTeamRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
+  '/api/chat': typeof ApiChatRoute
+  '/assistant/$threadId': typeof AssistantThreadIdRoute
   '/settings/linkedin': typeof SettingsLinkedinRoute
   '/supply/$panel': typeof SupplyPanelRoute
   '/about': typeof AboutIndexRoute
@@ -341,6 +365,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRouteWithChildren
+  '/assistant': typeof AssistantRouteWithChildren
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/data-sources': typeof DataSourcesRoute
@@ -358,6 +383,8 @@ export interface FileRoutesById {
   '/about/mission-vision': typeof AboutMissionVisionRoute
   '/about/team': typeof AboutTeamRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
+  '/api/chat': typeof ApiChatRoute
+  '/assistant/$threadId': typeof AssistantThreadIdRoute
   '/countries/$slug': typeof CountriesSlugRouteWithChildren
   '/settings/linkedin': typeof SettingsLinkedinRoute
   '/supply/$panel': typeof SupplyPanelRoute
@@ -384,6 +411,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/assistant'
     | '/auth'
     | '/contact'
     | '/data-sources'
@@ -401,6 +429,8 @@ export interface FileRouteTypes {
     | '/about/mission-vision'
     | '/about/team'
     | '/alerts/confirm'
+    | '/api/chat'
+    | '/assistant/$threadId'
     | '/countries/$slug'
     | '/settings/linkedin'
     | '/supply/$panel'
@@ -424,6 +454,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/assistant'
     | '/auth'
     | '/contact'
     | '/data-sources'
@@ -441,6 +472,8 @@ export interface FileRouteTypes {
     | '/about/mission-vision'
     | '/about/team'
     | '/alerts/confirm'
+    | '/api/chat'
+    | '/assistant/$threadId'
     | '/settings/linkedin'
     | '/supply/$panel'
     | '/about'
@@ -464,6 +497,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/about'
+    | '/assistant'
     | '/auth'
     | '/contact'
     | '/data-sources'
@@ -481,6 +515,8 @@ export interface FileRouteTypes {
     | '/about/mission-vision'
     | '/about/team'
     | '/alerts/confirm'
+    | '/api/chat'
+    | '/assistant/$threadId'
     | '/countries/$slug'
     | '/settings/linkedin'
     | '/supply/$panel'
@@ -506,6 +542,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRouteWithChildren
+  AssistantRoute: typeof AssistantRouteWithChildren
   AuthRoute: typeof AuthRoute
   ContactRoute: typeof ContactRoute
   DataSourcesRoute: typeof DataSourcesRoute
@@ -521,6 +558,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   AlertsConfirmRoute: typeof AlertsConfirmRoute
+  ApiChatRoute: typeof ApiChatRoute
   CountriesSlugRoute: typeof CountriesSlugRouteWithChildren
   SettingsLinkedinRoute: typeof SettingsLinkedinRoute
   SupplyPanelRoute: typeof SupplyPanelRoute
@@ -553,6 +591,13 @@ declare module '@tanstack/react-router' {
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/assistant': {
+      id: '/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof AssistantRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -680,6 +725,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/alerts/confirm'
       preLoaderRoute: typeof AlertsConfirmRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/assistant/$threadId': {
+      id: '/assistant/$threadId'
+      path: '/$threadId'
+      fullPath: '/assistant/$threadId'
+      preLoaderRoute: typeof AssistantThreadIdRouteImport
+      parentRoute: typeof AssistantRoute
     }
     '/countries/$slug': {
       id: '/countries/$slug'
@@ -831,6 +890,18 @@ const AboutRouteChildren: AboutRouteChildren = {
 
 const AboutRouteWithChildren = AboutRoute._addFileChildren(AboutRouteChildren)
 
+interface AssistantRouteChildren {
+  AssistantThreadIdRoute: typeof AssistantThreadIdRoute
+}
+
+const AssistantRouteChildren: AssistantRouteChildren = {
+  AssistantThreadIdRoute: AssistantThreadIdRoute,
+}
+
+const AssistantRouteWithChildren = AssistantRoute._addFileChildren(
+  AssistantRouteChildren,
+)
+
 interface CountriesSlugRouteChildren {
   CountriesSlugMandatesRoute: typeof CountriesSlugMandatesRoute
   CountriesSlugUpdatesRoute: typeof CountriesSlugUpdatesRoute
@@ -850,6 +921,7 @@ const CountriesSlugRouteWithChildren = CountriesSlugRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRouteWithChildren,
+  AssistantRoute: AssistantRouteWithChildren,
   AuthRoute: AuthRoute,
   ContactRoute: ContactRoute,
   DataSourcesRoute: DataSourcesRoute,
@@ -866,6 +938,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   AlertsConfirmRoute: AlertsConfirmRoute,
+  ApiChatRoute: ApiChatRoute,
   CountriesSlugRoute: CountriesSlugRouteWithChildren,
   SettingsLinkedinRoute: SettingsLinkedinRoute,
   SupplyPanelRoute: SupplyPanelRoute,
