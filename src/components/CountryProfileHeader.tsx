@@ -23,26 +23,26 @@ export function CountryProfileHeader({
 }) {
   const status = policyStatusFor(country);
   return (
-    <header className="rise overflow-hidden rounded-lg border border-border bg-card shadow-[var(--shadow-card)]">
+    <header className="rise overflow-hidden rounded-lg border border-ink bg-ink text-ink-foreground shadow-[var(--shadow-lift)]">
       <div className="h-1.5 bg-gradient-to-r from-tracker-red via-tracker-green to-tracker-blue" aria-hidden />
       <div className="px-4 pt-4 sm:px-6 sm:pt-5">
       <Link
         to="/"
-        className="label-mono inline-flex items-center gap-2 text-muted-foreground hover:text-primary"
+        className="label-mono inline-flex items-center gap-2 text-ink-muted transition-colors hover:text-ink-foreground"
       >
         <ArrowLeft className="size-3.5" /> Back to tracker
       </Link>
 
-      <div className="mt-5 flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+      <div className="mt-4 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
         <div className="flex min-w-0 items-center gap-4">
-          <span className="grid h-12 w-16 shrink-0 place-items-center rounded-md border border-border bg-surface-2 text-3xl shadow-sm sm:h-14 sm:w-20">
+          <span className="grid h-12 w-16 shrink-0 place-items-center rounded-md border border-ink-foreground/20 bg-ink-foreground/10 text-3xl sm:h-14 sm:w-20">
             <CountryFlag slug={country.slug} />
           </span>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="label-mono" style={{ color: REGION_ACCENT[country.region] }}>{country.region}</span>
-              <span className="text-border" aria-hidden>/</span>
-              <span className="label-mono text-muted-foreground">Policy profile</span>
+              <span className="label-mono text-ink-accent">{country.region}</span>
+              <span className="text-ink-muted" aria-hidden>/</span>
+              <span className="label-mono text-ink-muted">Policy profile</span>
             </div>
             <h1 className={`mt-1 font-display font-extrabold ${compact ? "text-2xl sm:text-3xl" : "text-3xl sm:text-4xl"}`}>
               {country.name}
@@ -50,8 +50,7 @@ export function CountryProfileHeader({
           </div>
         </div>
         <div
-          className="label-mono inline-flex w-fit items-center gap-2 rounded-md border bg-surface-1 px-3 py-2 font-bold"
-          style={{ borderColor: POLICY_STATUS_COLOR[status], color: POLICY_STATUS_COLOR[status] }}
+           className="label-mono inline-flex w-fit items-center gap-2 rounded-md border border-ink-foreground/25 bg-ink-foreground/10 px-3 py-2 font-bold text-ink-foreground"
         >
           <Radar className="size-3.5" />
           <span className="relative flex size-2">
@@ -63,17 +62,17 @@ export function CountryProfileHeader({
       </div>
       </div>
 
-      <nav className="mt-6 flex gap-1 overflow-x-auto border-t border-border px-3 pt-1 sm:px-5" aria-label="Country profile sections">
+      <nav className="mt-5 flex gap-1 overflow-x-auto border-t border-ink-foreground/15 px-3 pt-1 sm:px-5" aria-label="Country profile sections">
         {TABS.map(({ to, label, icon: Icon, exact }) => (
           <Link
             key={to}
             to={to}
             params={{ slug: country.slug }}
             activeOptions={{ exact }}
-            className="label-mono inline-flex shrink-0 items-center gap-1.5 border-b-2 border-transparent px-3 py-3 text-muted-foreground transition-colors hover:text-primary"
+            className="label-mono inline-flex shrink-0 items-center gap-1.5 border-b-2 border-transparent px-3 py-3 text-ink-muted transition-colors hover:text-ink-foreground"
             activeProps={{
               className:
-                "label-mono inline-flex shrink-0 items-center gap-1.5 border-b-2 border-primary px-3 py-3 font-bold text-primary transition-colors",
+                "label-mono inline-flex shrink-0 items-center gap-1.5 border-b-2 border-ink-accent px-3 py-3 font-bold text-ink-foreground transition-colors",
             }}
           >
             <Icon className="size-3.5" /> {label}

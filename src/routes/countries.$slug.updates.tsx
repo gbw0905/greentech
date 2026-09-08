@@ -97,7 +97,7 @@ function CountryUpdatesPage() {
           </p>
         )}
 
-        <div className="mt-6 space-y-5">
+        <div className="mt-6 grid items-start gap-5 lg:grid-cols-2">
           {mandateGroups.map(({ mandate, items }) => (
             <div key={mandate.id} className="overflow-hidden rounded-lg border border-border bg-card shadow-[var(--shadow-card)]">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-surface-1 px-4 py-3 sm:px-5">

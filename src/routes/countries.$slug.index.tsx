@@ -76,9 +76,9 @@ function CountryOverviewPage() {
         <CountryTrackingStrip mandates={trackedMandates.length} targets={country.mandates.length} sources={govSites.length} />
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
-        <div className="space-y-6">
-          <section className="border-b border-border pb-6">
+      <div className="mt-6 grid overflow-hidden rounded-lg border border-border bg-card shadow-[var(--shadow-card)] lg:grid-cols-12">
+        <div className="divide-y divide-border lg:col-span-8 lg:border-r lg:border-border">
+          <section className="p-5 sm:p-6">
             <p className="label-mono text-muted-foreground">Policy briefing</p>
             <p className="mt-3 max-w-3xl text-base/relaxed text-foreground">{country.blurb}</p>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -88,7 +88,7 @@ function CountryOverviewPage() {
             </div>
           </section>
 
-          <section>
+          <section className="p-5 sm:p-6">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="label-mono text-muted-foreground">Current policy markers</p>
@@ -96,9 +96,9 @@ function CountryOverviewPage() {
               </div>
               <Link to="/countries/$slug/mandates" params={{ slug }} className="label-mono inline-flex shrink-0 items-center gap-1.5 font-bold text-primary hover:underline">Full detail <ArrowRight className="size-3.5" /></Link>
             </div>
-            <dl className="mt-4 divide-y divide-border overflow-hidden rounded-lg border border-border bg-card shadow-[var(--shadow-card)]">
+            <dl className="mt-4 grid border-y border-border sm:grid-cols-2">
           {country.mandates.map((m) => (
-            <div key={m.label} className="grid gap-1 p-4 transition-colors hover:bg-surface-1 sm:grid-cols-[minmax(10rem,0.7fr)_1.3fr] sm:items-center">
+            <div key={m.label} className="grid gap-1 border-b border-border p-4 transition-colors last:border-b-0 hover:bg-surface-1 sm:odd:border-r">
               <dt className="label-mono font-bold text-muted-foreground">{m.label}</dt>
               <dd className="font-mono text-sm font-semibold text-foreground">{m.value}</dd>
             </div>
@@ -107,8 +107,8 @@ function CountryOverviewPage() {
           </section>
         </div>
 
-        <aside className="space-y-5">
-          <section className="overflow-hidden rounded-lg bg-ink text-ink-foreground shadow-[var(--shadow-lift)]">
+        <aside className="divide-y divide-border bg-surface-1 lg:col-span-4">
+          <section className="overflow-hidden bg-ink text-ink-foreground">
             <div className="border-b border-ink-foreground/15 px-5 py-4">
               <p className="label-mono text-ink-muted">Verified evidence</p>
               <h2 className="mt-1 font-display text-lg font-bold">Official sources</h2>
@@ -130,20 +130,20 @@ function CountryOverviewPage() {
             </ul>
           </section>
 
-          <nav className="space-y-2" aria-label="Country tracking shortcuts">
-            <Link to="/countries/$slug/mandates" params={{ slug }} className="group flex items-center gap-3 rounded-lg border border-border bg-card p-4 shadow-[var(--shadow-card)] transition-transform hover:-translate-y-0.5">
+          <nav className="space-y-2 p-4" aria-label="Country tracking shortcuts">
+            <Link to="/countries/$slug/mandates" params={{ slug }} className="group flex items-center gap-3 border border-border bg-card p-4 transition-colors hover:bg-surface-2">
               <span className="grid size-9 place-items-center rounded-md bg-tracker-blue/10 text-tracker-blue"><Layers className="size-4" /></span>
               <span className="min-w-0 flex-1"><span className="block text-sm font-bold">Mandates &amp; targets</span><span className="block text-xs text-muted-foreground">Timeline and compliance</span></span>
               <ArrowRight className="size-4 text-muted-foreground group-hover:text-primary" />
             </Link>
-            <Link to="/countries/$slug/updates" params={{ slug }} className="group flex items-center gap-3 rounded-lg border border-border bg-card p-4 shadow-[var(--shadow-card)] transition-transform hover:-translate-y-0.5">
+            <Link to="/countries/$slug/updates" params={{ slug }} className="group flex items-center gap-3 border border-border bg-card p-4 transition-colors hover:bg-surface-2">
               <span className="grid size-9 place-items-center rounded-md bg-destructive/10 text-destructive"><Newspaper className="size-4" /></span>
               <span className="min-w-0 flex-1"><span className="block text-sm font-bold">Live updates</span><span className="block text-xs text-muted-foreground">Calendar-filtered changes</span></span>
               <ArrowRight className="size-4 text-muted-foreground group-hover:text-primary" />
             </Link>
           </nav>
 
-          <div className="flex items-start gap-3 border-t border-border pt-4 text-xs/relaxed text-muted-foreground">
+          <div className="flex items-start gap-3 p-5 text-xs/relaxed text-muted-foreground">
             <FileText className="mt-0.5 size-4 shrink-0 text-tracker-red" />
             Information is compiled from the linked government records and reviewed against published timelines.
           </div>
