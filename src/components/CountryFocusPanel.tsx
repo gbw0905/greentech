@@ -226,6 +226,7 @@ export function CountryFocusPanel({
 
         {tab === "updates" && (
           <div className="space-y-3">
+            <DateRangeFilter value={range} onChange={setRange} />
             {matched.length === 0 && (
               <p className="text-sm text-muted-foreground">
                 {isFetching ? "Scanning global sources…" : "No updates match this selection yet."}
