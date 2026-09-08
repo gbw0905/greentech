@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { ClientOnly, Link } from "@tanstack/react-router";
 import { List, Maximize2, MessageSquare, X } from "lucide-react";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { ThreadList } from "./ThreadList";
@@ -95,21 +95,27 @@ export function ChatDock() {
       ) : null}
 
       <div className="min-h-0 flex-1">
-        <Suspense
+        <ClientOnly fallback={
+          <div className="flex h-full items-center justify-center px-4 text-sm text-muted-foreground">
+            Opening assistant…
+          </div>
+        }>
+          <Suspense
           fallback={
             <div className="flex h-full items-center justify-center px-4 text-sm text-muted-foreground">
               Opening assistant…
             </div>
           }
-        >
-          <AssistantChat
-            key={activeId ?? "guest"}
-            threadId={signedIn ? activeId : null}
-            initialMessages={messages}
-            onActivity={() => void refresh()}
-            compact
-          />
-        </Suspense>
+          >
+            <AssistantChat
+              key={activeId ?? "guest"}
+              threadId={signedIn ? activeId : null}
+              initialMessages={messages}
+              onActivity={() => void refresh()}
+              compact
+            />
+          </Suspense>
+        </ClientOnly>
       </div>
     </div>
   );
