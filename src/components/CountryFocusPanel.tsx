@@ -38,6 +38,7 @@ export function CountryFocusPanel({
   onSelectCountry: (slug: string | null) => void;
 }) {
   const [tab, setTab] = useState<Tab>("updates");
+  const [range, setRange] = useState(EMPTY_RANGE);
   const { data: feed, isFetching } = useQuery(feedQuery);
   const profile = country ? countryBySlug(country) : null;
   const updates = feed?.updates ?? [];
