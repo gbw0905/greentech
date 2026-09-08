@@ -18,11 +18,23 @@ export const Route = createFileRoute("/sitemap.xml")({
           { path: "/", changefreq: "daily", priority: "1.0" },
           { path: "/timeline", changefreq: "daily", priority: "0.9" },
           { path: "/profiles", changefreq: "weekly", priority: "0.8" },
-          ...COUNTRIES.map((c) => ({
-            path: `/countries/${c.slug}`,
-            changefreq: "weekly" as const,
-            priority: "0.7",
-          })),
+          ...COUNTRIES.flatMap((c) => [
+            {
+              path: `/countries/${c.slug}`,
+              changefreq: "weekly" as const,
+              priority: "0.7",
+            },
+            {
+              path: `/countries/${c.slug}/mandates`,
+              changefreq: "weekly" as const,
+              priority: "0.7",
+            },
+            {
+              path: `/countries/${c.slug}/updates`,
+              changefreq: "daily" as const,
+              priority: "0.6",
+            },
+          ]),
           { path: "/mandates", changefreq: "weekly", priority: "0.9" },
           { path: "/jobs", changefreq: "daily", priority: "0.6" },
           { path: "/videos", changefreq: "weekly", priority: "0.6" },
