@@ -74,13 +74,17 @@ export const Route = createFileRoute("/api/chat")({
         });
 
         const result = streamText({
-          model: openai(ASSISTANT_MODEL),
+          model: openai.responses(ASSISTANT_MODEL),
           system: SYSTEM_PROMPT,
           messages: await convertToModelMessages(messages.slice(-30)),
           tools: assistantTools,
           stopWhen: stepCountIs(50),
-          providerOptions: { openai: { reasoningEffort: "low" } },
-          onError: ({ error }) => console.error("assistant stream error", error),
+          providerOptions: { openai: { store: false } },
+          onError: ({ error }) =>
+            console.error(
+              "assistant stream error",
+              (error as { responseBody?: string })?.responseBody ?? error,
+            ),
         });
 
         const threadId = typeof body.id === "string" ? body.id : null;
