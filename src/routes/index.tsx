@@ -441,6 +441,13 @@ function Dashboard() {
             </Link>
             <span className="text-muted-foreground">·</span>
             <Link
+              to="/privacy"
+              className="underline underline-offset-4 hover:text-primary"
+            >
+              Privacy Policy
+            </Link>
+            <span className="text-muted-foreground">·</span>
+            <Link
               to="/mandates"
               className="underline underline-offset-4 hover:text-primary"
             >
