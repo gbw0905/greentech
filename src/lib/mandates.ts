@@ -1301,6 +1301,10 @@ export const GOVERNMENT_SITES: Record<string, { label: string; url: string }[]> 
     { label: "US EPA — Renewable Fuel Standard", url: "https://www.epa.gov/renewable-fuel-standard-program" },
     { label: "Federal Register", url: "https://www.federalregister.gov/" },
     { label: "California Air Resources Board", url: "https://ww2.arb.ca.gov/our-work/programs/low-carbon-fuel-standard" },
+    { label: "Oregon DEQ — Clean Fuels Program", url: "https://www.oregon.gov/deq/ghgp/cfp/Pages/default.aspx" },
+    { label: "Washington Ecology — Clean Fuel Standard", url: "https://ecology.wa.gov/air-climate/reducing-greenhouse-gas-emissions/clean-fuel-standard" },
+    { label: "New Mexico Environment Department", url: "https://www.env.nm.gov/air-quality/clean-transportation-fuel-standard/" },
+    { label: "NYSERDA — New York", url: "https://www.nyserda.ny.gov/" },
   ],
   canada: [
     { label: "Environment and Climate Change Canada", url: "https://www.canada.ca/en/environment-climate-change.html" },
