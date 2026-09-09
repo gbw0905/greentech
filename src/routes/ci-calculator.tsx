@@ -29,7 +29,7 @@ function CiCalculatorPage() {
       <PageHeading
         icon={Calculator}
         title="Carbon intensity calculator"
-        subtitle="Lifecycle carbon intensity for every biofuel pathway \u2014 pick a feedstock source, set electricity, natural gas and other process energy with your own units, and see the full emission breakdown against the major regulatory programs."
+        subtitle="Lifecycle carbon intensity for every biofuel pathway — pick a feedstock source, set electricity, natural gas and other process energy with your own units, and see the full emission breakdown against the major regulatory programs."
       />
 
       <PathwayCiBuilder />
