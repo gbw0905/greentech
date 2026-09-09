@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Calculator, RotateCcw } from "lucide-react";
 import { PageShell, PageHeading } from "@/components/PageShell";
+import { PathwayCiBuilder } from "@/components/PathwayCiBuilder";
 import {
   calculateCi,
   CFP_DIESEL_BASELINE,
