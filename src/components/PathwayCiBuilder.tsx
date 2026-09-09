@@ -34,6 +34,8 @@ import {
   type TransportLeg,
   type TransportModeId,
 } from "@/lib/ci-model";
+import { ExportCsvButton } from "@/components/ExportCsvButton";
+import type { BrandedExport } from "@/lib/branded-export";
 
 
 const num = (v: number, d = 0) =>
@@ -372,6 +374,105 @@ export function PathwayCiBuilder() {
   const feedstock = FEEDSTOCK_BY_ID[inputs.feedstockId];
 
   const annualTonnes = result.annualTonnesCo2e * massUnit.factor;
+
+  const buildExport = (): BrandedExport => {
+    const annual = (g: number) => ((g * result.annualEnergyMj) / 1_000_000) * massUnit.factor;
+    const regionLabel =
+      ELECTRICITY_REGIONS.find((r) => r.id === region)?.label ?? String(region);
+    const rows: (string | number)[][] = [];
+
+    rows.push(["Scenario", "Fuel pathway", result.pathway.label, "", "", ""]);
+    rows.push(["Scenario", "Pathway summary", result.pathway.summary, "", "", ""]);
+    rows.push(["Scenario", "Feedstock source", feedstock ? feedstock.label : "Custom", "", "", ""]);
+    rows.push(["Scenario", "Electricity region", regionLabel, "", "", ""]);
+    rows.push(["Scenario", "Annual volume", inputs.annualVolume, "", "", ""]);
+    rows.push(["Scenario", "Annual energy (MJ)", result.annualEnergyMj.toFixed(0), "", "", ""]);
+    for (const s of SOURCES) {
+      const qty = inputs.energy[s.id] ?? 0;
+      if (!qty) continue;
+      const variant = SOURCE_VARIANTS[s.id]?.find((v) => v.id === inputs.sourceVariants?.[s.id]);
+      rows.push([
+        "Process energy input",
+        s.label,
+        variant ? variant.label : "",
+        qty,
+        `${s.unit}/MJ fuel`,
+        "",
+      ]);
+    }
+    for (const key of Object.keys(detail) as DetailModuleKey[]) {
+      rows.push([
+        "Detailed module",
+        key,
+        detail[key].enabled ? "Enabled" : "Not used",
+        ci(result.moduleTotals[key] ?? 0),
+        ciUnit.label,
+        "",
+      ]);
+    }
+
+    for (const cat of CATEGORY_ORDER) {
+      const items = result.lineItems.filter((l) => l.category === cat);
+      if (!items.length) continue;
+      for (const l of items) {
+        rows.push([
+          "Emission line item",
+          l.label,
+          `${l.category} — ${l.detail}`,
+          ci(l.gPerMj),
+          ciUnit.label,
+          annual(l.gPerMj).toFixed(2),
+        ]);
+      }
+      const subtotal = items.reduce((a, l) => a + l.gPerMj, 0);
+      rows.push([
+        "Subtotal",
+        `${cat} subtotal`,
+        "",
+        ci(subtotal),
+        ciUnit.label,
+        annual(subtotal).toFixed(2),
+      ]);
+    }
+
+    rows.push(["Result", "Gross emissions", "", ci(result.grossCi), ciUnit.label, annual(result.grossCi).toFixed(2)]);
+    rows.push(["Result", "Credits applied", "", ci(result.creditsCi), ciUnit.label, annual(result.creditsCi).toFixed(2)]);
+    rows.push(["Result", "Total carbon intensity", "", ci(result.ciTotal), ciUnit.label, annualTonnes.toFixed(2)]);
+
+    for (const p of result.programs) {
+      rows.push([
+        "Program comparison",
+        p.program.label,
+        p.program.jurisdiction,
+        p.benchmark == null ? "Fuel not covered" : `Benchmark ${ci(p.benchmark)} ${ciUnit.label}`,
+        p.savingPct == null ? "—" : `${p.savingPct.toFixed(1)}% saving`,
+        p.annualCreditsTonnes == null || !p.program.creditMarket
+          ? "—"
+          : p.annualCreditsTonnes.toFixed(0),
+      ]);
+    }
+
+    return {
+      title: `Carbon intensity calculation — ${result.pathway.label}`,
+      filename: `ci-calculation-${result.pathway.id}`,
+      header: [
+        "Section",
+        "Item",
+        "Detail",
+        `Value (${ciUnit.label})`,
+        "Unit / note",
+        `Annual (${massUnit.label})`,
+      ],
+      rows,
+      note: `Electricity region: ${regionLabel}. Annual footprint unit: ${massUnit.label}. Indicative results, not a certified pathway CI score.`,
+      sources: [
+        "Argonne National Laboratory GREET model documentation",
+        "CARB CA-GREET and LCFS certified pathway summaries",
+        "EU RED II / RED III Annex V typical and default values",
+        "Program guidance: Oregon CFP, Washington CFS, Canada CFR, UK RTFO, US RFS, RenovaBio, CORSIA, FuelEU Maritime",
+      ],
+    };
+  };
 
   return (
     <div className="space-y-4">
@@ -1149,6 +1250,19 @@ export function PathwayCiBuilder() {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="glass-panel p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="font-display text-lg font-extrabold text-foreground">Export results</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Download the full calculation — scenario settings, every emission line item with its
+              basis and annual mass, category subtotals and the regulatory program comparison.
+            </p>
+          </div>
+          <ExportCsvButton build={buildExport} />
+        </div>
       </section>
     </div>
   );
