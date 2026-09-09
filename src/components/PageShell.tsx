@@ -77,6 +77,13 @@ export function PageShell({
             </Link>
             <span className="mx-2 text-muted-foreground">·</span>
             <Link
+              to="/privacy"
+              className="font-semibold text-foreground underline underline-offset-4 hover:text-primary"
+            >
+              Privacy Policy
+            </Link>
+            <span className="mx-2 text-muted-foreground">·</span>
+            <Link
               to="/data-sources"
               className="font-semibold text-foreground underline underline-offset-4 hover:text-primary"
             >

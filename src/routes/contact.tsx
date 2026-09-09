@@ -127,12 +127,19 @@ function ContactPage() {
           <p className="mt-3 text-sm font-bold text-menubar-fg">
             © 2026 All rights reserved — Global Bioenergy Watch
           </p>
-          <p className="mt-2 text-sm">
+          <p className="mt-2 flex flex-wrap gap-x-2 gap-y-1 text-sm">
             <Link
               to="/terms"
               className="font-semibold text-menubar-fg underline underline-offset-4 hover:text-menubar-fg/80"
             >
               Terms of Use
+            </Link>
+            <span className="text-menubar-muted">·</span>
+            <Link
+              to="/privacy"
+              className="font-semibold text-menubar-fg underline underline-offset-4 hover:text-menubar-fg/80"
+            >
+              Privacy Policy
             </Link>
           </p>
         </div>
