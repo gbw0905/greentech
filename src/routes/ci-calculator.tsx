@@ -60,6 +60,58 @@ const inputCls =
   "h-11 w-full rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground focus:border-accent focus:outline-none";
 
 function CiCalculatorPage() {
+  const [tab, setTab] = useState<"pathway" | "pyrolysis">("pathway");
+
+  return (
+    <PageShell>
+      <PageHeading
+        icon={Calculator}
+        title="Carbon intensity calculator"
+        subtitle="Lifecycle carbon intensity for every biofuel pathway — ethanol, biodiesel, renewable diesel, SAF, renewable gas, hydrogen, methanol, LPG and pellets — with electricity, natural gas, propane, diesel, hydrogen and transport emissions, benchmarked against the major regulatory programs."
+      />
+
+      <div className="flex flex-wrap gap-2">
+        {[
+          ["pathway", "All fuels and programs"],
+          ["pyrolysis", "Forest residue pyrolysis (OSU / NREL model)"],
+        ].map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setTab(id as "pathway" | "pyrolysis")}
+            className={`label-mono h-11 rounded-md border px-4 font-bold transition-colors ${
+              tab === id
+                ? "border-accent bg-accent text-accent-foreground"
+                : "border-border bg-background text-foreground hover:border-accent"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "pathway" ? <PathwayCiBuilder /> : <PyrolysisModel />}
+
+      <section className="glass-panel border-l-4 border-l-accent p-5">
+        <h2 className="font-display text-base font-bold text-foreground">Method and limitations</h2>
+        <p className="mt-2 text-sm/relaxed text-muted-foreground">
+          Pathway defaults are indicative averages compiled from public GREET and CA-GREET
+          documentation, CARB LCFS certified pathway summaries, EU RED II and III Annex V typical
+          values and equivalent program guidance. Every line item is editable, so you can replace a
+          default with plant-specific data. Program benchmarks are the published comparator or
+          baseline carbon intensities; annual compliance standards step down from them.
+        </p>
+        <p className="mt-2 text-sm/relaxed text-muted-foreground">
+          Results are indicative and pathway-specific. They are not a certified CI score: regulatory
+          pathway certification requires site-specific data, verification and approval by the
+          administering agency.
+        </p>
+      </section>
+    </PageShell>
+  );
+}
+
+function PyrolysisModel() {
   const [inputs, setInputs] = useState<CiInputs>(DEFAULT_CI_INPUTS);
   const result = useMemo(() => calculateCi(inputs), [inputs]);
   const set = <K extends keyof CiInputs>(k: K, v: CiInputs[K]) =>
@@ -68,13 +120,7 @@ function CiCalculatorPage() {
   const maxCi = Math.max(...result.stages.map((s) => s.gCo2ePerMj), 0.0001);
 
   return (
-    <PageShell>
-      <PageHeading
-        icon={Calculator}
-        title="Carbon intensity calculator"
-        subtitle="Lifecycle carbon intensity of renewable diesel and renewable gasoline produced from forest residue pyrolysis, with energy allocation between fuel and biochar. Adjust any input to see the CI change instantly."
-      />
-
+    <div className="space-y-4">
       <section className="glass-panel p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
           <h2 className="font-display text-lg font-extrabold text-foreground">Scenario inputs</h2>
