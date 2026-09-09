@@ -64,12 +64,19 @@ function CountryUpdatesPage() {
       return new Date(bDate).getTime() - new Date(aDate).getTime();
     });
 
-  const mandateGroups = trackedMandates.map((mandate) => ({
-    mandate,
-    items: updates.filter((u) => updateMatchesMandate(mandate, `${u.title} ${u.summary ?? ""}`)),
-  }));
-  const grouped = new Set(mandateGroups.flatMap((g) => g.items.map((u) => u.id)));
-  const otherUpdates = updates.filter((u) => !grouped.has(u.id));
+  const monthLabel = (iso: string) =>
+    new Date(iso).toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" });
+
+  let lastMonth = "";
+  const rows = updates.map((u) => {
+    const month = monthLabel(u.publishedAt ?? u.createdAt);
+    const isNew = month !== lastMonth;
+    lastMonth = month;
+    const tags = trackedMandates
+      .filter((m) => updateMatchesMandate(m, `${u.title} ${u.summary ?? ""}`))
+      .map((m) => m.instrument);
+    return { update: u, month, isNew, tags };
+  });
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10">
@@ -79,8 +86,8 @@ function CountryUpdatesPage() {
         <div className="grid gap-4 p-4 sm:grid-cols-[1fr_auto] sm:items-center sm:p-5">
           <div>
             <p className="label-mono inline-flex items-center gap-1.5 text-muted-foreground"><Activity className="size-3.5 text-destructive" /> Live monitoring</p>
-            <h2 className="mt-1 font-display text-xl font-extrabold">Updates by mandate</h2>
-            <p className="mt-1 text-sm text-muted-foreground">{updates.length} matched item{updates.length === 1 ? "" : "s"} across {trackedMandates.length} tracked obligation{trackedMandates.length === 1 ? "" : "s"}.</p>
+            <h2 className="mt-1 font-display text-xl font-extrabold">Latest updates first</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{updates.length} matched item{updates.length === 1 ? "" : "s"}, newest to oldest, across {trackedMandates.length} tracked obligation{trackedMandates.length === 1 ? "" : "s"}.</p>
           </div>
           <CalendarRangeFilter value={range} onChange={setRange} />
         </div>
@@ -88,7 +95,6 @@ function CountryUpdatesPage() {
       </section>
 
       <section>
-
         {updates.length === 0 && (
           <p className="mt-4 text-sm text-muted-foreground">
             {isFetching
@@ -97,44 +103,30 @@ function CountryUpdatesPage() {
           </p>
         )}
 
-        <div className="mt-6 grid items-start gap-5 lg:grid-cols-2">
-          {mandateGroups.map(({ mandate, items }) => (
-            <div key={mandate.id} className="overflow-hidden rounded-lg border border-border bg-card shadow-[var(--shadow-card)]">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-surface-1 px-4 py-3 sm:px-5">
-              <div><h3 className="font-display text-base font-extrabold">
-                {mandate.instrument}
-              </h3><p className="label-mono mt-1 text-muted-foreground">
-                {items.length} update{items.length === 1 ? "" : "s"}
-              </p></div><FileCheck2 className="size-4 text-tracker-green" />
-              </div>
-              <div className="space-y-3 p-3 sm:p-4">
-                {items.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    No news items mention this obligation in the current scan window.
-                  </p>
-                ) : (
-                  items.map((u) => <UpdateCard key={`${mandate.id}-${u.id}`} update={u} />)
-                )}
-              </div>
+        <div className="mt-6 space-y-3">
+          {rows.map(({ update, month, isNew, tags }) => (
+            <div key={update.id}>
+              {isNew && (
+                <div className="mb-3 flex items-center gap-3 pt-2">
+                  <h3 className="font-display text-sm font-extrabold uppercase tracking-wide">{month}</h3>
+                  <span className="h-px flex-1 bg-border" />
+                </div>
+              )}
+              <UpdateCard update={update} />
+              {tags.length > 0 && (
+                <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                  {tags.map((t) => (
+                    <span
+                      key={t}
+                      className="label-mono inline-flex items-center gap-1 rounded-full border border-border bg-surface-1 px-2 py-0.5 text-[11px] text-muted-foreground"
+                    >
+                      <FileCheck2 className="size-3 text-tracker-green" /> {t}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
-
-          {otherUpdates.length > 0 && (
-            <div className="overflow-hidden rounded-lg border border-border bg-card shadow-[var(--shadow-card)]">
-              <div className="border-b border-border bg-surface-1 px-4 py-3 sm:px-5">
-              <h3 className="font-display text-base font-extrabold tracking-tight">
-                Other {country.name} bioenergy updates
-              </h3>
-              <p className="label-mono mt-1 text-muted-foreground">
-                {otherUpdates.length} update{otherUpdates.length === 1 ? "" : "s"}
-              </p>
-              </div><div className="space-y-3 p-3 sm:p-4">
-                {otherUpdates.map((u) => (
-                  <UpdateCard key={u.id} update={u} />
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </section>
     </main>
