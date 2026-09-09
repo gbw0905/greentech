@@ -1150,6 +1150,19 @@ export function PathwayCiBuilder() {
           ))}
         </ul>
       </section>
+
+      <section className="glass-panel p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="font-display text-lg font-extrabold text-foreground">Export results</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Download the full calculation — scenario settings, every emission line item with its
+              basis and annual mass, category subtotals and the regulatory program comparison.
+            </p>
+          </div>
+          <ExportCsvButton build={buildExport} />
+        </div>
+      </section>
     </div>
   );
 }
