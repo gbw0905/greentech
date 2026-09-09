@@ -718,6 +718,8 @@ export interface ScenarioInputs {
   sourceVariants: Partial<Record<SourceId, string>>;
   direct: DirectTerms;
   energy: Partial<Record<SourceId, number>>;
+  /** Optional detailed activity-data modules; enabled ones replace the aggregate terms. */
+  detail?: DetailModules;
   /** Annual production in the pathway's own unit (gallons, MJ, kg, tonnes). */
   annualVolume: number;
 }
@@ -750,6 +752,8 @@ export interface ScenarioResult {
   annualEnergyMj: number;
   annualTonnesCo2e: number;
   programs: ProgramResult[];
+  /** Totals of each detailed module, whether or not it is enabled. */
+  moduleTotals: Partial<Record<DetailModuleKey, number>>;
 }
 
 export function scenarioFromPathway(pathwayId: string, region: ElectricityRegionId): ScenarioInputs {
@@ -766,6 +770,7 @@ export function scenarioFromPathway(pathwayId: string, region: ElectricityRegion
     sourceVariants: variants,
     direct: { ...p.direct },
     energy: { ...p.energy },
+    detail: defaultDetailModules(),
     annualVolume:
       p.unitLabel === "MJ" ? 2_000_000_000 : p.unitLabel === "tonne" ? 500_000 : p.unitLabel === "kg" ? 10_000_000 : 50_000_000,
   };
@@ -838,8 +843,44 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
     ELECTRICITY_REGIONS.find((r) => r.id === input.region)?.gPerKwh ?? 386;
 
   const lineItems: LineItem[] = [];
+  const detail = input.detail;
+  const moduleTotals: Partial<Record<DetailModuleKey, number>> = {};
+
+  const moduleRows: Partial<Record<DetailModuleKey, DetailRow[]>> = {};
+  if (detail) {
+    const fp = computeFeedstockProduction(detail.feedstockProduction, regionFactor);
+    const tr = computeTransport(detail.transport);
+    const ch = computeChemicals(detail.chemicals);
+    const cp = computeCoProducts(detail.coProducts);
+    const tp = computeTailpipe(detail.tailpipe);
+    moduleTotals.feedstockProduction = fp.gPerMj;
+    moduleTotals.transport = tr.gPerMj;
+    moduleTotals.chemicals = ch.gPerMj;
+    moduleTotals.coProducts = cp.gPerMj;
+    moduleTotals.tailpipe = tp.gPerMj;
+    moduleRows.feedstockProduction = fp.rows;
+    moduleRows.transport = tr.rows;
+    moduleRows.chemicals = ch.rows;
+    moduleRows.coProducts = cp.rows;
+    moduleRows.tailpipe = tp.rows;
+  }
+
+  const categoryOf = (key: keyof DirectTerms) =>
+    DIRECT_FIELDS.find((f) => f.key === key)!.category;
 
   for (const f of DIRECT_FIELDS) {
+    const moduleKey = (Object.keys(MODULE_TO_DIRECT) as DetailModuleKey[]).find(
+      (k) => MODULE_TO_DIRECT[k] === f.key,
+    );
+    const mod = moduleKey && detail ? detail[moduleKey] : undefined;
+    if (mod?.enabled && moduleKey && moduleKey !== "distribution") {
+      for (const r of moduleRows[moduleKey] ?? []) {
+        if (r.gPerMj === 0) continue;
+        lineItems.push({ key: r.key, label: r.label, category: f.category, gPerMj: r.gPerMj, detail: r.detail });
+      }
+      continue;
+    }
+    if (moduleKey === "distribution" && detail?.distribution.enabled) continue;
     const v = Number(input.direct[f.key]) || 0;
     if (v === 0) continue;
     lineItems.push({ key: f.key, label: f.label, category: f.category, gPerMj: v, detail: f.hint });
@@ -862,9 +903,39 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
     });
   }
 
+  // Distribution runs last so loss terms can carry the upstream carbon intensity.
+  if (detail) {
+    const upstream = lineItems.reduce((a, l) => a + l.gPerMj, 0);
+    const ds = computeDistribution(detail.distribution, upstream);
+    moduleTotals.distribution = ds.gPerMj;
+    if (detail.distribution.enabled) {
+      for (const r of ds.rows) {
+        if (r.gPerMj === 0) continue;
+        lineItems.push({
+          key: r.key,
+          label: r.label,
+          category: categoryOf("distribution"),
+          gPerMj: r.gPerMj,
+          detail: r.detail,
+        });
+      }
+    }
+  }
+
+  const allocation =
+    detail?.coProducts.enabled && detail.coProducts.allocationPct < 100
+      ? Math.max(0, Math.min(100, detail.coProducts.allocationPct)) / 100
+      : 1;
+  if (allocation < 1) {
+    for (const l of lineItems) {
+      if (l.gPerMj > 0) l.gPerMj *= allocation;
+    }
+  }
+
   const ciTotal = lineItems.reduce((a, l) => a + l.gPerMj, 0);
   const grossCi = lineItems.filter((l) => l.gPerMj > 0).reduce((a, l) => a + l.gPerMj, 0);
   const creditsCi = lineItems.filter((l) => l.gPerMj < 0).reduce((a, l) => a + l.gPerMj, 0);
+
 
   const annualEnergyMj = Math.max(0, input.annualVolume) * pathway.energyPerUnit;
 
@@ -905,6 +976,7 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
     annualEnergyMj,
     annualTonnesCo2e: (ciTotal * annualEnergyMj) / 1_000_000,
     programs,
+    moduleTotals,
   };
 }
 
@@ -1112,3 +1184,546 @@ export const MASS_UNITS: MassUnit[] = [
   { id: "mt", label: "million tonnes CO2e", factor: 0.000001 },
   { id: "shortton", label: "short tons CO2e", factor: 1.10231 },
 ];
+
+// ---------------------------------------------------------------------------
+// Detailed lifecycle modules
+// ---------------------------------------------------------------------------
+// Each module lets the user build one of the aggregate DirectTerms values from
+// physical activity data. When a module is enabled its computed total replaces
+// the corresponding aggregate term and every sub-item appears as its own line.
+
+export interface DetailRow {
+  key: string;
+  label: string;
+  gPerMj: number;
+  detail: string;
+}
+
+export interface ModuleResult {
+  gPerMj: number;
+  rows: DetailRow[];
+}
+
+/** Emission factors used by the detailed modules. */
+export const DETAIL_FACTORS = {
+  dieselPerLitre: 3720, // gCO2e per litre, combustion plus upstream
+  gasolinePerLitre: 3300,
+  nitrogenPerKg: 4000, // gCO2e per kg N, manufacture
+  n2oGwp: 273,
+  ch4Gwp: 29.8,
+  phosphatePerKg: 1010, // per kg P2O5
+  potashPerKg: 690, // per kg K2O
+  limePerKg: 440,
+  pesticidePerKg: 20000,
+  seedPerKg: 600,
+  naturalGasPerMj: 68.5,
+  combustionCo2PerMj: 73.0, // fossil-equivalent combustion CO2 of a liquid fuel
+} as const;
+
+// --- Feedstock production ---------------------------------------------------
+
+export interface FeedstockProductionInputs {
+  enabled: boolean;
+  /** MJ of finished fuel produced per tonne of feedstock delivered. */
+  yieldMjPerTonne: number;
+  cultivationDieselL: number;
+  cultivationElectricityKwh: number;
+  nitrogenKg: number;
+  n2oEmissionFactor: number; // fraction of applied N lost as N2O-N
+  phosphateKg: number;
+  potashKg: number;
+  limeKg: number;
+  pesticideKg: number;
+  seedKg: number;
+  irrigationElectricityKwh: number;
+  collectionDieselL: number;
+  renderingGasMj: number;
+  renderingElectricityKwh: number;
+  dryingGasMj: number;
+  soilCarbonKgPerTonne: number; // negative = sequestration
+}
+
+export const DEFAULT_FEEDSTOCK_PRODUCTION: FeedstockProductionInputs = {
+  enabled: false,
+  yieldMjPerTonne: 10000,
+  cultivationDieselL: 18,
+  cultivationElectricityKwh: 4,
+  nitrogenKg: 14,
+  n2oEmissionFactor: 0.01,
+  phosphateKg: 5,
+  potashKg: 5,
+  limeKg: 10,
+  pesticideKg: 0.3,
+  seedKg: 2,
+  irrigationElectricityKwh: 0,
+  collectionDieselL: 0,
+  renderingGasMj: 0,
+  renderingElectricityKwh: 0,
+  dryingGasMj: 0,
+  soilCarbonKgPerTonne: 0,
+};
+
+export function computeFeedstockProduction(
+  f: FeedstockProductionInputs,
+  gridFactor: number,
+): ModuleResult {
+  const yieldMj = Math.max(1e-6, f.yieldMjPerTonne);
+  const per = (gPerTonne: number) => gPerTonne / yieldMj;
+  const fieldN2o =
+    f.nitrogenKg * f.n2oEmissionFactor * (44 / 28) * DETAIL_FACTORS.n2oGwp * 1000;
+  const items: [string, string, number, string][] = [
+    ["cultivationDiesel", "Cultivation and harvest diesel", f.cultivationDieselL * DETAIL_FACTORS.dieselPerLitre, `${f.cultivationDieselL} L/t × 3.72 kg/L`],
+    ["cultivationElectricity", "Cultivation electricity", f.cultivationElectricityKwh * gridFactor, `${f.cultivationElectricityKwh} kWh/t × ${gridFactor} g/kWh`],
+    ["nitrogen", "Nitrogen fertiliser manufacture", f.nitrogenKg * DETAIL_FACTORS.nitrogenPerKg, `${f.nitrogenKg} kg N/t × 4.0 kg/kg`],
+    ["fieldN2o", "Field N2O from applied nitrogen", fieldN2o, `${(f.n2oEmissionFactor * 100).toFixed(2)}% of N as N2O-N, GWP 273`],
+    ["phosphate", "Phosphate fertiliser", f.phosphateKg * DETAIL_FACTORS.phosphatePerKg, `${f.phosphateKg} kg P2O5/t`],
+    ["potash", "Potash fertiliser", f.potashKg * DETAIL_FACTORS.potashPerKg, `${f.potashKg} kg K2O/t`],
+    ["lime", "Lime application", f.limeKg * DETAIL_FACTORS.limePerKg, `${f.limeKg} kg/t × 0.44 kg/kg`],
+    ["pesticide", "Pesticide and herbicide", f.pesticideKg * DETAIL_FACTORS.pesticidePerKg, `${f.pesticideKg} kg/t × 20 kg/kg`],
+    ["seed", "Seed and planting material", f.seedKg * DETAIL_FACTORS.seedPerKg, `${f.seedKg} kg/t`],
+    ["irrigation", "Irrigation pumping", f.irrigationElectricityKwh * gridFactor, `${f.irrigationElectricityKwh} kWh/t`],
+    ["collection", "Collection, baling and handling", f.collectionDieselL * DETAIL_FACTORS.dieselPerLitre, `${f.collectionDieselL} L diesel/t`],
+    ["renderingGas", "Rendering heat (natural gas)", f.renderingGasMj * DETAIL_FACTORS.naturalGasPerMj, `${f.renderingGasMj} MJ/t`],
+    ["renderingElectricity", "Rendering electricity", f.renderingElectricityKwh * gridFactor, `${f.renderingElectricityKwh} kWh/t`],
+    ["dryingGas", "Feedstock drying", f.dryingGasMj * DETAIL_FACTORS.naturalGasPerMj, `${f.dryingGasMj} MJ/t`],
+    ["soilCarbon", "Soil carbon change", f.soilCarbonKgPerTonne * 1000, `${f.soilCarbonKgPerTonne} kgCO2e/t`],
+  ];
+  const rows = items
+    .filter(([, , g]) => g !== 0)
+    .map(([key, label, g, detail]) => ({ key: `fp-${key}`, label, gPerMj: per(g), detail }));
+  return { gPerMj: rows.reduce((a, r) => a + r.gPerMj, 0), rows };
+}
+
+// --- Transport --------------------------------------------------------------
+
+export type TransportModeId =
+  | "truckHeavy"
+  | "truckSmall"
+  | "truckRefrigerated"
+  | "rail"
+  | "barge"
+  | "oceanTanker"
+  | "oceanBulk"
+  | "pipelineLiquid"
+  | "pipelineGas";
+
+export const TRANSPORT_MODES: { id: TransportModeId; label: string; gPerTonneKm: number }[] = [
+  { id: "truckHeavy", label: "Heavy truck (40 t)", gPerTonneKm: 62 },
+  { id: "truckSmall", label: "Light / collection truck", gPerTonneKm: 145 },
+  { id: "truckRefrigerated", label: "Refrigerated truck", gPerTonneKm: 95 },
+  { id: "rail", label: "Rail", gPerTonneKm: 22 },
+  { id: "barge", label: "Inland barge", gPerTonneKm: 31 },
+  { id: "oceanTanker", label: "Ocean tanker", gPerTonneKm: 8 },
+  { id: "oceanBulk", label: "Ocean bulk carrier", gPerTonneKm: 6 },
+  { id: "pipelineLiquid", label: "Liquid pipeline", gPerTonneKm: 5 },
+  { id: "pipelineGas", label: "Gas pipeline", gPerTonneKm: 3 },
+];
+
+export const TRANSPORT_MODE_BY_ID: Record<TransportModeId, { id: TransportModeId; label: string; gPerTonneKm: number }> =
+  Object.fromEntries(TRANSPORT_MODES.map((m) => [m.id, m])) as Record<
+    TransportModeId,
+    { id: TransportModeId; label: string; gPerTonneKm: number }
+  >;
+
+export interface TransportLeg {
+  id: string;
+  label: string;
+  mode: TransportModeId;
+  distanceKm: number;
+  /** Share of the mass that travels this leg, 0-100. */
+  sharePct: number;
+  /** Multiplier for empty return running, 1 = none. */
+  emptyReturn: number;
+}
+
+export interface TransportInputs {
+  enabled: boolean;
+  /** Tonnes of feedstock moved per GJ of finished fuel. */
+  tonnesPerGj: number;
+  legs: TransportLeg[];
+}
+
+export const DEFAULT_TRANSPORT: TransportInputs = {
+  enabled: false,
+  tonnesPerGj: 0.1,
+  legs: [
+    { id: "leg1", label: "Field or collection to depot", mode: "truckSmall", distanceKm: 50, sharePct: 100, emptyReturn: 1.2 },
+    { id: "leg2", label: "Depot to plant", mode: "truckHeavy", distanceKm: 150, sharePct: 100, emptyReturn: 1.15 },
+  ],
+};
+
+function legRows(legs: TransportLeg[], tonnesPerGj: number, prefix: string): DetailRow[] {
+  return legs
+    .map((leg) => {
+      const mode = TRANSPORT_MODE_BY_ID[leg.mode] ?? TRANSPORT_MODES[0]!;
+      const tkmPerGj = tonnesPerGj * leg.distanceKm * (leg.sharePct / 100) * (leg.emptyReturn || 1);
+      return {
+        key: `${prefix}-${leg.id}`,
+        label: leg.label || mode.label,
+        gPerMj: (tkmPerGj * mode.gPerTonneKm) / 1000,
+        detail: `${mode.label} · ${leg.distanceKm} km · ${leg.sharePct}% of mass · ${mode.gPerTonneKm} g/t-km`,
+      };
+    })
+    .filter((r) => r.gPerMj !== 0);
+}
+
+export function computeTransport(t: TransportInputs): ModuleResult {
+  const rows = legRows(t.legs, t.tonnesPerGj, "tr");
+  return { gPerMj: rows.reduce((a, r) => a + r.gPerMj, 0), rows };
+}
+
+// --- Chemicals and fugitives -------------------------------------------------
+
+export interface ChemicalItem {
+  id: string;
+  label: string;
+  /** kg of chemical per tonne of finished fuel. */
+  kgPerTonneFuel: number;
+  /** gCO2e per kg of the chemical. */
+  gPerKg: number;
+}
+
+export interface ChemicalsInputs {
+  enabled: boolean;
+  /** Tonnes of finished fuel per GJ, used to convert chemical doses. */
+  fuelTonnesPerGj: number;
+  items: ChemicalItem[];
+  /** Fugitive methane released per tonne of finished fuel. */
+  fugitiveCh4KgPerTonne: number;
+  /** Fugitive nitrous oxide released per tonne of finished fuel. */
+  fugitiveN2oKgPerTonne: number;
+  /** Vented or flared process CO2 per tonne of finished fuel. */
+  ventedCo2KgPerTonne: number;
+  /** Captured and stored CO2 per tonne of finished fuel, entered positive. */
+  capturedCo2KgPerTonne: number;
+}
+
+export const CHEMICAL_PRESETS: { id: string; label: string; gPerKg: number }[] = [
+  { id: "methanol", label: "Methanol", gPerKg: 1050 },
+  { id: "sodiumMethylate", label: "Sodium methylate", gPerKg: 2200 },
+  { id: "caustic", label: "Caustic soda", gPerKg: 1120 },
+  { id: "sulphuricAcid", label: "Sulphuric acid", gPerKg: 200 },
+  { id: "hydrochloricAcid", label: "Hydrochloric acid", gPerKg: 750 },
+  { id: "hexane", label: "Hexane", gPerKg: 900 },
+  { id: "enzymes", label: "Enzymes", gPerKg: 6000 },
+  { id: "yeast", label: "Yeast and nutrients", gPerKg: 2500 },
+  { id: "ammonia", label: "Ammonia", gPerKg: 2400 },
+  { id: "urea", label: "Urea", gPerKg: 1600 },
+  { id: "catalyst", label: "Hydrotreating catalyst", gPerKg: 12000 },
+  { id: "phosphoricAcid", label: "Phosphoric acid", gPerKg: 1300 },
+  { id: "activatedCarbon", label: "Activated carbon", gPerKg: 4500 },
+  { id: "processWater", label: "Process water treatment", gPerKg: 30 },
+  { id: "custom", label: "Custom chemical", gPerKg: 1000 },
+];
+
+export const DEFAULT_CHEMICALS: ChemicalsInputs = {
+  enabled: false,
+  fuelTonnesPerGj: 0.0234,
+  items: [
+    { id: "c1", label: "Methanol", kgPerTonneFuel: 100, gPerKg: 1050 },
+    { id: "c2", label: "Caustic soda", kgPerTonneFuel: 8, gPerKg: 1120 },
+  ],
+  fugitiveCh4KgPerTonne: 0.2,
+  fugitiveN2oKgPerTonne: 0.01,
+  ventedCo2KgPerTonne: 0,
+  capturedCo2KgPerTonne: 0,
+};
+
+export function computeChemicals(c: ChemicalsInputs): ModuleResult {
+  // 1 tonne of fuel carries 1 / fuelTonnesPerGj GJ, so MJ per tonne of fuel:
+  const mjPerTonneFuel = 1000 / Math.max(1e-9, c.fuelTonnesPerGj);
+  const per = (gPerTonneFuel: number) => gPerTonneFuel / mjPerTonneFuel;
+  const rows: DetailRow[] = [];
+  for (const item of c.items) {
+    const g = item.kgPerTonneFuel * item.gPerKg;
+    if (g === 0) continue;
+    rows.push({
+      key: `chem-${item.id}`,
+      label: item.label || "Chemical input",
+      gPerMj: per(g),
+      detail: `${item.kgPerTonneFuel} kg/t fuel × ${item.gPerKg} gCO2e/kg`,
+    });
+  }
+  const extras: [string, string, number, string][] = [
+    ["ch4", "Fugitive methane", c.fugitiveCh4KgPerTonne * DETAIL_FACTORS.ch4Gwp * 1000, `${c.fugitiveCh4KgPerTonne} kg CH4/t fuel × GWP 29.8`],
+    ["n2o", "Fugitive nitrous oxide", c.fugitiveN2oKgPerTonne * DETAIL_FACTORS.n2oGwp * 1000, `${c.fugitiveN2oKgPerTonne} kg N2O/t fuel × GWP 273`],
+    ["vent", "Vented or flared process CO2", c.ventedCo2KgPerTonne * 1000, `${c.ventedCo2KgPerTonne} kg CO2/t fuel`],
+    ["ccs", "Carbon captured and stored", -c.capturedCo2KgPerTonne * 1000, `${c.capturedCo2KgPerTonne} kg CO2/t fuel stored`],
+  ];
+  for (const [key, label, g, detail] of extras) {
+    if (g === 0) continue;
+    rows.push({ key: `chem-${key}`, label, gPerMj: per(g), detail });
+  }
+  return { gPerMj: rows.reduce((a, r) => a + r.gPerMj, 0), rows };
+}
+
+// --- Co-products and avoided emissions ---------------------------------------
+
+export interface CoProductItem {
+  id: string;
+  label: string;
+  /** kg of co-product per tonne of finished fuel. */
+  kgPerTonneFuel: number;
+  /** gCO2e avoided per kg of co-product (displacement credit). */
+  gPerKg: number;
+}
+
+export interface CoProductInputs {
+  enabled: boolean;
+  fuelTonnesPerGj: number;
+  items: CoProductItem[];
+  /** Surplus electricity exported, kWh per MJ of fuel. */
+  exportedElectricityKwhPerMj: number;
+  /** Credit applied to exported power, gCO2e per kWh displaced. */
+  exportedElectricityCreditPerKwh: number;
+  /** Avoided methane from manure or landfill, gCO2e/MJ, entered positive. */
+  avoidedMethaneGPerMj: number;
+  /** Energy allocation to the fuel, 0-100. 100 keeps the full burden on the fuel. */
+  allocationPct: number;
+}
+
+export const COPRODUCT_PRESETS: { id: string; label: string; gPerKg: number }[] = [
+  { id: "ddgs", label: "DDGS animal feed", gPerKg: 500 },
+  { id: "soyMeal", label: "Soybean meal", gPerKg: 400 },
+  { id: "canolaMeal", label: "Canola meal", gPerKg: 420 },
+  { id: "glycerine", label: "Crude glycerine", gPerKg: 900 },
+  { id: "naphtha", label: "Renewable naphtha", gPerKg: 800 },
+  { id: "lpg", label: "Co-produced LPG", gPerKg: 900 },
+  { id: "cornOil", label: "Distillers corn oil", gPerKg: 1200 },
+  { id: "biochar", label: "Biochar (stable carbon)", gPerKg: 2200 },
+  { id: "digestate", label: "Digestate fertiliser", gPerKg: 120 },
+  { id: "electricityExport", label: "Bagasse power export", gPerKg: 0 },
+  { id: "custom", label: "Custom co-product", gPerKg: 500 },
+];
+
+export const DEFAULT_COPRODUCTS: CoProductInputs = {
+  enabled: false,
+  fuelTonnesPerGj: 0.0234,
+  items: [{ id: "cp1", label: "DDGS animal feed", kgPerTonneFuel: 900, gPerKg: 500 }],
+  exportedElectricityKwhPerMj: 0,
+  exportedElectricityCreditPerKwh: 386,
+  avoidedMethaneGPerMj: 0,
+  allocationPct: 100,
+};
+
+export function computeCoProducts(c: CoProductInputs): ModuleResult {
+  const mjPerTonneFuel = 1000 / Math.max(1e-9, c.fuelTonnesPerGj);
+  const rows: DetailRow[] = [];
+  for (const item of c.items) {
+    const g = item.kgPerTonneFuel * item.gPerKg;
+    if (g === 0) continue;
+    rows.push({
+      key: `cp-${item.id}`,
+      label: `${item.label || "Co-product"} credit`,
+      gPerMj: -g / mjPerTonneFuel,
+      detail: `${item.kgPerTonneFuel} kg/t fuel × ${item.gPerKg} gCO2e/kg displaced`,
+    });
+  }
+  if (c.exportedElectricityKwhPerMj !== 0) {
+    rows.push({
+      key: "cp-power",
+      label: "Exported electricity credit",
+      gPerMj: -c.exportedElectricityKwhPerMj * c.exportedElectricityCreditPerKwh,
+      detail: `${c.exportedElectricityKwhPerMj} kWh/MJ × ${c.exportedElectricityCreditPerKwh} g/kWh displaced`,
+    });
+  }
+  if (c.avoidedMethaneGPerMj !== 0) {
+    rows.push({
+      key: "cp-methane",
+      label: "Avoided methane credit",
+      gPerMj: -Math.abs(c.avoidedMethaneGPerMj),
+      detail: "Manure, landfill or wastewater methane that would have been released",
+    });
+  }
+  const alloc = Math.min(100, Math.max(0, c.allocationPct)) / 100;
+  if (alloc < 1) {
+    rows.push({
+      key: "cp-alloc",
+      label: "Energy allocation to co-products",
+      gPerMj: 0,
+      detail: `${(alloc * 100).toFixed(0)}% of the burden stays with the fuel`,
+    });
+  }
+  return { gPerMj: rows.reduce((a, r) => a + r.gPerMj, 0), rows };
+}
+
+// --- Fuel distribution --------------------------------------------------------
+
+export interface DistributionInputs {
+  enabled: boolean;
+  /** Tonnes of finished fuel per GJ. */
+  fuelTonnesPerGj: number;
+  legs: TransportLeg[];
+  /** Terminal storage and tank heating, gCO2e/MJ. */
+  storageGPerMj: number;
+  /** Blending and additives, gCO2e/MJ. */
+  blendingGPerMj: number;
+  /** Retail dispensing and station electricity, gCO2e/MJ. */
+  dispensingGPerMj: number;
+  /** Compression or liquefaction for gaseous fuels, gCO2e/MJ. */
+  compressionGPerMj: number;
+  /** Evaporative and boil-off losses, % of fuel. */
+  lossPct: number;
+}
+
+export const DEFAULT_DISTRIBUTION: DistributionInputs = {
+  enabled: false,
+  fuelTonnesPerGj: 0.0234,
+  legs: [
+    { id: "dleg1", label: "Plant to terminal", mode: "rail", distanceKm: 800, sharePct: 100, emptyReturn: 1.1 },
+    { id: "dleg2", label: "Terminal to station", mode: "truckHeavy", distanceKm: 120, sharePct: 100, emptyReturn: 1.2 },
+  ],
+  storageGPerMj: 0.3,
+  blendingGPerMj: 0.2,
+  dispensingGPerMj: 0.2,
+  compressionGPerMj: 0,
+  lossPct: 0.2,
+};
+
+export function computeDistribution(dst: DistributionInputs, upstreamCi: number): ModuleResult {
+  const rows = legRows(dst.legs, dst.fuelTonnesPerGj, "dist");
+  const extras: [string, string, number, string][] = [
+    ["storage", "Terminal storage", dst.storageGPerMj, "Tank heating, pumping and vapour control"],
+    ["blending", "Blending and additives", dst.blendingGPerMj, "Splash or in-line blending"],
+    ["dispensing", "Retail dispensing", dst.dispensingGPerMj, "Station electricity and pumping"],
+    ["compression", "Compression or liquefaction", dst.compressionGPerMj, "CNG compression, LNG or hydrogen handling"],
+  ];
+  for (const [key, label, g, detail] of extras) {
+    if (g === 0) continue;
+    rows.push({ key: `dist-${key}`, label, gPerMj: g, detail });
+  }
+  if (dst.lossPct !== 0) {
+    rows.push({
+      key: "dist-loss",
+      label: "Distribution losses",
+      gPerMj: (dst.lossPct / 100) * upstreamCi,
+      detail: `${dst.lossPct}% of the fuel lost, carrying its upstream carbon`,
+    });
+  }
+  return { gPerMj: rows.reduce((a, r) => a + r.gPerMj, 0), rows };
+}
+
+// --- Tailpipe / end use --------------------------------------------------------
+
+export type EndUseModeId =
+  | "lightDutyRoad"
+  | "heavyDutyRoad"
+  | "cngVehicle"
+  | "fuelCell"
+  | "aviationTurbine"
+  | "marineEngine"
+  | "railLocomotive"
+  | "offRoad"
+  | "stationaryBoiler"
+  | "powerGeneration";
+
+export interface EndUseMode {
+  id: EndUseModeId;
+  label: string;
+  /** gCO2e/MJ from CH4 slip at the point of use. */
+  ch4GPerMj: number;
+  /** gCO2e/MJ from N2O at the point of use. */
+  n2oGPerMj: number;
+  note: string;
+}
+
+export const END_USE_MODES: EndUseMode[] = [
+  { id: "lightDutyRoad", label: "Light duty road vehicle", ch4GPerMj: 0.15, n2oGPerMj: 0.65, note: "Spark ignition cars and light trucks" },
+  { id: "heavyDutyRoad", label: "Heavy duty road vehicle", ch4GPerMj: 0.1, n2oGPerMj: 0.9, note: "Compression ignition trucks and buses" },
+  { id: "cngVehicle", label: "Natural gas vehicle", ch4GPerMj: 1.8, n2oGPerMj: 0.3, note: "Methane slip dominates spark-ignited gas engines" },
+  { id: "fuelCell", label: "Hydrogen fuel cell", ch4GPerMj: 0, n2oGPerMj: 0, note: "No combustion emissions at the point of use" },
+  { id: "aviationTurbine", label: "Aviation turbine", ch4GPerMj: 0.02, n2oGPerMj: 0.55, note: "Excludes non-CO2 contrail effects" },
+  { id: "marineEngine", label: "Marine engine", ch4GPerMj: 0.3, n2oGPerMj: 0.55, note: "Slow speed diesel; higher slip for LNG dual fuel" },
+  { id: "railLocomotive", label: "Rail locomotive", ch4GPerMj: 0.08, n2oGPerMj: 0.8, note: "Line haul diesel electric" },
+  { id: "offRoad", label: "Off-road and agricultural machinery", ch4GPerMj: 0.2, n2oGPerMj: 1.0, note: "Tractors, loaders and construction plant" },
+  { id: "stationaryBoiler", label: "Stationary boiler or furnace", ch4GPerMj: 0.05, n2oGPerMj: 0.3, note: "Industrial heat and district energy" },
+  { id: "powerGeneration", label: "Power generation", ch4GPerMj: 0.04, n2oGPerMj: 0.35, note: "Biomass or biogas fired generation" },
+];
+
+export const END_USE_MODE_BY_ID: Record<EndUseModeId, EndUseMode> = Object.fromEntries(
+  END_USE_MODES.map((m) => [m.id, m]),
+) as Record<EndUseModeId, EndUseMode>;
+
+export interface TailpipeInputs {
+  enabled: boolean;
+  modeId: EndUseModeId;
+  /** Share of the carbon in the fuel that is fossil, 0-100. */
+  fossilCarbonPct: number;
+  /** Combustion CO2 of the fuel, gCO2e/MJ, before the biogenic deduction. */
+  combustionCo2GPerMj: number;
+  /** Optional user override of the CH4 factor, gCO2e/MJ. Negative = use the mode default. */
+  ch4Override: number;
+  n2oOverride: number;
+  /** Urea or SCR consumption credited as an emission, gCO2e/MJ. */
+  aftertreatmentGPerMj: number;
+}
+
+export const DEFAULT_TAILPIPE: TailpipeInputs = {
+  enabled: false,
+  modeId: "heavyDutyRoad",
+  fossilCarbonPct: 0,
+  combustionCo2GPerMj: DETAIL_FACTORS.combustionCo2PerMj,
+  ch4Override: -1,
+  n2oOverride: -1,
+  aftertreatmentGPerMj: 0,
+};
+
+export function computeTailpipe(t: TailpipeInputs): ModuleResult {
+  const mode = END_USE_MODE_BY_ID[t.modeId] ?? END_USE_MODES[0]!;
+  const ch4 = t.ch4Override >= 0 ? t.ch4Override : mode.ch4GPerMj;
+  const n2o = t.n2oOverride >= 0 ? t.n2oOverride : mode.n2oGPerMj;
+  const fossil = (Math.min(100, Math.max(0, t.fossilCarbonPct)) / 100) * t.combustionCo2GPerMj;
+  const rows: DetailRow[] = [];
+  if (ch4) rows.push({ key: "tp-ch4", label: `${mode.label} — methane slip`, gPerMj: ch4, detail: mode.note });
+  if (n2o) rows.push({ key: "tp-n2o", label: `${mode.label} — nitrous oxide`, gPerMj: n2o, detail: "Combustion N2O, GWP 273" });
+  if (fossil)
+    rows.push({
+      key: "tp-fossil",
+      label: "Fossil carbon in the fuel",
+      gPerMj: fossil,
+      detail: `${t.fossilCarbonPct}% of ${t.combustionCo2GPerMj} gCO2/MJ combustion CO2`,
+    });
+  if (t.aftertreatmentGPerMj)
+    rows.push({ key: "tp-scr", label: "Aftertreatment reagent", gPerMj: t.aftertreatmentGPerMj, detail: "Urea / DEF consumption" });
+  rows.push({
+    key: "tp-biogenic",
+    label: "Biogenic combustion CO2",
+    gPerMj: 0,
+    detail: `${(t.combustionCo2GPerMj * (1 - t.fossilCarbonPct / 100)).toFixed(1)} gCO2/MJ counted as zero under every program`,
+  });
+  return { gPerMj: rows.reduce((a, r) => a + r.gPerMj, 0), rows };
+}
+
+// --- Module wiring -------------------------------------------------------------
+
+export interface DetailModules {
+  feedstockProduction: FeedstockProductionInputs;
+  transport: TransportInputs;
+  chemicals: ChemicalsInputs;
+  coProducts: CoProductInputs;
+  distribution: DistributionInputs;
+  tailpipe: TailpipeInputs;
+}
+
+export type DetailModuleKey = keyof DetailModules;
+
+/** Which aggregate DirectTerms value each detailed module replaces. */
+export const MODULE_TO_DIRECT: Record<DetailModuleKey, keyof DirectTerms> = {
+  feedstockProduction: "feedstock",
+  transport: "feedstockTransport",
+  chemicals: "processNonEnergy",
+  coProducts: "coProductCredit",
+  distribution: "distribution",
+  tailpipe: "endUse",
+};
+
+export function defaultDetailModules(): DetailModules {
+  return {
+    feedstockProduction: { ...DEFAULT_FEEDSTOCK_PRODUCTION },
+    transport: { ...DEFAULT_TRANSPORT, legs: DEFAULT_TRANSPORT.legs.map((l) => ({ ...l })) },
+    chemicals: { ...DEFAULT_CHEMICALS, items: DEFAULT_CHEMICALS.items.map((i) => ({ ...i })) },
+    coProducts: { ...DEFAULT_COPRODUCTS, items: DEFAULT_COPRODUCTS.items.map((i) => ({ ...i })) },
+    distribution: { ...DEFAULT_DISTRIBUTION, legs: DEFAULT_DISTRIBUTION.legs.map((l) => ({ ...l })) },
+    tailpipe: { ...DEFAULT_TAILPIPE },
+  };
+}
