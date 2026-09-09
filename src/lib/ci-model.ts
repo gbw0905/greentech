@@ -722,6 +722,8 @@ export const PATHWAY_BY_ID: Record<string, PathwayDef> = Object.fromEntries(
   PATHWAYS.map((p) => [p.id, p]),
 );
 
+const FALLBACK_PATHWAY = PATHWAY_BY_ID["ethanol-corn"] as PathwayDef;
+
 // ---------------------------------------------------------------------------
 // Scenario and results
 // ---------------------------------------------------------------------------
@@ -766,7 +768,7 @@ export interface ScenarioResult {
 }
 
 export function scenarioFromPathway(pathwayId: string, region: ElectricityRegionId): ScenarioInputs {
-  const p = PATHWAY_BY_ID[pathwayId] ?? PATHWAYS[0];
+  const p = PATHWAY_BY_ID[pathwayId] ?? FALLBACK_PATHWAY;
   return {
     pathwayId: p.id,
     region,
@@ -823,7 +825,7 @@ export const DIRECT_FIELDS: { key: keyof DirectTerms; label: string; category: L
 ];
 
 export function calculateScenario(input: ScenarioInputs): ScenarioResult {
-  const pathway = PATHWAY_BY_ID[input.pathwayId] ?? PATHWAYS[0];
+  const pathway = PATHWAY_BY_ID[input.pathwayId] ?? FALLBACK_PATHWAY;
   const regionFactor =
     ELECTRICITY_REGIONS.find((r) => r.id === input.region)?.gPerKwh ?? 386;
 
