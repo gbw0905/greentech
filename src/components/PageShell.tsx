@@ -91,6 +91,13 @@ export function PageShell({
             </Link>
             <span className="mx-2 text-muted-foreground">·</span>
             <Link
+              to="/ci-calculator"
+              className="font-semibold text-foreground underline underline-offset-4 hover:text-primary"
+            >
+              CI calculator
+            </Link>
+            <span className="mx-2 text-muted-foreground">·</span>
+            <Link
               to="/mandates"
               className="font-semibold text-foreground underline underline-offset-4 hover:text-primary"
             >

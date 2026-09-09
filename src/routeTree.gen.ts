@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AssistantRouteImport } from './routes/assistant'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CiCalculatorRouteImport } from './routes/ci-calculator'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DataSourcesRouteImport } from './routes/data-sources'
 import { Route as GetAlertsRouteImport } from './routes/get-alerts'
@@ -70,6 +71,11 @@ const AssistantRoute = AssistantRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CiCalculatorRoute = CiCalculatorRouteImport.update({
+  id: '/ci-calculator',
+  path: '/ci-calculator',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -280,6 +286,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRouteWithChildren
   '/assistant': typeof AssistantRouteWithChildren
   '/auth': typeof AuthRoute
+  '/ci-calculator': typeof CiCalculatorRoute
   '/contact': typeof ContactRoute
   '/data-sources': typeof DataSourcesRoute
   '/get-alerts': typeof GetAlertsRoute
@@ -323,6 +330,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/assistant': typeof AssistantRouteWithChildren
   '/auth': typeof AuthRoute
+  '/ci-calculator': typeof CiCalculatorRoute
   '/contact': typeof ContactRoute
   '/data-sources': typeof DataSourcesRoute
   '/get-alerts': typeof GetAlertsRoute
@@ -367,6 +375,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRouteWithChildren
   '/assistant': typeof AssistantRouteWithChildren
   '/auth': typeof AuthRoute
+  '/ci-calculator': typeof CiCalculatorRoute
   '/contact': typeof ContactRoute
   '/data-sources': typeof DataSourcesRoute
   '/get-alerts': typeof GetAlertsRoute
@@ -413,6 +422,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/assistant'
     | '/auth'
+    | '/ci-calculator'
     | '/contact'
     | '/data-sources'
     | '/get-alerts'
@@ -456,6 +466,7 @@ export interface FileRouteTypes {
     | '/'
     | '/assistant'
     | '/auth'
+    | '/ci-calculator'
     | '/contact'
     | '/data-sources'
     | '/get-alerts'
@@ -499,6 +510,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/assistant'
     | '/auth'
+    | '/ci-calculator'
     | '/contact'
     | '/data-sources'
     | '/get-alerts'
@@ -544,6 +556,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRouteWithChildren
   AssistantRoute: typeof AssistantRouteWithChildren
   AuthRoute: typeof AuthRoute
+  CiCalculatorRoute: typeof CiCalculatorRoute
   ContactRoute: typeof ContactRoute
   DataSourcesRoute: typeof DataSourcesRoute
   GetAlertsRoute: typeof GetAlertsRoute
@@ -605,6 +618,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ci-calculator': {
+      id: '/ci-calculator'
+      path: '/ci-calculator'
+      fullPath: '/ci-calculator'
+      preLoaderRoute: typeof CiCalculatorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -923,6 +943,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRouteWithChildren,
   AssistantRoute: AssistantRouteWithChildren,
   AuthRoute: AuthRoute,
+  CiCalculatorRoute: CiCalculatorRoute,
   ContactRoute: ContactRoute,
   DataSourcesRoute: DataSourcesRoute,
   GetAlertsRoute: GetAlertsRoute,
