@@ -358,20 +358,14 @@ function PyrolysisModel() {
       </section>
 
       <section className="glass-panel border-l-4 border-l-accent p-5">
-        <h2 className="font-display text-base font-bold text-foreground">Method and limitations</h2>
-        <p className="mt-2 text-sm/relaxed text-muted-foreground">
+        <p className="text-sm/relaxed text-muted-foreground">
           Calculations follow the Oregon State University and NREL carbon intensity model for forest
           residue pyrolysis under the Oregon Clean Fuels Program (co-product allocation draft), using
-          that model&apos;s equipment energy intensities, GREET-derived emission factors and energy-based
-          allocation between liquid fuel and biochar. At the model&apos;s baseline settings this page
-          reproduces its published result of 91.41 gCO2e/MJ.
-        </p>
-        <p className="mt-2 text-sm/relaxed text-muted-foreground">
-          Results are indicative and pathway-specific. They are not a certified CI score: regulatory
-          pathway certification requires site-specific data, verification and approval by the
-          administering agency.
+          that model&apos;s equipment energy intensities, GREET-derived emission factors and
+          energy-based allocation between liquid fuel and biochar. At the model&apos;s baseline
+          settings this tab reproduces its published result of 91.41 gCO2e/MJ.
         </p>
       </section>
-    </PageShell>
+    </div>
   );
 }
