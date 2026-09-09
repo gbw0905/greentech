@@ -504,25 +504,6 @@ export const PATHWAYS: PathwayDef[] = [
     energy: { naturalGas: 0.06, hydrogenSmr: 0.05, electricity: 0.006 },
   },
   {
-    id: "rd-pyrolysis-forest",
-    label: "Renewable diesel and gasoline — forest residue pyrolysis",
-    group: "Renewable diesel",
-    benchmarkFuel: "diesel",
-    eer: 1,
-    energyPerUnit: 129.65,
-    unitLabel: "gallon",
-    summary: "Fast pyrolysis and upgrading with biochar co-product. Detailed OSU and NREL model on the second tab.",
-    direct: d({
-      feedstock: 3,
-      feedstockTransport: 4,
-      processNonEnergy: 2,
-      coProductCredit: -6,
-      distribution: 1.5,
-      endUse: 1.2,
-    }),
-    energy: { naturalGas: 0.55, electricity: 0.05, diesel: 0.02 },
-  },
-  {
     id: "saf-hefa-uco",
     label: "SAF — HEFA from used cooking oil",
     group: "Sustainable aviation fuel",
@@ -731,6 +712,10 @@ const FALLBACK_PATHWAY = PATHWAY_BY_ID["ethanol-corn"] as PathwayDef;
 export interface ScenarioInputs {
   pathwayId: string;
   region: ElectricityRegionId;
+  /** Selected feedstock source, drives the feedstock, land use and transport terms. */
+  feedstockId: string;
+  /** Selected supply variant for each process energy source. */
+  sourceVariants: Partial<Record<SourceId, string>>;
   direct: DirectTerms;
   energy: Partial<Record<SourceId, number>>;
   /** Annual production in the pathway's own unit (gallons, MJ, kg, tonnes). */
@@ -769,13 +754,36 @@ export interface ScenarioResult {
 
 export function scenarioFromPathway(pathwayId: string, region: ElectricityRegionId): ScenarioInputs {
   const p = PATHWAY_BY_ID[pathwayId] ?? FALLBACK_PATHWAY;
+  const variants: Partial<Record<SourceId, string>> = {};
+  for (const s of SOURCES) {
+    const first = SOURCE_VARIANTS[s.id]?.[0];
+    if (first) variants[s.id] = first.id;
+  }
   return {
     pathwayId: p.id,
     region,
+    feedstockId: PATHWAY_FEEDSTOCK[p.id] ?? "custom",
+    sourceVariants: variants,
     direct: { ...p.direct },
     energy: { ...p.energy },
     annualVolume:
       p.unitLabel === "MJ" ? 2_000_000_000 : p.unitLabel === "tonne" ? 500_000 : p.unitLabel === "kg" ? 10_000_000 : 50_000_000,
+  };
+}
+
+/** Apply a feedstock choice to the feedstock, land use change and transport terms. */
+export function applyFeedstock(inputs: ScenarioInputs, feedstockId: string): ScenarioInputs {
+  const f = FEEDSTOCK_BY_ID[feedstockId];
+  if (!f || f.id === "custom") return { ...inputs, feedstockId };
+  return {
+    ...inputs,
+    feedstockId,
+    direct: {
+      ...inputs.direct,
+      feedstock: f.feedstock,
+      landUseChange: f.landUseChange,
+      feedstockTransport: f.feedstockTransport,
+    },
   };
 }
 
@@ -840,10 +848,14 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
   for (const s of SOURCES) {
     const qty = Number(input.energy[s.id]) || 0;
     if (qty === 0) continue;
-    const factor = s.id === "electricity" ? regionFactor : s.factor;
+    const variant = (SOURCE_VARIANTS[s.id] ?? []).find(
+      (v) => v.id === input.sourceVariants?.[s.id],
+    );
+    const factor =
+      s.id === "electricity" ? regionFactor : (variant?.factor ?? s.factor);
     lineItems.push({
       key: s.id,
-      label: s.label,
+      label: variant && s.id !== "electricity" ? `${s.label} — ${variant.label}` : s.label,
       category: "Process energy",
       gPerMj: qty * factor,
       detail: `${qty} ${s.unit}/MJ × ${factor.toFixed(1)} gCO2e/${s.unit}`,
@@ -895,3 +907,208 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
     programs,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Feedstock sources
+// ---------------------------------------------------------------------------
+
+export interface FeedstockDef {
+  id: string;
+  label: string;
+  group: string;
+  /** gCO2e/MJ contributions applied when the feedstock is selected. */
+  feedstock: number;
+  landUseChange: number;
+  feedstockTransport: number;
+  note: string;
+}
+
+export const FEEDSTOCKS: FeedstockDef[] = [
+  { id: "corn", label: "Corn grain", group: "Starch and sugar crops", feedstock: 26, landUseChange: 7.6, feedstockTransport: 2.2, note: "Cultivation, fertiliser N2O and grain haulage" },
+  { id: "sugarcane", label: "Sugarcane", group: "Starch and sugar crops", feedstock: 16, landUseChange: 8, feedstockTransport: 2, note: "Cane growing, burning-free harvest and short haul" },
+  { id: "sugarbeet", label: "Sugar beet", group: "Starch and sugar crops", feedstock: 18, landUseChange: 5, feedstockTransport: 2, note: "European beet cultivation" },
+  { id: "wheat", label: "Wheat and other grains", group: "Starch and sugar crops", feedstock: 25, landUseChange: 8, feedstockTransport: 2.5, note: "Grain cultivation with fertiliser N2O" },
+  { id: "cassava", label: "Cassava", group: "Starch and sugar crops", feedstock: 20, landUseChange: 10, feedstockTransport: 3, note: "Tropical root crop" },
+  { id: "soy", label: "Soybean oil", group: "Vegetable oils", feedstock: 20, landUseChange: 8, feedstockTransport: 2, note: "Farming plus crush, meal credit taken separately" },
+  { id: "canola", label: "Canola / rapeseed oil", group: "Vegetable oils", feedstock: 25, landUseChange: 10, feedstockTransport: 2, note: "Higher fertiliser demand than soy" },
+  { id: "palm", label: "Palm oil", group: "Vegetable oils", feedstock: 18, landUseChange: 25, feedstockTransport: 4, note: "Land use change dominates unless deforestation-free" },
+  { id: "corn-oil", label: "Distillers corn oil", group: "Wastes and residues", feedstock: 2, landUseChange: 0, feedstockTransport: 2, note: "Ethanol plant co-product, low burden" },
+  { id: "uco", label: "Used cooking oil", group: "Wastes and residues", feedstock: 0, landUseChange: 0, feedstockTransport: 3, note: "Zero burden at the collection point" },
+  { id: "tallow", label: "Tallow and animal fats", group: "Wastes and residues", feedstock: 6, landUseChange: 0, feedstockTransport: 3, note: "Rendering energy allocated to the fat" },
+  { id: "stover", label: "Corn stover", group: "Agricultural residues", feedstock: 8, landUseChange: 0, feedstockTransport: 3, note: "Collection, nutrient replacement and baling" },
+  { id: "straw", label: "Wheat straw", group: "Agricultural residues", feedstock: 7, landUseChange: 0, feedstockTransport: 3, note: "Baling and field collection" },
+  { id: "bagasse", label: "Sugarcane bagasse", group: "Agricultural residues", feedstock: 2, landUseChange: 0, feedstockTransport: 1, note: "Available at the mill gate" },
+  { id: "miscanthus", label: "Energy grasses (miscanthus, switchgrass)", group: "Energy crops", feedstock: 10, landUseChange: -2, feedstockTransport: 3, note: "Soil carbon gain can offset land use change" },
+  { id: "forest-residue", label: "Forest residue and slash", group: "Woody biomass", feedstock: 3, landUseChange: 0, feedstockTransport: 4, note: "Harvest residue collection and chipping" },
+  { id: "mill-residue", label: "Sawmill and wood processing residue", group: "Woody biomass", feedstock: 2, landUseChange: 0, feedstockTransport: 3, note: "Sawdust, shavings and bark" },
+  { id: "urban-wood", label: "Urban and construction wood waste", group: "Woody biomass", feedstock: 2, landUseChange: 0, feedstockTransport: 3, note: "Diverted from landfill" },
+  { id: "msw", label: "Municipal solid waste (biogenic fraction)", group: "Wastes and residues", feedstock: 1, landUseChange: 0, feedstockTransport: 2, note: "Sorting and preparation" },
+  { id: "landfill-gas", label: "Landfill gas", group: "Gaseous feedstocks", feedstock: 0, landUseChange: 0, feedstockTransport: 0, note: "Captured at the site of generation" },
+  { id: "manure", label: "Dairy and swine manure", group: "Gaseous feedstocks", feedstock: 0, landUseChange: 0, feedstockTransport: 1, note: "Avoided lagoon methane handled as a credit" },
+  { id: "sludge", label: "Wastewater sludge", group: "Gaseous feedstocks", feedstock: 0, landUseChange: 0, feedstockTransport: 0.5, note: "Municipal digester gas" },
+  { id: "water-power", label: "Water and renewable power (electrolysis)", group: "Gaseous feedstocks", feedstock: 0, landUseChange: 0, feedstockTransport: 0, note: "Electricity is the dominant input" },
+  { id: "custom", label: "Custom / site-specific", group: "Other", feedstock: 0, landUseChange: 0, feedstockTransport: 0, note: "Keeps whatever values you typed in" },
+];
+
+export const FEEDSTOCK_BY_ID: Record<string, FeedstockDef> = Object.fromEntries(
+  FEEDSTOCKS.map((f) => [f.id, f]),
+);
+
+export const PATHWAY_FEEDSTOCK: Record<string, string> = {
+  "ethanol-corn": "corn",
+  "ethanol-corn-ccs": "corn",
+  "ethanol-sugarcane": "sugarcane",
+  "ethanol-cellulosic": "stover",
+  "biodiesel-soy": "soy",
+  "biodiesel-uco": "uco",
+  "biodiesel-tallow": "tallow",
+  "rd-uco": "uco",
+  "rd-soy": "soy",
+  "rd-tallow": "tallow",
+  "saf-hefa-uco": "uco",
+  "saf-atj": "corn",
+  "saf-ft": "forest-residue",
+  "rng-landfill": "landfill-gas",
+  "rng-dairy": "manure",
+  "rng-wastewater": "sludge",
+  "h2-electrolysis": "water-power",
+  "h2-biomass": "forest-residue",
+  biomethanol: "forest-residue",
+  rlpg: "uco",
+  "marine-b100": "uco",
+  "wood-pellets": "mill-residue",
+};
+
+// ---------------------------------------------------------------------------
+// Supply variants for each process energy source
+// ---------------------------------------------------------------------------
+
+export interface SourceVariant {
+  id: string;
+  label: string;
+  /** gCO2e per unit of the parent source (kWh or MJ). */
+  factor: number;
+}
+
+export const SOURCE_VARIANTS: Record<SourceId, SourceVariant[]> = {
+  electricity: [{ id: "grid", label: "Regional grid (selected below)", factor: 386 }],
+  renewableElectricity: [
+    { id: "ppa-wind", label: "Wind PPA", factor: 11 },
+    { id: "ppa-solar", label: "Solar PPA", factor: 40 },
+    { id: "hydro", label: "Hydro", factor: 24 },
+    { id: "onsite", label: "On-site behind the meter", factor: 12 },
+  ],
+  naturalGas: [
+    { id: "pipeline", label: "Pipeline natural gas", factor: 68.5 },
+    { id: "lng", label: "Imported LNG", factor: 82.0 },
+    { id: "shale", label: "Shale gas (high methane loss)", factor: 76.0 },
+    { id: "rng", label: "Renewable natural gas", factor: 20.0 },
+    { id: "biogas-onsite", label: "On-site biogas", factor: 8.0 },
+  ],
+  propane: [
+    { id: "fossil", label: "Fossil propane / LPG", factor: 76.2 },
+    { id: "renewable", label: "Renewable propane", factor: 22.0 },
+  ],
+  diesel: [
+    { id: "fossil", label: "Fossil diesel", factor: 95.1 },
+    { id: "b20", label: "B20 blend", factor: 82.0 },
+    { id: "renewable", label: "Renewable diesel", factor: 30.0 },
+  ],
+  gasoline: [
+    { id: "fossil", label: "Fossil gasoline", factor: 94.0 },
+    { id: "e10", label: "E10 blend", factor: 90.0 },
+    { id: "e85", label: "E85 blend", factor: 64.0 },
+  ],
+  fuelOil: [
+    { id: "hfo", label: "Heavy fuel oil", factor: 100.5 },
+    { id: "mgo", label: "Marine gas oil", factor: 94.5 },
+  ],
+  coal: [
+    { id: "bituminous", label: "Bituminous coal", factor: 112.0 },
+    { id: "lignite", label: "Lignite", factor: 122.0 },
+    { id: "petcoke", label: "Petroleum coke", factor: 118.0 },
+  ],
+  biomassResidue: [
+    { id: "onsite", label: "On-site residue combustion", factor: 3.2 },
+    { id: "purchased-chips", label: "Purchased wood chips", factor: 8.0 },
+    { id: "pellets", label: "Purchased pellets", factor: 14.0 },
+  ],
+  steamNg: [
+    { id: "gas-boiler", label: "Gas boiler steam", factor: 81.0 },
+    { id: "chp", label: "Cogeneration steam", factor: 62.0 },
+    { id: "biomass-boiler", label: "Biomass boiler steam", factor: 9.0 },
+  ],
+  hydrogenSmr: [
+    { id: "smr", label: "Steam methane reforming", factor: 84.0 },
+    { id: "smr-ccs", label: "SMR with carbon capture", factor: 36.0 },
+    { id: "byproduct", label: "By-product refinery hydrogen", factor: 70.0 },
+  ],
+  hydrogenGreen: [
+    { id: "electrolysis-ppa", label: "Electrolysis on renewable power", factor: 12.0 },
+    { id: "electrolysis-grid", label: "Electrolysis on grid power", factor: 130.0 },
+    { id: "biomass", label: "Biomass gasification hydrogen", factor: 22.0 },
+  ],
+};
+
+// ---------------------------------------------------------------------------
+// Unit handling
+// ---------------------------------------------------------------------------
+
+export interface UnitOption {
+  id: string;
+  label: string;
+  /** Multiply an entered quantity by this to get the source base unit. */
+  toBase: number;
+}
+
+export const UNIT_OPTIONS: Record<"kWh" | "MJ", UnitOption[]> = {
+  kWh: [
+    { id: "kwh", label: "kWh per MJ", toBase: 1 },
+    { id: "wh", label: "Wh per MJ", toBase: 0.001 },
+    { id: "mj", label: "MJ per MJ", toBase: 1 / 3.6 },
+    { id: "kwh-gj", label: "kWh per GJ", toBase: 0.001 },
+    { id: "kwh-mmbtu", label: "kWh per MMBtu", toBase: 1 / 1055.06 },
+  ],
+  MJ: [
+    { id: "mj", label: "MJ per MJ", toBase: 1 },
+    { id: "kwh", label: "kWh per MJ", toBase: 3.6 },
+    { id: "mmbtu", label: "MMBtu per MMBtu", toBase: 1 },
+    { id: "btu", label: "Btu per MJ", toBase: 0.00105506 },
+    { id: "therm", label: "therm per MMBtu", toBase: 0.1 },
+    { id: "scf", label: "scf gas per MJ", toBase: 1.055 },
+  ],
+};
+
+export interface CiUnit {
+  id: string;
+  label: string;
+  /** Multiply a gCO2e/MJ value by this to display it in the chosen unit. */
+  factor: number;
+  decimals: number;
+}
+
+export const CI_UNITS: CiUnit[] = [
+  { id: "g-mj", label: "gCO2e / MJ", factor: 1, decimals: 2 },
+  { id: "kg-gj", label: "kgCO2e / GJ", factor: 1, decimals: 2 },
+  { id: "g-mmbtu", label: "gCO2e / MMBtu", factor: 1055.06, decimals: 0 },
+  { id: "kg-mmbtu", label: "kgCO2e / MMBtu", factor: 1.05506, decimals: 2 },
+  { id: "g-kwh", label: "gCO2e / kWh", factor: 3.6, decimals: 2 },
+];
+
+export const CI_UNIT_BY_ID: Record<string, CiUnit> = Object.fromEntries(
+  CI_UNITS.map((u) => [u.id, u]),
+);
+
+export interface MassUnit {
+  id: string;
+  label: string;
+  /** Multiply a tonne value by this. */
+  factor: number;
+}
+
+export const MASS_UNITS: MassUnit[] = [
+  { id: "t", label: "tonnes CO2e", factor: 1 },
+  { id: "kt", label: "kilotonnes CO2e", factor: 0.001 },
+  { id: "mt", label: "million tonnes CO2e", factor: 0.000001 },
+  { id: "shortton", label: "short tons CO2e", factor: 1.10231 },
+];
