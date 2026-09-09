@@ -1,26 +1,40 @@
 import { useMemo, useState } from "react";
-import { RotateCcw } from "lucide-react";
+import { ChevronDown, Plus, RotateCcw, Trash2 } from "lucide-react";
 import {
+  CHEMICAL_PRESETS,
   CI_UNITS,
   CI_UNIT_BY_ID,
+  COPRODUCT_PRESETS,
   DIRECT_FIELDS,
   ELECTRICITY_REGIONS,
+  END_USE_MODES,
   FEEDSTOCKS,
   FEEDSTOCK_BY_ID,
   MASS_UNITS,
+  MODULE_TO_DIRECT,
   PATHWAYS,
   SOURCES,
   SOURCE_VARIANTS,
+  TRANSPORT_MODES,
   UNIT_OPTIONS,
   applyFeedstock,
   calculateScenario,
+  defaultDetailModules,
   scenarioFromPathway,
+  type ChemicalItem,
+  type CoProductItem,
+  type DetailModuleKey,
+  type DetailModules,
   type DirectTerms,
   type ElectricityRegionId,
+  type EndUseModeId,
   type LineItem,
   type ScenarioInputs,
   type SourceId,
+  type TransportLeg,
+  type TransportModeId,
 } from "@/lib/ci-model";
+
 
 const num = (v: number, d = 0) =>
   v.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -50,7 +64,7 @@ function Field({
   children,
 }: {
   label: string;
-  hint?: string;
+  hint?: string | undefined;
   children: React.ReactNode;
 }) {
   return (
@@ -59,6 +73,261 @@ function Field({
       <div className="mt-1.5">{children}</div>
       {hint ? <span className="mt-1 block text-[0.7rem] text-muted-foreground">{hint}</span> : null}
     </label>
+  );
+}
+
+function Num({
+  label,
+  hint,
+  value,
+  onChange,
+  step = 0.1,
+}: {
+  label: string;
+  hint?: string;
+  value: number;
+  onChange: (v: number) => void;
+  step?: number;
+}) {
+  return (
+    <Field label={label} hint={hint}>
+      <input
+        type="number"
+        step={step}
+        className={inputCls}
+        value={Number.isFinite(value) ? value : 0}
+        onChange={(e) => onChange(Number(e.target.value) || 0)}
+      />
+    </Field>
+  );
+}
+
+function DetailSection({
+  title,
+  description,
+  enabled,
+  onToggle,
+  total,
+  totalLabel,
+  children,
+}: {
+  title: string;
+  description: string;
+  enabled: boolean;
+  onToggle: (v: boolean) => void;
+  total: string;
+  totalLabel: string;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <section className="glass-panel p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-3">
+        <div className="min-w-0">
+          <h2 className="font-display text-lg font-extrabold text-foreground">{title}</h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="text-right">
+            <span className="label-mono block text-muted-foreground">{totalLabel}</span>
+            <span className="font-display text-base font-extrabold tabular-nums text-foreground">
+              {total}
+            </span>
+          </div>
+          <label className="label-mono inline-flex h-10 cursor-pointer items-center gap-2 rounded-md border border-border bg-background px-3 font-bold text-foreground">
+            <input
+              type="checkbox"
+              className="size-4 accent-[rgb(21,128,61)]"
+              checked={enabled}
+              onChange={(e) => {
+                onToggle(e.target.checked);
+                if (e.target.checked) setOpen(true);
+              }}
+            />
+            Use detailed inputs
+          </label>
+          <button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+            className="label-mono inline-flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3 font-bold text-foreground hover:border-accent"
+          >
+            {open ? "Hide" : "Edit"}
+            <ChevronDown className={`size-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
+          </button>
+        </div>
+      </div>
+      {open ? <div className="mt-4 space-y-4">{children}</div> : null}
+    </section>
+  );
+}
+
+function LegEditor({
+  legs,
+  onChange,
+  addLabel,
+}: {
+  legs: TransportLeg[];
+  onChange: (legs: TransportLeg[]) => void;
+  addLabel: string;
+}) {
+  const patch = (i: number, p: Partial<TransportLeg>) =>
+    onChange(legs.map((l, idx) => (idx === i ? { ...l, ...p } : l)));
+  return (
+    <div className="space-y-3">
+      {legs.map((leg, i) => (
+        <div key={leg.id} className="rounded-lg border border-border bg-background/40 p-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            <Field label="Leg name">
+              <input
+                className={inputCls}
+                value={leg.label}
+                onChange={(e) => patch(i, { label: e.target.value })}
+              />
+            </Field>
+            <Field label="Mode">
+              <select
+                className={inputCls}
+                value={leg.mode}
+                onChange={(e) => patch(i, { mode: e.target.value as TransportModeId })}
+              >
+                {TRANSPORT_MODES.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.label} — {m.gPerTonneKm} g/t-km
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Num
+              label="Distance (km)"
+              step={1}
+              value={leg.distanceKm}
+              onChange={(v) => patch(i, { distanceKm: v })}
+            />
+            <Num
+              label="Share of mass (%)"
+              step={1}
+              value={leg.sharePct}
+              onChange={(v) => patch(i, { sharePct: v })}
+            />
+            <Num
+              label="Empty return factor"
+              hint="1.0 = no empty running"
+              step={0.05}
+              value={leg.emptyReturn}
+              onChange={(v) => patch(i, { emptyReturn: v })}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => onChange(legs.filter((_, idx) => idx !== i))}
+            className="label-mono mt-2 inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
+          >
+            <Trash2 className="size-3.5" /> Remove leg
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={() =>
+          onChange([
+            ...legs,
+            {
+              id: `leg-${Date.now()}`,
+              label: "New leg",
+              mode: "truckHeavy",
+              distanceKm: 100,
+              sharePct: 100,
+              emptyReturn: 1.2,
+            },
+          ])
+        }
+        className="label-mono inline-flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3 font-bold text-foreground hover:border-accent"
+      >
+        <Plus className="size-3.5" /> {addLabel}
+      </button>
+    </div>
+  );
+}
+
+function ItemEditor<T extends ChemicalItem | CoProductItem>({
+  items,
+  onChange,
+  presets,
+  doseLabel,
+  factorLabel,
+  addLabel,
+}: {
+  items: T[];
+  onChange: (items: T[]) => void;
+  presets: { id: string; label: string; gPerKg: number }[];
+  doseLabel: string;
+  factorLabel: string;
+  addLabel: string;
+}) {
+  const patch = (i: number, p: Partial<T>) =>
+    onChange(items.map((it, idx) => (idx === i ? { ...it, ...p } : it)) as T[]);
+  return (
+    <div className="space-y-3">
+      {items.map((item, i) => (
+        <div key={item.id} className="rounded-lg border border-border bg-background/40 p-3">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Field label="Input">
+              <select
+                className={inputCls}
+                value={presets.find((p) => p.label === item.label)?.id ?? "custom"}
+                onChange={(e) => {
+                  const preset = presets.find((p) => p.id === e.target.value);
+                  if (preset) patch(i, { label: preset.label, gPerKg: preset.gPerKg } as Partial<T>);
+                }}
+              >
+                {presets.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Num
+              label={doseLabel}
+              step={0.1}
+              value={item.kgPerTonneFuel}
+              onChange={(v) => patch(i, { kgPerTonneFuel: v } as Partial<T>)}
+            />
+            <Num
+              label={factorLabel}
+              step={10}
+              value={item.gPerKg}
+              onChange={(v) => patch(i, { gPerKg: v } as Partial<T>)}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => onChange(items.filter((_, idx) => idx !== i))}
+            className="label-mono mt-2 inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
+          >
+            <Trash2 className="size-3.5" /> Remove
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={() =>
+          onChange([
+            ...items,
+            {
+              id: `item-${Date.now()}`,
+              label: presets[0]!.label,
+              kgPerTonneFuel: 0,
+              gPerKg: presets[0]!.gPerKg,
+            } as T,
+          ])
+        }
+        className="label-mono inline-flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3 font-bold text-foreground hover:border-accent"
+      >
+        <Plus className="size-3.5" /> {addLabel}
+      </button>
+    </div>
   );
 }
 
@@ -84,6 +353,18 @@ export function PathwayCiBuilder() {
     setInputs((p) => ({ ...p, energy: { ...p.energy, [k]: v } }));
   const setVariant = (k: SourceId, v: string) =>
     setInputs((p) => ({ ...p, sourceVariants: { ...p.sourceVariants, [k]: v } }));
+
+  const detail: DetailModules = inputs.detail ?? defaultDetailModules();
+  const setModule = <K extends DetailModuleKey>(key: K, patch: Partial<DetailModules[K]>) =>
+    setInputs((p) => {
+      const base = p.detail ?? defaultDetailModules();
+      return { ...p, detail: { ...base, [key]: { ...base[key], ...patch } } };
+    });
+  const moduleTotal = (key: DetailModuleKey) => `${ci(result.moduleTotals[key] ?? 0)} ${ciUnit.label}`;
+  const moduleOwns = (k: keyof DirectTerms) =>
+    (Object.keys(MODULE_TO_DIRECT) as DetailModuleKey[]).some(
+      (m) => MODULE_TO_DIRECT[m] === k && detail[m].enabled,
+    );
 
   const maxAbs = Math.max(...result.lineItems.map((l) => Math.abs(l.gPerMj)), 0.001);
   const groups = Array.from(new Set(PATHWAYS.map((p) => p.group)));
@@ -256,23 +537,371 @@ export function PathwayCiBuilder() {
       </section>
 
       <section className="glass-panel p-5">
-        <h2 className="mb-3 border-b border-border pb-2 font-display text-lg font-extrabold text-foreground">
-          Other emission terms (gCO2e/MJ)
+        <h2 className="mb-1 font-display text-lg font-extrabold text-foreground">
+          Summary emission terms (gCO2e/MJ)
         </h2>
+        <p className="mb-3 border-b border-border pb-2 text-xs text-muted-foreground">
+          Quick single-number entry. Any term you build up in the detailed sections below is locked
+          here and replaced by the calculated value.
+        </p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {DIRECT_FIELDS.map((f) => (
-            <Field key={f.key} label={f.label} hint={f.hint}>
-              <input
-                type="number"
-                step={0.1}
-                className={inputCls}
-                value={inputs.direct[f.key]}
-                onChange={(e) => setDirect(f.key, Number(e.target.value) || 0)}
-              />
-            </Field>
-          ))}
+          {DIRECT_FIELDS.map((f) => {
+            const owned = moduleOwns(f.key);
+            return (
+              <Field
+                key={f.key}
+                label={f.label}
+                hint={owned ? "Calculated from the detailed section below" : f.hint}
+              >
+                <input
+                  type="number"
+                  step={0.1}
+                  disabled={owned}
+                  className={`${inputCls} ${owned ? "opacity-50" : ""}`}
+                  value={inputs.direct[f.key]}
+                  onChange={(e) => setDirect(f.key, Number(e.target.value) || 0)}
+                />
+              </Field>
+            );
+          })}
         </div>
       </section>
+
+      <DetailSection
+        title="Feedstock production"
+        description="Cultivation, fertiliser and field N2O, collection, rendering and drying, per tonne of feedstock."
+        enabled={detail.feedstockProduction.enabled}
+        onToggle={(v) => setModule("feedstockProduction", { enabled: v })}
+        total={moduleTotal("feedstockProduction")}
+        totalLabel="Calculated"
+      >
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Num
+            label="Fuel yield (MJ per tonne feedstock)"
+            step={100}
+            value={detail.feedstockProduction.yieldMjPerTonne}
+            onChange={(v) => setModule("feedstockProduction", { yieldMjPerTonne: v })}
+          />
+          <Num
+            label="Cultivation diesel (L/t)"
+            value={detail.feedstockProduction.cultivationDieselL}
+            onChange={(v) => setModule("feedstockProduction", { cultivationDieselL: v })}
+          />
+          <Num
+            label="Cultivation electricity (kWh/t)"
+            value={detail.feedstockProduction.cultivationElectricityKwh}
+            onChange={(v) => setModule("feedstockProduction", { cultivationElectricityKwh: v })}
+          />
+          <Num
+            label="Irrigation electricity (kWh/t)"
+            value={detail.feedstockProduction.irrigationElectricityKwh}
+            onChange={(v) => setModule("feedstockProduction", { irrigationElectricityKwh: v })}
+          />
+          <Num
+            label="Nitrogen fertiliser (kg N/t)"
+            value={detail.feedstockProduction.nitrogenKg}
+            onChange={(v) => setModule("feedstockProduction", { nitrogenKg: v })}
+          />
+          <Num
+            label="Field N2O emission factor"
+            hint="Fraction of applied N lost as N2O-N, IPCC default 0.01"
+            step={0.001}
+            value={detail.feedstockProduction.n2oEmissionFactor}
+            onChange={(v) => setModule("feedstockProduction", { n2oEmissionFactor: v })}
+          />
+          <Num
+            label="Phosphate (kg P2O5/t)"
+            value={detail.feedstockProduction.phosphateKg}
+            onChange={(v) => setModule("feedstockProduction", { phosphateKg: v })}
+          />
+          <Num
+            label="Potash (kg K2O/t)"
+            value={detail.feedstockProduction.potashKg}
+            onChange={(v) => setModule("feedstockProduction", { potashKg: v })}
+          />
+          <Num
+            label="Lime (kg/t)"
+            value={detail.feedstockProduction.limeKg}
+            onChange={(v) => setModule("feedstockProduction", { limeKg: v })}
+          />
+          <Num
+            label="Pesticide (kg/t)"
+            step={0.01}
+            value={detail.feedstockProduction.pesticideKg}
+            onChange={(v) => setModule("feedstockProduction", { pesticideKg: v })}
+          />
+          <Num
+            label="Seed (kg/t)"
+            value={detail.feedstockProduction.seedKg}
+            onChange={(v) => setModule("feedstockProduction", { seedKg: v })}
+          />
+          <Num
+            label="Collection and baling diesel (L/t)"
+            value={detail.feedstockProduction.collectionDieselL}
+            onChange={(v) => setModule("feedstockProduction", { collectionDieselL: v })}
+          />
+          <Num
+            label="Rendering heat (MJ gas/t)"
+            step={10}
+            value={detail.feedstockProduction.renderingGasMj}
+            onChange={(v) => setModule("feedstockProduction", { renderingGasMj: v })}
+          />
+          <Num
+            label="Rendering electricity (kWh/t)"
+            value={detail.feedstockProduction.renderingElectricityKwh}
+            onChange={(v) => setModule("feedstockProduction", { renderingElectricityKwh: v })}
+          />
+          <Num
+            label="Feedstock drying (MJ gas/t)"
+            step={10}
+            value={detail.feedstockProduction.dryingGasMj}
+            onChange={(v) => setModule("feedstockProduction", { dryingGasMj: v })}
+          />
+          <Num
+            label="Soil carbon change (kgCO2e/t)"
+            hint="Negative for sequestration"
+            value={detail.feedstockProduction.soilCarbonKgPerTonne}
+            onChange={(v) => setModule("feedstockProduction", { soilCarbonKgPerTonne: v })}
+          />
+        </div>
+      </DetailSection>
+
+      <DetailSection
+        title="Feedstock transport"
+        description="Add one leg per movement, choose the mode and distance; emissions scale with the mass hauled."
+        enabled={detail.transport.enabled}
+        onToggle={(v) => setModule("transport", { enabled: v })}
+        total={moduleTotal("transport")}
+        totalLabel="Calculated"
+      >
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Num
+            label="Feedstock mass (tonnes per GJ of fuel)"
+            step={0.001}
+            value={detail.transport.tonnesPerGj}
+            onChange={(v) => setModule("transport", { tonnesPerGj: v })}
+          />
+        </div>
+        <LegEditor
+          legs={detail.transport.legs}
+          onChange={(legs) => setModule("transport", { legs })}
+          addLabel="Add transport leg"
+        />
+      </DetailSection>
+
+      <DetailSection
+        title="Chemicals and fugitive emissions"
+        description="Process chemicals and catalysts per tonne of fuel, plus methane, nitrous oxide, vented CO2 and carbon storage."
+        enabled={detail.chemicals.enabled}
+        onToggle={(v) => setModule("chemicals", { enabled: v })}
+        total={moduleTotal("chemicals")}
+        totalLabel="Calculated"
+      >
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Num
+            label="Fuel mass (tonnes per GJ)"
+            hint="0.0234 t/GJ is a typical liquid fuel"
+            step={0.0001}
+            value={detail.chemicals.fuelTonnesPerGj}
+            onChange={(v) => setModule("chemicals", { fuelTonnesPerGj: v })}
+          />
+          <Num
+            label="Fugitive methane (kg CH4/t fuel)"
+            step={0.01}
+            value={detail.chemicals.fugitiveCh4KgPerTonne}
+            onChange={(v) => setModule("chemicals", { fugitiveCh4KgPerTonne: v })}
+          />
+          <Num
+            label="Fugitive nitrous oxide (kg N2O/t fuel)"
+            step={0.001}
+            value={detail.chemicals.fugitiveN2oKgPerTonne}
+            onChange={(v) => setModule("chemicals", { fugitiveN2oKgPerTonne: v })}
+          />
+          <Num
+            label="Vented or flared CO2 (kg/t fuel)"
+            step={1}
+            value={detail.chemicals.ventedCo2KgPerTonne}
+            onChange={(v) => setModule("chemicals", { ventedCo2KgPerTonne: v })}
+          />
+          <Num
+            label="CO2 captured and stored (kg/t fuel)"
+            hint="Enter positive; applied as a credit"
+            step={1}
+            value={detail.chemicals.capturedCo2KgPerTonne}
+            onChange={(v) => setModule("chemicals", { capturedCo2KgPerTonne: v })}
+          />
+        </div>
+        <ItemEditor
+          items={detail.chemicals.items}
+          onChange={(items) => setModule("chemicals", { items })}
+          presets={CHEMICAL_PRESETS}
+          doseLabel="Dose (kg per tonne fuel)"
+          factorLabel="Emission factor (gCO2e/kg)"
+          addLabel="Add chemical input"
+        />
+      </DetailSection>
+
+      <DetailSection
+        title="Co-products and avoided emissions"
+        description="Displacement credits for co-products, exported power and avoided methane, plus optional energy allocation."
+        enabled={detail.coProducts.enabled}
+        onToggle={(v) => setModule("coProducts", { enabled: v })}
+        total={moduleTotal("coProducts")}
+        totalLabel="Calculated"
+      >
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Num
+            label="Fuel mass (tonnes per GJ)"
+            step={0.0001}
+            value={detail.coProducts.fuelTonnesPerGj}
+            onChange={(v) => setModule("coProducts", { fuelTonnesPerGj: v })}
+          />
+          <Num
+            label="Exported electricity (kWh per MJ fuel)"
+            step={0.001}
+            value={detail.coProducts.exportedElectricityKwhPerMj}
+            onChange={(v) => setModule("coProducts", { exportedElectricityKwhPerMj: v })}
+          />
+          <Num
+            label="Displaced grid factor (g/kWh)"
+            step={1}
+            value={detail.coProducts.exportedElectricityCreditPerKwh}
+            onChange={(v) => setModule("coProducts", { exportedElectricityCreditPerKwh: v })}
+          />
+          <Num
+            label="Avoided methane credit (gCO2e/MJ)"
+            hint="Manure, landfill or wastewater methane"
+            value={detail.coProducts.avoidedMethaneGPerMj}
+            onChange={(v) => setModule("coProducts", { avoidedMethaneGPerMj: v })}
+          />
+          <Num
+            label="Energy allocation to the fuel (%)"
+            hint="Below 100% shifts part of the burden to co-products"
+            step={1}
+            value={detail.coProducts.allocationPct}
+            onChange={(v) => setModule("coProducts", { allocationPct: v })}
+          />
+        </div>
+        <ItemEditor
+          items={detail.coProducts.items}
+          onChange={(items) => setModule("coProducts", { items })}
+          presets={COPRODUCT_PRESETS}
+          doseLabel="Output (kg per tonne fuel)"
+          factorLabel="Avoided emissions (gCO2e/kg)"
+          addLabel="Add co-product"
+        />
+      </DetailSection>
+
+      <DetailSection
+        title="Fuel distribution"
+        description="Finished fuel movements, terminal storage, blending, dispensing, compression and losses."
+        enabled={detail.distribution.enabled}
+        onToggle={(v) => setModule("distribution", { enabled: v })}
+        total={moduleTotal("distribution")}
+        totalLabel="Calculated"
+      >
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Num
+            label="Fuel mass (tonnes per GJ)"
+            step={0.0001}
+            value={detail.distribution.fuelTonnesPerGj}
+            onChange={(v) => setModule("distribution", { fuelTonnesPerGj: v })}
+          />
+          <Num
+            label="Terminal storage (gCO2e/MJ)"
+            value={detail.distribution.storageGPerMj}
+            onChange={(v) => setModule("distribution", { storageGPerMj: v })}
+          />
+          <Num
+            label="Blending and additives (gCO2e/MJ)"
+            value={detail.distribution.blendingGPerMj}
+            onChange={(v) => setModule("distribution", { blendingGPerMj: v })}
+          />
+          <Num
+            label="Retail dispensing (gCO2e/MJ)"
+            value={detail.distribution.dispensingGPerMj}
+            onChange={(v) => setModule("distribution", { dispensingGPerMj: v })}
+          />
+          <Num
+            label="Compression or liquefaction (gCO2e/MJ)"
+            value={detail.distribution.compressionGPerMj}
+            onChange={(v) => setModule("distribution", { compressionGPerMj: v })}
+          />
+          <Num
+            label="Distribution losses (% of fuel)"
+            step={0.05}
+            value={detail.distribution.lossPct}
+            onChange={(v) => setModule("distribution", { lossPct: v })}
+          />
+        </div>
+        <LegEditor
+          legs={detail.distribution.legs}
+          onChange={(legs) => setModule("distribution", { legs })}
+          addLabel="Add distribution leg"
+        />
+      </DetailSection>
+
+      <DetailSection
+        title="Tailpipe and end use"
+        description="Point-of-use methane and nitrous oxide by end-use mode, fossil carbon share and aftertreatment."
+        enabled={detail.tailpipe.enabled}
+        onToggle={(v) => setModule("tailpipe", { enabled: v })}
+        total={moduleTotal("tailpipe")}
+        totalLabel="Calculated"
+      >
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Field
+            label="End use mode"
+            hint={END_USE_MODES.find((m) => m.id === detail.tailpipe.modeId)?.note}
+          >
+            <select
+              className={inputCls}
+              value={detail.tailpipe.modeId}
+              onChange={(e) => setModule("tailpipe", { modeId: e.target.value as EndUseModeId })}
+            >
+              {END_USE_MODES.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Num
+            label="Fossil carbon in the fuel (%)"
+            hint="0% for a fully biogenic fuel"
+            step={1}
+            value={detail.tailpipe.fossilCarbonPct}
+            onChange={(v) => setModule("tailpipe", { fossilCarbonPct: v })}
+          />
+          <Num
+            label="Combustion CO2 (gCO2/MJ)"
+            step={1}
+            value={detail.tailpipe.combustionCo2GPerMj}
+            onChange={(v) => setModule("tailpipe", { combustionCo2GPerMj: v })}
+          />
+          <Num
+            label="Methane override (gCO2e/MJ)"
+            hint="Leave at -1 to use the mode default"
+            step={0.01}
+            value={detail.tailpipe.ch4Override}
+            onChange={(v) => setModule("tailpipe", { ch4Override: v })}
+          />
+          <Num
+            label="Nitrous oxide override (gCO2e/MJ)"
+            hint="Leave at -1 to use the mode default"
+            step={0.01}
+            value={detail.tailpipe.n2oOverride}
+            onChange={(v) => setModule("tailpipe", { n2oOverride: v })}
+          />
+          <Num
+            label="Aftertreatment reagent (gCO2e/MJ)"
+            step={0.01}
+            value={detail.tailpipe.aftertreatmentGPerMj}
+            onChange={(v) => setModule("tailpipe", { aftertreatmentGPerMj: v })}
+          />
+        </div>
+      </DetailSection>
+
 
       <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
         <div
