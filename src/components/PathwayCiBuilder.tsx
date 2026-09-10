@@ -1096,8 +1096,11 @@ export function PathwayCiBuilder() {
 
       <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
         <div
-          className="glass-panel card-motion border-t-4 p-5"
-          style={{ borderTopColor: result.ciTotal < 0 ? "rgb(21,128,61)" : "rgb(29,78,216)" }}
+          className="glass-panel card-motion border-t-4 border-l-4 p-5"
+          style={{
+            borderTopColor: result.ciTotal < 0 ? TONE_COLOR.green : TONE_COLOR.blue,
+            borderLeftColor: TONE_COLOR.blue,
+          }}
         >
           <div className="flex items-start justify-between gap-3">
             <span className="kicker text-muted-foreground">Carbon intensity</span>
