@@ -57,6 +57,34 @@ const CATEGORY_ORDER: LineItem["category"][] = [
   "Credits",
 ];
 
+const EXPORT_SECTIONS = [
+  "Feedstock production",
+  "Land use change",
+  "Transportation",
+  "Process energy",
+  "Chemicals and fugitive emissions",
+  "Co-products and avoided emissions",
+  "Fuel distribution",
+  "Tailpipe and end use",
+] as const;
+
+type ExportSection = (typeof EXPORT_SECTIONS)[number];
+
+function exportSectionFor(item: LineItem): ExportSection {
+  if (item.key === "landUseChange") return "Land use change";
+  if (item.key === "feedstockTransport" || item.key.startsWith("tr-")) return "Transportation";
+  if (item.category === "Process energy") return "Process energy";
+  if (item.key === "processNonEnergy" || item.key.startsWith("chem-")) {
+    return "Chemicals and fugitive emissions";
+  }
+  if (item.key === "coProductCredit" || item.key.startsWith("cp-")) {
+    return "Co-products and avoided emissions";
+  }
+  if (item.key === "distribution" || item.key.startsWith("dist-")) return "Fuel distribution";
+  if (item.key === "endUse" || item.key.startsWith("tp-")) return "Tailpipe and end use";
+  return "Feedstock production";
+}
+
 const inputCls =
   "h-11 w-full rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground focus:border-accent focus:outline-none";
 
@@ -392,7 +420,7 @@ export function PathwayCiBuilder() {
       if (!qty) continue;
       const variant = SOURCE_VARIANTS[s.id]?.find((v) => v.id === inputs.sourceVariants?.[s.id]);
       rows.push([
-        "Process energy input",
+        "Process energy",
         s.label,
         variant ? variant.label : "",
         qty,
@@ -400,25 +428,16 @@ export function PathwayCiBuilder() {
         "",
       ]);
     }
-    for (const key of Object.keys(detail) as DetailModuleKey[]) {
-      rows.push([
-        "Detailed module",
-        key,
-        detail[key].enabled ? "Enabled" : "Not used",
-        ci(result.moduleTotals[key] ?? 0),
-        ciUnit.label,
-        "",
-      ]);
-    }
-
-    for (const cat of CATEGORY_ORDER) {
-      const items = result.lineItems.filter((l) => l.category === cat);
+    for (const section of EXPORT_SECTIONS) {
+      const items = result.lineItems.filter((item) => exportSectionFor(item) === section);
       if (!items.length) continue;
+      rows.push([]);
+      rows.push([section, "", "", "", "", ""]);
       for (const l of items) {
         rows.push([
-          "Emission line item",
+          section,
           l.label,
-          `${l.category} — ${l.detail}`,
+          l.detail ?? "",
           ci(l.gPerMj),
           ciUnit.label,
           annual(l.gPerMj).toFixed(2),
@@ -426,8 +445,8 @@ export function PathwayCiBuilder() {
       }
       const subtotal = items.reduce((a, l) => a + l.gPerMj, 0);
       rows.push([
-        "Subtotal",
-        `${cat} subtotal`,
+        section,
+        `${section} subtotal`,
         "",
         ci(subtotal),
         ciUnit.label,
@@ -456,7 +475,7 @@ export function PathwayCiBuilder() {
       title: `Carbon intensity calculation — ${result.pathway.label}`,
       filename: `ci-calculation-${result.pathway.id}`,
       header: [
-        "Section",
+        "Lifecycle section",
         "Item",
         "Detail",
         `Value (${ciUnit.label})`,
