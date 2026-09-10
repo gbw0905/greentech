@@ -1008,6 +1008,7 @@ export function PathwayCiBuilder() {
         onToggle={(v) => setModule("tailpipe", { enabled: v })}
         total={moduleTotal("tailpipe")}
         totalLabel="Calculated"
+        tone="red"
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Field
