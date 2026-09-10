@@ -49,6 +49,29 @@ const CATEGORY_TONE: Record<LineItem["category"], string> = {
   Credits: "rgb(220, 38, 38)",
 };
 
+type SectionTone = "red" | "green" | "blue";
+const SECTION_TONE: Record<string, SectionTone> = {
+  "Fuel pathway and feedstock": "green",
+  "Process energy sources": "red",
+  "Summary emission terms (gCO2e/MJ)": "red",
+  "Feedstock production": "green",
+  "Feedstock transport": "blue",
+  "Chemicals and fugitive emissions": "red",
+  "Co-products and avoided emissions": "green",
+  "Fuel distribution": "blue",
+  "Tailpipe and end use": "red",
+  "Carbon intensity": "blue",
+  "Contribution by emission source": "blue",
+  "Emissions from all inputs": "blue",
+  "Regulatory program comparison": "blue",
+  "Export results": "green",
+};
+const TONE_COLOR: Record<SectionTone, string> = {
+  red: "var(--tracker-red)",
+  green: "var(--tracker-green)",
+  blue: "var(--tracker-blue)",
+};
+
 const CATEGORY_ORDER: LineItem["category"][] = [
   "Feedstock and land",
   "Process energy",
@@ -140,6 +163,7 @@ function DetailSection({
   total,
   totalLabel,
   children,
+  tone = "blue",
 }: {
   title: string;
   description: string;
@@ -148,14 +172,25 @@ function DetailSection({
   total: string;
   totalLabel: string;
   children: React.ReactNode;
+  tone?: SectionTone;
 }) {
   const [open, setOpen] = useState(false);
   return (
-    <section className="glass-panel p-5">
+    <section
+      className="glass-panel border-l-4 p-5"
+      style={{ borderLeftColor: TONE_COLOR[tone] }}
+    >
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-3">
-        <div className="min-w-0">
-          <h2 className="font-display text-lg font-extrabold text-foreground">{title}</h2>
-          <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
+        <div className="flex min-w-0 items-start gap-2.5">
+          <span
+            className="mt-2 inline-block size-2.5 shrink-0 rounded-full"
+            style={{ background: TONE_COLOR[tone] }}
+            aria-hidden="true"
+          />
+          <div className="min-w-0">
+            <h2 className="font-display text-lg font-extrabold text-foreground">{title}</h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <div className="text-right">
@@ -495,11 +530,21 @@ export function PathwayCiBuilder() {
 
   return (
     <div className="space-y-4">
-      <section className="glass-panel p-5">
+      <section
+        className="glass-panel border-l-4 p-5"
+        style={{ borderLeftColor: TONE_COLOR.green }}
+      >
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
-          <h2 className="font-display text-lg font-extrabold text-foreground">
-            Fuel pathway and feedstock
-          </h2>
+          <div className="flex items-start gap-2.5">
+            <span
+              className="mt-2 inline-block size-2.5 shrink-0 rounded-full"
+              style={{ background: TONE_COLOR.green }}
+              aria-hidden="true"
+            />
+            <h2 className="font-display text-lg font-extrabold text-foreground">
+              Fuel pathway and feedstock
+            </h2>
+          </div>
           <button
             type="button"
             onClick={() => setInputs(scenarioFromPathway(inputs.pathwayId, region))}
@@ -567,11 +612,21 @@ export function PathwayCiBuilder() {
         </div>
       </section>
 
-      <section className="glass-panel p-5">
+      <section
+        className="glass-panel border-l-4 p-5"
+        style={{ borderLeftColor: TONE_COLOR.red }}
+      >
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
-          <h2 className="font-display text-lg font-extrabold text-foreground">
-            Process energy sources
-          </h2>
+          <div className="flex items-start gap-2.5">
+            <span
+              className="mt-2 inline-block size-2.5 shrink-0 rounded-full"
+              style={{ background: TONE_COLOR.red }}
+              aria-hidden="true"
+            />
+            <h2 className="font-display text-lg font-extrabold text-foreground">
+              Process energy sources
+            </h2>
+          </div>
           <span className="label-mono text-muted-foreground">
             Choose the supply, the amount and the unit
           </span>
@@ -656,10 +711,20 @@ export function PathwayCiBuilder() {
         </div>
       </section>
 
-      <section className="glass-panel p-5">
-        <h2 className="mb-1 font-display text-lg font-extrabold text-foreground">
-          Summary emission terms (gCO2e/MJ)
-        </h2>
+      <section
+        className="glass-panel border-l-4 p-5"
+        style={{ borderLeftColor: TONE_COLOR.red }}
+      >
+        <div className="mb-1 flex items-start gap-2.5">
+          <span
+            className="mt-2 inline-block size-2.5 shrink-0 rounded-full"
+            style={{ background: TONE_COLOR.red }}
+            aria-hidden="true"
+          />
+          <h2 className="font-display text-lg font-extrabold text-foreground">
+            Summary emission terms (gCO2e/MJ)
+          </h2>
+        </div>
         <p className="mb-3 border-b border-border pb-2 text-xs text-muted-foreground">
           Quick single-number entry. Any term you build up in the detailed sections below is locked
           here and replaced by the calculated value.
@@ -694,6 +759,7 @@ export function PathwayCiBuilder() {
         onToggle={(v) => setModule("feedstockProduction", { enabled: v })}
         total={moduleTotal("feedstockProduction")}
         totalLabel="Calculated"
+        tone="green"
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Num
@@ -793,6 +859,7 @@ export function PathwayCiBuilder() {
         onToggle={(v) => setModule("transport", { enabled: v })}
         total={moduleTotal("transport")}
         totalLabel="Calculated"
+        tone="blue"
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Num
@@ -816,6 +883,7 @@ export function PathwayCiBuilder() {
         onToggle={(v) => setModule("chemicals", { enabled: v })}
         total={moduleTotal("chemicals")}
         totalLabel="Calculated"
+        tone="red"
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Num
@@ -868,6 +936,7 @@ export function PathwayCiBuilder() {
         onToggle={(v) => setModule("coProducts", { enabled: v })}
         total={moduleTotal("coProducts")}
         totalLabel="Calculated"
+        tone="green"
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Num
@@ -919,6 +988,7 @@ export function PathwayCiBuilder() {
         onToggle={(v) => setModule("distribution", { enabled: v })}
         total={moduleTotal("distribution")}
         totalLabel="Calculated"
+        tone="blue"
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Num
@@ -968,6 +1038,7 @@ export function PathwayCiBuilder() {
         onToggle={(v) => setModule("tailpipe", { enabled: v })}
         total={moduleTotal("tailpipe")}
         totalLabel="Calculated"
+        tone="red"
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Field
@@ -1025,8 +1096,11 @@ export function PathwayCiBuilder() {
 
       <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
         <div
-          className="glass-panel card-motion border-t-4 p-5"
-          style={{ borderTopColor: result.ciTotal < 0 ? "rgb(21,128,61)" : "rgb(29,78,216)" }}
+          className="glass-panel card-motion border-t-4 border-l-4 p-5"
+          style={{
+            borderTopColor: result.ciTotal < 0 ? TONE_COLOR.green : TONE_COLOR.blue,
+            borderLeftColor: TONE_COLOR.blue,
+          }}
         >
           <div className="flex items-start justify-between gap-3">
             <span className="kicker text-muted-foreground">Carbon intensity</span>
@@ -1081,11 +1155,21 @@ export function PathwayCiBuilder() {
           </div>
         </div>
 
-        <div className="glass-panel p-5">
+        <div
+          className="glass-panel border-l-4 p-5"
+          style={{ borderLeftColor: TONE_COLOR.blue }}
+        >
           <div className="mb-3 flex items-baseline justify-between gap-3 border-b border-border pb-2">
-            <h2 className="font-display text-lg font-extrabold text-foreground">
-              Contribution by emission source
-            </h2>
+            <div className="flex items-start gap-2.5">
+              <span
+                className="mt-2 inline-block size-2.5 shrink-0 rounded-full"
+                style={{ background: TONE_COLOR.blue }}
+                aria-hidden="true"
+              />
+              <h2 className="font-display text-lg font-extrabold text-foreground">
+                Contribution by emission source
+              </h2>
+            </div>
             <span className="label-mono text-muted-foreground">{ciUnit.label}</span>
           </div>
           <ul className="space-y-3">
@@ -1114,11 +1198,21 @@ export function PathwayCiBuilder() {
         </div>
       </section>
 
-      <section className="glass-panel overflow-x-auto p-5">
+      <section
+        className="glass-panel overflow-x-auto border-l-4 p-5"
+        style={{ borderLeftColor: TONE_COLOR.blue }}
+      >
         <div className="mb-3 flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-2">
-          <h2 className="font-display text-lg font-extrabold text-foreground">
-            Emissions from all inputs
-          </h2>
+          <div className="flex items-start gap-2.5">
+            <span
+              className="mt-2 inline-block size-2.5 shrink-0 rounded-full"
+              style={{ background: TONE_COLOR.blue }}
+              aria-hidden="true"
+            />
+            <h2 className="font-display text-lg font-extrabold text-foreground">
+              Emissions from all inputs
+            </h2>
+          </div>
           <span className="label-mono text-muted-foreground">
             {ciUnit.label} and {massUnit.label} per year
           </span>
@@ -1196,10 +1290,20 @@ export function PathwayCiBuilder() {
         </table>
       </section>
 
-      <section className="glass-panel overflow-x-auto p-5">
-        <h2 className="mb-3 font-display text-lg font-extrabold text-foreground">
-          Regulatory program comparison
-        </h2>
+      <section
+        className="glass-panel overflow-x-auto border-l-4 p-5"
+        style={{ borderLeftColor: TONE_COLOR.blue }}
+      >
+        <div className="mb-3 flex items-start gap-2.5">
+          <span
+            className="mt-2 inline-block size-2.5 shrink-0 rounded-full"
+            style={{ background: TONE_COLOR.blue }}
+            aria-hidden="true"
+          />
+          <h2 className="mb-3 font-display text-lg font-extrabold text-foreground">
+            Regulatory program comparison
+          </h2>
+        </div>
         <table className="w-full min-w-[46rem] text-sm">
           <thead>
             <tr className="border-b border-border text-left">
@@ -1271,14 +1375,24 @@ export function PathwayCiBuilder() {
         </ul>
       </section>
 
-      <section className="glass-panel p-5">
+      <section
+        className="glass-panel border-l-4 p-5"
+        style={{ borderLeftColor: TONE_COLOR.green }}
+      >
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h2 className="font-display text-lg font-extrabold text-foreground">Export results</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Download the full calculation — scenario settings, every emission line item with its
-              basis and annual mass, category subtotals and the regulatory program comparison.
-            </p>
+          <div className="flex min-w-0 items-start gap-2.5">
+            <span
+              className="mt-2 inline-block size-2.5 shrink-0 rounded-full"
+              style={{ background: TONE_COLOR.green }}
+              aria-hidden="true"
+            />
+            <div className="min-w-0">
+              <h2 className="font-display text-lg font-extrabold text-foreground">Export results</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Download the full calculation — scenario settings, every emission line item with its
+                basis and annual mass, category subtotals and the regulatory program comparison.
+              </p>
+            </div>
           </div>
           <ExportCsvButton build={buildExport} />
         </div>
