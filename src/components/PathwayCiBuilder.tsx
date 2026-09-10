@@ -711,10 +711,20 @@ export function PathwayCiBuilder() {
         </div>
       </section>
 
-      <section className="glass-panel p-5">
-        <h2 className="mb-1 font-display text-lg font-extrabold text-foreground">
-          Summary emission terms (gCO2e/MJ)
-        </h2>
+      <section
+        className="glass-panel border-l-4 p-5"
+        style={{ borderLeftColor: TONE_COLOR.red }}
+      >
+        <div className="mb-1 flex items-start gap-2.5">
+          <span
+            className="mt-2 inline-block size-2.5 shrink-0 rounded-full"
+            style={{ background: TONE_COLOR.red }}
+            aria-hidden="true"
+          />
+          <h2 className="font-display text-lg font-extrabold text-foreground">
+            Summary emission terms (gCO2e/MJ)
+          </h2>
+        </div>
         <p className="mb-3 border-b border-border pb-2 text-xs text-muted-foreground">
           Quick single-number entry. Any term you build up in the detailed sections below is locked
           here and replaced by the calculated value.
