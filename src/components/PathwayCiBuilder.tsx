@@ -163,6 +163,7 @@ function DetailSection({
   total,
   totalLabel,
   children,
+  tone = "blue",
 }: {
   title: string;
   description: string;
@@ -171,14 +172,25 @@ function DetailSection({
   total: string;
   totalLabel: string;
   children: React.ReactNode;
+  tone?: SectionTone;
 }) {
   const [open, setOpen] = useState(false);
   return (
-    <section className="glass-panel p-5">
+    <section
+      className="glass-panel border-l-4 p-5"
+      style={{ borderLeftColor: TONE_COLOR[tone] }}
+    >
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-3">
-        <div className="min-w-0">
-          <h2 className="font-display text-lg font-extrabold text-foreground">{title}</h2>
-          <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
+        <div className="flex min-w-0 items-start gap-2.5">
+          <span
+            className="mt-2 inline-block size-2.5 shrink-0 rounded-full"
+            style={{ background: TONE_COLOR[tone] }}
+            aria-hidden="true"
+          />
+          <div className="min-w-0">
+            <h2 className="font-display text-lg font-extrabold text-foreground">{title}</h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <div className="text-right">
