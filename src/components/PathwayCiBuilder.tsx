@@ -1290,10 +1290,20 @@ export function PathwayCiBuilder() {
         </table>
       </section>
 
-      <section className="glass-panel overflow-x-auto p-5">
-        <h2 className="mb-3 font-display text-lg font-extrabold text-foreground">
-          Regulatory program comparison
-        </h2>
+      <section
+        className="glass-panel overflow-x-auto border-l-4 p-5"
+        style={{ borderLeftColor: TONE_COLOR.blue }}
+      >
+        <div className="mb-3 flex items-start gap-2.5">
+          <span
+            className="mt-2 inline-block size-2.5 shrink-0 rounded-full"
+            style={{ background: TONE_COLOR.blue }}
+            aria-hidden="true"
+          />
+          <h2 className="mb-3 font-display text-lg font-extrabold text-foreground">
+            Regulatory program comparison
+          </h2>
+        </div>
         <table className="w-full min-w-[46rem] text-sm">
           <thead>
             <tr className="border-b border-border text-left">
