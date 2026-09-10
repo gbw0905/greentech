@@ -49,6 +49,29 @@ const CATEGORY_TONE: Record<LineItem["category"], string> = {
   Credits: "rgb(220, 38, 38)",
 };
 
+type SectionTone = "red" | "green" | "blue";
+const SECTION_TONE: Record<string, SectionTone> = {
+  "Fuel pathway and feedstock": "green",
+  "Process energy sources": "red",
+  "Summary emission terms (gCO2e/MJ)": "red",
+  "Feedstock production": "green",
+  "Feedstock transport": "blue",
+  "Chemicals and fugitive emissions": "red",
+  "Co-products and avoided emissions": "green",
+  "Fuel distribution": "blue",
+  "Tailpipe and end use": "red",
+  "Carbon intensity": "blue",
+  "Contribution by emission source": "blue",
+  "Emissions from all inputs": "blue",
+  "Regulatory program comparison": "blue",
+  "Export results": "green",
+};
+const TONE_COLOR: Record<SectionTone, string> = {
+  red: "var(--tracker-red)",
+  green: "var(--tracker-green)",
+  blue: "var(--tracker-blue)",
+};
+
 const CATEGORY_ORDER: LineItem["category"][] = [
   "Feedstock and land",
   "Process energy",
