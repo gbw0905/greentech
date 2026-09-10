@@ -1155,11 +1155,21 @@ export function PathwayCiBuilder() {
           </div>
         </div>
 
-        <div className="glass-panel p-5">
+        <div
+          className="glass-panel border-l-4 p-5"
+          style={{ borderLeftColor: TONE_COLOR.blue }}
+        >
           <div className="mb-3 flex items-baseline justify-between gap-3 border-b border-border pb-2">
-            <h2 className="font-display text-lg font-extrabold text-foreground">
-              Contribution by emission source
-            </h2>
+            <div className="flex items-start gap-2.5">
+              <span
+                className="mt-2 inline-block size-2.5 shrink-0 rounded-full"
+                style={{ background: TONE_COLOR.blue }}
+                aria-hidden="true"
+              />
+              <h2 className="font-display text-lg font-extrabold text-foreground">
+                Contribution by emission source
+              </h2>
+            </div>
             <span className="label-mono text-muted-foreground">{ciUnit.label}</span>
           </div>
           <ul className="space-y-3">
