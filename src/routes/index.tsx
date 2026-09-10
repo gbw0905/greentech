@@ -23,12 +23,12 @@ import { AboutMenu } from "@/components/AboutMenu";
 const TITLE = "Global Bioenergy Watch | Worldwide Biofuel Policy Tracker";
 
 const SECTIONS: { href: string; label: string; tone: string }[] = [
-  { href: "#markets", label: "Markets", tone: "var(--chart-2)" },
-  { href: "#map", label: "Jurisdiction map", tone: "var(--chart-3)" },
-  { href: "#production", label: "Supply & producers", tone: "var(--chart-6)" },
-  { href: "#jobs", label: "Jobs", tone: "var(--chart-7)" },
-  { href: "#alerts", label: "Email alerts", tone: "var(--chart-4)" },
-  { href: "#disclaimer", label: "Method & disclaimer", tone: "var(--chart-8)" },
+  { href: "#markets", label: "MARKETS", tone: "var(--chart-2)" },
+  { href: "#map", label: "JURISDICTION MAP", tone: "var(--chart-3)" },
+  { href: "#production", label: "SUPPLY & PRODUCERS", tone: "var(--chart-6)" },
+  { href: "#jobs", label: "JOBS", tone: "var(--chart-7)" },
+  { href: "#alerts", label: "EMAIL ALERTS", tone: "var(--chart-4)" },
+  { href: "#disclaimer", label: "METHOD & DISCLAIMER", tone: "var(--chart-8)" },
 ];
 
 const DESCRIPTION =
@@ -224,13 +224,13 @@ function Dashboard() {
             to="/ci-calculator"
             className="label-mono pill-motion group inline-flex min-w-max items-center justify-center gap-2 text-center whitespace-nowrap border border-menubar-fg/40 bg-menubar-nav px-3 py-1.5 text-xs font-extrabold text-menubar-fg shadow-sm hover:border-menubar-fg hover:bg-menubar-fg/10 sm:flex-1 sm:px-4 sm:py-2"
           >
-            CI calculator
+            CI CALCULATOR
           </Link>
           <Link
             to="/videos"
             className="label-mono pill-motion group inline-flex min-w-max items-center justify-center gap-2 text-center whitespace-nowrap border border-menubar-fg/40 bg-menubar-nav px-3 py-1.5 text-xs font-extrabold text-menubar-fg shadow-sm hover:border-menubar-fg hover:bg-menubar-fg/10 sm:flex-1 sm:px-4 sm:py-2"
           >
-            Videos
+            VIDEOS
           </Link>
           <AboutMenu />
         </nav>

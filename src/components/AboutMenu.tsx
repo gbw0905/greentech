@@ -4,9 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 const ITEMS = [
-  { to: "/about", label: "About us" },
-  { to: "/about/mission-vision", label: "Mission & vision" },
-  { to: "/about/team", label: "Team members" },
+  { to: "/about", label: "ABOUT US" },
+  { to: "/about/mission-vision", label: "MISSION & VISION" },
+  { to: "/about/team", label: "TEAM MEMBERS" },
 ] as const;
 
 /**
@@ -70,7 +70,7 @@ export function AboutMenu() {
         onClick={() => setOpen(true)}
         className="label-mono group inline-flex w-full items-center justify-center gap-2 text-center whitespace-nowrap border border-menubar-fg/40 bg-menubar-nav px-3 py-1.5 text-xs font-extrabold text-menubar-fg shadow-sm transition-all hover:border-menubar-fg hover:bg-menubar-fg/10 sm:px-4 sm:py-2"
       >
-        About us
+        ABOUT US
         <ChevronDown
           className={`size-3.5 transition-transform ${open ? "rotate-180" : ""}`}
         />
