@@ -853,6 +853,7 @@ export function PathwayCiBuilder() {
         onToggle={(v) => setModule("chemicals", { enabled: v })}
         total={moduleTotal("chemicals")}
         totalLabel="Calculated"
+        tone="red"
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Num
