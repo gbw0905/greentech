@@ -1198,11 +1198,21 @@ export function PathwayCiBuilder() {
         </div>
       </section>
 
-      <section className="glass-panel overflow-x-auto p-5">
+      <section
+        className="glass-panel overflow-x-auto border-l-4 p-5"
+        style={{ borderLeftColor: TONE_COLOR.blue }}
+      >
         <div className="mb-3 flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-2">
-          <h2 className="font-display text-lg font-extrabold text-foreground">
-            Emissions from all inputs
-          </h2>
+          <div className="flex items-start gap-2.5">
+            <span
+              className="mt-2 inline-block size-2.5 shrink-0 rounded-full"
+              style={{ background: TONE_COLOR.blue }}
+              aria-hidden="true"
+            />
+            <h2 className="font-display text-lg font-extrabold text-foreground">
+              Emissions from all inputs
+            </h2>
+          </div>
           <span className="label-mono text-muted-foreground">
             {ciUnit.label} and {massUnit.label} per year
           </span>
