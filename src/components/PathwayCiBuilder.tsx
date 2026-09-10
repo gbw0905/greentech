@@ -530,11 +530,21 @@ export function PathwayCiBuilder() {
 
   return (
     <div className="space-y-4">
-      <section className="glass-panel p-5">
+      <section
+        className="glass-panel border-l-4 p-5"
+        style={{ borderLeftColor: TONE_COLOR.green }}
+      >
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
-          <h2 className="font-display text-lg font-extrabold text-foreground">
-            Fuel pathway and feedstock
-          </h2>
+          <div className="flex items-start gap-2.5">
+            <span
+              className="mt-2 inline-block size-2.5 shrink-0 rounded-full"
+              style={{ background: TONE_COLOR.green }}
+              aria-hidden="true"
+            />
+            <h2 className="font-display text-lg font-extrabold text-foreground">
+              Fuel pathway and feedstock
+            </h2>
+          </div>
           <button
             type="button"
             onClick={() => setInputs(scenarioFromPathway(inputs.pathwayId, region))}
