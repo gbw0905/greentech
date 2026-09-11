@@ -156,6 +156,62 @@ function Num({
   );
 }
 
+/** Same minimise/expand behaviour as DetailSection, without the enable toggle. */
+function CollapsibleSection({
+  title,
+  description,
+  total,
+  totalLabel,
+  children,
+  tone = "blue",
+}: {
+  title: string;
+  description: string;
+  total: string;
+  totalLabel: string;
+  children: React.ReactNode;
+  tone?: SectionTone;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <section className="glass-panel border-l-4 p-5" style={{ borderLeftColor: TONE_COLOR[tone] }}>
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-3">
+        <div className="flex min-w-0 items-start gap-2.5">
+          <span
+            className="mt-2 inline-block size-2.5 shrink-0 rounded-full"
+            style={{ background: TONE_COLOR[tone] }}
+            aria-hidden="true"
+          />
+          <div className="min-w-0">
+            <h2 className="font-display text-lg font-extrabold text-foreground">{title}</h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="text-right">
+            <span className="label-mono block text-muted-foreground">{totalLabel}</span>
+            <span className="font-display text-base font-extrabold tabular-nums text-foreground">
+              {total}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+            className="label-mono inline-flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3 font-bold text-foreground hover:border-accent"
+          >
+            {open ? "Hide" : "Edit"}
+            <ChevronDown className={`size-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
+          </button>
+        </div>
+      </div>
+      {open ? <div className="mt-4 space-y-4">{children}</div> : null}
+    </section>
+  );
+}
+
+
+
 function DetailSection({
   title,
   description,
