@@ -163,6 +163,8 @@ export interface ProgramDef {
   jurisdiction: string;
   /** Comparator / benchmark CI in gCO2e/MJ by displaced fuel. */
   benchmarks: Partial<Record<BenchmarkFuel, number>>;
+  /** What the benchmark number actually represents, shown next to the value. */
+  benchmarkBasis: string;
   /** Minimum GHG saving to qualify, as a fraction, when the program uses a threshold. */
   threshold?: number;
   /** Credit-generating program (deficit and credit accounting in tCO2e). */
@@ -176,6 +178,7 @@ export const PROGRAMS: ProgramDef[] = [
     label: "California LCFS",
     jurisdiction: "California, United States",
     benchmarks: { gasoline: 79.16, diesel: 79.51, jet: 89.37, marine: 91.0 },
+    benchmarkBasis: "Annual compliance standard (CI target), not a fossil baseline",
     creditMarket: true,
     note: "Credits equal (benchmark × EER − CI) × fuel energy. Benchmarks tighten every year.",
   },
@@ -183,7 +186,8 @@ export const PROGRAMS: ProgramDef[] = [
     id: "oregonCfp",
     label: "Oregon Clean Fuels Program",
     jurisdiction: "Oregon, United States",
-    benchmarks: { gasoline: 98.47, diesel: 100.45, jet: 89.37 },
+    benchmarks: { gasoline: 98.47, diesel: 100.45 },
+    benchmarkBasis: "2015 baseline CI; the annual clean fuel standard sits below it",
     creditMarket: true,
     note: "2015 baseline carbon intensities; the annual compliance standard steps down from them.",
   },
@@ -191,7 +195,8 @@ export const PROGRAMS: ProgramDef[] = [
     id: "washingtonCfs",
     label: "Washington Clean Fuel Standard",
     jurisdiction: "Washington, United States",
-    benchmarks: { gasoline: 98.03, diesel: 100.45, jet: 89.37 },
+    benchmarks: { gasoline: 98.03, diesel: 100.45 },
+    benchmarkBasis: "2017 baseline CI; the annual standard steps down from it",
     creditMarket: true,
     note: "2017 baseline carbon intensities with an annual step-down schedule.",
   },
@@ -200,6 +205,7 @@ export const PROGRAMS: ProgramDef[] = [
     label: "Canada Clean Fuel Regulations",
     jurisdiction: "Canada",
     benchmarks: { gasoline: 95.0, diesel: 93.0 },
+    benchmarkBasis: "Liquid fossil baseline CI used for credit creation",
     creditMarket: true,
     note: "Compliance credits are created against the liquid-fossil baseline CI.",
   },
@@ -208,6 +214,7 @@ export const PROGRAMS: ProgramDef[] = [
     label: "EU RED III",
     jurisdiction: "European Union",
     benchmarks: { gasoline: 94.0, diesel: 94.0, jet: 94.0, marine: 94.0, heat: 80.0 },
+    benchmarkBasis: "Fossil fuel comparator for transport (94) and heat (80)",
     threshold: 0.65,
     creditMarket: false,
     note: "Fossil comparator 94 gCO2e/MJ; 65% saving for installations started after 2021.",
@@ -217,6 +224,7 @@ export const PROGRAMS: ProgramDef[] = [
     label: "UK RTFO",
     jurisdiction: "United Kingdom",
     benchmarks: { gasoline: 94.1, diesel: 94.1, jet: 94.1 },
+    benchmarkBasis: "Fossil fuel comparator used for RTFO GHG saving",
     threshold: 0.65,
     creditMarket: true,
     note: "Renewable transport fuel certificates; 65% saving required for new plants.",
@@ -226,6 +234,7 @@ export const PROGRAMS: ProgramDef[] = [
     label: "US Renewable Fuel Standard",
     jurisdiction: "United States",
     benchmarks: { gasoline: 93.08, diesel: 91.87, jet: 91.87 },
+    benchmarkBasis: "2005 petroleum baseline (lifecycle, EPA)",
     threshold: 0.5,
     creditMarket: false,
     note: "2005 petroleum baselines. 20% saving for renewable fuel, 50% advanced and biomass-based diesel, 60% cellulosic.",
@@ -235,6 +244,7 @@ export const PROGRAMS: ProgramDef[] = [
     label: "Brazil RenovaBio",
     jurisdiction: "Brazil",
     benchmarks: { gasoline: 87.4, diesel: 86.6, jet: 87.5 },
+    benchmarkBasis: "Fossil reference CI used to issue CBIOs",
     creditMarket: true,
     note: "CBIO decarbonisation credits are issued on the gap to the fossil reference.",
   },
@@ -243,6 +253,7 @@ export const PROGRAMS: ProgramDef[] = [
     label: "ICAO CORSIA",
     jurisdiction: "International aviation",
     benchmarks: { jet: 89.0 },
+    benchmarkBasis: "Jet fuel baseline life cycle emissions value",
     threshold: 0.1,
     creditMarket: false,
     note: "Baseline 89 gCO2e/MJ for jet fuel; eligible fuels must save at least 10%.",
@@ -252,6 +263,7 @@ export const PROGRAMS: ProgramDef[] = [
     label: "FuelEU Maritime",
     jurisdiction: "European Union shipping",
     benchmarks: { marine: 91.16, diesel: 91.16 },
+    benchmarkBasis: "2020 fleet reference intensity, before the period reduction",
     creditMarket: false,
     note: "2020 fleet reference intensity 91.16 gCO2e/MJ; a declining % reduction applies each period.",
   },
