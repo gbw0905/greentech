@@ -1079,7 +1079,7 @@ export function PathwayCiBuilder() {
 
       <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
         <div
-          className="glass-panel card-motion border-t-4 border-l-4 p-5"
+          className="glass-panel card-motion min-w-0 border-t-4 border-l-4 p-5"
           style={{
             borderTopColor: result.ciTotal < 0 ? TONE_COLOR.green : TONE_COLOR.blue,
             borderLeftColor: TONE_COLOR.blue,
@@ -1139,7 +1139,7 @@ export function PathwayCiBuilder() {
         </div>
 
         <div
-          className="glass-panel border-l-4 p-5"
+          className="glass-panel min-w-0 border-l-4 p-5"
           style={{ borderLeftColor: TONE_COLOR.blue }}
         >
           <div className="mb-3 flex items-baseline justify-between gap-3 border-b border-border pb-2">
