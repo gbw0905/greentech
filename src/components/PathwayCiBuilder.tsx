@@ -1504,12 +1504,14 @@ export function PathwayCiBuilder() {
             <div className="min-w-0">
               <h2 className="font-display text-lg font-extrabold text-foreground">Export results</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Download the full calculation — scenario settings, every emission line item with its
-                basis and annual mass, category subtotals and the regulatory program comparison.
+                Download the full calculation as an Excel workbook — a Calculation sheet with every
+                lifecycle stage section by section, an Emission factors sheet with all background
+                factors and sources, and a Keys sheet with definitions.
               </p>
             </div>
           </div>
-          <ExportCsvButton build={buildExport} />
+          <ExportExcelButton build={buildWorkbook} />
+
         </div>
       </section>
     </div>
