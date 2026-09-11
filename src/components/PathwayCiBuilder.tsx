@@ -1157,29 +1157,79 @@ export function PathwayCiBuilder() {
             </div>
             <span className="label-mono text-muted-foreground">{ciUnit.label}</span>
           </div>
-          <ul className="space-y-3">
-            {result.lineItems.map((l) => (
-              <li key={l.key}>
-                <div className="flex items-baseline justify-between gap-3">
-                  <span className="min-w-0 text-sm font-semibold text-foreground">{l.label}</span>
-                  <span className="shrink-0 font-mono text-sm font-bold tabular-nums text-foreground">
-                    {ci(l.gPerMj)}
-                  </span>
+          {(() => {
+            const cats = Array.from(new Set(result.lineItems.map((l) => l.category)));
+            const cols = cats
+              .map((c) => {
+                const items = result.lineItems.filter(
+                  (l) => l.category === c && Math.abs(l.gPerMj) > 0.0001,
+                );
+                const total = items.reduce((s, l) => s + l.gPerMj, 0);
+                return { category: c, items, total };
+              })
+              .filter((c) => c.items.length > 0);
+            const scale = Math.max(...cols.map((c) => Math.abs(c.total)), 0.001);
+            return (
+              <>
+                <div className="overflow-x-auto">
+                  <div className="flex min-w-[520px] items-end gap-4" style={{ height: 260 }}>
+                    {cols.map((c) => {
+                      const negative = c.total < 0;
+                      return (
+                        <div key={c.category} className="flex min-w-0 flex-1 flex-col items-center gap-2">
+                          <span className="font-mono text-xs font-bold tabular-nums text-foreground">
+                            {ci(c.total)}
+                          </span>
+                          <div
+                            className="flex w-full max-w-24 flex-col-reverse overflow-hidden rounded-t-md transition-all duration-500"
+                            style={{
+                              height: `${(Math.abs(c.total) / scale) * 190}px`,
+                              minHeight: 4,
+                            }}
+                          >
+                            {c.items.map((l, idx) => (
+                              <div
+                                key={l.key}
+                                title={`${l.label}: ${ci(l.gPerMj)} ${ciUnit.label}`}
+                                style={{
+                                  flexGrow: Math.abs(l.gPerMj) || 0.0001,
+                                  background: CATEGORY_TONE[c.category],
+                                  opacity: negative ? 0.4 + idx * 0.12 : 0.55 + idx * 0.15,
+                                }}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-center text-[0.7rem] leading-tight text-muted-foreground">
+                            {c.category}
+                            {negative ? " (credit)" : ""}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{
-                      width: `${(Math.abs(l.gPerMj) / maxAbs) * 100}%`,
-                      background: CATEGORY_TONE[l.category],
-                      opacity: l.gPerMj < 0 ? 0.65 : 1,
-                    }}
-                  />
-                </div>
-                <div className="mt-1 text-[0.7rem] text-muted-foreground">{l.detail}</div>
-              </li>
-            ))}
-          </ul>
+                <ul className="mt-4 space-y-2 border-t border-border pt-3">
+                  {result.lineItems.map((l) => (
+                    <li key={l.key} className="flex items-baseline justify-between gap-3">
+                      <span className="flex min-w-0 items-baseline gap-2">
+                        <span
+                          className="inline-block size-2 shrink-0 rounded-sm"
+                          style={{ background: CATEGORY_TONE[l.category] }}
+                          aria-hidden="true"
+                        />
+                        <span className="min-w-0 text-sm font-semibold text-foreground">
+                          {l.label}
+                        </span>
+                      </span>
+                      <span className="shrink-0 font-mono text-sm font-bold tabular-nums text-foreground">
+                        {ci(l.gPerMj)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            );
+          })()}
         </div>
       </section>
 
