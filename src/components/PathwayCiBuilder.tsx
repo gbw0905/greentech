@@ -11,7 +11,6 @@ import {
   
   FEEDSTOCK_BY_ID,
   MASS_UNITS,
-  MODULE_TO_DIRECT,
   PATHWAYS,
   SOURCES,
   SOURCE_VARIANTS,
@@ -25,7 +24,6 @@ import {
   type CoProductItem,
   type DetailModuleKey,
   type DetailModules,
-  type DirectTerms,
   type ElectricityRegionId,
   type EndUseModeId,
   type LineItem,
@@ -53,7 +51,6 @@ type SectionTone = "red" | "green" | "blue";
 const SECTION_TONE: Record<string, SectionTone> = {
   "Fuel pathway": "green",
   "Process energy sources": "red",
-  "Summary emission terms (gCO2e/MJ)": "red",
   "Feedstock production": "green",
   "Feedstock transport": "blue",
   "Chemicals and fugitive emissions": "red",
@@ -469,8 +466,6 @@ export function PathwayCiBuilder() {
   const ci = (g: number) => (g * ciUnit.factor).toFixed(ciUnit.decimals);
 
   const selectPathway = (id: string) => setInputs(scenarioFromPathway(id, region));
-  const setDirect = (k: keyof DirectTerms, v: number) =>
-    setInputs((p) => ({ ...p, direct: { ...p.direct, [k]: v }, feedstockId: "custom" }));
   const setEnergy = (k: SourceId, v: number) =>
     setInputs((p) => ({ ...p, energy: { ...p.energy, [k]: v } }));
   const setVariant = (k: SourceId, v: string) =>
@@ -483,10 +478,6 @@ export function PathwayCiBuilder() {
       return { ...p, detail: { ...base, [key]: { ...base[key], ...patch } } };
     });
   const moduleTotal = (key: DetailModuleKey) => `${ci(result.moduleTotals[key] ?? 0)} ${ciUnit.label}`;
-  const moduleOwns = (k: keyof DirectTerms) =>
-    (Object.keys(MODULE_TO_DIRECT) as DetailModuleKey[]).some(
-      (m) => MODULE_TO_DIRECT[m] === k && detail[m].enabled,
-    );
 
   const groups = Array.from(new Set(PATHWAYS.map((p) => p.group)));
   const feedstock = FEEDSTOCK_BY_ID[inputs.feedstockId];
@@ -582,7 +573,7 @@ export function PathwayCiBuilder() {
         "Detail",
         `Value (${ciUnit.label})`,
         "Unit / note",
-        `Annual (${massUnit.label})`,
+        `Annual (${massUnit.label}) / source`,
       ],
       rows,
       note: `Electricity region: ${regionLabel}. Annual footprint unit: ${massUnit.label}. Indicative results, not a certified pathway CI score.`,
