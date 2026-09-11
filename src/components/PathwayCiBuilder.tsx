@@ -8,7 +8,7 @@ import {
   DIRECT_FIELDS,
   ELECTRICITY_REGIONS,
   END_USE_MODES,
-  FEEDSTOCKS,
+  
   FEEDSTOCK_BY_ID,
   MASS_UNITS,
   MODULE_TO_DIRECT,
@@ -432,9 +432,7 @@ export function PathwayCiBuilder() {
       (m) => MODULE_TO_DIRECT[m] === k && detail[m].enabled,
     );
 
-  const maxAbs = Math.max(...result.lineItems.map((l) => Math.abs(l.gPerMj)), 0.001);
   const groups = Array.from(new Set(PATHWAYS.map((p) => p.group)));
-  const feedstockGroups = Array.from(new Set(FEEDSTOCKS.map((f) => f.group)));
   const feedstock = FEEDSTOCK_BY_ID[inputs.feedstockId];
 
   const annualTonnes = result.annualTonnesCo2e * massUnit.factor;
