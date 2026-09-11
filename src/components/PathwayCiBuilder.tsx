@@ -726,27 +726,19 @@ export function PathwayCiBuilder() {
         />
       </DetailSection>
 
-      <section
-        className="glass-panel border-l-4 p-5"
-        style={{ borderLeftColor: TONE_COLOR.red }}
+      <CollapsibleSection
+        title="Process energy sources"
+        description="One parameter per row — choose the supply, the amount and the unit."
+        tone="red"
+        totalLabel="Process energy"
+        total={`${ci(
+          result.lineItems
+            .filter((l) => l.category === "Process energy")
+            .reduce((a, l) => a + l.gPerMj, 0),
+        )} ${ciUnit.label}`}
       >
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
-          <div className="flex items-start gap-2.5">
-            <span
-              className="mt-2 inline-block size-2.5 shrink-0 rounded-full"
-              style={{ background: TONE_COLOR.red }}
-              aria-hidden="true"
-            />
-            <h2 className="font-display text-lg font-extrabold text-foreground">
-              Process energy sources
-            </h2>
-          </div>
-          <span className="label-mono text-muted-foreground">
-            One parameter per row — choose the supply, the amount and the unit
-          </span>
-        </div>
-
         <div className="space-y-3">
+
           {SOURCES.map((s, i) => {
             const unitList = UNIT_OPTIONS[s.unit];
             const unitId = units[s.id] ?? unitList[0]!.id;
