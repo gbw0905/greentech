@@ -17,7 +17,7 @@ import {
   SOURCE_VARIANTS,
   TRANSPORT_MODES,
   UNIT_OPTIONS,
-  applyFeedstock,
+  
   calculateScenario,
   defaultDetailModules,
   scenarioFromPathway,
