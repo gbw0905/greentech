@@ -1469,135 +1469,91 @@ export function PathwayCiBuilder() {
             result.ciTotal,
             0.001,
           );
-          const PLOT = 200;
+          const PLOT = 220;
+          const ticks = [1, 0.75, 0.5, 0.25, 0];
           return (
-            <div className="mb-5 overflow-x-auto border-b border-border pb-4">
-              <div className="flex min-w-full items-end gap-3 sm:gap-4" style={{ height: PLOT + 10 }}>
-                <div className="flex min-w-0 flex-1 flex-col items-center justify-end gap-2">
-                  <span className="font-mono text-xs font-bold tabular-nums text-foreground">
-                    {ci(result.ciTotal)}
-                  </span>
-                  <div
-                    className="w-full max-w-20 rounded-t-md"
-                    style={{
-                      height: `${(Math.max(result.ciTotal, 0) / scale) * PLOT}px`,
-                      background: TONE_COLOR.green,
-                    }}
-                    title={`This pathway: ${ci(result.ciTotal)} ${ciUnit.label}`}
-                  />
-                  <span className="text-center text-[0.7rem] leading-tight font-semibold text-foreground">
-                    This pathway
-                  </span>
-                </div>
-                {rows.map((p) => (
-                  <div
-                    key={p.program.id}
-                    className="flex min-w-0 flex-1 flex-col items-center justify-end gap-2"
-                  >
-                    <span className="font-mono text-xs font-bold tabular-nums text-foreground">
-                      {ci(p.benchmark as number)}
+            <div className="overflow-x-auto pb-2">
+              <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-2">
+                  <span className="size-3 rounded-sm" style={{ background: TONE_COLOR.green }} />
+                  Pathway CI
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <span className="size-3 rounded-sm" style={{ background: TONE_COLOR.blue }} />
+                  Program benchmark
+                </span>
+                <span className="font-mono tabular-nums">{ciUnit.label}</span>
+              </div>
+              <div className="flex min-w-[56rem]">
+                <div className="relative w-14 shrink-0" style={{ height: PLOT + 58 }}>
+                  {ticks.map((tick) => (
+                    <span
+                      key={tick}
+                      className="absolute right-3 -translate-y-1/2 font-mono text-[0.65rem] tabular-nums text-muted-foreground"
+                      style={{ top: (1 - tick) * PLOT }}
+                    >
+                      {ci(scale * tick)}
                     </span>
-                    <div
-                      className="w-full max-w-20 rounded-t-md"
-                      style={{
-                        height: `${((p.benchmark as number) / scale) * PLOT}px`,
-                        background: (p.gapPerMj ?? 0) >= 0 ? TONE_COLOR.blue : TONE_COLOR.red,
-                        opacity: 0.85,
-                      }}
-                      title={`${p.program.label}: ${ci(p.benchmark as number)} ${ciUnit.label} — ${p.program.benchmarkBasis}`}
+                  ))}
+                </div>
+                <div className="relative flex min-w-0 flex-1 items-start border-b border-border" style={{ height: PLOT + 58 }}>
+                  {ticks.slice(0, -1).map((tick) => (
+                    <span
+                      key={tick}
+                      className="pointer-events-none absolute inset-x-0 border-t border-border/60"
+                      style={{ top: (1 - tick) * PLOT }}
                     />
-                    <span className="text-center text-[0.7rem] leading-tight text-muted-foreground">
-                      {p.program.label}
+                  ))}
+                  {rows.map((p) => (
+                    <div key={p.program.id} className="relative flex h-full min-w-24 flex-1 justify-center gap-1.5 px-2">
+                      <div className="flex h-[220px] w-7 flex-col justify-end">
+                        <span className="mb-1 text-center font-mono text-[0.65rem] font-bold tabular-nums text-foreground">
+                          {ci(result.ciTotal)}
+                        </span>
+                        <div
+                          className="w-full rounded-t-sm"
+                          style={{
+                            height: `${Math.max((Math.max(result.ciTotal, 0) / scale) * (PLOT - 24), 2)}px`,
+                            background: TONE_COLOR.green,
+                          }}
+                          title={`Pathway CI: ${ci(result.ciTotal)} ${ciUnit.label}`}
+                        />
+                      </div>
+                      <div className="flex h-[220px] w-7 flex-col justify-end">
+                        <span className="mb-1 text-center font-mono text-[0.65rem] font-bold tabular-nums text-foreground">
+                          {ci(p.benchmark as number)}
+                        </span>
+                        <div
+                          className="w-full rounded-t-sm"
+                          style={{
+                            height: `${Math.max(((p.benchmark as number) / scale) * (PLOT - 24), 2)}px`,
+                            background: TONE_COLOR.blue,
+                          }}
+                          title={`${p.program.label}: ${ci(p.benchmark as number)} ${ciUnit.label}`}
+                        />
+                      </div>
+                      <span className="absolute inset-x-1 top-[228px] text-center text-[0.65rem] leading-tight font-semibold text-foreground">
+                        {p.program.label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="ml-14 mt-2 flex min-w-[52rem]">
+                {rows.map((p) => (
+                  <div key={p.program.id} className="min-w-24 flex-1 px-2 text-center">
+                    <span
+                      className="font-mono text-[0.65rem] font-bold tabular-nums"
+                      style={{ color: (p.gapPerMj ?? 0) >= 0 ? TONE_COLOR.green : TONE_COLOR.red }}
+                    >
+                      {(p.gapPerMj ?? 0) >= 0 ? "Below" : "Above"} by {ci(Math.abs(p.gapPerMj ?? 0))}
                     </span>
                   </div>
                 ))}
               </div>
-              <p className="mt-2 text-[0.7rem] text-muted-foreground">
-                Each column is that program&apos;s benchmark in {ciUnit.label}; blue means this
-                pathway sits below the benchmark, red means above it.
-              </p>
             </div>
           );
         })()}
-        <table className="w-full min-w-[46rem] text-sm">
-          <thead>
-            <tr className="border-b border-border text-left">
-              <th className="label-mono py-2 text-muted-foreground">Program</th>
-              <th className="label-mono py-2 text-right text-muted-foreground">Benchmark</th>
-              <th className="label-mono py-2 text-right text-muted-foreground">EER</th>
-              <th className="label-mono py-2 text-right text-muted-foreground">GHG saving</th>
-              <th className="label-mono py-2 text-right text-muted-foreground">Gap</th>
-              <th className="label-mono py-2 text-right text-muted-foreground">Annual credits (t)</th>
-              <th className="label-mono py-2 text-muted-foreground">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {result.programs.map((p) => (
-              <tr key={p.program.id}>
-                <td className="py-2 pr-3">
-                  <div className="font-semibold text-foreground">{p.program.label}</div>
-                  <div className="text-[0.7rem] text-muted-foreground">{p.program.jurisdiction}</div>
-                </td>
-                <td className="py-2 text-right">
-                  <div className="font-mono tabular-nums">
-                    {p.benchmark == null ? "—" : ci(p.benchmark)}
-                  </div>
-                  {p.benchmark != null && (
-                    <div className="text-[0.65rem] leading-tight text-muted-foreground">
-                      {p.program.benchmarkBasis}
-                      {p.program.creditMarket && p.eer !== 1 && p.adjustedBenchmark != null
-                        ? ` · ${ci(p.adjustedBenchmark)} after EER`
-                        : ""}
-                    </div>
-                  )}
-                </td>
-                <td className="py-2 text-right font-mono tabular-nums">{p.eer.toFixed(1)}</td>
-                <td className="py-2 text-right font-mono tabular-nums">
-                  {p.savingPct == null ? "—" : `${p.savingPct.toFixed(1)}%`}
-                </td>
-                <td className="py-2 text-right font-mono tabular-nums">
-                  {p.gapPerMj == null ? "—" : ci(p.gapPerMj)}
-                </td>
-                <td className="py-2 text-right font-mono tabular-nums">
-                  {p.annualCreditsTonnes == null || !p.program.creditMarket
-                    ? "—"
-                    : num(p.annualCreditsTonnes)}
-                </td>
-                <td className="py-2">
-                  {p.benchmark == null ? (
-                    <span className="text-xs text-muted-foreground">Fuel not covered</span>
-                  ) : p.program.threshold != null ? (
-                    <span
-                      className="text-xs font-bold"
-                      style={{
-                        color: p.meetsThreshold ? "rgb(21,128,61)" : "rgb(220,38,38)",
-                      }}
-                    >
-                      {p.meetsThreshold ? "Meets" : "Below"} {(p.program.threshold * 100).toFixed(0)}%
-                      threshold
-                    </span>
-                  ) : (
-                    <span
-                      className="text-xs font-bold"
-                      style={{
-                        color: (p.gapPerMj ?? 0) >= 0 ? "rgb(21,128,61)" : "rgb(220,38,38)",
-                      }}
-                    >
-                      {(p.gapPerMj ?? 0) >= 0 ? "Generates credits" : "Generates deficits"}
-                    </span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
-          {result.programs.map((p) => (
-            <li key={p.program.id}>
-              <strong className="text-foreground">{p.program.label}:</strong> {p.program.note}
-            </li>
-          ))}
-        </ul>
       </section>
 
       <section
