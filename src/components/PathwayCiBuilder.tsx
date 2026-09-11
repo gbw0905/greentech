@@ -1254,50 +1254,82 @@ export function PathwayCiBuilder() {
                 const items = result.lineItems.filter(
                   (l) => l.category === c && Math.abs(l.gPerMj) > 0.0001,
                 );
-                const total = items.reduce((s, l) => s + l.gPerMj, 0);
-                return { category: c, items, total };
+                const pos = items.filter((l) => l.gPerMj > 0);
+                const neg = items.filter((l) => l.gPerMj < 0);
+                return {
+                  category: c,
+                  items,
+                  pos,
+                  neg,
+                  posTotal: pos.reduce((s, l) => s + l.gPerMj, 0),
+                  negTotal: neg.reduce((s, l) => s + l.gPerMj, 0),
+                  total: items.reduce((s, l) => s + l.gPerMj, 0),
+                };
               })
               .filter((c) => c.items.length > 0);
-            const scale = Math.max(...cols.map((c) => Math.abs(c.total)), 0.001);
+            const maxPos = Math.max(...cols.map((c) => c.posTotal), 0);
+            const maxNeg = Math.max(...cols.map((c) => -c.negTotal), 0);
+            const span = Math.max(maxPos + maxNeg, 0.001);
+            const PLOT = 220;
+            const hAbove = Math.max((maxPos / span) * PLOT, maxPos > 0 ? 8 : 0);
+            const hBelow = Math.max((maxNeg / span) * PLOT, maxNeg > 0 ? 8 : 0);
+            const px = (v: number) => (Math.abs(v) / span) * PLOT;
             return (
               <>
                 <div className="overflow-x-auto">
-                  <div className="flex min-w-full items-end gap-3 sm:gap-4" style={{ height: 260 }}>
-                    {cols.map((c) => {
-                      const negative = c.total < 0;
-                      return (
-                        <div key={c.category} className="flex min-w-0 flex-1 flex-col items-center gap-2">
-                          <span className="font-mono text-xs font-bold tabular-nums text-foreground">
-                            {ci(c.total)}
-                          </span>
-                          <div
-                            className="flex w-full max-w-24 flex-col-reverse overflow-hidden rounded-t-md transition-all duration-500"
-                            style={{
-                              height: `${(Math.abs(c.total) / scale) * 190}px`,
-                              minHeight: 4,
-                            }}
-                          >
-                            {c.items.map((l, idx) => (
+                  <div className="flex min-w-full gap-3 sm:gap-4">
+                    {cols.map((c) => (
+                      <div key={c.category} className="flex min-w-0 flex-1 flex-col items-center">
+                        <div
+                          className="flex w-full flex-col justify-end"
+                          style={{ height: hAbove }}
+                        >
+                          <div className="mx-auto flex w-full max-w-24 flex-col-reverse overflow-hidden rounded-t-md">
+                            {c.pos.map((l, idx) => (
                               <div
                                 key={l.key}
                                 title={`${l.label}: ${ci(l.gPerMj)} ${ciUnit.label}`}
                                 style={{
-                                  flexGrow: Math.abs(l.gPerMj) || 0.0001,
+                                  height: `${px(l.gPerMj)}px`,
                                   background: CATEGORY_TONE[c.category],
-                                  opacity: negative ? 0.4 + idx * 0.12 : 0.55 + idx * 0.15,
+                                  opacity: 0.55 + idx * 0.12,
                                 }}
                               />
                             ))}
                           </div>
-                          <span className="text-center text-[0.7rem] leading-tight text-muted-foreground">
-                            {c.category}
-                            {negative ? " (credit)" : ""}
-                          </span>
                         </div>
-                      );
-                    })}
+                        <div className="h-px w-full bg-foreground/40" aria-hidden="true" />
+                        <div className="flex w-full flex-col justify-start" style={{ height: hBelow }}>
+                          <div className="mx-auto flex w-full max-w-24 flex-col overflow-hidden rounded-b-md">
+                            {c.neg.map((l, idx) => (
+                              <div
+                                key={l.key}
+                                title={`${l.label}: ${ci(l.gPerMj)} ${ciUnit.label} (credit)`}
+                                style={{
+                                  height: `${px(l.gPerMj)}px`,
+                                  background: CATEGORY_TONE[c.category],
+                                  opacity: 0.3 + idx * 0.1,
+                                  backgroundImage:
+                                    "repeating-linear-gradient(45deg, rgba(255,255,255,0.45) 0 4px, transparent 4px 8px)",
+                                }}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <span className="mt-2 font-mono text-xs font-bold tabular-nums text-foreground">
+                          {ci(c.total)}
+                        </span>
+                        <span className="text-center text-[0.7rem] leading-tight text-muted-foreground">
+                          {c.category}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
+                <p className="mt-2 text-[0.7rem] text-muted-foreground">
+                  Bars above the zero line add emissions; hatched bars below the line are credits
+                  (negative values), plotted downward.
+                </p>
                 <ul className="mt-4 space-y-2 border-t border-border pt-3">
                   {result.lineItems.map((l) => (
                     <li key={l.key} className="flex items-baseline justify-between gap-3">
@@ -1429,6 +1461,64 @@ export function PathwayCiBuilder() {
             Regulatory program comparison
           </h2>
         </div>
+        {(() => {
+          const rows = result.programs.filter((p) => p.benchmark != null);
+          if (rows.length === 0) return null;
+          const scale = Math.max(
+            ...rows.map((p) => p.benchmark as number),
+            result.ciTotal,
+            0.001,
+          );
+          const PLOT = 200;
+          return (
+            <div className="mb-5 overflow-x-auto border-b border-border pb-4">
+              <div className="flex min-w-full items-end gap-3 sm:gap-4" style={{ height: PLOT + 10 }}>
+                <div className="flex min-w-0 flex-1 flex-col items-center justify-end gap-2">
+                  <span className="font-mono text-xs font-bold tabular-nums text-foreground">
+                    {ci(result.ciTotal)}
+                  </span>
+                  <div
+                    className="w-full max-w-20 rounded-t-md"
+                    style={{
+                      height: `${(Math.max(result.ciTotal, 0) / scale) * PLOT}px`,
+                      background: TONE_COLOR.green,
+                    }}
+                    title={`This pathway: ${ci(result.ciTotal)} ${ciUnit.label}`}
+                  />
+                  <span className="text-center text-[0.7rem] leading-tight font-semibold text-foreground">
+                    This pathway
+                  </span>
+                </div>
+                {rows.map((p) => (
+                  <div
+                    key={p.program.id}
+                    className="flex min-w-0 flex-1 flex-col items-center justify-end gap-2"
+                  >
+                    <span className="font-mono text-xs font-bold tabular-nums text-foreground">
+                      {ci(p.benchmark as number)}
+                    </span>
+                    <div
+                      className="w-full max-w-20 rounded-t-md"
+                      style={{
+                        height: `${((p.benchmark as number) / scale) * PLOT}px`,
+                        background: (p.gapPerMj ?? 0) >= 0 ? TONE_COLOR.blue : TONE_COLOR.red,
+                        opacity: 0.85,
+                      }}
+                      title={`${p.program.label}: ${ci(p.benchmark as number)} ${ciUnit.label} — ${p.program.benchmarkBasis}`}
+                    />
+                    <span className="text-center text-[0.7rem] leading-tight text-muted-foreground">
+                      {p.program.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-2 text-[0.7rem] text-muted-foreground">
+                Each column is that program&apos;s benchmark in {ciUnit.label}; blue means this
+                pathway sits below the benchmark, red means above it.
+              </p>
+            </div>
+          );
+        })()}
         <table className="w-full min-w-[46rem] text-sm">
           <thead>
             <tr className="border-b border-border text-left">
