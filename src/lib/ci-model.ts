@@ -1316,6 +1316,7 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
       return {
         program,
         benchmark: null,
+        adjustedBenchmark: null,
         eer: pathway.eer,
         savingPct: null,
         meetsThreshold: null,
@@ -1323,13 +1324,16 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
         annualCreditsTonnes: null,
       };
     }
+    // Credit programs award credits on the EER-adjusted benchmark; the reported
+    // GHG saving is always measured against the unadjusted fossil comparator.
     const eer = program.creditMarket ? pathway.eer : 1;
     const adjusted = benchmark * eer;
     const gapPerMj = adjusted - ciTotal;
-    const savingPct = ((benchmark - ciTotal / eer) / benchmark) * 100;
+    const savingPct = ((benchmark - ciTotal) / benchmark) * 100;
     return {
       program,
       benchmark,
+      adjustedBenchmark: adjusted,
       eer,
       savingPct,
       meetsThreshold: program.threshold == null ? null : savingPct / 100 >= program.threshold,
