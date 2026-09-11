@@ -1466,7 +1466,7 @@ export function PathwayCiBuilder() {
           if (rows.length === 0) return null;
           const scale = Math.max(
             ...rows.map((p) => p.benchmark as number),
-            result.totalCi,
+            result.ciTotal,
             0.001,
           );
           const PLOT = 200;
@@ -1475,15 +1475,15 @@ export function PathwayCiBuilder() {
               <div className="flex min-w-full items-end gap-3 sm:gap-4" style={{ height: PLOT + 10 }}>
                 <div className="flex min-w-0 flex-1 flex-col items-center justify-end gap-2">
                   <span className="font-mono text-xs font-bold tabular-nums text-foreground">
-                    {ci(result.totalCi)}
+                    {ci(result.ciTotal)}
                   </span>
                   <div
                     className="w-full max-w-20 rounded-t-md"
                     style={{
-                      height: `${(Math.max(result.totalCi, 0) / scale) * PLOT}px`,
+                      height: `${(Math.max(result.ciTotal, 0) / scale) * PLOT}px`,
                       background: TONE_COLOR.green,
                     }}
-                    title={`This pathway: ${ci(result.totalCi)} ${ciUnit.label}`}
+                    title={`This pathway: ${ci(result.ciTotal)} ${ciUnit.label}`}
                   />
                   <span className="text-center text-[0.7rem] leading-tight font-semibold text-foreground">
                     This pathway
