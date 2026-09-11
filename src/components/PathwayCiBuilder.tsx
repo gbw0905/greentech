@@ -5,7 +5,7 @@ import {
   CI_UNITS,
   CI_UNIT_BY_ID,
   COPRODUCT_PRESETS,
-  DIRECT_FIELDS,
+  backgroundFactors,
   ELECTRICITY_REGIONS,
   END_USE_MODES,
   
