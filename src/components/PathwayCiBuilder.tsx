@@ -593,46 +593,14 @@ export function PathwayCiBuilder() {
       </section>
 
 
-      <section
-        className="glass-panel border-l-4 p-5"
-        style={{ borderLeftColor: TONE_COLOR.red }}
+      <CollapsibleSection
+        title="Process energy sources"
+        description="One parameter per row — choose the supply, the amount and the unit."
+        tone="red"
+        total={`${ci(result.lineItems.filter((l) => l.category === "Process energy").reduce((a, l) => a + l.gPerMj, 0))} ${ciUnit.label}`}
+        totalLabel="Process energy"
       >
-        <div className="mb-1 flex items-start gap-2.5">
-          <span
-            className="mt-2 inline-block size-2.5 shrink-0 rounded-full"
-            style={{ background: TONE_COLOR.red }}
-            aria-hidden="true"
-          />
-          <h2 className="font-display text-lg font-extrabold text-foreground">
-            Summary emission terms (gCO2e/MJ)
-          </h2>
-        </div>
-        <p className="mb-3 border-b border-border pb-2 text-xs text-muted-foreground">
-          Quick single-number entry. Any term you build up in the detailed sections below is locked
-          here and replaced by the calculated value.
-        </p>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {DIRECT_FIELDS.map((f) => {
-            const owned = moduleOwns(f.key);
-            return (
-              <Field
-                key={f.key}
-                label={f.label}
-                hint={owned ? "Calculated from the detailed section below" : f.hint}
-              >
-                <input
-                  type="number"
-                  step={0.1}
-                  disabled={owned}
-                  className={`${inputCls} ${owned ? "opacity-50" : ""}`}
-                  value={inputs.direct[f.key]}
-                  onChange={(e) => setDirect(f.key, Number(e.target.value) || 0)}
-                />
-              </Field>
-            );
-          })}
-        </div>
-      </section>
+
 
       <DetailSection
         title="Feedstock production"
