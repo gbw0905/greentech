@@ -51,7 +51,7 @@ const CATEGORY_TONE: Record<LineItem["category"], string> = {
 
 type SectionTone = "red" | "green" | "blue";
 const SECTION_TONE: Record<string, SectionTone> = {
-  "Fuel pathway and feedstock": "green",
+  "Fuel pathway": "green",
   "Process energy sources": "red",
   "Summary emission terms (gCO2e/MJ)": "red",
   "Feedstock production": "green",
@@ -541,7 +541,7 @@ export function PathwayCiBuilder() {
               aria-hidden="true"
             />
             <h2 className="font-display text-lg font-extrabold text-foreground">
-              Fuel pathway and feedstock
+              Fuel pathway
             </h2>
           </div>
           <button
