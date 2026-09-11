@@ -484,107 +484,176 @@ export function PathwayCiBuilder() {
 
   const annualTonnes = result.annualTonnesCo2e * massUnit.factor;
 
-  const buildExport = (): BrandedExport => {
+  const buildWorkbook = (): WorkbookExport => {
     const annual = (g: number) => ((g * result.annualEnergyMj) / 1_000_000) * massUnit.factor;
     const regionLabel =
       ELECTRICITY_REGIONS.find((r) => r.id === region)?.label ?? String(region);
-    const rows: (string | number)[][] = [];
 
-    rows.push(["Scenario", "Fuel pathway", result.pathway.label, "", "", ""]);
-    rows.push(["Scenario", "Pathway summary", result.pathway.summary, "", "", ""]);
-    rows.push(["Scenario", "Feedstock source", feedstock ? feedstock.label : "Custom", "", "", ""]);
-    rows.push(["Scenario", "Electricity region", regionLabel, "", "", ""]);
-    rows.push(["Scenario", "Annual volume", inputs.annualVolume, "", "", ""]);
-    rows.push(["Scenario", "Annual energy (MJ)", result.annualEnergyMj.toFixed(0), "", "", ""]);
-    for (const s of SOURCES) {
+    const calcSections: SheetSection[] = [];
+
+    calcSections.push({
+      title: "Scenario",
+      header: ["Setting", "Value", "Note"],
+      rows: [
+        ["Fuel pathway", result.pathway.label, result.pathway.summary],
+        ["Feedstock source", feedstock ? feedstock.label : "Custom", ""],
+        ["Electricity region", regionLabel, ""],
+        ["Annual volume", inputs.annualVolume, ""],
+        ["Annual energy (MJ)", Number(result.annualEnergyMj.toFixed(0)), ""],
+        ["Carbon intensity unit", ciUnit.label, ""],
+        ["Annual footprint unit", massUnit.label, ""],
+      ],
+    });
+
+    const energyRows = SOURCES.flatMap((s) => {
       const qty = inputs.energy[s.id] ?? 0;
-      if (!qty) continue;
+      if (!qty) return [];
       const variant = SOURCE_VARIANTS[s.id]?.find((v) => v.id === inputs.sourceVariants?.[s.id]);
-      rows.push([
-        "Process energy",
-        s.label,
-        variant ? variant.label : "",
-        qty,
-        `${s.unit}/MJ fuel`,
-        "",
-      ]);
+      return [[s.label, variant ? variant.label : "", qty, `${s.unit}/MJ fuel`]];
+    });
+    if (energyRows.length) {
+      calcSections.push({
+        title: "Process energy inputs",
+        header: ["Energy source", "Source variant", "Quantity", "Unit"],
+        rows: energyRows,
+      });
     }
+
+    const lineHeader = [
+      "Item",
+      "Basis / detail",
+      `Value (${ciUnit.label})`,
+      "Unit",
+      `Annual (${massUnit.label})`,
+    ];
     for (const section of EXPORT_SECTIONS) {
       const items = result.lineItems.filter((item) => exportSectionFor(item) === section);
       if (!items.length) continue;
-      rows.push([]);
-      rows.push([section, "", "", "", "", ""]);
-      for (const l of items) {
-        rows.push([
-          section,
-          l.label,
-          l.detail ?? "",
-          ci(l.gPerMj),
-          ciUnit.label,
-          annual(l.gPerMj).toFixed(2),
-        ]);
-      }
+      const rows: (string | number)[][] = items.map((l) => [
+        l.label,
+        l.detail ?? "",
+        Number(ci(l.gPerMj)),
+        ciUnit.label,
+        Number(annual(l.gPerMj).toFixed(2)),
+      ]);
       const subtotal = items.reduce((a, l) => a + l.gPerMj, 0);
       rows.push([
-        section,
         `${section} subtotal`,
         "",
-        ci(subtotal),
+        Number(ci(subtotal)),
         ciUnit.label,
-        annual(subtotal).toFixed(2),
+        Number(annual(subtotal).toFixed(2)),
       ]);
+      calcSections.push({ title: section, header: lineHeader, rows });
     }
 
-    rows.push(["Result", "Gross emissions", "", ci(result.grossCi), ciUnit.label, annual(result.grossCi).toFixed(2)]);
-    rows.push(["Result", "Credits applied", "", ci(result.creditsCi), ciUnit.label, annual(result.creditsCi).toFixed(2)]);
-    rows.push(["Result", "Total carbon intensity", "", ci(result.ciTotal), ciUnit.label, annualTonnes.toFixed(2)]);
+    calcSections.push({
+      title: "Results",
+      header: ["Result", "", `Value (${ciUnit.label})`, "Unit", `Annual (${massUnit.label})`],
+      rows: [
+        ["Gross emissions", "", Number(ci(result.grossCi)), ciUnit.label, Number(annual(result.grossCi).toFixed(2))],
+        ["Credits applied", "", Number(ci(result.creditsCi)), ciUnit.label, Number(annual(result.creditsCi).toFixed(2))],
+        ["Total carbon intensity", "", Number(ci(result.ciTotal)), ciUnit.label, Number(annualTonnes.toFixed(2))],
+      ],
+    });
 
-    for (const p of result.programs) {
-      rows.push([
-        "Program comparison",
+    calcSections.push({
+      title: "Regulatory program comparison",
+      header: ["Program", "Jurisdiction", "Benchmark", "Saving vs benchmark", "Annual credits (t)"],
+      rows: result.programs.map((p) => [
         p.program.label,
         p.program.jurisdiction,
-        p.benchmark == null ? "Fuel not covered" : `Benchmark ${ci(p.benchmark)} ${ciUnit.label}`,
-        p.savingPct == null ? "—" : `${p.savingPct.toFixed(1)}% saving`,
+        p.benchmark == null ? "Fuel not covered" : `${ci(p.benchmark)} ${ciUnit.label}`,
+        p.savingPct == null ? "—" : `${p.savingPct.toFixed(1)}%`,
         p.annualCreditsTonnes == null || !p.program.creditMarket
           ? "—"
-          : p.annualCreditsTonnes.toFixed(0),
-      ]);
-    }
+          : Number(p.annualCreditsTonnes.toFixed(0)),
+      ]),
+    });
 
-    for (const f of backgroundFactors()) {
-      rows.push([
-        `Background emission factors — ${f.group}`,
-        f.item,
-        f.detail,
-        String(f.value),
-        f.unit,
-        f.source,
-      ]);
-    }
+    const factors = backgroundFactors();
+    const factorGroups = Array.from(new Set(factors.map((f) => f.group)));
+    const factorSections: SheetSection[] = factorGroups.map((group) => ({
+      title: group,
+      header: ["Item", "Detail", "Value", "Unit", "Source"],
+      rows: factors
+        .filter((f) => f.group === group)
+        .map((f) => [f.item, f.detail, f.value, f.unit, f.source]),
+    }));
 
+    const keySections: SheetSection[] = [
+      {
+        title: "Sheets in this workbook",
+        header: ["Sheet", "Contents"],
+        rows: [
+          ["Calculation", "Scenario settings and every lifecycle stage, section by section, with subtotals, results and program comparison."],
+          ["Emission factors", "All background emission factors used in the calculation, grouped by type, with sources."],
+          ["Keys", "Definitions of terms, units, lifecycle sections and references."],
+        ],
+      },
+      {
+        title: "Units and terms",
+        header: ["Term", "Meaning"],
+        rows: [
+          ["CI", "Carbon intensity — lifecycle greenhouse gas emissions per unit of fuel energy."],
+          [ciUnit.label, "Carbon intensity unit selected for this export."],
+          [massUnit.label, "Annual footprint mass unit selected for this export."],
+          ["MJ", "Megajoule of finished fuel energy (lower heating value basis)."],
+          ["gCO2e", "Grams of carbon dioxide equivalent using 100-year global warming potentials."],
+          ["Gross emissions", "Sum of all positive lifecycle emission line items before credits."],
+          ["Credits applied", "Co-product and avoided-emission credits subtracted from gross emissions."],
+          ["Benchmark", "The regulatory program's comparison carbon intensity for this fuel type."],
+        ],
+      },
+      {
+        title: "Lifecycle sections",
+        header: ["Section", "Covers"],
+        rows: [
+          ["Feedstock production", "Cultivation, fertiliser, collection, rendering and other feedstock supply emissions."],
+          ["Land use change", "Amortised direct and indirect land use change emissions where applied."],
+          ["Transportation", "Feedstock and intermediate movement by truck, rail, barge, ship or pipeline."],
+          ["Process energy", "Electricity, natural gas, propane, diesel, steam, hydrogen and other conversion energy."],
+          ["Chemicals and fugitive emissions", "Process chemicals, catalysts, hydrogen inputs and fugitive/venting losses."],
+          ["Co-products and avoided emissions", "Credits from co-products, exported power and displaced products."],
+          ["Fuel distribution", "Finished fuel movement and storage to the blending or dispensing point."],
+          ["Tailpipe and end use", "Combustion or end-use emissions for the selected end-use mode."],
+        ],
+      },
+      {
+        title: "References",
+        header: ["Source"],
+        rows: [
+          ["Argonne National Laboratory GREET model documentation"],
+          ["CARB CA-GREET and LCFS certified pathway summaries"],
+          ["EU RED II / RED III Annex V typical and default values"],
+          ["Program guidance: Oregon CFP, Washington CFS, Canada CFR, UK RTFO, US RFS, RenovaBio, CORSIA, FuelEU Maritime"],
+          ["Indicative results for information only — not a certified pathway CI score."],
+        ],
+      },
+    ];
 
     return {
       title: `Carbon intensity calculation — ${result.pathway.label}`,
       filename: `ci-calculation-${result.pathway.id}`,
-      header: [
-        "Lifecycle section",
-        "Item",
-        "Detail",
-        `Value (${ciUnit.label})`,
-        "Unit / note",
-        `Annual (${massUnit.label}) / source`,
-      ],
-      rows,
-      note: `Electricity region: ${regionLabel}. Annual footprint unit: ${massUnit.label}. Indicative results, not a certified pathway CI score.`,
-      sources: [
-        "Argonne National Laboratory GREET model documentation",
-        "CARB CA-GREET and LCFS certified pathway summaries",
-        "EU RED II / RED III Annex V typical and default values",
-        "Program guidance: Oregon CFP, Washington CFS, Canada CFR, UK RTFO, US RFS, RenovaBio, CORSIA, FuelEU Maritime",
+      note: `Electricity region: ${regionLabel}. Indicative results, not a certified pathway CI score.`,
+      sheets: [
+        {
+          name: "Calculation",
+          intro: "Lifecycle carbon intensity, section by section.",
+          sections: calcSections,
+          columnWidths: [42, 46, 18, 16, 20],
+        },
+        {
+          name: "Emission factors",
+          intro: "Background factors applied in this calculation.",
+          sections: factorSections,
+          columnWidths: [40, 46, 16, 22, 48],
+        },
+        { name: "Keys", sections: keySections, columnWidths: [34, 90] },
       ],
     };
   };
+
 
   return (
     <div className="space-y-4">
