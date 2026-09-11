@@ -15,6 +15,15 @@ export type SheetSpec = {
   intro?: string;
   sections: SheetSection[];
   columnWidths?: number[];
+  charts?: WorkbookChart[];
+};
+
+export type WorkbookChart = {
+  title: string;
+  kind: "contribution" | "comparison";
+  categories: string[];
+  series: { name: string; values: number[]; color: string }[];
+  unit: string;
 };
 
 export type WorkbookExport = {
@@ -33,6 +42,93 @@ async function logoBuffer(): Promise<ArrayBuffer | null> {
     return null;
   }
 }
+
+const chartImage = (chart: WorkbookChart) => {
+  const width = 1200;
+  const height = 600;
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+
+  const plot = { left: 92, top: 92, right: 1160, bottom: 480 };
+  const values = chart.series.flatMap((series) => series.values);
+  const rawMin = Math.min(0, ...values);
+  const rawMax = Math.max(0, ...values);
+  const span = Math.max(rawMax - rawMin, 1);
+  const min = rawMin < 0 ? rawMin - span * 0.08 : 0;
+  const max = rawMax + span * 0.12;
+  const y = (value: number) => plot.bottom - ((value - min) / (max - min)) * (plot.bottom - plot.top);
+  const zeroY = y(0);
+
+  ctx.fillStyle = "#FFFFFF";
+  ctx.fillRect(0, 0, width, height);
+  ctx.fillStyle = "#0B1F3A";
+  ctx.font = "bold 28px Arial";
+  ctx.fillText(chart.title, plot.left, 42);
+  ctx.fillStyle = "#536273";
+  ctx.font = "16px Arial";
+  ctx.fillText(chart.unit, plot.left, 70);
+
+  ctx.font = "14px Arial";
+  for (let i = 0; i <= 4; i += 1) {
+    const value = min + ((max - min) * i) / 4;
+    const lineY = y(value);
+    ctx.strokeStyle = "#DDE3E8";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(plot.left, lineY);
+    ctx.lineTo(plot.right, lineY);
+    ctx.stroke();
+    ctx.fillStyle = "#536273";
+    ctx.textAlign = "right";
+    ctx.fillText(value.toFixed(1), plot.left - 12, lineY + 5);
+  }
+  ctx.strokeStyle = "#0B1F3A";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(plot.left, zeroY);
+  ctx.lineTo(plot.right, zeroY);
+  ctx.stroke();
+
+  const groupWidth = (plot.right - plot.left) / Math.max(chart.categories.length, 1);
+  const barWidth = Math.min(38, (groupWidth * 0.72) / Math.max(chart.series.length, 1));
+  chart.categories.forEach((category, categoryIndex) => {
+    const center = plot.left + groupWidth * (categoryIndex + 0.5);
+    chart.series.forEach((series, seriesIndex) => {
+      const value = series.values[categoryIndex] ?? 0;
+      const barX = center + (seriesIndex - (chart.series.length - 1) / 2) * barWidth - barWidth * 0.42;
+      const valueY = y(value);
+      ctx.fillStyle = series.color;
+      ctx.fillRect(barX, Math.min(valueY, zeroY), barWidth * 0.84, Math.max(Math.abs(zeroY - valueY), 2));
+      ctx.fillStyle = value < 0 ? "#B91C1C" : "#0B1F3A";
+      ctx.font = "bold 12px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText(value.toFixed(1), barX + barWidth * 0.42, value < 0 ? valueY + 17 : valueY - 7);
+    });
+    ctx.save();
+    ctx.translate(center, plot.bottom + 18);
+    ctx.rotate(-Math.PI / 5);
+    ctx.fillStyle = "#263746";
+    ctx.font = "12px Arial";
+    ctx.textAlign = "right";
+    ctx.fillText(category, 0, 0);
+    ctx.restore();
+  });
+
+  let legendX = plot.left;
+  chart.series.forEach((series) => {
+    ctx.fillStyle = series.color;
+    ctx.fillRect(legendX, 555, 16, 16);
+    ctx.fillStyle = "#263746";
+    ctx.font = "14px Arial";
+    ctx.textAlign = "left";
+    ctx.fillText(series.name, legendX + 23, 568);
+    legendX += ctx.measureText(series.name).width + 64;
+  });
+  return canvas.toDataURL("image/png");
+};
 
 /** Multi-sheet .xlsx export with the site logo embedded on every sheet. */
 export async function downloadExcelWorkbook(spec: WorkbookExport) {
@@ -92,6 +188,24 @@ export async function downloadExcelWorkbook(spec: WorkbookExport) {
           c.font = { name: "Arial", size: 10 };
           c.alignment = { vertical: "top", wrapText: true };
         });
+      }
+      ws.addRow([]);
+    }
+
+    for (const chart of sheet.charts ?? []) {
+      const image = chartImage(chart);
+      if (!image) continue;
+      const titleRow = ws.addRow([chart.title]);
+      titleRow.getCell(1).font = { name: "Arial", bold: true, size: 12, color: { argb: "FFFFFFFF" } };
+      titleRow.getCell(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: NAVY } };
+      const chartStartRow = ws.rowCount + 1;
+      const chartId = wb.addImage({ base64: image, extension: "png" });
+      ws.addImage(chartId, {
+        tl: { col: 0, row: chartStartRow - 1 },
+        ext: { width: 900, height: 450 },
+      });
+      for (let row = chartStartRow; row < chartStartRow + 24; row += 1) {
+        ws.getRow(row).height = 15;
       }
       ws.addRow([]);
     }
