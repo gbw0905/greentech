@@ -560,11 +560,19 @@ export function PathwayCiBuilder() {
 
     calcSections.push({
       title: "Regulatory program comparison",
-      header: ["Program", "Jurisdiction", "Benchmark", "Saving vs benchmark", "Annual credits (t)"],
+      header: [
+        "Program",
+        "Jurisdiction",
+        "Benchmark",
+        "Benchmark basis",
+        "Saving vs benchmark",
+        "Annual credits (t)",
+      ],
       rows: result.programs.map((p) => [
         p.program.label,
         p.program.jurisdiction,
         p.benchmark == null ? "Fuel not covered" : `${ci(p.benchmark)} ${ciUnit.label}`,
+        p.program.benchmarkBasis,
         p.savingPct == null ? "—" : `${p.savingPct.toFixed(1)}%`,
         p.annualCreditsTonnes == null || !p.program.creditMarket
           ? "—"
@@ -603,7 +611,9 @@ export function PathwayCiBuilder() {
           ["gCO2e", "Grams of carbon dioxide equivalent using 100-year global warming potentials."],
           ["Gross emissions", "Sum of all positive lifecycle emission line items before credits."],
           ["Credits applied", "Co-product and avoided-emission credits subtracted from gross emissions."],
-          ["Benchmark", "The regulatory program's comparison carbon intensity for this fuel type."],
+          ["Benchmark", "The comparison carbon intensity each program uses for this fuel type: a fossil comparator in threshold programs and an annual compliance standard or baseline in credit programs."],
+          ["Saving vs benchmark", "(Benchmark − pathway CI) ÷ benchmark, always measured against the unadjusted benchmark."],
+          ["EER", "Energy economy ratio: applied to the benchmark only when calculating credits in credit-market programs."],
         ],
       },
       {
@@ -1438,8 +1448,18 @@ export function PathwayCiBuilder() {
                   <div className="font-semibold text-foreground">{p.program.label}</div>
                   <div className="text-[0.7rem] text-muted-foreground">{p.program.jurisdiction}</div>
                 </td>
-                <td className="py-2 text-right font-mono tabular-nums">
-                  {p.benchmark == null ? "—" : ci(p.benchmark)}
+                <td className="py-2 text-right">
+                  <div className="font-mono tabular-nums">
+                    {p.benchmark == null ? "—" : ci(p.benchmark)}
+                  </div>
+                  {p.benchmark != null && (
+                    <div className="text-[0.65rem] leading-tight text-muted-foreground">
+                      {p.program.benchmarkBasis}
+                      {p.program.creditMarket && p.eer !== 1 && p.adjustedBenchmark != null
+                        ? ` · ${ci(p.adjustedBenchmark)} after EER`
+                        : ""}
+                    </div>
+                  )}
                 </td>
                 <td className="py-2 text-right font-mono tabular-nums">{p.eer.toFixed(1)}</td>
                 <td className="py-2 text-right font-mono tabular-nums">
