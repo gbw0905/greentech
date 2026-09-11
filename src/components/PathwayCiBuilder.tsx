@@ -817,7 +817,8 @@ export function PathwayCiBuilder() {
             );
           })}
         </div>
-      </section>
+      </CollapsibleSection>
+
 
       <DetailSection
         title="Chemicals and fugitive emissions"
