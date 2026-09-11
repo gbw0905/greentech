@@ -33,7 +33,7 @@ import {
   type TransportModeId,
 } from "@/lib/ci-model";
 import { ExportExcelButton } from "@/components/ExportExcelButton";
-import type { SheetSection, WorkbookExport } from "@/lib/excel-workbook";
+import type { SheetSection, WorkbookChart, WorkbookExport } from "@/lib/excel-workbook";
 
 
 
@@ -581,6 +581,45 @@ export function PathwayCiBuilder() {
     });
 
     const factors = backgroundFactors();
+    const contributionValues = EXPORT_SECTIONS.map((section) =>
+      result.lineItems
+        .filter((item) => exportSectionFor(item) === section)
+        .reduce((sum, item) => sum + item.gPerMj * ciUnit.factor, 0),
+    );
+    const comparisonPrograms = result.programs.filter((program) => program.benchmark != null);
+    const calcCharts: WorkbookChart[] = [
+      {
+        title: "Lifecycle contribution by emission source",
+        kind: "contribution",
+        categories: [...EXPORT_SECTIONS],
+        series: [
+          {
+            name: "Contribution",
+            values: contributionValues,
+            color: "#15803D",
+          },
+        ],
+        unit: ciUnit.label,
+      },
+      {
+        title: "Regulatory program comparison",
+        kind: "comparison",
+        categories: comparisonPrograms.map((program) => program.program.label),
+        series: [
+          {
+            name: "Pathway CI",
+            values: comparisonPrograms.map(() => result.ciTotal * ciUnit.factor),
+            color: "#15803D",
+          },
+          {
+            name: "Program benchmark",
+            values: comparisonPrograms.map((program) => (program.benchmark ?? 0) * ciUnit.factor),
+            color: "#1D4ED8",
+          },
+        ],
+        unit: ciUnit.label,
+      },
+    ];
     const factorGroups = Array.from(new Set(factors.map((f) => f.group)));
     const factorSections: SheetSection[] = factorGroups.map((group) => ({
       title: group,
@@ -653,6 +692,7 @@ export function PathwayCiBuilder() {
           intro: "Lifecycle carbon intensity, section by section.",
           sections: calcSections,
           columnWidths: [42, 46, 18, 16, 20],
+          charts: calcCharts,
         },
         {
           name: "Emission factors",
