@@ -1082,7 +1082,7 @@ export function ChartPanel({
   footnote,
   filters,
   actions,
-  assistant,
+  
   children,
 }: {
   icon: LucideIcon;
@@ -1105,8 +1105,6 @@ export function ChartPanel({
   footnote?: string;
   /** Optional buttons (e.g. export) rendered in the header. */
   actions?: React.ReactNode;
-  /** Optional AI summary assistant rendered under the chart. */
-  assistant?: React.ReactNode;
   /** Optional filter/search bar rendered between the header and the chart. */
   filters?: React.ReactNode;
   children: React.ReactNode;
@@ -1125,7 +1123,7 @@ export function ChartPanel({
         {status ? <span className="label-mono text-muted-foreground">{status}</span> : null}
       </div>
 
-      {metricOptions || limitOptions || viewOptions || actions || filters || assistant ? (
+      {metricOptions || limitOptions || viewOptions || actions || filters ? (
         <div className="mb-3 flex flex-col gap-3 rounded-md border border-border bg-surface-2/60 p-3">
           <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-2 xl:flex xl:flex-wrap">
           {filters
@@ -1185,18 +1183,13 @@ export function ChartPanel({
             </label>
           ) : null}
           </div>
-          {actions || assistant ? (
+          {actions ? (
             <div className="grid grid-cols-2 items-center gap-2 border-t border-border/70 pt-3 sm:flex sm:justify-end [&>button]:h-10 [&>button]:w-full [&>button]:justify-center sm:[&>button]:w-auto">
               <span className="label-mono col-span-2 mr-auto text-muted-foreground">Download &amp; share</span>
               {actions
                 ? isValidElement(actions)
                   ? cloneElement(actions as ReactElement<any>, { portalTarget: panelNode })
                   : actions
-                : null}
-              {assistant
-                ? isValidElement(assistant)
-                  ? cloneElement(assistant as ReactElement<any>, { portalTarget: panelNode })
-                  : assistant
                 : null}
             </div>
           ) : null}
