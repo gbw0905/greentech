@@ -71,6 +71,7 @@ const TONE_COLOR: Record<SectionTone, string> = {
   green: "var(--tracker-green)",
   blue: "var(--tracker-blue)",
 };
+const ENERGY_TONES: SectionTone[] = ["red", "green", "blue"];
 
 const CATEGORY_ORDER: LineItem["category"][] = [
   "Feedstock and land",
