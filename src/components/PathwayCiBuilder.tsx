@@ -1438,8 +1438,18 @@ export function PathwayCiBuilder() {
                   <div className="font-semibold text-foreground">{p.program.label}</div>
                   <div className="text-[0.7rem] text-muted-foreground">{p.program.jurisdiction}</div>
                 </td>
-                <td className="py-2 text-right font-mono tabular-nums">
-                  {p.benchmark == null ? "—" : ci(p.benchmark)}
+                <td className="py-2 text-right">
+                  <div className="font-mono tabular-nums">
+                    {p.benchmark == null ? "—" : ci(p.benchmark)}
+                  </div>
+                  {p.benchmark != null && (
+                    <div className="text-[0.65rem] leading-tight text-muted-foreground">
+                      {p.program.benchmarkBasis}
+                      {p.program.creditMarket && p.eer !== 1 && p.adjustedBenchmark != null
+                        ? ` · ${ci(p.adjustedBenchmark)} after EER`
+                        : ""}
+                    </div>
+                  )}
                 </td>
                 <td className="py-2 text-right font-mono tabular-nums">{p.eer.toFixed(1)}</td>
                 <td className="py-2 text-right font-mono tabular-nums">
