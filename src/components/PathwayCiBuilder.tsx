@@ -611,7 +611,9 @@ export function PathwayCiBuilder() {
           ["gCO2e", "Grams of carbon dioxide equivalent using 100-year global warming potentials."],
           ["Gross emissions", "Sum of all positive lifecycle emission line items before credits."],
           ["Credits applied", "Co-product and avoided-emission credits subtracted from gross emissions."],
-          ["Benchmark", "The regulatory program's comparison carbon intensity for this fuel type."],
+          ["Benchmark", "The comparison carbon intensity each program uses for this fuel type: a fossil comparator in threshold programs and an annual compliance standard or baseline in credit programs."],
+          ["Saving vs benchmark", "(Benchmark − pathway CI) ÷ benchmark, always measured against the unadjusted benchmark."],
+          ["EER", "Energy economy ratio: applied to the benchmark only when calculating credits in credit-market programs."],
         ],
       },
       {
