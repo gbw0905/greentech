@@ -593,16 +593,8 @@ export function PathwayCiBuilder() {
       </section>
 
 
-      <CollapsibleSection
-        title="Process energy sources"
-        description="One parameter per row — choose the supply, the amount and the unit."
-        tone="red"
-        total={`${ci(result.lineItems.filter((l) => l.category === "Process energy").reduce((a, l) => a + l.gPerMj, 0))} ${ciUnit.label}`}
-        totalLabel="Process energy"
-      >
-
-
       <DetailSection
+
         title="Feedstock production"
         description="Cultivation, fertiliser and field N2O, collection, rendering and drying, per tonne of feedstock."
         enabled={detail.feedstockProduction.enabled}
