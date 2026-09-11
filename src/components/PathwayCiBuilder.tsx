@@ -561,6 +561,18 @@ export function PathwayCiBuilder() {
       ]);
     }
 
+    for (const f of backgroundFactors()) {
+      rows.push([
+        `Background emission factors — ${f.group}`,
+        f.item,
+        f.detail,
+        String(f.value),
+        f.unit,
+        f.source,
+      ]);
+    }
+
+
     return {
       title: `Carbon intensity calculation — ${result.pathway.label}`,
       filename: `ci-calculation-${result.pathway.id}`,
