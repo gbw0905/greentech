@@ -32,8 +32,9 @@ import {
   type TransportLeg,
   type TransportModeId,
 } from "@/lib/ci-model";
-import { ExportCsvButton } from "@/components/ExportCsvButton";
-import type { BrandedExport } from "@/lib/branded-export";
+import { ExportExcelButton } from "@/components/ExportExcelButton";
+import type { SheetSection, WorkbookExport } from "@/lib/excel-workbook";
+
 
 
 const num = (v: number, d = 0) =>
