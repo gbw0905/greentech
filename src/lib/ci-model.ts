@@ -1104,6 +1104,8 @@ export interface LineItem {
 export interface ProgramResult {
   program: ProgramDef;
   benchmark: number | null;
+  /** Benchmark after the energy economy ratio is applied (credit programs only). */
+  adjustedBenchmark: number | null;
   eer: number;
   savingPct: number | null;
   meetsThreshold: boolean | null;
