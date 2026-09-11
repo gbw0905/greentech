@@ -1461,6 +1461,64 @@ export function PathwayCiBuilder() {
             Regulatory program comparison
           </h2>
         </div>
+        {(() => {
+          const rows = result.programs.filter((p) => p.benchmark != null);
+          if (rows.length === 0) return null;
+          const scale = Math.max(
+            ...rows.map((p) => p.benchmark as number),
+            result.totalCi,
+            0.001,
+          );
+          const PLOT = 200;
+          return (
+            <div className="mb-5 overflow-x-auto border-b border-border pb-4">
+              <div className="flex min-w-full items-end gap-3 sm:gap-4" style={{ height: PLOT + 10 }}>
+                <div className="flex min-w-0 flex-1 flex-col items-center justify-end gap-2">
+                  <span className="font-mono text-xs font-bold tabular-nums text-foreground">
+                    {ci(result.totalCi)}
+                  </span>
+                  <div
+                    className="w-full max-w-20 rounded-t-md"
+                    style={{
+                      height: `${(Math.max(result.totalCi, 0) / scale) * PLOT}px`,
+                      background: TONE_COLOR.green,
+                    }}
+                    title={`This pathway: ${ci(result.totalCi)} ${ciUnit.label}`}
+                  />
+                  <span className="text-center text-[0.7rem] leading-tight font-semibold text-foreground">
+                    This pathway
+                  </span>
+                </div>
+                {rows.map((p) => (
+                  <div
+                    key={p.program.id}
+                    className="flex min-w-0 flex-1 flex-col items-center justify-end gap-2"
+                  >
+                    <span className="font-mono text-xs font-bold tabular-nums text-foreground">
+                      {ci(p.benchmark as number)}
+                    </span>
+                    <div
+                      className="w-full max-w-20 rounded-t-md"
+                      style={{
+                        height: `${((p.benchmark as number) / scale) * PLOT}px`,
+                        background: (p.gapPerMj ?? 0) >= 0 ? TONE_COLOR.blue : TONE_COLOR.red,
+                        opacity: 0.85,
+                      }}
+                      title={`${p.program.label}: ${ci(p.benchmark as number)} ${ciUnit.label} — ${p.program.benchmarkBasis}`}
+                    />
+                    <span className="text-center text-[0.7rem] leading-tight text-muted-foreground">
+                      {p.program.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-2 text-[0.7rem] text-muted-foreground">
+                Each column is that program&apos;s benchmark in {ciUnit.label}; blue means this
+                pathway sits below the benchmark, red means above it.
+              </p>
+            </div>
+          );
+        })()}
         <table className="w-full min-w-[46rem] text-sm">
           <thead>
             <tr className="border-b border-border text-left">
