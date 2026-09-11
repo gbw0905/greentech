@@ -1170,7 +1170,7 @@ export function PathwayCiBuilder() {
             return (
               <>
                 <div className="overflow-x-auto">
-                  <div className="flex min-w-[520px] items-end gap-4" style={{ height: 260 }}>
+                  <div className="flex min-w-full items-end gap-3 sm:gap-4" style={{ height: 260 }}>
                     {cols.map((c) => {
                       const negative = c.total < 0;
                       return (
