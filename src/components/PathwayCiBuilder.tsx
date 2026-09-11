@@ -5,13 +5,12 @@ import {
   CI_UNITS,
   CI_UNIT_BY_ID,
   COPRODUCT_PRESETS,
-  DIRECT_FIELDS,
+  backgroundFactors,
   ELECTRICITY_REGIONS,
   END_USE_MODES,
   
   FEEDSTOCK_BY_ID,
   MASS_UNITS,
-  MODULE_TO_DIRECT,
   PATHWAYS,
   SOURCES,
   SOURCE_VARIANTS,
@@ -25,7 +24,6 @@ import {
   type CoProductItem,
   type DetailModuleKey,
   type DetailModules,
-  type DirectTerms,
   type ElectricityRegionId,
   type EndUseModeId,
   type LineItem,
@@ -53,7 +51,6 @@ type SectionTone = "red" | "green" | "blue";
 const SECTION_TONE: Record<string, SectionTone> = {
   "Fuel pathway": "green",
   "Process energy sources": "red",
-  "Summary emission terms (gCO2e/MJ)": "red",
   "Feedstock production": "green",
   "Feedstock transport": "blue",
   "Chemicals and fugitive emissions": "red",
@@ -155,6 +152,62 @@ function Num({
     </Field>
   );
 }
+
+/** Same minimise/expand behaviour as DetailSection, without the enable toggle. */
+function CollapsibleSection({
+  title,
+  description,
+  total,
+  totalLabel,
+  children,
+  tone = "blue",
+}: {
+  title: string;
+  description: string;
+  total: string;
+  totalLabel: string;
+  children: React.ReactNode;
+  tone?: SectionTone;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <section className="glass-panel border-l-4 p-5" style={{ borderLeftColor: TONE_COLOR[tone] }}>
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-3">
+        <div className="flex min-w-0 items-start gap-2.5">
+          <span
+            className="mt-2 inline-block size-2.5 shrink-0 rounded-full"
+            style={{ background: TONE_COLOR[tone] }}
+            aria-hidden="true"
+          />
+          <div className="min-w-0">
+            <h2 className="font-display text-lg font-extrabold text-foreground">{title}</h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="text-right">
+            <span className="label-mono block text-muted-foreground">{totalLabel}</span>
+            <span className="font-display text-base font-extrabold tabular-nums text-foreground">
+              {total}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+            className="label-mono inline-flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3 font-bold text-foreground hover:border-accent"
+          >
+            {open ? "Hide" : "Edit"}
+            <ChevronDown className={`size-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
+          </button>
+        </div>
+      </div>
+      {open ? <div className="mt-4 space-y-4">{children}</div> : null}
+    </section>
+  );
+}
+
+
 
 function DetailSection({
   title,
@@ -413,8 +466,6 @@ export function PathwayCiBuilder() {
   const ci = (g: number) => (g * ciUnit.factor).toFixed(ciUnit.decimals);
 
   const selectPathway = (id: string) => setInputs(scenarioFromPathway(id, region));
-  const setDirect = (k: keyof DirectTerms, v: number) =>
-    setInputs((p) => ({ ...p, direct: { ...p.direct, [k]: v }, feedstockId: "custom" }));
   const setEnergy = (k: SourceId, v: number) =>
     setInputs((p) => ({ ...p, energy: { ...p.energy, [k]: v } }));
   const setVariant = (k: SourceId, v: string) =>
@@ -427,10 +478,6 @@ export function PathwayCiBuilder() {
       return { ...p, detail: { ...base, [key]: { ...base[key], ...patch } } };
     });
   const moduleTotal = (key: DetailModuleKey) => `${ci(result.moduleTotals[key] ?? 0)} ${ciUnit.label}`;
-  const moduleOwns = (k: keyof DirectTerms) =>
-    (Object.keys(MODULE_TO_DIRECT) as DetailModuleKey[]).some(
-      (m) => MODULE_TO_DIRECT[m] === k && detail[m].enabled,
-    );
 
   const groups = Array.from(new Set(PATHWAYS.map((p) => p.group)));
   const feedstock = FEEDSTOCK_BY_ID[inputs.feedstockId];
@@ -505,6 +552,18 @@ export function PathwayCiBuilder() {
       ]);
     }
 
+    for (const f of backgroundFactors()) {
+      rows.push([
+        `Background emission factors — ${f.group}`,
+        f.item,
+        f.detail,
+        String(f.value),
+        f.unit,
+        f.source,
+      ]);
+    }
+
+
     return {
       title: `Carbon intensity calculation — ${result.pathway.label}`,
       filename: `ci-calculation-${result.pathway.id}`,
@@ -514,7 +573,7 @@ export function PathwayCiBuilder() {
         "Detail",
         `Value (${ciUnit.label})`,
         "Unit / note",
-        `Annual (${massUnit.label})`,
+        `Annual (${massUnit.label}) / source`,
       ],
       rows,
       note: `Electricity region: ${regionLabel}. Annual footprint unit: ${massUnit.label}. Indicative results, not a certified pathway CI score.`,
@@ -593,48 +652,8 @@ export function PathwayCiBuilder() {
       </section>
 
 
-      <section
-        className="glass-panel border-l-4 p-5"
-        style={{ borderLeftColor: TONE_COLOR.red }}
-      >
-        <div className="mb-1 flex items-start gap-2.5">
-          <span
-            className="mt-2 inline-block size-2.5 shrink-0 rounded-full"
-            style={{ background: TONE_COLOR.red }}
-            aria-hidden="true"
-          />
-          <h2 className="font-display text-lg font-extrabold text-foreground">
-            Summary emission terms (gCO2e/MJ)
-          </h2>
-        </div>
-        <p className="mb-3 border-b border-border pb-2 text-xs text-muted-foreground">
-          Quick single-number entry. Any term you build up in the detailed sections below is locked
-          here and replaced by the calculated value.
-        </p>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {DIRECT_FIELDS.map((f) => {
-            const owned = moduleOwns(f.key);
-            return (
-              <Field
-                key={f.key}
-                label={f.label}
-                hint={owned ? "Calculated from the detailed section below" : f.hint}
-              >
-                <input
-                  type="number"
-                  step={0.1}
-                  disabled={owned}
-                  className={`${inputCls} ${owned ? "opacity-50" : ""}`}
-                  value={inputs.direct[f.key]}
-                  onChange={(e) => setDirect(f.key, Number(e.target.value) || 0)}
-                />
-              </Field>
-            );
-          })}
-        </div>
-      </section>
-
       <DetailSection
+
         title="Feedstock production"
         description="Cultivation, fertiliser and field N2O, collection, rendering and drying, per tonne of feedstock."
         enabled={detail.feedstockProduction.enabled}
@@ -758,27 +777,19 @@ export function PathwayCiBuilder() {
         />
       </DetailSection>
 
-      <section
-        className="glass-panel border-l-4 p-5"
-        style={{ borderLeftColor: TONE_COLOR.red }}
+      <CollapsibleSection
+        title="Process energy sources"
+        description="One parameter per row — choose the supply, the amount and the unit."
+        tone="red"
+        totalLabel="Process energy"
+        total={`${ci(
+          result.lineItems
+            .filter((l) => l.category === "Process energy")
+            .reduce((a, l) => a + l.gPerMj, 0),
+        )} ${ciUnit.label}`}
       >
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
-          <div className="flex items-start gap-2.5">
-            <span
-              className="mt-2 inline-block size-2.5 shrink-0 rounded-full"
-              style={{ background: TONE_COLOR.red }}
-              aria-hidden="true"
-            />
-            <h2 className="font-display text-lg font-extrabold text-foreground">
-              Process energy sources
-            </h2>
-          </div>
-          <span className="label-mono text-muted-foreground">
-            One parameter per row — choose the supply, the amount and the unit
-          </span>
-        </div>
-
         <div className="space-y-3">
+
           {SOURCES.map((s, i) => {
             const unitList = UNIT_OPTIONS[s.unit];
             const unitId = units[s.id] ?? unitList[0]!.id;
@@ -857,7 +868,8 @@ export function PathwayCiBuilder() {
             );
           })}
         </div>
-      </section>
+      </CollapsibleSection>
+
 
       <DetailSection
         title="Chemicals and fugitive emissions"

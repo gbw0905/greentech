@@ -2117,3 +2117,152 @@ export function defaultDetailModules(): DetailModules {
     tailpipe: { ...DEFAULT_TAILPIPE },
   };
 }
+
+// --- Background emission factor library -------------------------------------
+// Every background factor the calculator can apply, with the reference it is
+// taken from. Exported so the CSV download documents the full basis of a run.
+
+export interface FactorRow {
+  group: string;
+  item: string;
+  detail: string;
+  value: number;
+  unit: string;
+  source: string;
+}
+
+const SRC = {
+  greet: "Argonne National Laboratory, GREET model (fuel-cycle and material databases)",
+  caGreet: "CARB CA-GREET 3.0 / LCFS certified pathway documentation",
+  red: "EU RED II / RED III Annex V and Annex VI typical and default values",
+  ipcc: "IPCC AR5/AR6 global warming potentials and 2019 Refinement inventory guidance",
+  grid: "IEA Emission Factors, US EPA eGRID and national grid inventories",
+  ecoinvent: "ecoinvent v3 background datasets for chemicals and materials",
+  transport: "GLEC Framework and IMO/EEA transport emission intensity data",
+} as const;
+
+export function backgroundFactors(): FactorRow[] {
+  const rows: FactorRow[] = [];
+
+  for (const r of ELECTRICITY_REGIONS) {
+    rows.push({
+      group: "Electricity grid intensity",
+      item: r.label,
+      detail: "Consumption-basis grid factor",
+      value: r.gPerKwh,
+      unit: "gCO2e/kWh",
+      source: SRC.grid,
+    });
+  }
+
+  for (const s of SOURCES) {
+    for (const v of SOURCE_VARIANTS[s.id] ?? []) {
+      rows.push({
+        group: "Process energy supply",
+        item: `${s.label} — ${v.label}`,
+        detail: s.note,
+        value: v.factor,
+        unit: `gCO2e/${s.unit}`,
+        source: s.id === "electricity" ? SRC.grid : SRC.greet,
+      });
+    }
+  }
+
+  for (const m of TRANSPORT_MODES) {
+    rows.push({
+      group: "Transport modes",
+      item: m.label,
+      detail: "Freight intensity, loaded tonne-km",
+      value: m.gPerTonneKm,
+      unit: "gCO2e/tonne-km",
+      source: SRC.transport,
+    });
+  }
+
+  for (const c of CHEMICAL_PRESETS) {
+    rows.push({
+      group: "Process chemicals and catalysts",
+      item: c.label,
+      detail: "Cradle-to-gate manufacture",
+      value: c.gPerKg,
+      unit: "gCO2e/kg",
+      source: SRC.ecoinvent,
+    });
+  }
+
+  for (const c of COPRODUCT_PRESETS) {
+    rows.push({
+      group: "Co-product displacement credits",
+      item: c.label,
+      detail: "Displaced conventional product",
+      value: c.gPerKg,
+      unit: "gCO2e/kg displaced",
+      source: SRC.greet,
+    });
+  }
+
+  for (const m of END_USE_MODES) {
+    rows.push({
+      group: "Tailpipe and end use",
+      item: `${m.label} — methane`,
+      detail: m.note,
+      value: m.ch4GPerMj,
+      unit: "gCO2e/MJ",
+      source: SRC.ipcc,
+    });
+    rows.push({
+      group: "Tailpipe and end use",
+      item: `${m.label} — nitrous oxide`,
+      detail: m.note,
+      value: m.n2oGPerMj,
+      unit: "gCO2e/MJ",
+      source: SRC.ipcc,
+    });
+  }
+
+  const detailRows: [string, string, number, string, string][] = [
+    ["Diesel fuel", "Combustion plus upstream", DETAIL_FACTORS.dieselPerLitre, "gCO2e/litre", SRC.greet],
+    ["Gasoline fuel", "Combustion plus upstream", DETAIL_FACTORS.gasolinePerLitre, "gCO2e/litre", SRC.greet],
+    ["Natural gas", "Combustion plus upstream", DETAIL_FACTORS.naturalGasPerMj, "gCO2e/MJ", SRC.greet],
+    ["Nitrogen fertiliser", "Manufacture of applied N", DETAIL_FACTORS.nitrogenPerKg, "gCO2e/kg N", SRC.ecoinvent],
+    ["Phosphate fertiliser", "Manufacture, as P2O5", DETAIL_FACTORS.phosphatePerKg, "gCO2e/kg", SRC.ecoinvent],
+    ["Potash fertiliser", "Manufacture, as K2O", DETAIL_FACTORS.potashPerKg, "gCO2e/kg", SRC.ecoinvent],
+    ["Agricultural lime", "Manufacture and field CO2", DETAIL_FACTORS.limePerKg, "gCO2e/kg", SRC.ipcc],
+    ["Pesticides", "Cradle-to-gate manufacture", DETAIL_FACTORS.pesticidePerKg, "gCO2e/kg", SRC.ecoinvent],
+    ["Seed", "Seed production and treatment", DETAIL_FACTORS.seedPerKg, "gCO2e/kg", SRC.greet],
+    ["Methane GWP", "100-year global warming potential", DETAIL_FACTORS.ch4Gwp, "gCO2e/g CH4", SRC.ipcc],
+    ["Nitrous oxide GWP", "100-year global warming potential", DETAIL_FACTORS.n2oGwp, "gCO2e/g N2O", SRC.ipcc],
+    ["Fuel combustion CO2", "Default liquid fuel carbon content", DETAIL_FACTORS.combustionCo2PerMj, "gCO2e/MJ", SRC.caGreet],
+  ];
+  for (const [item, detail, value, unit, source] of detailRows) {
+    rows.push({ group: "Background material and GWP factors", item, detail, value, unit, source });
+  }
+
+  for (const f of FEEDSTOCKS) {
+    if (f.id === "custom") continue;
+    rows.push({
+      group: "Feedstock default terms",
+      item: f.label,
+      detail: `${f.note} (land use change ${f.landUseChange}, transport ${f.feedstockTransport} gCO2e/MJ)`,
+      value: f.feedstock,
+      unit: "gCO2e/MJ feedstock supply",
+      source: SRC.red,
+    });
+  }
+
+  for (const p of PROGRAMS) {
+    for (const [fuel, benchmark] of Object.entries(p.benchmarks)) {
+      if (benchmark == null) continue;
+      rows.push({
+        group: "Regulatory benchmarks",
+        item: `${p.label} — ${fuel}`,
+        detail: p.note,
+        value: benchmark as number,
+        unit: "gCO2e/MJ benchmark",
+        source: `${p.jurisdiction} program documentation`,
+      });
+    }
+  }
+
+  return rows;
+}
