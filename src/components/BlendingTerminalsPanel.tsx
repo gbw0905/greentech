@@ -22,7 +22,6 @@ import { TERMINAL_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/lib/market-caps";
-import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 
 type Terminal = {
   name: string;
@@ -342,29 +341,7 @@ export function BlendingTerminalsPanel() {
           />
         }
         footnote={`Indicative blending throughput and terminal counts from operator annual reports, terminal registries and national fuel-obligation filings. Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
-        assistant={
-          <ChartSummaryAssistant
-            disabled={rows.length === 0}
-            build={() => ({
-              panel: TITLE,
-              measureLabel: metric.label,
-              unit: metric.unit,
-              filterLabel: [f.a || "All countries", f.query ? `search "${f.query}"` : ""]
-                .filter(Boolean)
-                .join(" · "),
-              shown: rows.length,
-              total: TERMINALS.length,
-              rows: rows.map((t) => ({
-                label: t.name,
-                sub: `${t.country} · ${t.note}`,
-                value: valueOf(t),
-                price: get(TERMINAL_TICKERS[t.name])?.price,
-                changePct: get(TERMINAL_TICKERS[t.name])?.changePct,
-              })),
-            })}
-          />
-        }
-      >
+              >
         {ghgEmpty ? (
           <GhgEmptyNotice />
         ) : rows.length === 0 ? (

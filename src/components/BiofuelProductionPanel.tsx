@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { ChartMap } from "@/components/ChartMap";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
-import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 import { Fuel } from "lucide-react";
 import {
   ChartBars,
@@ -428,29 +427,7 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
           ? `Scatter plot: X = ${axes.x.metric.label}, Y = ${metric.label}, bubble size = ${axes.size.label}. ${axes.x.help} Approximate site counts from company retail disclosures and national blending programmes. Click any bubble to open the latest news for that network. ${MARKET_CAP_NOTE}`
           : `Approximate site counts from company retail disclosures and national blending programmes. Click any row to open the latest news for that network. ${MARKET_CAP_NOTE}`
       }
-      assistant={
-        <ChartSummaryAssistant
-          disabled={stations.length === 0}
-          build={() => ({
-            panel: "Top global fuel stations selling biofuels",
-            measureLabel: metric.label,
-            unit: metric.unit,
-            filterLabel: [f.a || "All countries", f.b || "All fuels", f.query ? `search "${f.query}"` : ""]
-              .filter(Boolean)
-              .join(" · "),
-            shown: stations.length,
-            total: base.length,
-            rows: stations.map((s) => ({
-              label: s.name,
-              sub: `${s.country} · ${s.note}`,
-              value: valueOf(s),
-              price: get(STATION_TICKERS[s.name])?.price,
-              changePct: get(STATION_TICKERS[s.name])?.changePct,
-            })),
-          })}
-        />
-      }
-    >
+          >
       {ghgEmpty ? (
         <GhgEmptyNotice />
       ) : stations.length === 0 ? (

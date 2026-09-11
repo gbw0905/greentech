@@ -22,7 +22,6 @@ import { UCO_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/lib/market-caps";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
-import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 
 type UcoSupplier = {
   name: string;
@@ -341,29 +340,7 @@ export function UcoSuppliersPanel() {
         />
       }
       footnote={`Indicative annual used cooking oil collection volumes from company reports, ISCC certification registers and EU Annex IX / US RFS feedstock filings. Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
-      assistant={
-        <ChartSummaryAssistant
-          disabled={rows.length === 0}
-          build={() => ({
-            panel: TITLE,
-            measureLabel: metric.label,
-            unit: metric.unit,
-            filterLabel: [f.a || "All countries", f.query ? `search "${f.query}"` : ""]
-              .filter(Boolean)
-              .join(" · "),
-            shown: rows.length,
-            total: SUPPLIERS.length,
-            rows: rows.map((s) => ({
-              label: s.name,
-              sub: `${s.country} · ${s.note}`,
-              value: valueOf(s),
-              price: get(UCO_TICKERS[s.name])?.price,
-              changePct: get(UCO_TICKERS[s.name])?.changePct,
-            })),
-          })}
-        />
-      }
-    >
+          >
       {ghgEmpty ? (
         <GhgEmptyNotice />
       ) : rows.length === 0 ? (

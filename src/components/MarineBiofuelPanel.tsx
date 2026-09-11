@@ -22,7 +22,6 @@ import { MARINE_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/lib/market-caps";
-import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 
 type MarineRole = "Supplier" | "User";
 
@@ -362,29 +361,7 @@ export function MarineBiofuelPanel() {
           />
         }
         footnote={`Indicative annual marine biofuel volumes from bunker supplier disclosures, MPA Singapore and Port of Rotterdam bunker statistics, and shipping-line sustainability reports. Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
-        assistant={
-          <ChartSummaryAssistant
-            disabled={rows.length === 0}
-            build={() => ({
-              panel: TITLE,
-              measureLabel: metric.label,
-              unit: metric.unit,
-              filterLabel: [f.b || "Suppliers & users", f.a || "All countries", f.query ? `search "${f.query}"` : ""]
-                .filter(Boolean)
-                .join(" · "),
-              shown: rows.length,
-              total: ENTITIES.length,
-              rows: rows.map((e) => ({
-                label: e.name,
-                sub: `${e.role} · ${e.country} · ${e.note}`,
-                value: valueOf(e),
-                price: get(MARINE_TICKERS[e.name])?.price,
-                changePct: get(MARINE_TICKERS[e.name])?.changePct,
-              })),
-            })}
-          />
-        }
-      >
+              >
         {ghgEmpty ? (
           <GhgEmptyNotice />
         ) : rows.length === 0 ? (

@@ -20,7 +20,6 @@ import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
-import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/lib/market-caps";
 import { HYDROGEN_TICKERS } from "@/lib/entity-tickers";
 
@@ -345,32 +344,7 @@ export function RenewableHydrogenPanel() {
           />
         }
         footnote={`Indicative operating and sanctioned capacities compiled from company disclosures, the IEA Hydrogen Projects Database and national hydrogen strategies. Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
-        assistant={
-          <ChartSummaryAssistant
-            disabled={rows.length === 0}
-            build={() => ({
-              panel: TITLE,
-              measureLabel: metric.label,
-              unit: metric.unit,
-              filterLabel: [
-                f.a || "All countries",
-                f.b || "All routes",
-                f.query ? `search "${f.query}"` : "",
-              ]
-                .filter(Boolean)
-                .join(" · "),
-              shown: rows.length,
-              total: PRODUCERS.length,
-              rows: rows.map((p) => ({
-                label: p.name,
-                sub: `${p.country} · ${p.route} · ${p.note}`,
-                value: valueOf(p),
-                price: get(HYDROGEN_TICKERS[p.name])?.price,
-              })),
-            })}
-          />
-        }
-      >
+              >
         {ghgEmpty ? (
           <GhgEmptyNotice />
         ) : rows.length === 0 ? (

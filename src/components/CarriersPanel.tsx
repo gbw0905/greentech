@@ -22,7 +22,6 @@ import { CARRIER_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/lib/market-caps";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
-import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 
 type Carrier = {
   name: string;
@@ -363,29 +362,7 @@ function CarrierChart({
         />
       }
       footnote={`${footnote} ${MARKET_CAP_NOTE}`}
-      assistant={
-        <ChartSummaryAssistant
-          disabled={rows.length === 0}
-          build={() => ({
-            panel: title,
-            measureLabel: metric.label,
-            unit: metric.unit,
-            filterLabel: [f.a || "All countries", f.query ? `search "${f.query}"` : ""]
-              .filter(Boolean)
-              .join(" · "),
-            shown: rows.length,
-            total: data.length,
-            rows: rows.map((c) => ({
-              label: c.name,
-              sub: `${c.country} · ${c.note}`,
-              value: valueOf(c),
-              price: get(CARRIER_TICKERS[c.name])?.price,
-              changePct: get(CARRIER_TICKERS[c.name])?.changePct,
-            })),
-          })}
-        />
-      }
-    >
+          >
       {ghgEmpty ? (
         <GhgEmptyNotice />
       ) : rows.length === 0 ? (

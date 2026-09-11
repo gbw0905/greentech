@@ -22,7 +22,6 @@ import { AIRLINE_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/lib/market-caps";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
-import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 
 type Airline = {
   code: string;
@@ -328,29 +327,7 @@ export function SafAirlinesPanel() {
           matched={ranked.length}
         />
       }
-      assistant={
-        <ChartSummaryAssistant
-          disabled={sorted.length === 0}
-          build={() => ({
-            panel: "Top airlines using SAF globally",
-            measureLabel: metric.label,
-            unit: metric.unit,
-            filterLabel: [f.a || "All countries", f.query ? `search "${f.query}"` : ""]
-              .filter(Boolean)
-              .join(" · "),
-            shown: sorted.length,
-            total: AIRLINES.length,
-            rows: sorted.map((a) => ({
-              label: a.name,
-              sub: `${a.country} · ${a.note}`,
-              value: valueOf(a),
-              price: get(AIRLINE_TICKERS[a.code])?.price,
-              changePct: get(AIRLINE_TICKERS[a.code])?.changePct,
-            })),
-          })}
-        />
-      }
-      footnote={
+            footnote={
         view === "scatter"
           ? `Scatter plot: X = ${axes.x.metric.label}, Y = ${metric.label}, bubble size = ${axes.size.label}. ${axes.x.help} Estimates from airline sustainability reports, offtake announcements and regulatory disclosures. Click any bubble for the latest SAF news for that carrier. ${MARKET_CAP_NOTE}`
           : `Estimates from airline sustainability reports, offtake announcements and regulatory disclosures. Click any row for the latest SAF news for that carrier. ${MARKET_CAP_NOTE}`

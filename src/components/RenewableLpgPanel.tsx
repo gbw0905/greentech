@@ -20,7 +20,6 @@ import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
-import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/lib/market-caps";
 import { RLPG_TICKERS } from "@/lib/entity-tickers";
 
@@ -322,32 +321,7 @@ export function RenewableLpgPanel() {
           />
         }
         footnote={`Indicative volumes compiled from company disclosures, Liquid Gas Europe and WLPGA renewable LPG reporting. BioLPG is largely an HVO/SAF co-product, so producer volumes track renewable diesel runs. Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
-        assistant={
-          <ChartSummaryAssistant
-            disabled={rows.length === 0}
-            build={() => ({
-              panel: TITLE,
-              measureLabel: metric.label,
-              unit: metric.unit,
-              filterLabel: [
-                f.a || "All countries",
-                f.b || "All roles",
-                f.query ? `search "${f.query}"` : "",
-              ]
-                .filter(Boolean)
-                .join(" · "),
-              shown: rows.length,
-              total: SUPPLIERS.length,
-              rows: rows.map((s) => ({
-                label: s.name,
-                sub: `${s.country} · ${s.role} · ${s.note}`,
-                value: valueOf(s),
-                price: get(RLPG_TICKERS[s.name])?.price,
-              })),
-            })}
-          />
-        }
-      >
+              >
         {ghgEmpty ? (
           <GhgEmptyNotice />
         ) : rows.length === 0 ? (

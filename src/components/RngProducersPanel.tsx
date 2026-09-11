@@ -20,7 +20,6 @@ import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/lib/entity-logos";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
-import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/lib/market-caps";
 import { RNG_TICKERS } from "@/lib/entity-tickers";
 
@@ -343,32 +342,7 @@ export function RngProducersPanel() {
           />
         }
         footnote={`Indicative RNG volumes from company disclosures, US EPA RIN generation data, the Coalition for Renewable Natural Gas and the European Biogas Association. Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
-        assistant={
-          <ChartSummaryAssistant
-            disabled={rows.length === 0}
-            build={() => ({
-              panel: TITLE,
-              measureLabel: metric.label,
-              unit: metric.unit,
-              filterLabel: [
-                f.a || "All countries",
-                f.b || "All feedstocks",
-                f.query ? `search "${f.query}"` : "",
-              ]
-                .filter(Boolean)
-                .join(" · "),
-              shown: rows.length,
-              total: PRODUCERS.length,
-              rows: rows.map((p) => ({
-                label: p.name,
-                sub: `${p.country} · ${p.feedstock} · ${p.note}`,
-                value: valueOf(p),
-                price: get(RNG_TICKERS[p.name])?.price,
-                          })),
-            })}
-          />
-        }
-      >
+              >
         {ghgEmpty ? (
           <GhgEmptyNotice />
         ) : rows.length === 0 ? (

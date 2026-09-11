@@ -149,7 +149,7 @@ function TermsPage() {
               11. Third-party links, job listings, and integrations
             </h2>
             <p className="mt-2">
-              The Site links to external sources, employer career pages, job boards, government portals, social media platforms, and other third-party services. We are not responsible for their content, privacy practices, terms, or availability. Job listings are aggregated and do not imply endorsement of the employer or the vacancy. Use of third-party integrations, such as LinkedIn publishing or AI assistants, is subject to those providers’ terms as well as ours.
+              The Site links to external sources, employer career pages, job boards, government portals, social media platforms, and other third-party services. We are not responsible for their content, privacy practices, terms, or availability. Job listings are aggregated and do not imply endorsement of the employer or the vacancy. Use of third-party integrations, such as LinkedIn publishing, is subject to those providers’ terms as well as ours.
             </p>
           </div>
 

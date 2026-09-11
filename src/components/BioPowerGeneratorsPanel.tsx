@@ -22,7 +22,6 @@ import { BIOPOWER_TICKERS } from "@/lib/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/lib/use-entity-quotes";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/lib/market-caps";
-import { ChartSummaryAssistant } from "@/components/ChartSummaryAssistant";
 
 type Generator = {
   name: string;
@@ -361,33 +360,7 @@ export function BioPowerGeneratorsPanel() {
           />
         }
         footnote={`Indicative biofuel-fired capacities from generator annual reports, IEA Bioenergy and national renewables registries. Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
-        assistant={
-          <ChartSummaryAssistant
-            disabled={rows.length === 0}
-            build={() => ({
-              panel: TITLE,
-              measureLabel: metric.label,
-              unit: metric.unit,
-              filterLabel: [
-                f.a || "All countries",
-                f.b || "All feedstocks",
-                f.query ? `search "${f.query}"` : "",
-              ]
-                .filter(Boolean)
-                .join(" · "),
-              shown: rows.length,
-              total: GENERATORS.length,
-              rows: rows.map((g) => ({
-                label: g.name,
-                sub: `${g.country} · ${g.feedstock} · ${g.note}`,
-                value: valueOf(g),
-                price: get(BIOPOWER_TICKERS[g.name])?.price,
-                changePct: get(BIOPOWER_TICKERS[g.name])?.changePct,
-              })),
-            })}
-          />
-        }
-      >
+              >
         {ghgEmpty ? (
           <GhgEmptyNotice />
         ) : rows.length === 0 ? (
