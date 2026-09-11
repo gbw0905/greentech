@@ -560,11 +560,19 @@ export function PathwayCiBuilder() {
 
     calcSections.push({
       title: "Regulatory program comparison",
-      header: ["Program", "Jurisdiction", "Benchmark", "Saving vs benchmark", "Annual credits (t)"],
+      header: [
+        "Program",
+        "Jurisdiction",
+        "Benchmark",
+        "Benchmark basis",
+        "Saving vs benchmark",
+        "Annual credits (t)",
+      ],
       rows: result.programs.map((p) => [
         p.program.label,
         p.program.jurisdiction,
         p.benchmark == null ? "Fuel not covered" : `${ci(p.benchmark)} ${ciUnit.label}`,
+        p.program.benchmarkBasis,
         p.savingPct == null ? "—" : `${p.savingPct.toFixed(1)}%`,
         p.annualCreditsTonnes == null || !p.program.creditMarket
           ? "—"
