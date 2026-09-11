@@ -556,7 +556,7 @@ export function PathwayCiBuilder() {
           </button>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Fuel pathway" hint={result.pathway.summary}>
             <select
               className={inputCls}
@@ -575,26 +575,7 @@ export function PathwayCiBuilder() {
             </select>
           </Field>
 
-          <Field
-            label="Feedstock source"
-            hint={feedstock ? feedstock.note : "Set your own feedstock terms below"}
-          >
-            <select
-              className={inputCls}
-              value={inputs.feedstockId}
-              onChange={(e) => setInputs((p) => applyFeedstock(p, e.target.value))}
-            >
-              {feedstockGroups.map((g) => (
-                <optgroup key={g} label={g}>
-                  {FEEDSTOCKS.filter((f) => f.group === g).map((f) => (
-                    <option key={f.id} value={f.id}>
-                      {f.label}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-          </Field>
+
 
           <Field
             label="Annual production"
@@ -613,104 +594,6 @@ export function PathwayCiBuilder() {
         </div>
       </section>
 
-      <section
-        className="glass-panel border-l-4 p-5"
-        style={{ borderLeftColor: TONE_COLOR.red }}
-      >
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
-          <div className="flex items-start gap-2.5">
-            <span
-              className="mt-2 inline-block size-2.5 shrink-0 rounded-full"
-              style={{ background: TONE_COLOR.red }}
-              aria-hidden="true"
-            />
-            <h2 className="font-display text-lg font-extrabold text-foreground">
-              Process energy sources
-            </h2>
-          </div>
-          <span className="label-mono text-muted-foreground">
-            Choose the supply, the amount and the unit
-          </span>
-        </div>
-
-        <div className="grid gap-5 lg:grid-cols-2">
-          {SOURCES.map((s) => {
-            const unitList = UNIT_OPTIONS[s.unit];
-            const unitId = units[s.id] ?? unitList[0]!.id;
-            const unit = unitList.find((u) => u.id === unitId) ?? unitList[0]!;
-            const base = inputs.energy[s.id] ?? 0;
-            const shown = base / unit.toBase;
-            const variants = SOURCE_VARIANTS[s.id];
-            return (
-              <div key={s.id} className="rounded-lg border border-border bg-background/40 p-3">
-                <div className="mb-2 flex items-baseline justify-between gap-2">
-                  <span className="text-sm font-bold text-foreground">{s.label}</span>
-                  <span className="label-mono text-muted-foreground">{s.unit} basis</span>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <div className="sm:col-span-3">
-                    <Field label="Source">
-                      {s.id === "electricity" ? (
-                        <select
-                          className={inputCls}
-                          value={region}
-                          onChange={(e) => setRegion(e.target.value as ElectricityRegionId)}
-                        >
-                          {ELECTRICITY_REGIONS.map((r) => (
-                            <option key={r.id} value={r.id}>
-                              {r.label} — {r.gPerKwh} gCO2e/kWh
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        <select
-                          className={inputCls}
-                          value={inputs.sourceVariants[s.id] ?? variants[0]?.id}
-                          onChange={(e) => setVariant(s.id, e.target.value)}
-                        >
-                          {variants.map((v) => (
-                            <option key={v.id} value={v.id}>
-                              {v.label} — {v.factor} gCO2e/{s.unit}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                    </Field>
-                  </div>
-                  <div className="sm:col-span-2">
-                    <Field label="Quantity">
-                      <input
-                        type="number"
-                        min={0}
-                        step={0.001}
-                        className={inputCls}
-                        value={Number(shown.toFixed(6))}
-                        onChange={(e) =>
-                          setEnergy(s.id, (Number(e.target.value) || 0) * unit.toBase)
-                        }
-                      />
-                    </Field>
-                  </div>
-                  <Field label="Unit">
-                    <select
-                      className={inputCls}
-                      value={unitId}
-                      onChange={(e) => setUnits((p) => ({ ...p, [s.id]: e.target.value }))}
-                    >
-                      {unitList.map((u) => (
-                        <option key={u.id} value={u.id}>
-                          {u.label}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
-                </div>
-                <p className="mt-2 text-[0.7rem] text-muted-foreground">{s.note}</p>
-              </div>
-            );
-          })}
-        </div>
-      </section>
 
       <section
         className="glass-panel border-l-4 p-5"
