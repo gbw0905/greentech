@@ -51,7 +51,11 @@ export function PanelActions({
       {isValidElement(children)
         ? cloneElement(children as ReactElement<any>, { portalTarget })
         : children}
-      <ChartSummaryAssistant build={summaryBuild} disabled={disabled} portalTarget={portalTarget} />
+      <ChartSummaryAssistant
+        build={summaryBuild}
+        {...(disabled !== undefined ? { disabled } : {})}
+        {...(portalTarget ? { portalTarget } : {})}
+      />
     </>
   );
 }
