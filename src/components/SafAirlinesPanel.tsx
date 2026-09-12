@@ -11,8 +11,7 @@ import {
   PANEL_VIEWS,
   chartFmt as fmt,
   type PanelView,
-  type ScatterPoint,
-} from "@/components/chart-kit";
+  type ScatterPoint, PanelActions, summaryOf, } from "@/components/chart-kit";
 import { ghgSavingsMt, GHG_NOTE } from "@/lib/ghg-savings";
 import { GhgEmptyNotice } from "@/components/GhgEmptyNotice";
 import { detailTone, useEntityDetail, type GraphContext } from "@/components/EntityDetailSheet";
@@ -272,6 +271,7 @@ export function SafAirlinesPanel() {
       viewOptions={PANEL_VIEWS}
       onViewChange={(v) => setView(v as PanelView)}
       actions={
+        <PanelActions summaryBuild={() => summaryOf({ panel: "Top airlines using SAF globally", measureLabel: metric.label, unit: metric.unit, filters: [f.a, f.b], items, total: ranked.length })}>
         <ExportCsvButton
           disabled={ranked.length === 0}
           build={() => ({
@@ -307,6 +307,7 @@ export function SafAirlinesPanel() {
             }),
           })}
         />
+        </PanelActions>
       }
       filters={
         <ChartFilterBar
