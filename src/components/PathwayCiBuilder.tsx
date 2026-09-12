@@ -742,6 +742,12 @@ export function PathwayCiBuilder() {
         header: ["Term", "Meaning"],
         rows: [
           ["CI", "Carbon intensity — lifecycle greenhouse gas emissions per unit of fuel energy."],
+          ["Activity", "The quantity used in each line (fuel, electricity, fertiliser, tonne-kilometres). Editable — every value cell recalculates."],
+          ["Emission factor", "Emissions released per unit of activity for that line."],
+          ["Divisor", "Converts the line to a per-megajoule basis (feedstock yield, MJ per tonne of fuel, MJ per GJ)."],
+          ["Sign × allocation", "−1 marks a credit; values below 1 apply the energy allocation share to co-products."],
+          ["Value", "Live formula: Activity × Emission factor ÷ Divisor × Sign × allocation × unit factor."],
+          ["Annual", "Live formula: Value ÷ unit factor × Annual energy ÷ 1,000,000 × annual footprint unit factor."],
           [ciUnit.label, "Carbon intensity unit selected for this export."],
           [massUnit.label, "Annual footprint mass unit selected for this export."],
           ["MJ", "Megajoule of finished fuel energy (lower heating value basis)."],
