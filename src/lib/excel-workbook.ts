@@ -219,14 +219,14 @@ export async function downloadExcelWorkbook(spec: WorkbookExport) {
       for (const r of section.rows) {
         const spec = Array.isArray(r) ? { cells: r } : r;
         const row = ws.addRow(spec.cells.map((c) => (typeof c === "object" ? null : c)));
-        spec.cells.forEach((cell, index) => {
-          if (typeof cell === "object" && cell !== null && "formula" in cell) {
-            row.getCell(index + 1).value = { formula: resolve(cell.formula) } as never;
-          }
-        });
         if (spec.key) {
           refs.set(spec.key, `${colLetter(spec.refCol ?? 2)}${row.number}`);
         }
+        spec.cells.forEach((cell, index) => {
+          if (typeof cell === "object" && cell !== null && "formula" in cell) {
+            row.getCell(index + 1).value = { formula: resolve(cell.formula, row.number) } as never;
+          }
+        });
         row.eachCell((c) => {
           c.font = { name: "Arial", size: 10, bold: spec.bold === true };
           c.alignment = { vertical: "top", wrapText: true };
