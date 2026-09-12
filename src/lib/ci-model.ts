@@ -1146,14 +1146,15 @@ export function scenarioFromPathway(pathwayId: string, region: ElectricityRegion
     const first = SOURCE_VARIANTS[s.id]?.[0];
     if (first) variants[s.id] = first.id;
   }
+  const feedstockId = PATHWAY_FEEDSTOCK[p.id] ?? "custom";
   return {
     pathwayId: p.id,
     region,
-    feedstockId: PATHWAY_FEEDSTOCK[p.id] ?? "custom",
+    feedstockId,
     sourceVariants: variants,
     direct: { ...p.direct },
     energy: { ...p.energy },
-    detail: defaultDetailModules(),
+    detail: defaultDetailModules(feedstockId),
     annualVolume:
       p.unitLabel === "MJ" ? 2_000_000_000 : p.unitLabel === "tonne" ? 500_000 : p.unitLabel === "kg" ? 10_000_000 : 50_000_000,
   };
