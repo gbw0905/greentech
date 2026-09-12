@@ -1335,7 +1335,10 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
       : 1;
   if (allocation < 1) {
     for (const l of lineItems) {
-      if (l.gPerMj > 0) l.gPerMj *= allocation;
+      if (l.gPerMj > 0) {
+        l.gPerMj *= allocation;
+        l.allocation = allocation;
+      }
     }
   }
 
@@ -1638,6 +1641,8 @@ export interface RowOperands {
   divisorUnit?: string;
   /** -1 for credits entered as positive quantities. */
   sign?: number;
+  /** Energy-allocation share applied to positive burdens (1 when no allocation). */
+  allocation?: number;
 }
 
 export interface DetailRow extends RowOperands {
