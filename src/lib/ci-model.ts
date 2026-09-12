@@ -2120,7 +2120,16 @@ export function computeDistribution(dst: DistributionInputs, upstreamCi: number)
   ];
   for (const [key, label, g, detail] of extras) {
     if (g === 0) continue;
-    rows.push({ key: `dist-${key}`, label, gPerMj: g, detail });
+    rows.push({
+      key: `dist-${key}`,
+      label,
+      gPerMj: g,
+      detail,
+      activity: g,
+      activityUnit: "gCO2e/MJ",
+      factor: 1,
+      factorUnit: "—",
+    });
   }
   if (dst.lossPct !== 0) {
     rows.push({
@@ -2128,6 +2137,10 @@ export function computeDistribution(dst: DistributionInputs, upstreamCi: number)
       label: "Distribution losses",
       gPerMj: (dst.lossPct / 100) * upstreamCi,
       detail: `${dst.lossPct}% of the fuel lost, carrying its upstream carbon`,
+      activity: dst.lossPct / 100,
+      activityUnit: "share of fuel lost",
+      factor: upstreamCi,
+      factorUnit: "gCO2e/MJ upstream",
     });
   }
   return { gPerMj: rows.reduce((a, r) => a + r.gPerMj, 0), rows };
@@ -2204,17 +2217,50 @@ export function computeTailpipe(t: TailpipeInputs): ModuleResult {
   const n2o = t.n2oOverride >= 0 ? t.n2oOverride : mode.n2oGPerMj;
   const fossil = (Math.min(100, Math.max(0, t.fossilCarbonPct)) / 100) * t.combustionCo2GPerMj;
   const rows: DetailRow[] = [];
-  if (ch4) rows.push({ key: "tp-ch4", label: `${mode.label} — methane slip`, gPerMj: ch4, detail: mode.note });
-  if (n2o) rows.push({ key: "tp-n2o", label: `${mode.label} — nitrous oxide`, gPerMj: n2o, detail: "Combustion N2O, GWP 273" });
+  if (ch4)
+    rows.push({
+      key: "tp-ch4",
+      label: `${mode.label} — methane slip`,
+      gPerMj: ch4,
+      detail: mode.note,
+      activity: ch4,
+      activityUnit: "gCO2e/MJ",
+      factor: 1,
+      factorUnit: "—",
+    });
+  if (n2o)
+    rows.push({
+      key: "tp-n2o",
+      label: `${mode.label} — nitrous oxide`,
+      gPerMj: n2o,
+      detail: "Combustion N2O, GWP 273",
+      activity: n2o,
+      activityUnit: "gCO2e/MJ",
+      factor: 1,
+      factorUnit: "—",
+    });
   if (fossil)
     rows.push({
       key: "tp-fossil",
       label: "Fossil carbon in the fuel",
       gPerMj: fossil,
       detail: `${t.fossilCarbonPct}% of ${t.combustionCo2GPerMj} gCO2/MJ combustion CO2`,
+      activity: Math.min(100, Math.max(0, t.fossilCarbonPct)) / 100,
+      activityUnit: "fossil carbon share",
+      factor: t.combustionCo2GPerMj,
+      factorUnit: "gCO2/MJ combustion",
     });
   if (t.aftertreatmentGPerMj)
-    rows.push({ key: "tp-scr", label: "Aftertreatment reagent", gPerMj: t.aftertreatmentGPerMj, detail: "Urea / DEF consumption" });
+    rows.push({
+      key: "tp-scr",
+      label: "Aftertreatment reagent",
+      gPerMj: t.aftertreatmentGPerMj,
+      detail: "Urea / DEF consumption",
+      activity: t.aftertreatmentGPerMj,
+      activityUnit: "gCO2e/MJ",
+      factor: 1,
+      factorUnit: "—",
+    });
   rows.push({
     key: "tp-biogenic",
     label: "Biogenic combustion CO2",
