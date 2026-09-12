@@ -4,10 +4,21 @@ const SITE = "Global Bioenergy Watch";
 const SITE_URL = "https://www.globalbioenergywatch.org";
 const NAVY = "FF0B1F3A";
 
+/** A single cell: literal text/number, or a formula referencing other rows. */
+export type CellValue = string | number | { formula: string };
+
+/**
+ * A row is either plain cells, or a keyed row whose value cell can be
+ * referenced from later formulas via {{cell:KEY}} / {{range:KEY1..KEY2}}.
+ */
+export type SheetRow =
+  | CellValue[]
+  | { key?: string; refCol?: number; bold?: boolean; cells: CellValue[] };
+
 export type SheetSection = {
   title?: string;
   header?: string[];
-  rows: (string | number)[][];
+  rows: SheetRow[];
 };
 
 export type SheetSpec = {
