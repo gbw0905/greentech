@@ -2162,9 +2162,9 @@ export const MODULE_TO_DIRECT: Record<DetailModuleKey, keyof DirectTerms> = {
   tailpipe: "endUse",
 };
 
-export function defaultDetailModules(): DetailModules {
+export function defaultDetailModules(feedstockId?: string): DetailModules {
   return {
-    feedstockProduction: { ...DEFAULT_FEEDSTOCK_PRODUCTION },
+    feedstockProduction: feedstockProductionFor(feedstockId),
     transport: { ...DEFAULT_TRANSPORT, legs: DEFAULT_TRANSPORT.legs.map((l) => ({ ...l })) },
     chemicals: { ...DEFAULT_CHEMICALS, items: DEFAULT_CHEMICALS.items.map((i) => ({ ...i })) },
     coProducts: { ...DEFAULT_COPRODUCTS, items: DEFAULT_COPRODUCTS.items.map((i) => ({ ...i })) },
