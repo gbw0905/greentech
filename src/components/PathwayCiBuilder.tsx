@@ -500,9 +500,20 @@ export function PathwayCiBuilder() {
         ["Feedstock source", feedstock ? feedstock.label : "Custom", ""],
         ["Electricity region", regionLabel, ""],
         ["Annual volume", inputs.annualVolume, ""],
-        ["Annual energy (MJ)", Number(result.annualEnergyMj.toFixed(0)), ""],
+        {
+          key: "annualMj",
+          cells: ["Annual energy (MJ)", Number(result.annualEnergyMj.toFixed(0)), "Annual volume × energy per unit"],
+        },
         ["Carbon intensity unit", ciUnit.label, ""],
+        {
+          key: "ciFactor",
+          cells: ["Carbon intensity unit factor", ciUnit.factor, `Multiplier from gCO2e/MJ to ${ciUnit.label}`],
+        },
         ["Annual footprint unit", massUnit.label, ""],
+        {
+          key: "massFactor",
+          cells: ["Annual footprint unit factor", massUnit.factor, `Multiplier from tonnes CO2e to ${massUnit.label}`],
+        },
       ],
     });
 
