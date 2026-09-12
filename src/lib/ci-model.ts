@@ -2030,6 +2030,13 @@ export function computeCoProducts(c: CoProductInputs): ModuleResult {
       label: `${item.label || "Co-product"} credit`,
       gPerMj: -g / mjPerTonneFuel,
       detail: `${item.kgPerTonneFuel} kg/t fuel × ${item.gPerKg} gCO2e/kg displaced`,
+      activity: item.kgPerTonneFuel,
+      activityUnit: "kg/t fuel",
+      factor: item.gPerKg,
+      factorUnit: "gCO2e/kg displaced",
+      divisor: mjPerTonneFuel,
+      divisorUnit: "MJ/t fuel",
+      sign: -1,
     });
   }
   if (c.exportedElectricityKwhPerMj !== 0) {
@@ -2038,6 +2045,11 @@ export function computeCoProducts(c: CoProductInputs): ModuleResult {
       label: "Exported electricity credit",
       gPerMj: -c.exportedElectricityKwhPerMj * c.exportedElectricityCreditPerKwh,
       detail: `${c.exportedElectricityKwhPerMj} kWh/MJ × ${c.exportedElectricityCreditPerKwh} g/kWh displaced`,
+      activity: c.exportedElectricityKwhPerMj,
+      activityUnit: "kWh/MJ fuel",
+      factor: c.exportedElectricityCreditPerKwh,
+      factorUnit: "gCO2e/kWh displaced",
+      sign: -1,
     });
   }
   if (c.avoidedMethaneGPerMj !== 0) {
@@ -2046,6 +2058,11 @@ export function computeCoProducts(c: CoProductInputs): ModuleResult {
       label: "Avoided methane credit",
       gPerMj: -Math.abs(c.avoidedMethaneGPerMj),
       detail: "Manure, landfill or wastewater methane that would have been released",
+      activity: Math.abs(c.avoidedMethaneGPerMj),
+      activityUnit: "gCO2e/MJ",
+      factor: 1,
+      factorUnit: "—",
+      sign: -1,
     });
   }
   const alloc = Math.min(100, Math.max(0, c.allocationPct)) / 100;
