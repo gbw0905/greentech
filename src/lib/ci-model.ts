@@ -1164,6 +1164,7 @@ export function scenarioFromPathway(pathwayId: string, region: ElectricityRegion
 export function applyFeedstock(inputs: ScenarioInputs, feedstockId: string): ScenarioInputs {
   const f = FEEDSTOCK_BY_ID[feedstockId];
   if (!f || f.id === "custom") return { ...inputs, feedstockId };
+  const base = inputs.detail ?? defaultDetailModules(feedstockId);
   return {
     ...inputs,
     feedstockId,
@@ -1172,6 +1173,13 @@ export function applyFeedstock(inputs: ScenarioInputs, feedstockId: string): Sce
       feedstock: f.feedstock,
       landUseChange: f.landUseChange,
       feedstockTransport: f.feedstockTransport,
+    },
+    detail: {
+      ...base,
+      feedstockProduction: {
+        ...feedstockProductionFor(feedstockId),
+        enabled: base.feedstockProduction.enabled,
+      },
     },
   };
 }
