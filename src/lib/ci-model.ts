@@ -1146,14 +1146,15 @@ export function scenarioFromPathway(pathwayId: string, region: ElectricityRegion
     const first = SOURCE_VARIANTS[s.id]?.[0];
     if (first) variants[s.id] = first.id;
   }
+  const feedstockId = PATHWAY_FEEDSTOCK[p.id] ?? "custom";
   return {
     pathwayId: p.id,
     region,
-    feedstockId: PATHWAY_FEEDSTOCK[p.id] ?? "custom",
+    feedstockId,
     sourceVariants: variants,
     direct: { ...p.direct },
     energy: { ...p.energy },
-    detail: defaultDetailModules(),
+    detail: defaultDetailModules(feedstockId),
     annualVolume:
       p.unitLabel === "MJ" ? 2_000_000_000 : p.unitLabel === "tonne" ? 500_000 : p.unitLabel === "kg" ? 10_000_000 : 50_000_000,
   };
@@ -1163,6 +1164,7 @@ export function scenarioFromPathway(pathwayId: string, region: ElectricityRegion
 export function applyFeedstock(inputs: ScenarioInputs, feedstockId: string): ScenarioInputs {
   const f = FEEDSTOCK_BY_ID[feedstockId];
   if (!f || f.id === "custom") return { ...inputs, feedstockId };
+  const base = inputs.detail ?? defaultDetailModules(feedstockId);
   return {
     ...inputs,
     feedstockId,
@@ -1171,6 +1173,13 @@ export function applyFeedstock(inputs: ScenarioInputs, feedstockId: string): Sce
       feedstock: f.feedstock,
       landUseChange: f.landUseChange,
       feedstockTransport: f.feedstockTransport,
+    },
+    detail: {
+      ...base,
+      feedstockProduction: {
+        ...feedstockProductionFor(feedstockId),
+        enabled: base.feedstockProduction.enabled,
+      },
     },
   };
 }
@@ -1671,6 +1680,43 @@ export const DEFAULT_FEEDSTOCK_PRODUCTION: FeedstockProductionInputs = {
   soilCarbonKgPerTonne: 0,
 };
 
+/**
+ * Feedstock-specific cultivation / collection defaults. Keyed by feedstock id
+ * so that picking a pathway loads the agronomy or collection profile that
+ * actually belongs to that feedstock instead of a generic row crop.
+ */
+export const FEEDSTOCK_PRODUCTION_PRESETS: Record<string, Partial<FeedstockProductionInputs>> = {
+  corn: { yieldMjPerTonne: 8500, cultivationDieselL: 18, cultivationElectricityKwh: 4, nitrogenKg: 14, phosphateKg: 5, potashKg: 5, limeKg: 10, pesticideKg: 0.3, seedKg: 2, irrigationElectricityKwh: 6, dryingGasMj: 300 },
+  sugarcane: { yieldMjPerTonne: 1900, cultivationDieselL: 4, cultivationElectricityKwh: 1, nitrogenKg: 1.2, phosphateKg: 0.6, potashKg: 1.5, limeKg: 2, pesticideKg: 0.05, seedKg: 0, irrigationElectricityKwh: 2, dryingGasMj: 0 },
+  sugarbeet: { yieldMjPerTonne: 1900, cultivationDieselL: 5, cultivationElectricityKwh: 1, nitrogenKg: 1.5, phosphateKg: 0.6, potashKg: 1.5, limeKg: 3, pesticideKg: 0.06, seedKg: 0.1, irrigationElectricityKwh: 1, dryingGasMj: 0 },
+  wheat: { yieldMjPerTonne: 8000, cultivationDieselL: 16, cultivationElectricityKwh: 3, nitrogenKg: 18, phosphateKg: 6, potashKg: 5, limeKg: 8, pesticideKg: 0.4, seedKg: 3, irrigationElectricityKwh: 2, dryingGasMj: 250 },
+  cassava: { yieldMjPerTonne: 3500, cultivationDieselL: 6, cultivationElectricityKwh: 1, nitrogenKg: 4, phosphateKg: 2, potashKg: 4, limeKg: 2, pesticideKg: 0.1, seedKg: 0, irrigationElectricityKwh: 0, dryingGasMj: 150 },
+  soy: { yieldMjPerTonne: 7000, cultivationDieselL: 12, cultivationElectricityKwh: 3, nitrogenKg: 2, phosphateKg: 6, potashKg: 12, limeKg: 12, pesticideKg: 0.6, seedKg: 3, irrigationElectricityKwh: 2, dryingGasMj: 100 },
+  canola: { yieldMjPerTonne: 15000, cultivationDieselL: 14, cultivationElectricityKwh: 3, nitrogenKg: 40, phosphateKg: 12, potashKg: 8, limeKg: 6, pesticideKg: 0.5, seedKg: 2, irrigationElectricityKwh: 1, dryingGasMj: 120 },
+  palm: { yieldMjPerTonne: 7400, cultivationDieselL: 5, cultivationElectricityKwh: 2, nitrogenKg: 8, phosphateKg: 3, potashKg: 15, limeKg: 2, pesticideKg: 0.3, seedKg: 0, irrigationElectricityKwh: 0, dryingGasMj: 0 },
+  "corn-oil": { yieldMjPerTonne: 37000, cultivationDieselL: 0, cultivationElectricityKwh: 0, nitrogenKg: 0, phosphateKg: 0, potashKg: 0, limeKg: 0, pesticideKg: 0, seedKg: 0, irrigationElectricityKwh: 0, collectionDieselL: 1, dryingGasMj: 0 },
+  uco: { yieldMjPerTonne: 37000, cultivationDieselL: 0, cultivationElectricityKwh: 0, nitrogenKg: 0, phosphateKg: 0, potashKg: 0, limeKg: 0, pesticideKg: 0, seedKg: 0, irrigationElectricityKwh: 0, collectionDieselL: 3, dryingGasMj: 0 },
+  tallow: { yieldMjPerTonne: 37000, cultivationDieselL: 0, cultivationElectricityKwh: 0, nitrogenKg: 0, phosphateKg: 0, potashKg: 0, limeKg: 0, pesticideKg: 0, seedKg: 0, irrigationElectricityKwh: 0, collectionDieselL: 2, renderingGasMj: 900, renderingElectricityKwh: 40 },
+  stover: { yieldMjPerTonne: 6400, cultivationDieselL: 0, cultivationElectricityKwh: 0, nitrogenKg: 8, phosphateKg: 2, potashKg: 12, limeKg: 0, pesticideKg: 0, seedKg: 0, irrigationElectricityKwh: 0, collectionDieselL: 8, dryingGasMj: 0 },
+  straw: { yieldMjPerTonne: 6200, cultivationDieselL: 0, cultivationElectricityKwh: 0, nitrogenKg: 6, phosphateKg: 1.5, potashKg: 10, limeKg: 0, pesticideKg: 0, seedKg: 0, irrigationElectricityKwh: 0, collectionDieselL: 7, dryingGasMj: 0 },
+  bagasse: { yieldMjPerTonne: 6000, cultivationDieselL: 0, cultivationElectricityKwh: 0, nitrogenKg: 0, phosphateKg: 0, potashKg: 0, limeKg: 0, pesticideKg: 0, seedKg: 0, irrigationElectricityKwh: 0, collectionDieselL: 1, dryingGasMj: 0 },
+  miscanthus: { yieldMjPerTonne: 6500, cultivationDieselL: 5, cultivationElectricityKwh: 1, nitrogenKg: 6, phosphateKg: 2, potashKg: 4, limeKg: 0, pesticideKg: 0.05, seedKg: 0.5, irrigationElectricityKwh: 0, collectionDieselL: 4, soilCarbonKgPerTonne: -60 },
+  "forest-residue": { yieldMjPerTonne: 6500, cultivationDieselL: 0, cultivationElectricityKwh: 0, nitrogenKg: 0, phosphateKg: 0, potashKg: 0, limeKg: 0, pesticideKg: 0, seedKg: 0, irrigationElectricityKwh: 0, collectionDieselL: 12, dryingGasMj: 200 },
+  "mill-residue": { yieldMjPerTonne: 7000, cultivationDieselL: 0, cultivationElectricityKwh: 0, nitrogenKg: 0, phosphateKg: 0, potashKg: 0, limeKg: 0, pesticideKg: 0, seedKg: 0, irrigationElectricityKwh: 0, collectionDieselL: 2, dryingGasMj: 150 },
+  "urban-wood": { yieldMjPerTonne: 6500, cultivationDieselL: 0, cultivationElectricityKwh: 0, nitrogenKg: 0, phosphateKg: 0, potashKg: 0, limeKg: 0, pesticideKg: 0, seedKg: 0, irrigationElectricityKwh: 0, collectionDieselL: 3, dryingGasMj: 100 },
+  msw: { yieldMjPerTonne: 4000, cultivationDieselL: 0, cultivationElectricityKwh: 0, nitrogenKg: 0, phosphateKg: 0, potashKg: 0, limeKg: 0, pesticideKg: 0, seedKg: 0, irrigationElectricityKwh: 0, collectionDieselL: 4, dryingGasMj: 0 },
+  "landfill-gas": { yieldMjPerTonne: 18000, cultivationDieselL: 0, cultivationElectricityKwh: 0, nitrogenKg: 0, phosphateKg: 0, potashKg: 0, limeKg: 0, pesticideKg: 0, seedKg: 0, irrigationElectricityKwh: 0, collectionDieselL: 0, dryingGasMj: 0 },
+  manure: { yieldMjPerTonne: 12000, cultivationDieselL: 0, cultivationElectricityKwh: 0, nitrogenKg: 0, phosphateKg: 0, potashKg: 0, limeKg: 0, pesticideKg: 0, seedKg: 0, irrigationElectricityKwh: 0, collectionDieselL: 1, dryingGasMj: 0 },
+  sludge: { yieldMjPerTonne: 10000, cultivationDieselL: 0, cultivationElectricityKwh: 0, nitrogenKg: 0, phosphateKg: 0, potashKg: 0, limeKg: 0, pesticideKg: 0, seedKg: 0, irrigationElectricityKwh: 0, collectionDieselL: 0, dryingGasMj: 0 },
+  "water-power": { yieldMjPerTonne: 120000, cultivationDieselL: 0, cultivationElectricityKwh: 0, nitrogenKg: 0, phosphateKg: 0, potashKg: 0, limeKg: 0, pesticideKg: 0, seedKg: 0, irrigationElectricityKwh: 0, collectionDieselL: 0, dryingGasMj: 0 },
+};
+
+/** Feedstock production defaults for a given feedstock id. */
+export function feedstockProductionFor(feedstockId?: string): FeedstockProductionInputs {
+  const preset = feedstockId ? FEEDSTOCK_PRODUCTION_PRESETS[feedstockId] : undefined;
+  return { ...DEFAULT_FEEDSTOCK_PRODUCTION, ...(preset ?? {}) };
+}
+
 export function computeFeedstockProduction(
   f: FeedstockProductionInputs,
   gridFactor: number,
@@ -2125,9 +2171,9 @@ export const MODULE_TO_DIRECT: Record<DetailModuleKey, keyof DirectTerms> = {
   tailpipe: "endUse",
 };
 
-export function defaultDetailModules(): DetailModules {
+export function defaultDetailModules(feedstockId?: string): DetailModules {
   return {
-    feedstockProduction: { ...DEFAULT_FEEDSTOCK_PRODUCTION },
+    feedstockProduction: feedstockProductionFor(feedstockId),
     transport: { ...DEFAULT_TRANSPORT, legs: DEFAULT_TRANSPORT.legs.map((l) => ({ ...l })) },
     chemicals: { ...DEFAULT_CHEMICALS, items: DEFAULT_CHEMICALS.items.map((i) => ({ ...i })) },
     coProducts: { ...DEFAULT_COPRODUCTS, items: DEFAULT_COPRODUCTS.items.map((i) => ({ ...i })) },
