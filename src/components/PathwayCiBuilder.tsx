@@ -1608,13 +1608,27 @@ export function PathwayCiBuilder() {
         {(() => {
           const rows = result.programs.filter((p) => p.benchmark != null);
           if (rows.length === 0) return null;
-          const scale = Math.max(
-            ...rows.map((p) => p.benchmark as number),
-            result.ciTotal,
-            0.001,
-          );
           const PLOT = 220;
-          const ticks = [1, 0.75, 0.5, 0.25, 0];
+          const benchmarkValues = rows.map((p) => p.benchmark as number);
+          const rawMin = Math.min(0, result.ciTotal, ...benchmarkValues);
+          const rawMax = Math.max(0, result.ciTotal, ...benchmarkValues);
+          const rawRange = Math.max(rawMax - rawMin, 0.001);
+          const domainMin = rawMin < 0 ? rawMin - rawRange * 0.08 : 0;
+          const domainMax = rawMax + rawRange * 0.08;
+          const domainRange = Math.max(domainMax - domainMin, 0.001);
+          const yForValue = (value: number) => ((domainMax - value) / domainRange) * PLOT;
+          const zeroY = yForValue(0);
+          const ticks = Array.from(
+            { length: 5 },
+            (_, index) => domainMax - (domainRange * index) / 4,
+          );
+          const barPosition = (value: number) => {
+            const valueY = yForValue(value);
+            return {
+              top: Math.min(valueY, zeroY),
+              height: Math.max(Math.abs(valueY - zeroY), 2),
+            };
+          };
           return (
             <div className="overflow-x-auto pb-2">
               <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
@@ -1634,43 +1648,66 @@ export function PathwayCiBuilder() {
                     <span
                       key={tick}
                       className="absolute right-3 -translate-y-1/2 font-mono text-[0.65rem] tabular-nums text-muted-foreground"
-                      style={{ top: (1 - tick) * PLOT }}
+                      style={{ top: yForValue(tick) }}
                     >
-                      {ci(scale * tick)}
+                      {ci(tick)}
                     </span>
                   ))}
                 </div>
                 <div className="relative flex min-w-0 flex-1 items-start border-b border-border" style={{ height: PLOT + 58 }}>
-                  {ticks.slice(0, -1).map((tick) => (
+                  {ticks.map((tick) => (
                     <span
                       key={tick}
                       className="pointer-events-none absolute inset-x-0 border-t border-border/60"
-                      style={{ top: (1 - tick) * PLOT }}
+                      style={{ top: yForValue(tick) }}
                     />
                   ))}
+                  <span
+                    className="pointer-events-none absolute inset-x-0 z-10 border-t-2 border-foreground/60"
+                    style={{ top: zeroY }}
+                    aria-hidden="true"
+                  />
                   {rows.map((p) => (
                     <div key={p.program.id} className="relative flex h-full min-w-24 flex-1 justify-center gap-1.5 px-2">
-                      <div className="flex h-[220px] w-7 flex-col justify-end">
-                        <span className="mb-1 text-center font-mono text-[0.65rem] font-bold tabular-nums text-foreground">
+                      <div className="relative h-[220px] w-7">
+                        <span
+                          className="absolute left-1/2 z-20 -translate-x-1/2 whitespace-nowrap text-center font-mono text-[0.65rem] font-bold tabular-nums text-foreground"
+                          style={{
+                            top: Math.max(
+                              0,
+                              Math.min(PLOT - 14, yForValue(result.ciTotal) + (result.ciTotal < 0 ? 4 : -16)),
+                            ),
+                          }}
+                        >
                           {ci(result.ciTotal)}
                         </span>
                         <div
-                          className="w-full rounded-t-sm"
+                          className="absolute w-full rounded-sm"
                           style={{
-                            height: `${Math.max((Math.max(result.ciTotal, 0) / scale) * (PLOT - 24), 2)}px`,
+                            top: barPosition(result.ciTotal).top,
+                            height: barPosition(result.ciTotal).height,
                             background: TONE_COLOR.green,
                           }}
                           title={`Pathway CI: ${ci(result.ciTotal)} ${ciUnit.label}`}
                         />
                       </div>
-                      <div className="flex h-[220px] w-7 flex-col justify-end">
-                        <span className="mb-1 text-center font-mono text-[0.65rem] font-bold tabular-nums text-foreground">
+                      <div className="relative h-[220px] w-7">
+                        <span
+                          className="absolute left-1/2 z-20 -translate-x-1/2 whitespace-nowrap text-center font-mono text-[0.65rem] font-bold tabular-nums text-foreground"
+                          style={{
+                            top: Math.max(
+                              0,
+                              Math.min(PLOT - 14, yForValue(p.benchmark as number) - 16),
+                            ),
+                          }}
+                        >
                           {ci(p.benchmark as number)}
                         </span>
                         <div
-                          className="w-full rounded-t-sm"
+                          className="absolute w-full rounded-sm"
                           style={{
-                            height: `${Math.max(((p.benchmark as number) / scale) * (PLOT - 24), 2)}px`,
+                            top: barPosition(p.benchmark as number).top,
+                            height: barPosition(p.benchmark as number).height,
                             background: TONE_COLOR.blue,
                           }}
                           title={`${p.program.label}: ${ci(p.benchmark as number)} ${ciUnit.label}`}
