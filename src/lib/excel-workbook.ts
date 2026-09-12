@@ -169,14 +169,15 @@ export async function downloadExcelWorkbook(spec: WorkbookExport) {
     return out || "A";
   };
   const refs = new Map<string, string>();
-  const resolve = (formula: string) =>
+  const resolve = (formula: string, rowNumber: number) =>
     formula
       .replace(/\{\{range:([^}.]+)\.\.([^}]+)\}\}/g, (_m, a: string, b: string) => {
         const from = refs.get(a.trim());
         const to = refs.get(b.trim());
         return from && to ? `${from}:${to}` : "0";
       })
-      .replace(/\{\{cell:([^}]+)\}\}/g, (_m, k: string) => refs.get(k.trim()) ?? "0");
+      .replace(/\{\{cell:([^}]+)\}\}/g, (_m, k: string) => refs.get(k.trim()) ?? "0")
+      .replace(/\{r\}/g, String(rowNumber));
 
   for (const sheet of spec.sheets) {
     const ws = wb.addWorksheet(sheet.name.slice(0, 31));

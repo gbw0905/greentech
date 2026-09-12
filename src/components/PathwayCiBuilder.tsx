@@ -33,7 +33,7 @@ import {
   type TransportModeId,
 } from "@/lib/ci-model";
 import { ExportExcelButton } from "@/components/ExportExcelButton";
-import type { SheetSection, WorkbookChart, WorkbookExport } from "@/lib/excel-workbook";
+import type { SheetRow, SheetSection, WorkbookChart, WorkbookExport } from "@/lib/excel-workbook";
 
 
 
