@@ -11,8 +11,7 @@ import {
   PANEL_VIEWS,
   chartFmt as fmt,
   type PanelView,
-  type ScatterPoint,
-} from "@/components/chart-kit";
+  type ScatterPoint, PanelActions, summaryOf, } from "@/components/chart-kit";
 import { ghgSavingsMt, GHG_NOTE } from "@/lib/ghg-savings";
 import { GhgEmptyNotice } from "@/components/GhgEmptyNotice";
 import { detailTone, useEntityDetail, type GraphContext } from "@/components/EntityDetailSheet";
@@ -286,6 +285,7 @@ export function UcoSuppliersPanel() {
       viewOptions={PANEL_VIEWS}
       onViewChange={(v) => setView(v as PanelView)}
       actions={
+        <PanelActions summaryBuild={() => summaryOf({ panel: TITLE, measureLabel: metric.label, unit: metric.unit, filters: [f.a, f.b], items, total: ranked.length })}>
         <ExportCsvButton
           disabled={ranked.length === 0}
           build={() => ({
@@ -319,6 +319,7 @@ export function UcoSuppliersPanel() {
             }),
           })}
         />
+        </PanelActions>
       }
       filters={
         <ChartFilterBar
