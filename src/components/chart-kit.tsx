@@ -24,6 +24,64 @@ import {
   Legend,
 } from "recharts";
 import { panelTrend, totalSeries } from "@/lib/history-series";
+import {
+  ChartSummaryAssistant,
+  type ChartSummaryPayload,
+} from "@/components/ChartSummaryAssistant";
+
+/**
+ * Download & share actions for every panel: the panel's own export button
+ * (passed as children) plus the shared "Email summary" action. PanelShell
+ * injects `portalTarget` via cloneElement; both buttons forward their
+ * sign-in / email form there so it renders inside the panel, not the toolbar.
+ */
+export function PanelActions({
+  children,
+  summaryBuild,
+  disabled,
+  portalTarget,
+}: {
+  children: React.ReactNode;
+  summaryBuild: () => ChartSummaryPayload;
+  disabled?: boolean;
+  portalTarget?: HTMLElement | null;
+}) {
+  return (
+    <>
+      {isValidElement(children)
+        ? cloneElement(children as ReactElement<any>, { portalTarget })
+        : children}
+      <ChartSummaryAssistant build={summaryBuild} disabled={disabled} portalTarget={portalTarget} />
+    </>
+  );
+}
+
+/** Build the email-summary payload for a panel's current view from its chart items. */
+export function summaryOf(opts: {
+  panel: string;
+  measureLabel: string;
+  unit: string;
+  /** Raw active filter values; falsy entries are dropped. */
+  filters?: (string | null | undefined)[];
+  items: ChartItem[];
+  total: number;
+}): ChartSummaryPayload {
+  const fl = (opts.filters ?? []).filter(Boolean).join(" · ");
+  return {
+    panel: opts.panel,
+    measureLabel: opts.measureLabel,
+    unit: opts.unit,
+    filterLabel: fl || "None (full dataset)",
+    shown: opts.items.length,
+    total: opts.total,
+    rows: opts.items.map((i) => ({
+      label: i.label,
+      sub: i.sub,
+      value: i.value,
+      changePct: i.changePct,
+    })),
+  };
+}
 
 
 /** Shared number formatter for every chart in the app. */
