@@ -156,6 +156,28 @@ export async function downloadExcelWorkbook(spec: WorkbookExport) {
   const imageId =
     logo != null ? wb.addImage({ buffer: logo as never, extension: "png" }) : null;
 
+  wb.calcProperties.fullCalcOnLoad = true;
+
+  const colLetter = (index: number) => {
+    let n = index;
+    let out = "";
+    while (n > 0) {
+      const rem = (n - 1) % 26;
+      out = String.fromCharCode(65 + rem) + out;
+      n = Math.floor((n - 1) / 26);
+    }
+    return out || "A";
+  };
+  const refs = new Map<string, string>();
+  const resolve = (formula: string) =>
+    formula
+      .replace(/\{\{range:([^}.]+)\.\.([^}]+)\}\}/g, (_m, a: string, b: string) => {
+        const from = refs.get(a.trim());
+        const to = refs.get(b.trim());
+        return from && to ? `${from}:${to}` : "0";
+      })
+      .replace(/\{\{cell:([^}]+)\}\}/g, (_m, k: string) => refs.get(k.trim()) ?? "0");
+
   for (const sheet of spec.sheets) {
     const ws = wb.addWorksheet(sheet.name.slice(0, 31));
     const widths = sheet.columnWidths ?? [34, 34, 40, 18, 22, 30];
