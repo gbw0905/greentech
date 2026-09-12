@@ -1105,7 +1105,7 @@ export interface ScenarioInputs {
   annualVolume: number;
 }
 
-export interface LineItem {
+export interface LineItem extends RowOperands {
   key: string;
   label: string;
   category: "Feedstock and land" | "Process energy" | "Process other" | "Distribution and use" | "Credits";
@@ -1609,7 +1609,23 @@ export const MASS_UNITS: MassUnit[] = [
 // physical activity data. When a module is enabled its computed total replaces
 // the corresponding aggregate term and every sub-item appears as its own line.
 
-export interface DetailRow {
+/**
+ * Operands behind a line item, so an export can write
+ * `= activity x factor / divisor` as a live spreadsheet formula instead of a
+ * hard coded result.
+ */
+export interface RowOperands {
+  activity?: number;
+  activityUnit?: string;
+  factor?: number;
+  factorUnit?: string;
+  divisor?: number;
+  divisorUnit?: string;
+  /** -1 for credits entered as positive quantities. */
+  sign?: number;
+}
+
+export interface DetailRow extends RowOperands {
   key: string;
   label: string;
   gPerMj: number;
