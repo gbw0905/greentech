@@ -1105,7 +1105,7 @@ export interface ScenarioInputs {
   annualVolume: number;
 }
 
-export interface LineItem {
+export interface LineItem extends RowOperands {
   key: string;
   label: string;
   category: "Feedstock and land" | "Process energy" | "Process other" | "Distribution and use" | "Credits";
@@ -1268,14 +1268,24 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
     if (mod?.enabled && moduleKey && moduleKey !== "distribution") {
       for (const r of moduleRows[moduleKey] ?? []) {
         if (r.gPerMj === 0) continue;
-        lineItems.push({ key: r.key, label: r.label, category: f.category, gPerMj: r.gPerMj, detail: r.detail });
+        lineItems.push({ ...r, key: r.key, label: r.label, category: f.category, gPerMj: r.gPerMj, detail: r.detail });
       }
       continue;
     }
     if (moduleKey === "distribution" && detail?.distribution.enabled) continue;
     const v = Number(input.direct[f.key]) || 0;
     if (v === 0) continue;
-    lineItems.push({ key: f.key, label: f.label, category: f.category, gPerMj: v, detail: f.hint });
+    lineItems.push({
+      key: f.key,
+      label: f.label,
+      category: f.category,
+      gPerMj: v,
+      detail: f.hint,
+      activity: v,
+      activityUnit: "gCO2e/MJ",
+      factor: 1,
+      factorUnit: "—",
+    });
   }
 
   for (const s of SOURCES) {
@@ -1292,6 +1302,10 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
       category: "Process energy",
       gPerMj: qty * factor,
       detail: `${qty} ${s.unit}/MJ × ${factor.toFixed(1)} gCO2e/${s.unit}`,
+      activity: qty,
+      activityUnit: `${s.unit}/MJ fuel`,
+      factor,
+      factorUnit: `gCO2e/${s.unit}`,
     });
   }
 
@@ -1304,6 +1318,7 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
       for (const r of ds.rows) {
         if (r.gPerMj === 0) continue;
         lineItems.push({
+          ...r,
           key: r.key,
           label: r.label,
           category: categoryOf("distribution"),
@@ -1320,7 +1335,10 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
       : 1;
   if (allocation < 1) {
     for (const l of lineItems) {
-      if (l.gPerMj > 0) l.gPerMj *= allocation;
+      if (l.gPerMj > 0) {
+        l.gPerMj *= allocation;
+        l.allocation = allocation;
+      }
     }
   }
 
@@ -1609,7 +1627,25 @@ export const MASS_UNITS: MassUnit[] = [
 // physical activity data. When a module is enabled its computed total replaces
 // the corresponding aggregate term and every sub-item appears as its own line.
 
-export interface DetailRow {
+/**
+ * Operands behind a line item, so an export can write
+ * `= activity x factor / divisor` as a live spreadsheet formula instead of a
+ * hard coded result.
+ */
+export interface RowOperands {
+  activity?: number;
+  activityUnit?: string;
+  factor?: number;
+  factorUnit?: string;
+  divisor?: number;
+  divisorUnit?: string;
+  /** -1 for credits entered as positive quantities. */
+  sign?: number;
+  /** Energy-allocation share applied to positive burdens (1 when no allocation). */
+  allocation?: number;
+}
+
+export interface DetailRow extends RowOperands {
   key: string;
   label: string;
   gPerMj: number;
@@ -1725,26 +1761,46 @@ export function computeFeedstockProduction(
   const per = (gPerTonne: number) => gPerTonne / yieldMj;
   const fieldN2o =
     f.nitrogenKg * f.n2oEmissionFactor * (44 / 28) * DETAIL_FACTORS.n2oGwp * 1000;
-  const items: [string, string, number, string][] = [
-    ["cultivationDiesel", "Cultivation and harvest diesel", f.cultivationDieselL * DETAIL_FACTORS.dieselPerLitre, `${f.cultivationDieselL} L/t × 3.72 kg/L`],
-    ["cultivationElectricity", "Cultivation electricity", f.cultivationElectricityKwh * gridFactor, `${f.cultivationElectricityKwh} kWh/t × ${gridFactor} g/kWh`],
-    ["nitrogen", "Nitrogen fertiliser manufacture", f.nitrogenKg * DETAIL_FACTORS.nitrogenPerKg, `${f.nitrogenKg} kg N/t × 4.0 kg/kg`],
-    ["fieldN2o", "Field N2O from applied nitrogen", fieldN2o, `${(f.n2oEmissionFactor * 100).toFixed(2)}% of N as N2O-N, GWP 273`],
-    ["phosphate", "Phosphate fertiliser", f.phosphateKg * DETAIL_FACTORS.phosphatePerKg, `${f.phosphateKg} kg P2O5/t`],
-    ["potash", "Potash fertiliser", f.potashKg * DETAIL_FACTORS.potashPerKg, `${f.potashKg} kg K2O/t`],
-    ["lime", "Lime application", f.limeKg * DETAIL_FACTORS.limePerKg, `${f.limeKg} kg/t × 0.44 kg/kg`],
-    ["pesticide", "Pesticide and herbicide", f.pesticideKg * DETAIL_FACTORS.pesticidePerKg, `${f.pesticideKg} kg/t × 20 kg/kg`],
-    ["seed", "Seed and planting material", f.seedKg * DETAIL_FACTORS.seedPerKg, `${f.seedKg} kg/t`],
-    ["irrigation", "Irrigation pumping", f.irrigationElectricityKwh * gridFactor, `${f.irrigationElectricityKwh} kWh/t`],
-    ["collection", "Collection, baling and handling", f.collectionDieselL * DETAIL_FACTORS.dieselPerLitre, `${f.collectionDieselL} L diesel/t`],
-    ["renderingGas", "Rendering heat (natural gas)", f.renderingGasMj * DETAIL_FACTORS.naturalGasPerMj, `${f.renderingGasMj} MJ/t`],
-    ["renderingElectricity", "Rendering electricity", f.renderingElectricityKwh * gridFactor, `${f.renderingElectricityKwh} kWh/t`],
-    ["dryingGas", "Feedstock drying", f.dryingGasMj * DETAIL_FACTORS.naturalGasPerMj, `${f.dryingGasMj} MJ/t`],
-    ["soilCarbon", "Soil carbon change", f.soilCarbonKgPerTonne * 1000, `${f.soilCarbonKgPerTonne} kgCO2e/t`],
+  const n2oFactor = f.n2oEmissionFactor * (44 / 28) * DETAIL_FACTORS.n2oGwp * 1000;
+  const items: {
+    key: string;
+    label: string;
+    detail: string;
+    activity: number;
+    activityUnit: string;
+    factor: number;
+    factorUnit: string;
+  }[] = [
+    { key: "cultivationDiesel", label: "Cultivation and harvest diesel", detail: `${f.cultivationDieselL} L/t × 3.72 kg/L`, activity: f.cultivationDieselL, activityUnit: "L diesel/t", factor: DETAIL_FACTORS.dieselPerLitre, factorUnit: "gCO2e/L" },
+    { key: "cultivationElectricity", label: "Cultivation electricity", detail: `${f.cultivationElectricityKwh} kWh/t × ${gridFactor} g/kWh`, activity: f.cultivationElectricityKwh, activityUnit: "kWh/t", factor: gridFactor, factorUnit: "gCO2e/kWh" },
+    { key: "nitrogen", label: "Nitrogen fertiliser manufacture", detail: `${f.nitrogenKg} kg N/t × 4.0 kg/kg`, activity: f.nitrogenKg, activityUnit: "kg N/t", factor: DETAIL_FACTORS.nitrogenPerKg, factorUnit: "gCO2e/kg N" },
+    { key: "fieldN2o", label: "Field N2O from applied nitrogen", detail: `${(f.n2oEmissionFactor * 100).toFixed(2)}% of N as N2O-N, GWP 273`, activity: f.nitrogenKg, activityUnit: "kg N/t", factor: n2oFactor, factorUnit: "gCO2e/kg N" },
+    { key: "phosphate", label: "Phosphate fertiliser", detail: `${f.phosphateKg} kg P2O5/t`, activity: f.phosphateKg, activityUnit: "kg P2O5/t", factor: DETAIL_FACTORS.phosphatePerKg, factorUnit: "gCO2e/kg" },
+    { key: "potash", label: "Potash fertiliser", detail: `${f.potashKg} kg K2O/t`, activity: f.potashKg, activityUnit: "kg K2O/t", factor: DETAIL_FACTORS.potashPerKg, factorUnit: "gCO2e/kg" },
+    { key: "lime", label: "Lime application", detail: `${f.limeKg} kg/t × 0.44 kg/kg`, activity: f.limeKg, activityUnit: "kg/t", factor: DETAIL_FACTORS.limePerKg, factorUnit: "gCO2e/kg" },
+    { key: "pesticide", label: "Pesticide and herbicide", detail: `${f.pesticideKg} kg/t × 20 kg/kg`, activity: f.pesticideKg, activityUnit: "kg/t", factor: DETAIL_FACTORS.pesticidePerKg, factorUnit: "gCO2e/kg" },
+    { key: "seed", label: "Seed and planting material", detail: `${f.seedKg} kg/t`, activity: f.seedKg, activityUnit: "kg/t", factor: DETAIL_FACTORS.seedPerKg, factorUnit: "gCO2e/kg" },
+    { key: "irrigation", label: "Irrigation pumping", detail: `${f.irrigationElectricityKwh} kWh/t`, activity: f.irrigationElectricityKwh, activityUnit: "kWh/t", factor: gridFactor, factorUnit: "gCO2e/kWh" },
+    { key: "collection", label: "Collection, baling and handling", detail: `${f.collectionDieselL} L diesel/t`, activity: f.collectionDieselL, activityUnit: "L diesel/t", factor: DETAIL_FACTORS.dieselPerLitre, factorUnit: "gCO2e/L" },
+    { key: "renderingGas", label: "Rendering heat (natural gas)", detail: `${f.renderingGasMj} MJ/t`, activity: f.renderingGasMj, activityUnit: "MJ/t", factor: DETAIL_FACTORS.naturalGasPerMj, factorUnit: "gCO2e/MJ" },
+    { key: "renderingElectricity", label: "Rendering electricity", detail: `${f.renderingElectricityKwh} kWh/t`, activity: f.renderingElectricityKwh, activityUnit: "kWh/t", factor: gridFactor, factorUnit: "gCO2e/kWh" },
+    { key: "dryingGas", label: "Feedstock drying", detail: `${f.dryingGasMj} MJ/t`, activity: f.dryingGasMj, activityUnit: "MJ/t", factor: DETAIL_FACTORS.naturalGasPerMj, factorUnit: "gCO2e/MJ" },
+    { key: "soilCarbon", label: "Soil carbon change", detail: `${f.soilCarbonKgPerTonne} kgCO2e/t`, activity: f.soilCarbonKgPerTonne, activityUnit: "kgCO2e/t", factor: 1000, factorUnit: "g/kg" },
   ];
   const rows = items
-    .filter(([, , g]) => g !== 0)
-    .map(([key, label, g, detail]) => ({ key: `fp-${key}`, label, gPerMj: per(g), detail }));
+    .filter((i) => i.activity * i.factor !== 0)
+    .map((i) => ({
+      key: `fp-${i.key}`,
+      label: i.label,
+      gPerMj: per(i.activity * i.factor),
+      detail: i.detail,
+      activity: i.activity,
+      activityUnit: i.activityUnit,
+      factor: i.factor,
+      factorUnit: i.factorUnit,
+      divisor: yieldMj,
+      divisorUnit: "MJ/t feedstock",
+    }));
   return { gPerMj: rows.reduce((a, r) => a + r.gPerMj, 0), rows };
 }
 
@@ -1816,6 +1872,12 @@ function legRows(legs: TransportLeg[], tonnesPerGj: number, prefix: string): Det
         label: leg.label || mode.label,
         gPerMj: (tkmPerGj * mode.gPerTonneKm) / 1000,
         detail: `${mode.label} · ${leg.distanceKm} km · ${leg.sharePct}% of mass · ${mode.gPerTonneKm} g/t-km`,
+        activity: tkmPerGj,
+        activityUnit: "t-km/GJ fuel",
+        factor: mode.gPerTonneKm,
+        factorUnit: "gCO2e/t-km",
+        divisor: 1000,
+        divisorUnit: "MJ/GJ",
       };
     })
     .filter((r) => r.gPerMj !== 0);
@@ -1896,17 +1958,34 @@ export function computeChemicals(c: ChemicalsInputs): ModuleResult {
       label: item.label || "Chemical input",
       gPerMj: per(g),
       detail: `${item.kgPerTonneFuel} kg/t fuel × ${item.gPerKg} gCO2e/kg`,
+      activity: item.kgPerTonneFuel,
+      activityUnit: "kg/t fuel",
+      factor: item.gPerKg,
+      factorUnit: "gCO2e/kg",
+      divisor: mjPerTonneFuel,
+      divisorUnit: "MJ/t fuel",
     });
   }
-  const extras: [string, string, number, string][] = [
-    ["ch4", "Fugitive methane", c.fugitiveCh4KgPerTonne * DETAIL_FACTORS.ch4Gwp * 1000, `${c.fugitiveCh4KgPerTonne} kg CH4/t fuel × GWP 29.8`],
-    ["n2o", "Fugitive nitrous oxide", c.fugitiveN2oKgPerTonne * DETAIL_FACTORS.n2oGwp * 1000, `${c.fugitiveN2oKgPerTonne} kg N2O/t fuel × GWP 273`],
-    ["vent", "Vented or flared process CO2", c.ventedCo2KgPerTonne * 1000, `${c.ventedCo2KgPerTonne} kg CO2/t fuel`],
-    ["ccs", "Carbon captured and stored", -c.capturedCo2KgPerTonne * 1000, `${c.capturedCo2KgPerTonne} kg CO2/t fuel stored`],
+  const extras: [string, string, number, number, string, string, string][] = [
+    ["ch4", "Fugitive methane", c.fugitiveCh4KgPerTonne, DETAIL_FACTORS.ch4Gwp * 1000, "kg CH4/t fuel", "gCO2e/kg CH4", `${c.fugitiveCh4KgPerTonne} kg CH4/t fuel × GWP 29.8`],
+    ["n2o", "Fugitive nitrous oxide", c.fugitiveN2oKgPerTonne, DETAIL_FACTORS.n2oGwp * 1000, "kg N2O/t fuel", "gCO2e/kg N2O", `${c.fugitiveN2oKgPerTonne} kg N2O/t fuel × GWP 273`],
+    ["vent", "Vented or flared process CO2", c.ventedCo2KgPerTonne, 1000, "kg CO2/t fuel", "g/kg", `${c.ventedCo2KgPerTonne} kg CO2/t fuel`],
+    ["ccs", "Carbon captured and stored", -c.capturedCo2KgPerTonne, 1000, "kg CO2/t fuel", "g/kg", `${c.capturedCo2KgPerTonne} kg CO2/t fuel stored`],
   ];
-  for (const [key, label, g, detail] of extras) {
-    if (g === 0) continue;
-    rows.push({ key: `chem-${key}`, label, gPerMj: per(g), detail });
+  for (const [key, label, activity, factor, activityUnit, factorUnit, detail] of extras) {
+    if (activity * factor === 0) continue;
+    rows.push({
+      key: `chem-${key}`,
+      label,
+      gPerMj: per(activity * factor),
+      detail,
+      activity,
+      activityUnit,
+      factor,
+      factorUnit,
+      divisor: mjPerTonneFuel,
+      divisorUnit: "MJ/t fuel",
+    });
   }
   return { gPerMj: rows.reduce((a, r) => a + r.gPerMj, 0), rows };
 }
@@ -1971,6 +2050,13 @@ export function computeCoProducts(c: CoProductInputs): ModuleResult {
       label: `${item.label || "Co-product"} credit`,
       gPerMj: -g / mjPerTonneFuel,
       detail: `${item.kgPerTonneFuel} kg/t fuel × ${item.gPerKg} gCO2e/kg displaced`,
+      activity: item.kgPerTonneFuel,
+      activityUnit: "kg/t fuel",
+      factor: item.gPerKg,
+      factorUnit: "gCO2e/kg displaced",
+      divisor: mjPerTonneFuel,
+      divisorUnit: "MJ/t fuel",
+      sign: -1,
     });
   }
   if (c.exportedElectricityKwhPerMj !== 0) {
@@ -1979,6 +2065,11 @@ export function computeCoProducts(c: CoProductInputs): ModuleResult {
       label: "Exported electricity credit",
       gPerMj: -c.exportedElectricityKwhPerMj * c.exportedElectricityCreditPerKwh,
       detail: `${c.exportedElectricityKwhPerMj} kWh/MJ × ${c.exportedElectricityCreditPerKwh} g/kWh displaced`,
+      activity: c.exportedElectricityKwhPerMj,
+      activityUnit: "kWh/MJ fuel",
+      factor: c.exportedElectricityCreditPerKwh,
+      factorUnit: "gCO2e/kWh displaced",
+      sign: -1,
     });
   }
   if (c.avoidedMethaneGPerMj !== 0) {
@@ -1987,6 +2078,11 @@ export function computeCoProducts(c: CoProductInputs): ModuleResult {
       label: "Avoided methane credit",
       gPerMj: -Math.abs(c.avoidedMethaneGPerMj),
       detail: "Manure, landfill or wastewater methane that would have been released",
+      activity: Math.abs(c.avoidedMethaneGPerMj),
+      activityUnit: "gCO2e/MJ",
+      factor: 1,
+      factorUnit: "—",
+      sign: -1,
     });
   }
   const alloc = Math.min(100, Math.max(0, c.allocationPct)) / 100;
@@ -2044,7 +2140,16 @@ export function computeDistribution(dst: DistributionInputs, upstreamCi: number)
   ];
   for (const [key, label, g, detail] of extras) {
     if (g === 0) continue;
-    rows.push({ key: `dist-${key}`, label, gPerMj: g, detail });
+    rows.push({
+      key: `dist-${key}`,
+      label,
+      gPerMj: g,
+      detail,
+      activity: g,
+      activityUnit: "gCO2e/MJ",
+      factor: 1,
+      factorUnit: "—",
+    });
   }
   if (dst.lossPct !== 0) {
     rows.push({
@@ -2052,6 +2157,10 @@ export function computeDistribution(dst: DistributionInputs, upstreamCi: number)
       label: "Distribution losses",
       gPerMj: (dst.lossPct / 100) * upstreamCi,
       detail: `${dst.lossPct}% of the fuel lost, carrying its upstream carbon`,
+      activity: dst.lossPct / 100,
+      activityUnit: "share of fuel lost",
+      factor: upstreamCi,
+      factorUnit: "gCO2e/MJ upstream",
     });
   }
   return { gPerMj: rows.reduce((a, r) => a + r.gPerMj, 0), rows };
@@ -2128,17 +2237,50 @@ export function computeTailpipe(t: TailpipeInputs): ModuleResult {
   const n2o = t.n2oOverride >= 0 ? t.n2oOverride : mode.n2oGPerMj;
   const fossil = (Math.min(100, Math.max(0, t.fossilCarbonPct)) / 100) * t.combustionCo2GPerMj;
   const rows: DetailRow[] = [];
-  if (ch4) rows.push({ key: "tp-ch4", label: `${mode.label} — methane slip`, gPerMj: ch4, detail: mode.note });
-  if (n2o) rows.push({ key: "tp-n2o", label: `${mode.label} — nitrous oxide`, gPerMj: n2o, detail: "Combustion N2O, GWP 273" });
+  if (ch4)
+    rows.push({
+      key: "tp-ch4",
+      label: `${mode.label} — methane slip`,
+      gPerMj: ch4,
+      detail: mode.note,
+      activity: ch4,
+      activityUnit: "gCO2e/MJ",
+      factor: 1,
+      factorUnit: "—",
+    });
+  if (n2o)
+    rows.push({
+      key: "tp-n2o",
+      label: `${mode.label} — nitrous oxide`,
+      gPerMj: n2o,
+      detail: "Combustion N2O, GWP 273",
+      activity: n2o,
+      activityUnit: "gCO2e/MJ",
+      factor: 1,
+      factorUnit: "—",
+    });
   if (fossil)
     rows.push({
       key: "tp-fossil",
       label: "Fossil carbon in the fuel",
       gPerMj: fossil,
       detail: `${t.fossilCarbonPct}% of ${t.combustionCo2GPerMj} gCO2/MJ combustion CO2`,
+      activity: Math.min(100, Math.max(0, t.fossilCarbonPct)) / 100,
+      activityUnit: "fossil carbon share",
+      factor: t.combustionCo2GPerMj,
+      factorUnit: "gCO2/MJ combustion",
     });
   if (t.aftertreatmentGPerMj)
-    rows.push({ key: "tp-scr", label: "Aftertreatment reagent", gPerMj: t.aftertreatmentGPerMj, detail: "Urea / DEF consumption" });
+    rows.push({
+      key: "tp-scr",
+      label: "Aftertreatment reagent",
+      gPerMj: t.aftertreatmentGPerMj,
+      detail: "Urea / DEF consumption",
+      activity: t.aftertreatmentGPerMj,
+      activityUnit: "gCO2e/MJ",
+      factor: 1,
+      factorUnit: "—",
+    });
   rows.push({
     key: "tp-biogenic",
     label: "Biogenic combustion CO2",

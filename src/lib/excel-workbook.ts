@@ -4,10 +4,21 @@ const SITE = "Global Bioenergy Watch";
 const SITE_URL = "https://www.globalbioenergywatch.org";
 const NAVY = "FF0B1F3A";
 
+/** A single cell: literal text/number, or a formula referencing other rows. */
+export type CellValue = string | number | { formula: string };
+
+/**
+ * A row is either plain cells, or a keyed row whose value cell can be
+ * referenced from later formulas via {{cell:KEY}} / {{range:KEY1..KEY2}}.
+ */
+export type SheetRow =
+  | CellValue[]
+  | { key?: string; refCol?: number; bold?: boolean; cells: CellValue[] };
+
 export type SheetSection = {
   title?: string;
   header?: string[];
-  rows: (string | number)[][];
+  rows: SheetRow[];
 };
 
 export type SheetSpec = {
@@ -145,6 +156,29 @@ export async function downloadExcelWorkbook(spec: WorkbookExport) {
   const imageId =
     logo != null ? wb.addImage({ buffer: logo as never, extension: "png" }) : null;
 
+  wb.calcProperties.fullCalcOnLoad = true;
+
+  const colLetter = (index: number) => {
+    let n = index;
+    let out = "";
+    while (n > 0) {
+      const rem = (n - 1) % 26;
+      out = String.fromCharCode(65 + rem) + out;
+      n = Math.floor((n - 1) / 26);
+    }
+    return out || "A";
+  };
+  const refs = new Map<string, string>();
+  const resolve = (formula: string, rowNumber: number) =>
+    formula
+      .replace(/\{\{range:([^}.]+)\.\.([^}]+)\}\}/g, (_m, a: string, b: string) => {
+        const from = refs.get(a.trim());
+        const to = refs.get(b.trim());
+        return from && to ? `${from}:${to}` : "0";
+      })
+      .replace(/\{\{cell:([^}]+)\}\}/g, (_m, k: string) => refs.get(k.trim()) ?? "0")
+      .replace(/\{r\}/g, String(rowNumber));
+
   for (const sheet of spec.sheets) {
     const ws = wb.addWorksheet(sheet.name.slice(0, 31));
     const widths = sheet.columnWidths ?? [34, 34, 40, 18, 22, 30];
@@ -183,9 +217,18 @@ export async function downloadExcelWorkbook(spec: WorkbookExport) {
         });
       }
       for (const r of section.rows) {
-        const row = ws.addRow(r);
+        const spec = Array.isArray(r) ? { cells: r } : r;
+        const row = ws.addRow(spec.cells.map((c) => (typeof c === "object" ? null : c)));
+        if (spec.key) {
+          refs.set(spec.key, `${colLetter(spec.refCol ?? 2)}${row.number}`);
+        }
+        spec.cells.forEach((cell, index) => {
+          if (typeof cell === "object" && cell !== null && "formula" in cell) {
+            row.getCell(index + 1).value = { formula: resolve(cell.formula, row.number) } as never;
+          }
+        });
         row.eachCell((c) => {
-          c.font = { name: "Arial", size: 10 };
+          c.font = { name: "Arial", size: 10, bold: spec.bold === true };
           c.alignment = { vertical: "top", wrapText: true };
         });
       }
