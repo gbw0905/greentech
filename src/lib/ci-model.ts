@@ -1852,6 +1852,12 @@ function legRows(legs: TransportLeg[], tonnesPerGj: number, prefix: string): Det
         label: leg.label || mode.label,
         gPerMj: (tkmPerGj * mode.gPerTonneKm) / 1000,
         detail: `${mode.label} · ${leg.distanceKm} km · ${leg.sharePct}% of mass · ${mode.gPerTonneKm} g/t-km`,
+        activity: tkmPerGj,
+        activityUnit: "t-km/GJ fuel",
+        factor: mode.gPerTonneKm,
+        factorUnit: "gCO2e/t-km",
+        divisor: 1000,
+        divisorUnit: "MJ/GJ",
       };
     })
     .filter((r) => r.gPerMj !== 0);
