@@ -472,7 +472,7 @@ export function PathwayCiBuilder() {
   const setVariant = (k: SourceId, v: string) =>
     setInputs((p) => ({ ...p, sourceVariants: { ...p.sourceVariants, [k]: v } }));
 
-  const detail: DetailModules = inputs.detail ?? defaultDetailModules();
+  const detail: DetailModules = inputs.detail ?? defaultDetailModules(inputs.feedstockId);
   const setModule = <K extends DetailModuleKey>(key: K, patch: Partial<DetailModules[K]>) =>
     setInputs((p) => {
       const base = p.detail ?? defaultDetailModules();
