@@ -1268,14 +1268,24 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
     if (mod?.enabled && moduleKey && moduleKey !== "distribution") {
       for (const r of moduleRows[moduleKey] ?? []) {
         if (r.gPerMj === 0) continue;
-        lineItems.push({ key: r.key, label: r.label, category: f.category, gPerMj: r.gPerMj, detail: r.detail });
+        lineItems.push({ ...r, key: r.key, label: r.label, category: f.category, gPerMj: r.gPerMj, detail: r.detail });
       }
       continue;
     }
     if (moduleKey === "distribution" && detail?.distribution.enabled) continue;
     const v = Number(input.direct[f.key]) || 0;
     if (v === 0) continue;
-    lineItems.push({ key: f.key, label: f.label, category: f.category, gPerMj: v, detail: f.hint });
+    lineItems.push({
+      key: f.key,
+      label: f.label,
+      category: f.category,
+      gPerMj: v,
+      detail: f.hint,
+      activity: v,
+      activityUnit: "gCO2e/MJ",
+      factor: 1,
+      factorUnit: "—",
+    });
   }
 
   for (const s of SOURCES) {
@@ -1292,6 +1302,10 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
       category: "Process energy",
       gPerMj: qty * factor,
       detail: `${qty} ${s.unit}/MJ × ${factor.toFixed(1)} gCO2e/${s.unit}`,
+      activity: qty,
+      activityUnit: `${s.unit}/MJ fuel`,
+      factor,
+      factorUnit: `gCO2e/${s.unit}`,
     });
   }
 
