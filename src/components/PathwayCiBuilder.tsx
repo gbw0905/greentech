@@ -531,41 +531,117 @@ export function PathwayCiBuilder() {
       });
     }
 
+    // Every lifecycle row is written as a live formula: the activity, factor,
+    // divisor and sign/allocation sit in their own cells so the workbook can be
+    // re-run with different numbers.
     const lineHeader = [
       "Item",
       "Basis / detail",
+      "Activity",
+      "Activity unit",
+      "Emission factor",
+      "Factor unit",
+      "Divisor",
+      "Sign × allocation",
       `Value (${ciUnit.label})`,
-      "Unit",
       `Annual (${massUnit.label})`,
     ];
+    const VALUE_COL = 9;
+    const positiveKeys: string[] = [];
+    const negativeKeys: string[] = [];
+    const subtotalKeys: string[] = [];
+    let rowIndex = 0;
+
     for (const section of EXPORT_SECTIONS) {
       const items = result.lineItems.filter((item) => exportSectionFor(item) === section);
       if (!items.length) continue;
-      const rows: (string | number)[][] = items.map((l) => [
-        l.label,
-        l.detail ?? "",
-        Number(ci(l.gPerMj)),
-        ciUnit.label,
-        Number(annual(l.gPerMj).toFixed(2)),
-      ]);
-      const subtotal = items.reduce((a, l) => a + l.gPerMj, 0);
-      rows.push([
-        `${section} subtotal`,
-        "",
-        Number(ci(subtotal)),
-        ciUnit.label,
-        Number(annual(subtotal).toFixed(2)),
-      ]);
+      const sectionKeys: string[] = [];
+      const rows: SheetRow[] = items.map((l) => {
+        const key = `li-${rowIndex++}`;
+        sectionKeys.push(key);
+        (l.gPerMj < 0 ? negativeKeys : positiveKeys).push(key);
+        const activity = l.activity ?? l.gPerMj;
+        const factor = l.factor ?? 1;
+        const divisor = l.divisor ?? 1;
+        const multiplier = (l.sign ?? 1) * (l.allocation ?? 1);
+        return {
+          key,
+          refCol: VALUE_COL,
+          cells: [
+            l.label,
+            l.detail ?? "",
+            activity,
+            l.activityUnit ?? "gCO2e/MJ",
+            factor,
+            l.factorUnit ?? "—",
+            divisor,
+            multiplier,
+            { formula: `C{r}*E{r}/G{r}*H{r}*{{cell:ciFactor}}` },
+            { formula: `I{r}/{{cell:ciFactor}}*{{cell:annualMj}}/1000000*{{cell:massFactor}}` },
+          ],
+        } satisfies SheetRow;
+      });
+      const subtotalKey = `sub-${section}`;
+      subtotalKeys.push(subtotalKey);
+      rows.push({
+        key: subtotalKey,
+        refCol: VALUE_COL,
+        bold: true,
+        cells: [
+          `${section} subtotal`,
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          {
+            formula: `SUM(${sectionKeys.map((k) => `{{cell:${k}}}`).join(",")})`,
+          },
+          { formula: `I{r}/{{cell:ciFactor}}*{{cell:annualMj}}/1000000*{{cell:massFactor}}` },
+        ],
+      });
       calcSections.push({ title: section, header: lineHeader, rows });
     }
 
+    const sumOf = (keys: string[]) =>
+      keys.length ? `SUM(${keys.map((k) => `{{cell:${k}}}`).join(",")})` : "0";
+    const annualFormula = `I{r}/{{cell:ciFactor}}*{{cell:annualMj}}/1000000*{{cell:massFactor}}`;
+
     calcSections.push({
       title: "Results",
-      header: ["Result", "", `Value (${ciUnit.label})`, "Unit", `Annual (${massUnit.label})`],
+      header: ["Result", "Basis", "", "", "", "", "", "", `Value (${ciUnit.label})`, `Annual (${massUnit.label})`],
       rows: [
-        ["Gross emissions", "", Number(ci(result.grossCi)), ciUnit.label, Number(annual(result.grossCi).toFixed(2))],
-        ["Credits applied", "", Number(ci(result.creditsCi)), ciUnit.label, Number(annual(result.creditsCi).toFixed(2))],
-        ["Total carbon intensity", "", Number(ci(result.ciTotal)), ciUnit.label, Number(annualTonnes.toFixed(2))],
+        {
+          key: "grossCi",
+          refCol: VALUE_COL,
+          bold: true,
+          cells: ["Gross emissions", "Sum of all positive line items", "", "", "", "", "", "", { formula: sumOf(positiveKeys) }, { formula: annualFormula }],
+        },
+        {
+          key: "creditsCi",
+          refCol: VALUE_COL,
+          bold: true,
+          cells: ["Credits applied", "Sum of all credit line items", "", "", "", "", "", "", { formula: sumOf(negativeKeys) }, { formula: annualFormula }],
+        },
+        {
+          key: "ciTotal",
+          refCol: VALUE_COL,
+          bold: true,
+          cells: [
+            "Total carbon intensity",
+            "Sum of every section subtotal",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            { formula: sumOf(subtotalKeys) },
+            { formula: annualFormula },
+          ],
+        },
       ],
     });
 
@@ -574,21 +650,32 @@ export function PathwayCiBuilder() {
       header: [
         "Program",
         "Jurisdiction",
-        "Benchmark",
+        `Benchmark (${ciUnit.label})`,
+        "EER applied",
+        `Adjusted benchmark (${ciUnit.label})`,
         "Benchmark basis",
         "Saving vs benchmark",
-        "Annual credits (t)",
+        "Annual credits (t CO2e)",
       ],
-      rows: result.programs.map((p) => [
-        p.program.label,
-        p.program.jurisdiction,
-        p.benchmark == null ? "Fuel not covered" : `${ci(p.benchmark)} ${ciUnit.label}`,
-        p.program.benchmarkBasis,
-        p.savingPct == null ? "—" : `${p.savingPct.toFixed(1)}%`,
-        p.annualCreditsTonnes == null || !p.program.creditMarket
-          ? "—"
-          : Number(p.annualCreditsTonnes.toFixed(0)),
-      ]),
+      rows: result.programs.map((p) => {
+        if (p.benchmark == null) {
+          return [p.program.label, p.program.jurisdiction, "Fuel not covered", "", "", p.program.benchmarkBasis, "—", "—"];
+        }
+        return {
+          cells: [
+            p.program.label,
+            p.program.jurisdiction,
+            Number(ci(p.benchmark)),
+            p.eer,
+            { formula: `C{r}*D{r}` },
+            p.program.benchmarkBasis,
+            { formula: `(C{r}-{{cell:ciTotal}})/C{r}` },
+            p.program.creditMarket
+              ? { formula: `(E{r}-{{cell:ciTotal}})/{{cell:ciFactor}}*{{cell:annualMj}}/1000000` }
+              : "—",
+          ],
+        } satisfies SheetRow;
+      }),
     });
 
     const factors = backgroundFactors();
