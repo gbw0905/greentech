@@ -1741,26 +1741,46 @@ export function computeFeedstockProduction(
   const per = (gPerTonne: number) => gPerTonne / yieldMj;
   const fieldN2o =
     f.nitrogenKg * f.n2oEmissionFactor * (44 / 28) * DETAIL_FACTORS.n2oGwp * 1000;
-  const items: [string, string, number, string][] = [
-    ["cultivationDiesel", "Cultivation and harvest diesel", f.cultivationDieselL * DETAIL_FACTORS.dieselPerLitre, `${f.cultivationDieselL} L/t × 3.72 kg/L`],
-    ["cultivationElectricity", "Cultivation electricity", f.cultivationElectricityKwh * gridFactor, `${f.cultivationElectricityKwh} kWh/t × ${gridFactor} g/kWh`],
-    ["nitrogen", "Nitrogen fertiliser manufacture", f.nitrogenKg * DETAIL_FACTORS.nitrogenPerKg, `${f.nitrogenKg} kg N/t × 4.0 kg/kg`],
-    ["fieldN2o", "Field N2O from applied nitrogen", fieldN2o, `${(f.n2oEmissionFactor * 100).toFixed(2)}% of N as N2O-N, GWP 273`],
-    ["phosphate", "Phosphate fertiliser", f.phosphateKg * DETAIL_FACTORS.phosphatePerKg, `${f.phosphateKg} kg P2O5/t`],
-    ["potash", "Potash fertiliser", f.potashKg * DETAIL_FACTORS.potashPerKg, `${f.potashKg} kg K2O/t`],
-    ["lime", "Lime application", f.limeKg * DETAIL_FACTORS.limePerKg, `${f.limeKg} kg/t × 0.44 kg/kg`],
-    ["pesticide", "Pesticide and herbicide", f.pesticideKg * DETAIL_FACTORS.pesticidePerKg, `${f.pesticideKg} kg/t × 20 kg/kg`],
-    ["seed", "Seed and planting material", f.seedKg * DETAIL_FACTORS.seedPerKg, `${f.seedKg} kg/t`],
-    ["irrigation", "Irrigation pumping", f.irrigationElectricityKwh * gridFactor, `${f.irrigationElectricityKwh} kWh/t`],
-    ["collection", "Collection, baling and handling", f.collectionDieselL * DETAIL_FACTORS.dieselPerLitre, `${f.collectionDieselL} L diesel/t`],
-    ["renderingGas", "Rendering heat (natural gas)", f.renderingGasMj * DETAIL_FACTORS.naturalGasPerMj, `${f.renderingGasMj} MJ/t`],
-    ["renderingElectricity", "Rendering electricity", f.renderingElectricityKwh * gridFactor, `${f.renderingElectricityKwh} kWh/t`],
-    ["dryingGas", "Feedstock drying", f.dryingGasMj * DETAIL_FACTORS.naturalGasPerMj, `${f.dryingGasMj} MJ/t`],
-    ["soilCarbon", "Soil carbon change", f.soilCarbonKgPerTonne * 1000, `${f.soilCarbonKgPerTonne} kgCO2e/t`],
+  const n2oFactor = f.n2oEmissionFactor * (44 / 28) * DETAIL_FACTORS.n2oGwp * 1000;
+  const items: {
+    key: string;
+    label: string;
+    detail: string;
+    activity: number;
+    activityUnit: string;
+    factor: number;
+    factorUnit: string;
+  }[] = [
+    { key: "cultivationDiesel", label: "Cultivation and harvest diesel", detail: `${f.cultivationDieselL} L/t × 3.72 kg/L`, activity: f.cultivationDieselL, activityUnit: "L diesel/t", factor: DETAIL_FACTORS.dieselPerLitre, factorUnit: "gCO2e/L" },
+    { key: "cultivationElectricity", label: "Cultivation electricity", detail: `${f.cultivationElectricityKwh} kWh/t × ${gridFactor} g/kWh`, activity: f.cultivationElectricityKwh, activityUnit: "kWh/t", factor: gridFactor, factorUnit: "gCO2e/kWh" },
+    { key: "nitrogen", label: "Nitrogen fertiliser manufacture", detail: `${f.nitrogenKg} kg N/t × 4.0 kg/kg`, activity: f.nitrogenKg, activityUnit: "kg N/t", factor: DETAIL_FACTORS.nitrogenPerKg, factorUnit: "gCO2e/kg N" },
+    { key: "fieldN2o", label: "Field N2O from applied nitrogen", detail: `${(f.n2oEmissionFactor * 100).toFixed(2)}% of N as N2O-N, GWP 273`, activity: f.nitrogenKg, activityUnit: "kg N/t", factor: n2oFactor, factorUnit: "gCO2e/kg N" },
+    { key: "phosphate", label: "Phosphate fertiliser", detail: `${f.phosphateKg} kg P2O5/t`, activity: f.phosphateKg, activityUnit: "kg P2O5/t", factor: DETAIL_FACTORS.phosphatePerKg, factorUnit: "gCO2e/kg" },
+    { key: "potash", label: "Potash fertiliser", detail: `${f.potashKg} kg K2O/t`, activity: f.potashKg, activityUnit: "kg K2O/t", factor: DETAIL_FACTORS.potashPerKg, factorUnit: "gCO2e/kg" },
+    { key: "lime", label: "Lime application", detail: `${f.limeKg} kg/t × 0.44 kg/kg`, activity: f.limeKg, activityUnit: "kg/t", factor: DETAIL_FACTORS.limePerKg, factorUnit: "gCO2e/kg" },
+    { key: "pesticide", label: "Pesticide and herbicide", detail: `${f.pesticideKg} kg/t × 20 kg/kg`, activity: f.pesticideKg, activityUnit: "kg/t", factor: DETAIL_FACTORS.pesticidePerKg, factorUnit: "gCO2e/kg" },
+    { key: "seed", label: "Seed and planting material", detail: `${f.seedKg} kg/t`, activity: f.seedKg, activityUnit: "kg/t", factor: DETAIL_FACTORS.seedPerKg, factorUnit: "gCO2e/kg" },
+    { key: "irrigation", label: "Irrigation pumping", detail: `${f.irrigationElectricityKwh} kWh/t`, activity: f.irrigationElectricityKwh, activityUnit: "kWh/t", factor: gridFactor, factorUnit: "gCO2e/kWh" },
+    { key: "collection", label: "Collection, baling and handling", detail: `${f.collectionDieselL} L diesel/t`, activity: f.collectionDieselL, activityUnit: "L diesel/t", factor: DETAIL_FACTORS.dieselPerLitre, factorUnit: "gCO2e/L" },
+    { key: "renderingGas", label: "Rendering heat (natural gas)", detail: `${f.renderingGasMj} MJ/t`, activity: f.renderingGasMj, activityUnit: "MJ/t", factor: DETAIL_FACTORS.naturalGasPerMj, factorUnit: "gCO2e/MJ" },
+    { key: "renderingElectricity", label: "Rendering electricity", detail: `${f.renderingElectricityKwh} kWh/t`, activity: f.renderingElectricityKwh, activityUnit: "kWh/t", factor: gridFactor, factorUnit: "gCO2e/kWh" },
+    { key: "dryingGas", label: "Feedstock drying", detail: `${f.dryingGasMj} MJ/t`, activity: f.dryingGasMj, activityUnit: "MJ/t", factor: DETAIL_FACTORS.naturalGasPerMj, factorUnit: "gCO2e/MJ" },
+    { key: "soilCarbon", label: "Soil carbon change", detail: `${f.soilCarbonKgPerTonne} kgCO2e/t`, activity: f.soilCarbonKgPerTonne, activityUnit: "kgCO2e/t", factor: 1000, factorUnit: "g/kg" },
   ];
   const rows = items
-    .filter(([, , g]) => g !== 0)
-    .map(([key, label, g, detail]) => ({ key: `fp-${key}`, label, gPerMj: per(g), detail }));
+    .filter((i) => i.activity * i.factor !== 0)
+    .map((i) => ({
+      key: `fp-${i.key}`,
+      label: i.label,
+      gPerMj: per(i.activity * i.factor),
+      detail: i.detail,
+      activity: i.activity,
+      activityUnit: i.activityUnit,
+      factor: i.factor,
+      factorUnit: i.factorUnit,
+      divisor: yieldMj,
+      divisorUnit: "MJ/t feedstock",
+    }));
   return { gPerMj: rows.reduce((a, r) => a + r.gPerMj, 0), rows };
 }
 
