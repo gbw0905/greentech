@@ -1318,6 +1318,7 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
       for (const r of ds.rows) {
         if (r.gPerMj === 0) continue;
         lineItems.push({
+          ...r,
           key: r.key,
           label: r.label,
           category: categoryOf("distribution"),
