@@ -1938,17 +1938,34 @@ export function computeChemicals(c: ChemicalsInputs): ModuleResult {
       label: item.label || "Chemical input",
       gPerMj: per(g),
       detail: `${item.kgPerTonneFuel} kg/t fuel × ${item.gPerKg} gCO2e/kg`,
+      activity: item.kgPerTonneFuel,
+      activityUnit: "kg/t fuel",
+      factor: item.gPerKg,
+      factorUnit: "gCO2e/kg",
+      divisor: mjPerTonneFuel,
+      divisorUnit: "MJ/t fuel",
     });
   }
-  const extras: [string, string, number, string][] = [
-    ["ch4", "Fugitive methane", c.fugitiveCh4KgPerTonne * DETAIL_FACTORS.ch4Gwp * 1000, `${c.fugitiveCh4KgPerTonne} kg CH4/t fuel × GWP 29.8`],
-    ["n2o", "Fugitive nitrous oxide", c.fugitiveN2oKgPerTonne * DETAIL_FACTORS.n2oGwp * 1000, `${c.fugitiveN2oKgPerTonne} kg N2O/t fuel × GWP 273`],
-    ["vent", "Vented or flared process CO2", c.ventedCo2KgPerTonne * 1000, `${c.ventedCo2KgPerTonne} kg CO2/t fuel`],
-    ["ccs", "Carbon captured and stored", -c.capturedCo2KgPerTonne * 1000, `${c.capturedCo2KgPerTonne} kg CO2/t fuel stored`],
+  const extras: [string, string, number, number, string, string, string][] = [
+    ["ch4", "Fugitive methane", c.fugitiveCh4KgPerTonne, DETAIL_FACTORS.ch4Gwp * 1000, "kg CH4/t fuel", "gCO2e/kg CH4", `${c.fugitiveCh4KgPerTonne} kg CH4/t fuel × GWP 29.8`],
+    ["n2o", "Fugitive nitrous oxide", c.fugitiveN2oKgPerTonne, DETAIL_FACTORS.n2oGwp * 1000, "kg N2O/t fuel", "gCO2e/kg N2O", `${c.fugitiveN2oKgPerTonne} kg N2O/t fuel × GWP 273`],
+    ["vent", "Vented or flared process CO2", c.ventedCo2KgPerTonne, 1000, "kg CO2/t fuel", "g/kg", `${c.ventedCo2KgPerTonne} kg CO2/t fuel`],
+    ["ccs", "Carbon captured and stored", -c.capturedCo2KgPerTonne, 1000, "kg CO2/t fuel", "g/kg", `${c.capturedCo2KgPerTonne} kg CO2/t fuel stored`],
   ];
-  for (const [key, label, g, detail] of extras) {
-    if (g === 0) continue;
-    rows.push({ key: `chem-${key}`, label, gPerMj: per(g), detail });
+  for (const [key, label, activity, factor, activityUnit, factorUnit, detail] of extras) {
+    if (activity * factor === 0) continue;
+    rows.push({
+      key: `chem-${key}`,
+      label,
+      gPerMj: per(activity * factor),
+      detail,
+      activity,
+      activityUnit,
+      factor,
+      factorUnit,
+      divisor: mjPerTonneFuel,
+      divisorUnit: "MJ/t fuel",
+    });
   }
   return { gPerMj: rows.reduce((a, r) => a + r.gPerMj, 0), rows };
 }
