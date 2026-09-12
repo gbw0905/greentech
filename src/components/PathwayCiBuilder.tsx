@@ -486,7 +486,7 @@ export function PathwayCiBuilder() {
   const annualTonnes = result.annualTonnesCo2e * massUnit.factor;
 
   const buildWorkbook = (): WorkbookExport => {
-    const annual = (g: number) => ((g * result.annualEnergyMj) / 1_000_000) * massUnit.factor;
+    
     const regionLabel =
       ELECTRICITY_REGIONS.find((r) => r.id === region)?.label ?? String(region);
 
@@ -789,7 +789,7 @@ export function PathwayCiBuilder() {
           name: "Calculation",
           intro: "Lifecycle carbon intensity, section by section.",
           sections: calcSections,
-          columnWidths: [42, 46, 18, 16, 20],
+          columnWidths: [40, 42, 14, 18, 16, 20, 12, 16, 18, 20],
           charts: calcCharts,
         },
         {
