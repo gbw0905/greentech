@@ -1382,7 +1382,7 @@ export function PathwayCiBuilder() {
           <p className="text-sm font-semibold text-muted-foreground">
             {ciUnit.label} of {result.pathway.label.toLowerCase()}
           </p>
-          {premium ? (
+          {premium ? (<>
           <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-border pt-4">
             {[
               ["Gross emissions", `${ci(result.grossCi)} ${ciUnit.label}`],
@@ -1413,7 +1413,7 @@ export function PathwayCiBuilder() {
               </select>
             </Field>
           </div>
-          ) : null}
+          </>) : null}
         </div>
 
         {premium ? (
