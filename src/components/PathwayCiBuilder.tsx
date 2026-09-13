@@ -1777,6 +1777,7 @@ export function PathwayCiBuilder() {
         })()}
       </section>
 
+      {premium ? (
       <section
         className="glass-panel border-l-4 p-5"
         style={{ borderLeftColor: TONE_COLOR.green }}
