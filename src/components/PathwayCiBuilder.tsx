@@ -263,6 +263,7 @@ function DetailSection({
   totalLabel,
   children,
   tone = "blue",
+  locked = false,
 }: {
   title: string;
   description: string;
@@ -272,6 +273,7 @@ function DetailSection({
   totalLabel: string;
   children: React.ReactNode;
   tone?: SectionTone;
+  locked?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   return (
