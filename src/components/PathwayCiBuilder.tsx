@@ -879,14 +879,16 @@ export function PathwayCiBuilder() {
               Fuel pathway
             </h2>
           </div>
-          <button
-            type="button"
-            onClick={() => setInputs(scenarioFromPathway(inputs.pathwayId, region))}
-            className="label-mono inline-flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3 font-bold text-foreground hover:border-accent"
-          >
-            <RotateCcw className="size-3.5" />
-            Reset pathway defaults
-          </button>
+          {premium ? (
+            <button
+              type="button"
+              onClick={() => setInputs(scenarioFromPathway(inputs.pathwayId, region))}
+              className="label-mono inline-flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3 font-bold text-foreground hover:border-accent"
+            >
+              <RotateCcw className="size-3.5" />
+              Reset pathway defaults
+            </button>
+          ) : null}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -914,15 +916,21 @@ export function PathwayCiBuilder() {
             label="Annual production"
             hint={`${result.pathway.unitLabel}s per year · ${num(result.annualEnergyMj)} MJ`}
           >
-            <input
-              type="number"
-              min={0}
-              className={inputCls}
-              value={inputs.annualVolume}
-              onChange={(e) =>
-                setInputs((p) => ({ ...p, annualVolume: Number(e.target.value) || 0 }))
-              }
-            />
+            {premium ? (
+              <input
+                type="number"
+                min={0}
+                className={inputCls}
+                value={inputs.annualVolume}
+                onChange={(e) =>
+                  setInputs((p) => ({ ...p, annualVolume: Number(e.target.value) || 0 }))
+                }
+              />
+            ) : (
+              <p className="flex h-11 items-center rounded-md border border-border bg-muted/30 px-3 text-sm font-medium text-foreground">
+                {num(inputs.annualVolume)} {result.pathway.unitLabel}s per year
+              </p>
+            )}
           </Field>
         </div>
       </section>
