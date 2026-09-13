@@ -500,6 +500,8 @@ export function PathwayCiBuilder() {
   const [ciUnitId, setCiUnitId] = useState<string>("g-mj");
   const [massUnitId, setMassUnitId] = useState<string>("t");
 
+  const { premium, signedIn } = usePremium();
+
   const result = useMemo(() => calculateScenario({ ...inputs, region }), [inputs, region]);
 
   const ciUnit = CI_UNIT_BY_ID[ciUnitId] ?? CI_UNITS[0]!;
