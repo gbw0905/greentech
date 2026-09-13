@@ -34,6 +34,46 @@ import {
 } from "@/lib/ci-model";
 import { ExportExcelButton } from "@/components/ExportExcelButton";
 import type { SheetRow, SheetSection, WorkbookChart, WorkbookExport } from "@/lib/excel-workbook";
+import { Link } from "@tanstack/react-router";
+import { Lock } from "lucide-react";
+import { usePremium } from "@/hooks/usePremium";
+
+/** Shown in place of the detailed results when the account is not on the premium list. */
+function PremiumLocked({ signedIn }: { signedIn: boolean }) {
+  return (
+    <section className="glass-panel border-l-4 p-5" style={{ borderLeftColor: "rgb(180, 35, 24)" }}>
+      <div className="flex items-start gap-2.5">
+        <Lock className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+        <div className="min-w-0">
+          <h2 className="font-display text-lg font-extrabold text-foreground">
+            Detailed results are a premium feature
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            The free calculator shows the headline carbon intensity for your scenario. Premium
+            members also get the emission source breakdown, the full line-by-line emissions table,
+            the regulatory program comparison and the Excel export with all background factors.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {signedIn ? null : (
+              <Link
+                to="/auth"
+                className="inline-flex items-center gap-2 border border-ink bg-ink px-3 py-1.5 text-xs font-semibold text-ink-foreground transition-opacity hover:opacity-85"
+              >
+                Sign in
+              </Link>
+            )}
+            <Link
+              to="/contact"
+              className="inline-flex items-center gap-2 border border-border px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-foreground"
+            >
+              Request premium access
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 
 
@@ -459,6 +499,8 @@ export function PathwayCiBuilder() {
   const [units, setUnits] = useState<Partial<Record<SourceId, string>>>({});
   const [ciUnitId, setCiUnitId] = useState<string>("g-mj");
   const [massUnitId, setMassUnitId] = useState<string>("t");
+
+  const { premium, signedIn } = usePremium();
 
   const result = useMemo(() => calculateScenario({ ...inputs, region }), [inputs, region]);
 
@@ -1342,6 +1384,7 @@ export function PathwayCiBuilder() {
           <p className="text-sm font-semibold text-muted-foreground">
             {ciUnit.label} of {result.pathway.label.toLowerCase()}
           </p>
+          {premium ? (<>
           <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-border pt-4">
             {[
               ["Gross emissions", `${ci(result.grossCi)} ${ciUnit.label}`],
@@ -1372,8 +1415,10 @@ export function PathwayCiBuilder() {
               </select>
             </Field>
           </div>
+          </>) : null}
         </div>
 
+        {premium ? (
         <div
           className="glass-panel min-w-0 border-l-4 p-5"
           style={{ borderLeftColor: TONE_COLOR.blue }}
@@ -1497,8 +1542,11 @@ export function PathwayCiBuilder() {
             );
           })()}
         </div>
+      ) : null}
       </section>
+      {premium ? null : <PremiumLocked signedIn={signedIn} />}
 
+      {premium ? (
       <section
         className="glass-panel overflow-x-auto border-l-4 p-5"
         style={{ borderLeftColor: TONE_COLOR.blue }}
@@ -1590,7 +1638,9 @@ export function PathwayCiBuilder() {
           </tbody>
         </table>
       </section>
+      ) : null}
 
+      {premium ? (
       <section
         className="glass-panel overflow-x-auto border-l-4 p-5"
         style={{ borderLeftColor: TONE_COLOR.blue }}
@@ -1736,7 +1786,9 @@ export function PathwayCiBuilder() {
           );
         })()}
       </section>
+      ) : null}
 
+      {premium ? (
       <section
         className="glass-panel border-l-4 p-5"
         style={{ borderLeftColor: TONE_COLOR.green }}
@@ -1761,6 +1813,7 @@ export function PathwayCiBuilder() {
 
         </div>
       </section>
+      ) : null}
     </div>
   );
 }
