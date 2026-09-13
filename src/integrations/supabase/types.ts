@@ -358,6 +358,33 @@ export type Database = {
         }
         Relationships: []
       }
+      premium_members: {
+        Row: {
+          active: boolean
+          created_at: string
+          email: string
+          id: string
+          note: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          email: string
+          id?: string
+          note?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          email?: string
+          id?: string
+          note?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       site_visits: {
         Row: {
           country: string | null
