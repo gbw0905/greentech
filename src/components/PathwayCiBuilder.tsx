@@ -202,6 +202,7 @@ function CollapsibleSection({
   totalLabel,
   children,
   tone = "blue",
+  locked = false,
 }: {
   title: string;
   description: string;
@@ -209,6 +210,7 @@ function CollapsibleSection({
   totalLabel: string;
   children: React.ReactNode;
   tone?: SectionTone;
+  locked?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -232,18 +234,20 @@ function CollapsibleSection({
               {total}
             </span>
           </div>
-          <button
-            type="button"
-            onClick={() => setOpen((o) => !o)}
-            aria-expanded={open}
-            className="label-mono inline-flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3 font-bold text-foreground hover:border-accent"
-          >
-            {open ? "Hide" : "Edit"}
-            <ChevronDown className={`size-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
-          </button>
+          {locked ? null : (
+            <button
+              type="button"
+              onClick={() => setOpen((o) => !o)}
+              aria-expanded={open}
+              className="label-mono inline-flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3 font-bold text-foreground hover:border-accent"
+            >
+              {open ? "Hide" : "Edit"}
+              <ChevronDown className={`size-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
+            </button>
+          )}
         </div>
       </div>
-      {open ? <div className="mt-4 space-y-4">{children}</div> : null}
+      {open && !locked ? <div className="mt-4 space-y-4">{children}</div> : null}
     </section>
   );
 }
