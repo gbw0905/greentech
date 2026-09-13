@@ -300,30 +300,34 @@ function DetailSection({
               {total}
             </span>
           </div>
-          <label className="label-mono inline-flex h-10 cursor-pointer items-center gap-2 rounded-md border border-border bg-background px-3 font-bold text-foreground">
-            <input
-              type="checkbox"
-              className="size-4 accent-[rgb(21,128,61)]"
-              checked={enabled}
-              onChange={(e) => {
-                onToggle(e.target.checked);
-                if (e.target.checked) setOpen(true);
-              }}
-            />
-            Use detailed inputs
-          </label>
-          <button
-            type="button"
-            onClick={() => setOpen((o) => !o)}
-            aria-expanded={open}
-            className="label-mono inline-flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3 font-bold text-foreground hover:border-accent"
-          >
-            {open ? "Hide" : "Edit"}
-            <ChevronDown className={`size-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
-          </button>
+          {locked ? null : (
+            <>
+              <label className="label-mono inline-flex h-10 cursor-pointer items-center gap-2 rounded-md border border-border bg-background px-3 font-bold text-foreground">
+                <input
+                  type="checkbox"
+                  className="size-4 accent-[rgb(21,128,61)]"
+                  checked={enabled}
+                  onChange={(e) => {
+                    onToggle(e.target.checked);
+                    if (e.target.checked) setOpen(true);
+                  }}
+                />
+                Use detailed inputs
+              </label>
+              <button
+                type="button"
+                onClick={() => setOpen((o) => !o)}
+                aria-expanded={open}
+                className="label-mono inline-flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3 font-bold text-foreground hover:border-accent"
+              >
+                {open ? "Hide" : "Edit"}
+                <ChevronDown className={`size-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
+              </button>
+            </>
+          )}
         </div>
       </div>
-      {open ? <div className="mt-4 space-y-4">{children}</div> : null}
+      {open && !locked ? <div className="mt-4 space-y-4">{children}</div> : null}
     </section>
   );
 }
