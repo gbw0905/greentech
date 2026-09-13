@@ -1382,6 +1382,7 @@ export function PathwayCiBuilder() {
           <p className="text-sm font-semibold text-muted-foreground">
             {ciUnit.label} of {result.pathway.label.toLowerCase()}
           </p>
+          {premium ? (
           <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-border pt-4">
             {[
               ["Gross emissions", `${ci(result.grossCi)} ${ciUnit.label}`],
@@ -1412,8 +1413,10 @@ export function PathwayCiBuilder() {
               </select>
             </Field>
           </div>
+          ) : null}
         </div>
 
+        {premium ? (
         <div
           className="glass-panel min-w-0 border-l-4 p-5"
           style={{ borderLeftColor: TONE_COLOR.blue }}
@@ -1537,8 +1540,11 @@ export function PathwayCiBuilder() {
             );
           })()}
         </div>
+      ) : null}
       </section>
+      {premium ? null : <PremiumLocked signedIn={signedIn} />}
 
+      {premium ? (
       <section
         className="glass-panel overflow-x-auto border-l-4 p-5"
         style={{ borderLeftColor: TONE_COLOR.blue }}
@@ -1630,7 +1636,9 @@ export function PathwayCiBuilder() {
           </tbody>
         </table>
       </section>
+      ) : null}
 
+      {premium ? (
       <section
         className="glass-panel overflow-x-auto border-l-4 p-5"
         style={{ borderLeftColor: TONE_COLOR.blue }}
@@ -1776,6 +1784,7 @@ export function PathwayCiBuilder() {
           );
         })()}
       </section>
+      ) : null}
 
       {premium ? (
       <section
