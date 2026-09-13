@@ -937,6 +937,7 @@ export function PathwayCiBuilder() {
         total={moduleTotal("feedstockProduction")}
         totalLabel="Calculated"
         tone="green"
+        locked={!premium}
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Num
@@ -1037,6 +1038,7 @@ export function PathwayCiBuilder() {
         total={moduleTotal("transport")}
         totalLabel="Calculated"
         tone="blue"
+        locked={!premium}
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Num
@@ -1058,6 +1060,7 @@ export function PathwayCiBuilder() {
         description="One parameter per row — choose the supply, the amount and the unit."
         tone="red"
         totalLabel="Process energy"
+        locked={!premium}
         total={`${ci(
           result.lineItems
             .filter((l) => l.category === "Process energy")
@@ -1155,6 +1158,7 @@ export function PathwayCiBuilder() {
         total={moduleTotal("chemicals")}
         totalLabel="Calculated"
         tone="red"
+        locked={!premium}
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Num
@@ -1208,6 +1212,7 @@ export function PathwayCiBuilder() {
         total={moduleTotal("coProducts")}
         totalLabel="Calculated"
         tone="green"
+        locked={!premium}
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Num
@@ -1260,6 +1265,7 @@ export function PathwayCiBuilder() {
         total={moduleTotal("distribution")}
         totalLabel="Calculated"
         tone="blue"
+        locked={!premium}
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Num
@@ -1310,6 +1316,7 @@ export function PathwayCiBuilder() {
         total={moduleTotal("tailpipe")}
         totalLabel="Calculated"
         tone="red"
+        locked={!premium}
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Field
