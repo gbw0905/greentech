@@ -202,6 +202,7 @@ function CollapsibleSection({
   totalLabel,
   children,
   tone = "blue",
+  locked = false,
 }: {
   title: string;
   description: string;
@@ -209,6 +210,7 @@ function CollapsibleSection({
   totalLabel: string;
   children: React.ReactNode;
   tone?: SectionTone;
+  locked?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -232,18 +234,20 @@ function CollapsibleSection({
               {total}
             </span>
           </div>
-          <button
-            type="button"
-            onClick={() => setOpen((o) => !o)}
-            aria-expanded={open}
-            className="label-mono inline-flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3 font-bold text-foreground hover:border-accent"
-          >
-            {open ? "Hide" : "Edit"}
-            <ChevronDown className={`size-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
-          </button>
+          {locked ? null : (
+            <button
+              type="button"
+              onClick={() => setOpen((o) => !o)}
+              aria-expanded={open}
+              className="label-mono inline-flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3 font-bold text-foreground hover:border-accent"
+            >
+              {open ? "Hide" : "Edit"}
+              <ChevronDown className={`size-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
+            </button>
+          )}
         </div>
       </div>
-      {open ? <div className="mt-4 space-y-4">{children}</div> : null}
+      {open && !locked ? <div className="mt-4 space-y-4">{children}</div> : null}
     </section>
   );
 }
@@ -259,6 +263,7 @@ function DetailSection({
   totalLabel,
   children,
   tone = "blue",
+  locked = false,
 }: {
   title: string;
   description: string;
@@ -268,6 +273,7 @@ function DetailSection({
   totalLabel: string;
   children: React.ReactNode;
   tone?: SectionTone;
+  locked?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -294,30 +300,34 @@ function DetailSection({
               {total}
             </span>
           </div>
-          <label className="label-mono inline-flex h-10 cursor-pointer items-center gap-2 rounded-md border border-border bg-background px-3 font-bold text-foreground">
-            <input
-              type="checkbox"
-              className="size-4 accent-[rgb(21,128,61)]"
-              checked={enabled}
-              onChange={(e) => {
-                onToggle(e.target.checked);
-                if (e.target.checked) setOpen(true);
-              }}
-            />
-            Use detailed inputs
-          </label>
-          <button
-            type="button"
-            onClick={() => setOpen((o) => !o)}
-            aria-expanded={open}
-            className="label-mono inline-flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3 font-bold text-foreground hover:border-accent"
-          >
-            {open ? "Hide" : "Edit"}
-            <ChevronDown className={`size-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
-          </button>
+          {locked ? null : (
+            <>
+              <label className="label-mono inline-flex h-10 cursor-pointer items-center gap-2 rounded-md border border-border bg-background px-3 font-bold text-foreground">
+                <input
+                  type="checkbox"
+                  className="size-4 accent-[rgb(21,128,61)]"
+                  checked={enabled}
+                  onChange={(e) => {
+                    onToggle(e.target.checked);
+                    if (e.target.checked) setOpen(true);
+                  }}
+                />
+                Use detailed inputs
+              </label>
+              <button
+                type="button"
+                onClick={() => setOpen((o) => !o)}
+                aria-expanded={open}
+                className="label-mono inline-flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3 font-bold text-foreground hover:border-accent"
+              >
+                {open ? "Hide" : "Edit"}
+                <ChevronDown className={`size-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
+              </button>
+            </>
+          )}
         </div>
       </div>
-      {open ? <div className="mt-4 space-y-4">{children}</div> : null}
+      {open && !locked ? <div className="mt-4 space-y-4">{children}</div> : null}
     </section>
   );
 }
@@ -869,14 +879,16 @@ export function PathwayCiBuilder() {
               Fuel pathway
             </h2>
           </div>
-          <button
-            type="button"
-            onClick={() => setInputs(scenarioFromPathway(inputs.pathwayId, region))}
-            className="label-mono inline-flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3 font-bold text-foreground hover:border-accent"
-          >
-            <RotateCcw className="size-3.5" />
-            Reset pathway defaults
-          </button>
+          {premium ? (
+            <button
+              type="button"
+              onClick={() => setInputs(scenarioFromPathway(inputs.pathwayId, region))}
+              className="label-mono inline-flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3 font-bold text-foreground hover:border-accent"
+            >
+              <RotateCcw className="size-3.5" />
+              Reset pathway defaults
+            </button>
+          ) : null}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -904,15 +916,21 @@ export function PathwayCiBuilder() {
             label="Annual production"
             hint={`${result.pathway.unitLabel}s per year · ${num(result.annualEnergyMj)} MJ`}
           >
-            <input
-              type="number"
-              min={0}
-              className={inputCls}
-              value={inputs.annualVolume}
-              onChange={(e) =>
-                setInputs((p) => ({ ...p, annualVolume: Number(e.target.value) || 0 }))
-              }
-            />
+            {premium ? (
+              <input
+                type="number"
+                min={0}
+                className={inputCls}
+                value={inputs.annualVolume}
+                onChange={(e) =>
+                  setInputs((p) => ({ ...p, annualVolume: Number(e.target.value) || 0 }))
+                }
+              />
+            ) : (
+              <p className="flex h-11 items-center rounded-md border border-border bg-muted/30 px-3 text-sm font-medium text-foreground">
+                {num(inputs.annualVolume)} {result.pathway.unitLabel}s per year
+              </p>
+            )}
           </Field>
         </div>
       </section>
@@ -927,6 +945,7 @@ export function PathwayCiBuilder() {
         total={moduleTotal("feedstockProduction")}
         totalLabel="Calculated"
         tone="green"
+        locked={!premium}
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Num
@@ -1027,6 +1046,7 @@ export function PathwayCiBuilder() {
         total={moduleTotal("transport")}
         totalLabel="Calculated"
         tone="blue"
+        locked={!premium}
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Num
@@ -1048,6 +1068,7 @@ export function PathwayCiBuilder() {
         description="One parameter per row — choose the supply, the amount and the unit."
         tone="red"
         totalLabel="Process energy"
+        locked={!premium}
         total={`${ci(
           result.lineItems
             .filter((l) => l.category === "Process energy")
@@ -1145,6 +1166,7 @@ export function PathwayCiBuilder() {
         total={moduleTotal("chemicals")}
         totalLabel="Calculated"
         tone="red"
+        locked={!premium}
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Num
@@ -1198,6 +1220,7 @@ export function PathwayCiBuilder() {
         total={moduleTotal("coProducts")}
         totalLabel="Calculated"
         tone="green"
+        locked={!premium}
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Num
@@ -1250,6 +1273,7 @@ export function PathwayCiBuilder() {
         total={moduleTotal("distribution")}
         totalLabel="Calculated"
         tone="blue"
+        locked={!premium}
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Num
@@ -1300,6 +1324,7 @@ export function PathwayCiBuilder() {
         total={moduleTotal("tailpipe")}
         totalLabel="Calculated"
         tone="red"
+        locked={!premium}
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Field
