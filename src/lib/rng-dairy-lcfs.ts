@@ -148,8 +148,15 @@ export interface LivestockCategory {
   bo: number;
   /** Fraction of volatile solids sent to the anaerobic storage/treatment system. */
   msAnaerobic: number;
-  /** Fraction of manure managed in the other (non-anaerobic) baseline system. */
-  msOther: number;
+}
+
+/**
+ * One storage/treatment system and the fraction of each livestock category's
+ * manure it handles. Fractions are indexed to the livestock array.
+ */
+export interface StorageAllocation {
+  system: string;
+  fractions: number[];
 }
 
 export interface DairyRngLcfsInputs {
@@ -162,8 +169,10 @@ export interface DairyRngLcfsInputs {
   monthlyTemperatureC: number[];
   /** Full lagoon cleanout each September in the baseline. */
   septemberCleanout: boolean;
-  /** Baseline non-anaerobic storage system. */
-  otherStorageSystem: string;
+  /** Baseline non-anaerobic storage/treatment systems. */
+  otherStorage: StorageAllocation[];
+  /** Project non-BCS storage/treatment systems. */
+  nonBcsStorage: StorageAllocation[];
   /** Number of project reporting months. */
   reportingMonths: number;
 
@@ -218,12 +227,19 @@ export const DEFAULT_DAIRY_RNG_LCFS: DairyRngLcfsInputs = {
   annualTemperatureC: 19,
   monthlyTemperatureC: [8.16, 15.12, 9.37, 21.81, 24.61, 26.62, 27.74, 26.53, 19.09, 20.35, 15.39, 13.04],
   septemberCleanout: true,
-  otherStorageSystem: "Daily spread",
+  otherStorage: [
+    { system: "Daily spread", fractions: [0.01, 0.1, 0.1] },
+    { system: "Cattle and swine deep bedding (>1 month)", fractions: [0.1683, 0.153, 0.153] },
+  ],
+  nonBcsStorage: [
+    { system: "Daily spread", fractions: [0.01, 0.01, 0.01] },
+    { system: "Cattle and swine deep bedding (<1 month)", fractions: [0.1121, 0.1121, 0.1121] },
+  ],
   reportingMonths: 5,
   livestock: [
-    { label: "Dairy cows (on feed)", population: 3342, vsRate: 7.0448, bo: 0.24, msAnaerobic: 0.8217, msOther: 0.01 },
-    { label: "Non-milking dairy cows (on feed)", population: 361, vsRate: 3.80304, bo: 0.24, msAnaerobic: 0.8217, msOther: 0.1 },
-    { label: "Heifers (on feed)", population: 240, vsRate: 3.80304, bo: 0.17, msAnaerobic: 0.8217, msOther: 0.1 },
+    { label: "Dairy cows (on feed)", population: 3351, vsRate: 7.0448, bo: 0.24, msAnaerobic: 0.8217 },
+    { label: "Non-milking dairy cows (on feed)", population: 449, vsRate: 3.80304, bo: 0.24, msAnaerobic: 0.8217 },
+    { label: "Heifers (on feed)", population: 142, vsRate: 3.43508, bo: 0.17, msAnaerobic: 0.8217 },
   ],
   rawBiogasScf: 53421950,
   rawBiogasCh4: 0.5853,
@@ -303,26 +319,36 @@ export function computeDairyRngLcfs(i: DairyRngLcfsInputs): DairyRngLcfsResult {
   let baselineAnaerobicYear = 0;
   for (const cat of i.livestock) {
     let carryover = 0;
-    for (let m = 0; m < 12; m++) {
-      const days = DAYS_IN_MONTH[m] ?? 30;
-      const available = pos(cat.vsRate) * pos(cat.population) * clamp01(cat.msAnaerobic) * days * 0.8 + carryover;
-      const f = vanTHoffFactor(temps[m] ?? i.annualTemperatureC);
-      const degraded = available * f;
-      baselineAnaerobicYear += degraded * pos(cat.bo) * 0.68 * 0.001;
-      const leftover = available - degraded;
-      carryover = i.septemberCleanout && m === 8 ? 0 : leftover;
+    // Two passes: the first warms the volatile-solids carryover up to steady
+    // state, the second is the reported year.
+    for (let pass = 0; pass < 2; pass++) {
+      for (let m = 0; m < 12; m++) {
+        const days = DAYS_IN_MONTH[m] ?? 30;
+        const available = pos(cat.vsRate) * pos(cat.population) * clamp01(cat.msAnaerobic) * days * 0.8 + carryover;
+        const f = vanTHoffFactor(temps[m] ?? i.annualTemperatureC);
+        const degraded = available * f;
+        if (pass === 1) baselineAnaerobicYear += degraded * pos(cat.bo) * 0.68 * 0.001;
+        const leftover = available - degraded;
+        carryover = i.septemberCleanout && m === 8 ? 0 : leftover;
+      }
     }
   }
   const baselineAnaerobicPerMonth = baselineAnaerobicYear / 12;
 
   /* ---- Section L2: baseline methane from other storage systems ------------ */
   // LOP Equation 5.4, on an annual (365 day) basis.
-  const mcfOther = mcfFor(i.otherStorageSystem, i.annualTemperatureC);
-  let baselineOtherYear = 0;
-  for (const cat of i.livestock) {
-    baselineOtherYear +=
-      pos(cat.vsRate) * pos(cat.bo) * 365 * 0.68 * mcfOther * clamp01(cat.msOther) * pos(cat.population) * 0.001;
-  }
+  const storageYear = (allocations: StorageAllocation[]) => {
+    let total = 0;
+    i.livestock.forEach((cat, idx) => {
+      const weighted = (allocations ?? []).reduce(
+        (a, s2) => a + mcfFor(s2.system, i.annualTemperatureC) * clamp01(s2.fractions?.[idx] ?? 0),
+        0,
+      );
+      total += pos(cat.vsRate) * pos(cat.bo) * 365 * 0.68 * weighted * pos(cat.population) * 0.001;
+    });
+    return total;
+  };
+  const baselineOtherYear = storageYear(i.otherStorage);
   const baselineOtherPerMonth = baselineOtherYear / 12;
   const baselineCh4PerMonth = baselineAnaerobicPerMonth + baselineOtherPerMonth;
 
@@ -340,11 +366,7 @@ export function computeDairyRngLcfs(i: DairyRngLcfsInputs): DairyRngLcfsResult {
   const effluentPondPerMonth = (pondM3PerDay * 365 * 0.68 * mcfPond * 0.001) / 12;
 
   /* ---- Section L5: project methane from non-BCS sources ------------------- */
-  let nonBcsYear = 0;
-  for (const cat of i.livestock) {
-    nonBcsYear +=
-      pos(cat.vsRate) * pos(cat.bo) * 365 * 0.68 * mcfOther * clamp01(cat.msOther) * pos(cat.population) * 0.001;
-  }
+  const nonBcsYear = storageYear(i.nonBcsStorage);
   const nonBcsPerMonth = nonBcsYear / 12;
 
   /* ---- Digester leakage --------------------------------------------------- */
