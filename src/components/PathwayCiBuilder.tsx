@@ -529,10 +529,17 @@ function ItemEditor<T extends ChemicalItem | CoProductItem>({
   );
 }
 
-export function PathwayCiBuilder() {
+/**
+ * "general" renders the multi-pathway lifecycle calculator (dairy manure model excluded).
+ * "dairy" renders the standalone dairy manure RNG farm model only.
+ */
+export type CiBuilderMode = "general" | "dairy";
+
+export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } = {}) {
+  const dairyMode = mode === "dairy";
   const [region, setRegion] = useState<ElectricityRegionId>("usAverage");
   const [inputs, setInputs] = useState<ScenarioInputs>(() =>
-    scenarioFromPathway("rd-uco", "usAverage"),
+    scenarioFromPathway(dairyMode ? "rng-dairy" : "rd-uco", "usAverage"),
   );
   const [units, setUnits] = useState<Partial<Record<SourceId, string>>>({});
   const [ciUnitId, setCiUnitId] = useState<string>("g-mj");
