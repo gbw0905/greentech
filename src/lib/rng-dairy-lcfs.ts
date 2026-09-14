@@ -304,7 +304,7 @@ export function computeDairyRngLcfs(i: DairyRngLcfsInputs): DairyRngLcfsResult {
   for (const cat of i.livestock) {
     let carryover = 0;
     for (let m = 0; m < 12; m++) {
-      const days = DAYS_IN_MONTH[m];
+      const days = DAYS_IN_MONTH[m] ?? 30;
       const available = pos(cat.vsRate) * pos(cat.population) * clamp01(cat.msAnaerobic) * days * 0.8 + carryover;
       const f = vanTHoffFactor(temps[m] ?? i.annualTemperatureC);
       const degraded = available * f;
@@ -398,7 +398,7 @@ export function computeDairyRngLcfs(i: DairyRngLcfsInputs): DairyRngLcfsResult {
   const per = (g: number) => (periodMj > 0 ? g / periodMj : 0);
 
   /* ---- Process energy ------------------------------------------------------ */
-  const gridEf = LCFS_EF.grid[i.electricityRegion] ?? LCFS_EF.grid["U.S. Average"];
+  const gridEf = LCFS_EF.grid[i.electricityRegion] ?? LCFS_EF.grid["U.S. Average"] ?? 474.148181146963;
   const ngLhv = (mmbtuHhv: number) => pos(mmbtuHhv) * NG_LHV_OVER_HHV;
   const bmLhv = (mmbtuHhv: number) => (pos(mmbtuHhv) * CH4_LHV_BTU_PER_SCF) / CH4_HHV_BTU_PER_SCF;
 
