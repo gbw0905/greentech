@@ -12,10 +12,11 @@ import {
   DAIRY_ROW_CATEGORY,
   DEFAULT_DAIRY_RNG,
   type DairyRngInputs,
+  type DairyRngResult,
 } from "./rng-dairy";
 
 export { DEFAULT_DAIRY_RNG, computeDairyRng };
-export type { DairyRngInputs };
+export type { DairyRngInputs, DairyRngResult };
 
 // ---------------------------------------------------------------------------
 // Energy / emission sources
@@ -1147,6 +1148,8 @@ export interface ScenarioResult {
   programs: ProgramResult[];
   /** Totals of each detailed module, whether or not it is enabled. */
   moduleTotals: Partial<Record<DetailModuleKey, number>>;
+  /** Farm model output when the dairy manure RNG model is enabled. */
+  dairy?: DairyRngResult | null;
 }
 
 export function scenarioFromPathway(pathwayId: string, region: ElectricityRegionId): ScenarioInputs {
@@ -1416,6 +1419,7 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
     annualTonnesCo2e: (ciTotal * annualEnergyMj) / 1_000_000,
     programs,
     moduleTotals,
+    dairy,
   };
 }
 
