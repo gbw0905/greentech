@@ -113,6 +113,17 @@ function CiCalculatorPage() {
         subtitle="Lifecycle carbon intensity for every biofuel pathway — start with feedstock production, set electricity, natural gas and other process energy with your own units, and see the full emission breakdown against the major regulatory programs."
       />
 
+      <p className="mb-4 text-sm text-muted-foreground">
+        Producing renewable natural gas from dairy manure?{" "}
+        <Link
+          to="/dairy-rng-calculator"
+          className="font-semibold text-foreground underline underline-offset-4 hover:text-primary"
+        >
+          Use the dedicated dairy RNG calculator
+        </Link>{" "}
+        — it uses a farm-level herd and digester model instead of these sections.
+      </p>
+
       <PathwayCiBuilder />
 
       <section aria-label="How a biofuel CI score is calculated" className="mt-10">
