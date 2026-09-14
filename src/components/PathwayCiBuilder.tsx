@@ -1079,8 +1079,11 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
               {num(result.dairy.avoidedTonnesCo2e)} tonnes CO2e of avoided baseline emissions
             </p>
           ) : null}
+            </>
+          )}
         </DetailSection>
       ) : null}
+
 
       {dairyMode ? null : (
       <>
