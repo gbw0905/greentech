@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { ChevronDown, Plus, RotateCcw, Trash2 } from "lucide-react";
 import {
   CHEMICAL_PRESETS,
@@ -168,6 +168,61 @@ function Field({
   );
 }
 
+/** Fired when the user types into any calculator field; reveals the results. */
+const CalcTouchContext = createContext<() => void>(() => {});
+
+/**
+ * Number input that starts blank: the effective value appears as grey
+ * placeholder text until the user types. Clearing the field returns it to the
+ * blank/default state. External value changes (pathway switch, reset, unit
+ * change) blank the field again so it shows the new default.
+ */
+function BlankNumInput({
+  value,
+  onChange,
+  min,
+  step = 0.1,
+  ariaLabel,
+}: {
+  value: number;
+  onChange: (v: number) => void;
+  min?: number;
+  step?: number;
+  ariaLabel?: string;
+}) {
+  const markTouched = useContext(CalcTouchContext);
+  const [draft, setDraft] = useState<string | null>(null);
+  if (draft !== null) {
+    const typed = Number(draft);
+    const differs =
+      !Number.isFinite(typed) ||
+      Math.abs(value - typed) > 1e-6 * Math.max(1, Math.abs(value));
+    if (differs) setDraft(null);
+  }
+  return (
+    <input
+      type="number"
+      min={min}
+      step={step}
+      aria-label={ariaLabel}
+      className={inputCls}
+      placeholder={Number.isFinite(value) ? String(value) : "0"}
+      value={draft ?? ""}
+      onChange={(e) => {
+        const t = e.target.value;
+        if (t === "") {
+          setDraft(null);
+          return;
+        }
+        setDraft(t);
+        markTouched();
+        const n = Number(t);
+        onChange(Number.isFinite(n) ? n : 0);
+      }}
+    />
+  );
+}
+
 function Num({
   label,
   hint,
@@ -183,13 +238,7 @@ function Num({
 }) {
   return (
     <Field label={label} hint={hint}>
-      <input
-        type="number"
-        step={step}
-        className={inputCls}
-        value={Number.isFinite(value) ? value : 0}
-        onChange={(e) => onChange(Number(e.target.value) || 0)}
-      />
+      <BlankNumInput value={value} onChange={onChange} step={step} ariaLabel={label} />
     </Field>
   );
 }
@@ -509,6 +558,9 @@ export function PathwayCiBuilder() {
   const [units, setUnits] = useState<Partial<Record<SourceId, string>>>({});
   const [ciUnitId, setCiUnitId] = useState<string>("g-mj");
   const [massUnitId, setMassUnitId] = useState<string>("t");
+  /** Results stay hidden until the user has typed at least one value. */
+  const [touched, setTouched] = useState(false);
+  const markTouched = useCallback(() => setTouched(true), []);
 
   const { premium, canEdit, signedIn } = usePremium();
 
@@ -518,7 +570,10 @@ export function PathwayCiBuilder() {
   const massUnit = MASS_UNITS.find((m) => m.id === massUnitId) ?? MASS_UNITS[0]!;
   const ci = (g: number) => (g * ciUnit.factor).toFixed(ciUnit.decimals);
 
-  const selectPathway = (id: string) => setInputs(scenarioFromPathway(id, region));
+  const selectPathway = (id: string) => {
+    setTouched(false);
+    setInputs(scenarioFromPathway(id, region));
+  };
   const setEnergy = (k: SourceId, v: number) =>
     setInputs((p) => ({ ...p, energy: { ...p.energy, [k]: v } }));
   const setVariant = (k: SourceId, v: string) =>
@@ -863,6 +918,7 @@ export function PathwayCiBuilder() {
 
 
   return (
+    <CalcTouchContext.Provider value={markTouched}>
     <div className="space-y-4">
       <section
         className="glass-panel border-l-4 p-5"
@@ -882,7 +938,10 @@ export function PathwayCiBuilder() {
           {canEdit ? (
             <button
               type="button"
-              onClick={() => setInputs(scenarioFromPathway(inputs.pathwayId, region))}
+              onClick={() => {
+                setTouched(false);
+                setInputs(scenarioFromPathway(inputs.pathwayId, region));
+              }}
               className="label-mono inline-flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3 font-bold text-foreground hover:border-accent"
             >
               <RotateCcw className="size-3.5" />
@@ -923,14 +982,11 @@ export function PathwayCiBuilder() {
             hint={`${result.pathway.unitLabel}s per year · ${num(result.annualEnergyMj)} MJ`}
           >
             {canEdit ? (
-              <input
-                type="number"
+              <BlankNumInput
                 min={0}
-                className={inputCls}
+                ariaLabel="Annual production"
                 value={inputs.annualVolume}
-                onChange={(e) =>
-                  setInputs((p) => ({ ...p, annualVolume: Number(e.target.value) || 0 }))
-                }
+                onChange={(v) => setInputs((p) => ({ ...p, annualVolume: v }))}
               />
             ) : (
               <p className="flex h-11 items-center rounded-md border border-border bg-muted/30 px-3 text-sm font-medium text-foreground">
@@ -1188,13 +1244,12 @@ export function PathwayCiBuilder() {
                     )}
                   </Field>
                   <Field label="Quantity">
-                    <input
-                      type="number"
+                    <BlankNumInput
                       min={0}
                       step={0.001}
-                      className={inputCls}
+                      ariaLabel={`${s.label} quantity`}
                       value={Number(shown.toFixed(6))}
-                      onChange={(e) => setEnergy(s.id, (Number(e.target.value) || 0) * unit.toBase)}
+                      onChange={(v) => setEnergy(s.id, v * unit.toBase)}
                     />
                   </Field>
                   <Field label="Unit">
@@ -1441,6 +1496,8 @@ export function PathwayCiBuilder() {
       </DetailSection>
 
 
+      {touched ? (
+      <>
       <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
         <div
           className="glass-panel card-motion min-w-0 border-t-4 border-l-4 p-5"
@@ -1900,6 +1957,31 @@ export function PathwayCiBuilder() {
         </div>
       </section>
       ) : null}
+      </>
+      ) : (
+      <section
+        className="glass-panel border-l-4 p-5"
+        style={{ borderLeftColor: TONE_COLOR.blue }}
+      >
+        <div className="flex items-start gap-2.5">
+          <span
+            className="mt-2 inline-block size-2.5 shrink-0 rounded-full"
+            style={{ background: TONE_COLOR.blue }}
+            aria-hidden="true"
+          />
+          <div className="min-w-0">
+            <h2 className="font-display text-lg font-extrabold text-foreground">
+              Carbon intensity
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Enter your values in any field above to calculate the carbon intensity. Grey values
+              show the defaults that will be used for anything you leave blank.
+            </p>
+          </div>
+        </div>
+      </section>
+      )}
     </div>
+    </CalcTouchContext.Provider>
   );
 }
