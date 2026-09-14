@@ -1955,6 +1955,45 @@ export function PathwayCiBuilder() {
           <ExportExcelButton build={buildWorkbook} />
 
         </div>
+
+        <div className="mt-4 flex flex-wrap items-end justify-between gap-3 border-t border-border pt-4">
+          <div className="min-w-0">
+            <h3 className="font-display text-base font-extrabold text-foreground">
+              Save to my results dashboard
+            </h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Keep this scenario in your private dashboard and compare its carbon intensity with the
+              regulatory benchmarks any time.{" "}
+              <Link to="/my-results" className="font-semibold text-foreground underline">
+                My results
+              </Link>
+            </p>
+          </div>
+          <SaveCiRunButton
+            build={() => ({
+              pathwayId: result.pathway.id,
+              pathwayLabel: result.pathway.label,
+              feedstockLabel: feedstock?.label ?? "",
+              regionLabel:
+                ELECTRICITY_REGIONS.find((r) => r.id === region)?.label ?? String(region),
+              ciTotal: result.ciTotal,
+              grossCi: result.grossCi,
+              creditsCi: result.creditsCi,
+              annualEnergyMj: result.annualEnergyMj,
+              annualTonnesCo2e: result.annualTonnesCo2e,
+              inputs,
+              programs: result.programs.map((p) => ({
+                id: p.program.id,
+                label: p.program.label,
+                jurisdiction: p.program.jurisdiction,
+                benchmark: p.benchmark,
+                savingPct: p.savingPct,
+                gapPerMj: p.gapPerMj,
+                meetsThreshold: p.meetsThreshold,
+              })),
+            })}
+          />
+        </div>
       </section>
       ) : null}
       </>
