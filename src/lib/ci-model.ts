@@ -2306,7 +2306,7 @@ export interface DetailModules {
 export type DetailModuleKey = keyof DetailModules;
 
 /** Which aggregate DirectTerms value each detailed module replaces. */
-export const MODULE_TO_DIRECT: Record<DetailModuleKey, keyof DirectTerms> = {
+export const MODULE_TO_DIRECT: Record<Exclude<DetailModuleKey, "dairyRng">, keyof DirectTerms> = {
   feedstockProduction: "feedstock",
   transport: "feedstockTransport",
   chemicals: "processNonEnergy",
