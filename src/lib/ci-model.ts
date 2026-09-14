@@ -7,6 +7,17 @@
 // typical values and equivalent program documentation. They are starting points
 // for scenario work, not certified pathway scores.
 
+import {
+  computeDairyRng,
+  DAIRY_ROW_CATEGORY,
+  DEFAULT_DAIRY_RNG,
+  type DairyRngInputs,
+  type DairyRngResult,
+} from "./rng-dairy";
+
+export { DEFAULT_DAIRY_RNG, computeDairyRng };
+export type { DairyRngInputs, DairyRngResult };
+
 // ---------------------------------------------------------------------------
 // Energy / emission sources
 // ---------------------------------------------------------------------------
@@ -1137,6 +1148,8 @@ export interface ScenarioResult {
   programs: ProgramResult[];
   /** Totals of each detailed module, whether or not it is enabled. */
   moduleTotals: Partial<Record<DetailModuleKey, number>>;
+  /** Farm model output when the dairy manure RNG model is enabled. */
+  dairy?: DairyRngResult | null;
 }
 
 export function scenarioFromPathway(pathwayId: string, region: ElectricityRegionId): ScenarioInputs {
@@ -1260,8 +1273,22 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
   const categoryOf = (key: keyof DirectTerms) =>
     DIRECT_FIELDS.find((f) => f.key === key)!.category;
 
-  for (const f of DIRECT_FIELDS) {
-    const moduleKey = (Object.keys(MODULE_TO_DIRECT) as DetailModuleKey[]).find(
+  // The dairy manure farm model is a complete well-to-wheel pathway of its own,
+  // so when it is on it replaces every other term in the scenario.
+  const dairy = detail?.dairyRng?.enabled ? computeDairyRng(detail.dairyRng, regionFactor) : null;
+  if (dairy) {
+    moduleTotals.dairyRng = dairy.gPerMj;
+    for (const r of dairy.rows) {
+      if (r.gPerMj === 0) continue;
+      lineItems.push({
+        ...r,
+        category: (DAIRY_ROW_CATEGORY[r.key] ?? "Process other") as LineItem["category"],
+      });
+    }
+  }
+
+  for (const f of dairy ? [] : DIRECT_FIELDS) {
+    const moduleKey = (Object.keys(MODULE_TO_DIRECT) as Exclude<DetailModuleKey, "dairyRng">[]).find(
       (k) => MODULE_TO_DIRECT[k] === f.key,
     );
     const mod = moduleKey && detail ? detail[moduleKey] : undefined;
@@ -1288,7 +1315,7 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
     });
   }
 
-  for (const s of SOURCES) {
+  for (const s of dairy ? [] : SOURCES) {
     const qty = Number(input.energy[s.id]) || 0;
     if (qty === 0) continue;
     const variant = (SOURCE_VARIANTS[s.id] ?? []).find(
@@ -1310,7 +1337,7 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
   }
 
   // Distribution runs last so loss terms can carry the upstream carbon intensity.
-  if (detail) {
+  if (detail && !dairy) {
     const upstream = lineItems.reduce((a, l) => a + l.gPerMj, 0);
     const ds = computeDistribution(detail.distribution, upstream);
     moduleTotals.distribution = ds.gPerMj;
@@ -1330,7 +1357,7 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
   }
 
   const allocation =
-    detail?.coProducts.enabled && detail.coProducts.allocationPct < 100
+    !dairy && detail?.coProducts.enabled && detail.coProducts.allocationPct < 100
       ? Math.max(0, Math.min(100, detail.coProducts.allocationPct)) / 100
       : 1;
   if (allocation < 1) {
@@ -1347,7 +1374,8 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
   const creditsCi = lineItems.filter((l) => l.gPerMj < 0).reduce((a, l) => a + l.gPerMj, 0);
 
 
-  const annualEnergyMj = Math.max(0, input.annualVolume) * pathway.energyPerUnit;
+  // The farm model derives its own annual output from the herd size.
+  const annualEnergyMj = dairy ? dairy.annualMj : Math.max(0, input.annualVolume) * pathway.energyPerUnit;
 
   const programs: ProgramResult[] = PROGRAMS.map((program) => {
     const benchmark = program.benchmarks[pathway.benchmarkFuel] ?? null;
@@ -1391,6 +1419,7 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
     annualTonnesCo2e: (ciTotal * annualEnergyMj) / 1_000_000,
     programs,
     moduleTotals,
+    dairy,
   };
 }
 
@@ -2299,12 +2328,14 @@ export interface DetailModules {
   coProducts: CoProductInputs;
   distribution: DistributionInputs;
   tailpipe: TailpipeInputs;
+  /** Farm-level dairy manure RNG model; when enabled it replaces every other term. */
+  dairyRng: DairyRngInputs;
 }
 
 export type DetailModuleKey = keyof DetailModules;
 
 /** Which aggregate DirectTerms value each detailed module replaces. */
-export const MODULE_TO_DIRECT: Record<DetailModuleKey, keyof DirectTerms> = {
+export const MODULE_TO_DIRECT: Record<Exclude<DetailModuleKey, "dairyRng">, keyof DirectTerms> = {
   feedstockProduction: "feedstock",
   transport: "feedstockTransport",
   chemicals: "processNonEnergy",
@@ -2321,6 +2352,7 @@ export function defaultDetailModules(feedstockId?: string): DetailModules {
     coProducts: { ...DEFAULT_COPRODUCTS, items: DEFAULT_COPRODUCTS.items.map((i) => ({ ...i })) },
     distribution: { ...DEFAULT_DISTRIBUTION, legs: DEFAULT_DISTRIBUTION.legs.map((l) => ({ ...l })) },
     tailpipe: { ...DEFAULT_TAILPIPE },
+    dairyRng: { ...DEFAULT_DAIRY_RNG, enabled: feedstockId === "manure" },
   };
 }
 

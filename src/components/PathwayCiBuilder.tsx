@@ -942,6 +942,61 @@ export function PathwayCiBuilder() {
       </section>
 
 
+      {inputs.feedstockId === "manure" ? (
+        <DetailSection
+          title="Dairy manure farm model"
+          description="Herd size, manure, digester and upgrading energy. Built on the GREET 2024 dairy RNG workbook; when it is on it replaces the sections below."
+          enabled={detail.dairyRng.enabled}
+          onToggle={(v) => setModule("dairyRng", { enabled: v })}
+          total={moduleTotal("dairyRng")}
+          totalLabel="Calculated"
+          tone="green"
+          locked={!canEdit}
+        >
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Num label="Milking cows (head)" step={10} value={detail.dairyRng.dairyCows} onChange={(v) => setModule("dairyRng", { dairyCows: v })} />
+            <Num label="Dry cows (head)" step={10} value={detail.dairyRng.dryCows} onChange={(v) => setModule("dairyRng", { dryCows: v })} />
+            <Num label="Heifers (head)" step={10} value={detail.dairyRng.heifers} onChange={(v) => setModule("dairyRng", { heifers: v })} />
+            <Num label="Moisture of wet manure (fraction)" step={0.01} value={detail.dairyRng.moisture} onChange={(v) => setModule("dairyRng", { moisture: v })} />
+            <Num label="Manure, milking cow (t/head/yr)" step={0.1} value={detail.dairyRng.manureDairyCowTpy} onChange={(v) => setModule("dairyRng", { manureDairyCowTpy: v })} />
+            <Num label="Manure, dry cow (t/head/yr)" step={0.1} value={detail.dairyRng.manureDryCowTpy} onChange={(v) => setModule("dairyRng", { manureDryCowTpy: v })} />
+            <Num label="Manure, heifer (t/head/yr)" step={0.1} value={detail.dairyRng.manureHeiferTpy} onChange={(v) => setModule("dairyRng", { manureHeiferTpy: v })} />
+            <Num
+              label="RNG yield (Btu/lb dry manure)"
+              step={10}
+              value={detail.dairyRng.rngBtuPerLbTs}
+              onChange={(v) => setModule("dairyRng", { rngBtuPerLbTs: v })}
+            />
+            <Num
+              label="Baseline MCF, cows"
+              hint="Methane conversion factor of the reference manure system"
+              step={0.01}
+              value={detail.dairyRng.mcfCow}
+              onChange={(v) => setModule("dairyRng", { mcfCow: v })}
+            />
+            <Num label="Baseline MCF, heifers" step={0.01} value={detail.dairyRng.mcfHeifer} onChange={(v) => setModule("dairyRng", { mcfHeifer: v })} />
+            <Num label="Biogas flaring (Btu/lb dry manure)" step={1} value={detail.dairyRng.flaringBtuPerLbTs} onChange={(v) => setModule("dairyRng", { flaringBtuPerLbTs: v })} />
+            <Num label="Natural gas use (Btu/mmBtu RNG)" step={1000} value={detail.dairyRng.ngBtuPerMmbtu} onChange={(v) => setModule("dairyRng", { ngBtuPerMmbtu: v })} />
+            <Num label="Digester electricity (Btu/mmBtu RNG)" step={1000} value={detail.dairyRng.elecAdBtuPerMmbtu} onChange={(v) => setModule("dairyRng", { elecAdBtuPerMmbtu: v })} />
+            <Num label="Upgrading electricity (Btu/mmBtu RNG)" step={1000} value={detail.dairyRng.elecRngBtuPerMmbtu} onChange={(v) => setModule("dairyRng", { elecRngBtuPerMmbtu: v })} />
+            <Num label="Feed loss in digestion (fraction)" step={0.005} value={detail.dairyRng.feedLossAd} onChange={(v) => setModule("dairyRng", { feedLossAd: v })} />
+            <Num label="Feed loss in upgrading (fraction)" step={0.005} value={detail.dairyRng.feedLossUpgrading} onChange={(v) => setModule("dairyRng", { feedLossUpgrading: v })} />
+            <Num label="Pipeline transmission (miles)" step={10} value={detail.dairyRng.pipelineMiles} onChange={(v) => setModule("dairyRng", { pipelineMiles: v })} />
+            <Num label="On-farm truck (miles/yr)" step={10} value={detail.dairyRng.truckMiles} onChange={(v) => setModule("dairyRng", { truckMiles: v })} />
+            <Num label="GWP of methane" step={1} value={detail.dairyRng.gwpCh4} onChange={(v) => setModule("dairyRng", { gwpCh4: v })} />
+            <Num label="GWP of nitrous oxide" step={1} value={detail.dairyRng.gwpN2o} onChange={(v) => setModule("dairyRng", { gwpN2o: v })} />
+          </div>
+          {result.dairy ? (
+            <p className="text-xs text-muted-foreground">
+              {num(result.dairy.wetManureTonnes)} tonnes of wet manure per year ·{" "}
+              {num(result.dairy.totalSolidsTonnes)} tonnes dry solids ·{" "}
+              {num(result.dairy.rngMmbtu)} mmBtu of RNG ({num(result.dairy.annualMj)} MJ) ·{" "}
+              {num(result.dairy.avoidedTonnesCo2e)} tonnes CO2e of avoided baseline emissions
+            </p>
+          ) : null}
+        </DetailSection>
+      ) : null}
+
       <DetailSection
 
         title="Feedstock production"
