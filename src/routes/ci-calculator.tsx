@@ -115,7 +115,40 @@ function CiCalculatorPage() {
 
       <PathwayCiBuilder />
 
-      <aside className="border-t border-border pt-5 text-xs/relaxed text-muted-foreground" aria-label="Copyright and permitted use">
+      <section aria-label="How a biofuel CI score is calculated" className="mt-10">
+        <h2 className="font-display text-xl font-extrabold tracking-tight text-foreground sm:text-2xl">
+          How a biofuel CI score is calculated
+        </h2>
+        <p className="mt-2 max-w-[72ch] text-sm/relaxed text-muted-foreground">
+          Every carbon intensity score follows the same lifecycle logic used by programs such as
+          California's LCFS, Oregon's CFP, Canada's CFR and the EU's RED. The calculator above
+          walks through exactly these stages.
+        </p>
+        <ol className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {CI_STEPS.map((s) => (
+            <li key={s.h} className="glass-panel card-motion border-l-4 p-4" style={{ borderLeftColor: "var(--chart-3)" }}>
+              <h3 className="font-display text-sm font-bold text-foreground">{s.h}</h3>
+              <p className="mt-1.5 text-xs/relaxed text-muted-foreground">{s.b}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section aria-label="Frequently asked questions" className="mt-10">
+        <h2 className="font-display text-xl font-extrabold tracking-tight text-foreground sm:text-2xl">
+          Carbon intensity questions, answered
+        </h2>
+        <dl className="mt-4 space-y-3">
+          {CI_FAQS.map((f) => (
+            <div key={f.q} className="glass-panel p-4">
+              <dt className="font-display text-sm font-bold text-foreground">{f.q}</dt>
+              <dd className="mt-1.5 text-sm/relaxed text-muted-foreground">{f.a}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      <aside className="mt-10 border-t border-border pt-5 text-xs/relaxed text-muted-foreground" aria-label="Copyright and permitted use">
         <p>
           The Global Bioenergy Watch Carbon Intensity Calculator, including its underlying
           algorithms, datasets, interface design, and generated outputs, is the exclusive
