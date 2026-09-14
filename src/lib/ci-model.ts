@@ -1371,7 +1371,8 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
   const creditsCi = lineItems.filter((l) => l.gPerMj < 0).reduce((a, l) => a + l.gPerMj, 0);
 
 
-  const annualEnergyMj = Math.max(0, input.annualVolume) * pathway.energyPerUnit;
+  // The farm model derives its own annual output from the herd size.
+  const annualEnergyMj = dairy ? dairy.annualMj : Math.max(0, input.annualVolume) * pathway.energyPerUnit;
 
   const programs: ProgramResult[] = PROGRAMS.map((program) => {
     const benchmark = program.benchmarks[pathway.benchmarkFuel] ?? null;
