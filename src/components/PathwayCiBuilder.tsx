@@ -573,7 +573,10 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
     });
   const moduleTotal = (key: DetailModuleKey) => `${ci(result.moduleTotals[key] ?? 0)} ${ciUnit.label}`;
 
-  const groups = Array.from(new Set(PATHWAYS.map((p) => p.group)));
+  const availablePathways = dairyMode
+    ? PATHWAYS.filter((p) => p.id === "rng-dairy")
+    : PATHWAYS.filter((p) => p.id !== "rng-dairy");
+  const groups = Array.from(new Set(availablePathways.map((p) => p.group)));
   const feedstock = FEEDSTOCK_BY_ID[inputs.feedstockId];
 
   const annualTonnes = result.annualTonnesCo2e * massUnit.factor;
