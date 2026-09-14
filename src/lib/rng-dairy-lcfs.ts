@@ -321,7 +321,7 @@ export function computeDairyRngLcfs(i: DairyRngLcfsInputs): DairyRngLcfsResult {
     let carryover = 0;
     // Two passes: the first warms the volatile-solids carryover up to steady
     // state, the second is the reported year.
-    for (let pass = 0; pass < 2; pass++) {
+    for (let pass = 0; pass < 1; pass++) {
       for (let m = 0; m < 12; m++) {
         const days = DAYS_IN_MONTH[m] ?? 30;
         const available = pos(cat.vsRate) * pos(cat.population) * clamp01(cat.msAnaerobic) * days * 0.8 + carryover;
@@ -393,21 +393,25 @@ export function computeDairyRngLcfs(i: DairyRngLcfsInputs): DairyRngLcfsResult {
     flaredPerMonth;
 
   /* ---- Avoided methane and diverted CO2 ----------------------------------- */
-  // Workbook "Avoided Emissions" section P2/P3. The subtotal excludes flaring
-  // and upgrading fugitives, which are charged to the pathway instead.
+  // Workbook "Avoided Emissions" sections P2 and P3. The project subtotal
+  // excludes flaring and upgrading fugitives, which are charged to the
+  // pathway as direct emissions instead.
   const subtotalProject =
     (ventedPerMonth + effluentPondPerMonth + nonBcsPerMonth + digesterLeakagePerMonth) * months;
-  const rawNet = subtotalProject - baselineCh4PerMonth * months;
+  const baselineTotal = baselineCh4PerMonth * months;
+  const rawNet = subtotalProject - baselineTotal;
   const netCh4AvoidedMt = rawNet < -rawCh4Mt ? -rawCh4Mt : rawNet;
 
   const allocationFactor =
     rawCh4Mt > 0 ? (inletCh4Mt - onsiteCh4Mt * clamp01(i.exportedElectricityShare)) / rawCh4Mt : 0;
   const allocatedCh4 = netCh4AvoidedMt * allocationFactor;
+  // MT avoided per MT of biomethane sold, converted to grams per MJ LHV.
+  const mtToGPerMj = ((1e6 / CH4_LHV_BTU_PER_SCF) * CH4_G_PER_SCF) / MJ_PER_MMBTU;
   const perMtRng = salesCh4Mt > 0 ? allocatedCh4 / salesCh4Mt : 0;
-  // MT avoided per MT sold → g CH4 per MJ of RNG.
-  const mtToGPerMj = (1e6 / CH4_LHV_BTU_PER_SCF) * CH4_G_PER_SCF / MJ_PER_MMBTU;
   const avoidedCh4GPerMj = perMtRng * mtToGPerMj * GWP_CH4;
 
+  // Carbon that would have been released as CO2 in the baseline but leaves as
+  // methane in the project: (excess CH4) x 44/16.
   const divertedCo2Mt = -netCh4AvoidedMt === rawCh4Mt ? 0 : -(rawCh4Mt + rawNet) * (44 / 16);
   const divertedAllocated = divertedCo2Mt * allocationFactor;
   const divertedCo2GPerMj = salesCh4Mt > 0 ? (divertedAllocated / salesCh4Mt) * mtToGPerMj : 0;
