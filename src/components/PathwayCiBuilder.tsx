@@ -510,7 +510,7 @@ export function PathwayCiBuilder() {
   const [ciUnitId, setCiUnitId] = useState<string>("g-mj");
   const [massUnitId, setMassUnitId] = useState<string>("t");
 
-  const { premium, signedIn } = usePremium();
+  const { premium, canEdit, signedIn } = usePremium();
 
   const result = useMemo(() => calculateScenario({ ...inputs, region }), [inputs, region]);
 
@@ -879,7 +879,7 @@ export function PathwayCiBuilder() {
               Fuel pathway
             </h2>
           </div>
-          {premium ? (
+          {canEdit ? (
             <button
               type="button"
               onClick={() => setInputs(scenarioFromPathway(inputs.pathwayId, region))}
@@ -893,21 +893,27 @@ export function PathwayCiBuilder() {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Fuel pathway" hint={result.pathway.summary}>
-            <select
-              className={inputCls}
-              value={inputs.pathwayId}
-              onChange={(e) => selectPathway(e.target.value)}
-            >
-              {groups.map((g) => (
-                <optgroup key={g} label={g}>
-                  {PATHWAYS.filter((p) => p.group === g).map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.label}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
+            {canEdit ? (
+              <select
+                className={inputCls}
+                value={inputs.pathwayId}
+                onChange={(e) => selectPathway(e.target.value)}
+              >
+                {groups.map((g) => (
+                  <optgroup key={g} label={g}>
+                    {PATHWAYS.filter((p) => p.group === g).map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.label}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            ) : (
+              <p className="flex min-h-11 items-center rounded-md border border-border bg-muted/30 px-3 text-sm font-medium text-foreground">
+                {result.pathway.label}
+              </p>
+            )}
           </Field>
 
 
@@ -916,7 +922,7 @@ export function PathwayCiBuilder() {
             label="Annual production"
             hint={`${result.pathway.unitLabel}s per year · ${num(result.annualEnergyMj)} MJ`}
           >
-            {premium ? (
+            {canEdit ? (
               <input
                 type="number"
                 min={0}
@@ -945,7 +951,7 @@ export function PathwayCiBuilder() {
         total={moduleTotal("feedstockProduction")}
         totalLabel="Calculated"
         tone="green"
-        locked={!premium}
+        locked={!canEdit}
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Num
@@ -1046,7 +1052,7 @@ export function PathwayCiBuilder() {
         total={moduleTotal("transport")}
         totalLabel="Calculated"
         tone="blue"
-        locked={!premium}
+        locked={!canEdit}
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Num
@@ -1068,7 +1074,7 @@ export function PathwayCiBuilder() {
         description="One parameter per row — choose the supply, the amount and the unit."
         tone="red"
         totalLabel="Process energy"
-        locked={!premium}
+        locked={!canEdit}
         total={`${ci(
           result.lineItems
             .filter((l) => l.category === "Process energy")
@@ -1166,7 +1172,7 @@ export function PathwayCiBuilder() {
         total={moduleTotal("chemicals")}
         totalLabel="Calculated"
         tone="red"
-        locked={!premium}
+        locked={!canEdit}
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Num
@@ -1220,7 +1226,7 @@ export function PathwayCiBuilder() {
         total={moduleTotal("coProducts")}
         totalLabel="Calculated"
         tone="green"
-        locked={!premium}
+        locked={!canEdit}
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Num
@@ -1273,7 +1279,7 @@ export function PathwayCiBuilder() {
         total={moduleTotal("distribution")}
         totalLabel="Calculated"
         tone="blue"
-        locked={!premium}
+        locked={!canEdit}
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Num
@@ -1324,7 +1330,7 @@ export function PathwayCiBuilder() {
         total={moduleTotal("tailpipe")}
         totalLabel="Calculated"
         tone="red"
-        locked={!premium}
+        locked={!canEdit}
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Field
