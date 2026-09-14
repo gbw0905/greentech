@@ -33,6 +33,9 @@ export interface DairyRngInputs {
   /** Moisture content of wet manure, fraction. */
   moisture: number;
   digesterType: DigesterType;
+  /** Baseline management system CH4 conversion factors (CH4 / theoretical max). */
+  mcfCow: number;
+  mcfHeifer: number;
   upgradingTech: UpgradingTech;
   /** Biogas flared before upgrading, Btu per lb of total solids (0 under GREET, 604 under LCFS). */
   flaringBtuPerLbTs: number;
@@ -64,6 +67,8 @@ export const DEFAULT_DAIRY_RNG: DairyRngInputs = {
   manureHeiferTpy: 9.9864, // 1.14 kg/hr
   moisture: 0.88,
   digesterType: "Covered Lagoon",
+  mcfCow: 0.02,
+  mcfHeifer: 0.67,
   upgradingTech: "Membrane Separation",
   flaringBtuPerLbTs: 0,
   feedLossAd: 0.035,
@@ -144,7 +149,7 @@ export function computeDairyRng(i: DairyRngInputs, gridGPerKwh: number): DairyRn
   const tsLb = totalTs * LB_PER_TONNE;
 
   // --- avoided baseline emissions of the reference management system --------
-  const ch4M3 = vsCow * 1000 * f.ch4YieldCow * f.mcfCow + vsHeifer * 1000 * f.ch4YieldHeifer * f.mcfHeifer;
+  const ch4M3 = vsCow * 1000 * f.ch4YieldCow * Math.max(0, i.mcfCow) + vsHeifer * 1000 * f.ch4YieldHeifer * Math.max(0, i.mcfHeifer);
   const ch4Tonnes = (ch4M3 * f.ch4DensityGPerM3) / 1_000_000;
   const n2oLb = tsLb * (f.n2oDirectLbPerLbTs + f.n2oVolatilisationLbPerLbTs + f.n2oLeachingLbPerLbTs);
   const n2oTonnes = n2oLb * 0.0005;
