@@ -14,6 +14,13 @@ import {
   type DairyRngInputs,
   type DairyRngResult,
 } from "./rng-dairy";
+import {
+  computeDairyRngLcfs,
+  DAIRY_LCFS_ROW_CATEGORY,
+  DEFAULT_DAIRY_RNG_LCFS,
+  type DairyRngLcfsInputs,
+  type DairyRngLcfsResult,
+} from "./rng-dairy-lcfs";
 
 export { DEFAULT_DAIRY_RNG, computeDairyRng };
 export type { DairyRngInputs, DairyRngResult };
@@ -1150,6 +1157,8 @@ export interface ScenarioResult {
   moduleTotals: Partial<Record<DetailModuleKey, number>>;
   /** Farm model output when the dairy manure RNG model is enabled. */
   dairy?: DairyRngResult | null;
+  /** CARB LCFS Tier 1 output when that dairy method is selected. */
+  dairyLcfs?: DairyRngLcfsResult | null;
 }
 
 export function scenarioFromPathway(pathwayId: string, region: ElectricityRegionId): ScenarioInputs {
@@ -1275,20 +1284,25 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
 
   // The dairy manure farm model is a complete well-to-wheel pathway of its own,
   // so when it is on it replaces every other term in the scenario.
-  const dairy = detail?.dairyRng?.enabled ? computeDairyRng(detail.dairyRng, regionFactor) : null;
-  if (dairy) {
-    moduleTotals.dairyRng = dairy.gPerMj;
-    for (const r of dairy.rows) {
+  const dairyOn = !!detail?.dairyRng?.enabled;
+  const useLcfs = dairyOn && detail?.dairyMethod === "lcfs";
+  const dairy = dairyOn && !useLcfs ? computeDairyRng(detail!.dairyRng, regionFactor) : null;
+  const dairyLcfs = useLcfs ? computeDairyRngLcfs(detail!.dairyLcfs) : null;
+  const dairyActive = dairy ?? dairyLcfs;
+  if (dairyActive) {
+    const categories = dairyLcfs ? DAIRY_LCFS_ROW_CATEGORY : DAIRY_ROW_CATEGORY;
+    moduleTotals.dairyRng = dairyActive.gPerMj;
+    for (const r of dairyActive.rows) {
       if (r.gPerMj === 0) continue;
       lineItems.push({
         ...r,
-        category: (DAIRY_ROW_CATEGORY[r.key] ?? "Process other") as LineItem["category"],
+        category: (categories[r.key] ?? "Process other") as LineItem["category"],
       });
     }
   }
 
-  for (const f of dairy ? [] : DIRECT_FIELDS) {
-    const moduleKey = (Object.keys(MODULE_TO_DIRECT) as Exclude<DetailModuleKey, "dairyRng">[]).find(
+  for (const f of dairyActive ? [] : DIRECT_FIELDS) {
+    const moduleKey = (Object.keys(MODULE_TO_DIRECT) as DetailLifecycleKey[]).find(
       (k) => MODULE_TO_DIRECT[k] === f.key,
     );
     const mod = moduleKey && detail ? detail[moduleKey] : undefined;
@@ -1315,7 +1329,7 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
     });
   }
 
-  for (const s of dairy ? [] : SOURCES) {
+  for (const s of dairyActive ? [] : SOURCES) {
     const qty = Number(input.energy[s.id]) || 0;
     if (qty === 0) continue;
     const variant = (SOURCE_VARIANTS[s.id] ?? []).find(
@@ -1337,7 +1351,7 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
   }
 
   // Distribution runs last so loss terms can carry the upstream carbon intensity.
-  if (detail && !dairy) {
+  if (detail && !dairyActive) {
     const upstream = lineItems.reduce((a, l) => a + l.gPerMj, 0);
     const ds = computeDistribution(detail.distribution, upstream);
     moduleTotals.distribution = ds.gPerMj;
@@ -1357,7 +1371,7 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
   }
 
   const allocation =
-    !dairy && detail?.coProducts.enabled && detail.coProducts.allocationPct < 100
+    !dairyActive && detail?.coProducts.enabled && detail.coProducts.allocationPct < 100
       ? Math.max(0, Math.min(100, detail.coProducts.allocationPct)) / 100
       : 1;
   if (allocation < 1) {
@@ -1375,7 +1389,7 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
 
 
   // The farm model derives its own annual output from the herd size.
-  const annualEnergyMj = dairy ? dairy.annualMj : Math.max(0, input.annualVolume) * pathway.energyPerUnit;
+  const annualEnergyMj = dairyActive ? dairyActive.annualMj : Math.max(0, input.annualVolume) * pathway.energyPerUnit;
 
   const programs: ProgramResult[] = PROGRAMS.map((program) => {
     const benchmark = program.benchmarks[pathway.benchmarkFuel] ?? null;
@@ -1420,6 +1434,7 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
     programs,
     moduleTotals,
     dairy,
+    dairyLcfs,
   };
 }
 
@@ -2330,12 +2345,21 @@ export interface DetailModules {
   tailpipe: TailpipeInputs;
   /** Farm-level dairy manure RNG model; when enabled it replaces every other term. */
   dairyRng: DairyRngInputs;
+  /** Which dairy manure method the calculator uses. */
+  dairyMethod: DairyMethod;
+  /** Inputs for the CARB LCFS Tier 1 dairy/swine manure method. */
+  dairyLcfs: DairyRngLcfsInputs;
 }
+
+export type DairyMethod = "greet" | "lcfs";
 
 export type DetailModuleKey = keyof DetailModules;
 
+/** Module keys that map onto an aggregate DirectTerms value. */
+export type DetailLifecycleKey = Exclude<DetailModuleKey, "dairyRng" | "dairyMethod" | "dairyLcfs">;
+
 /** Which aggregate DirectTerms value each detailed module replaces. */
-export const MODULE_TO_DIRECT: Record<Exclude<DetailModuleKey, "dairyRng">, keyof DirectTerms> = {
+export const MODULE_TO_DIRECT: Record<DetailLifecycleKey, keyof DirectTerms> = {
   feedstockProduction: "feedstock",
   transport: "feedstockTransport",
   chemicals: "processNonEnergy",
@@ -2353,6 +2377,14 @@ export function defaultDetailModules(feedstockId?: string): DetailModules {
     distribution: { ...DEFAULT_DISTRIBUTION, legs: DEFAULT_DISTRIBUTION.legs.map((l) => ({ ...l })) },
     tailpipe: { ...DEFAULT_TAILPIPE },
     dairyRng: { ...DEFAULT_DAIRY_RNG, enabled: feedstockId === "manure" },
+    dairyMethod: "lcfs",
+    dairyLcfs: {
+      ...DEFAULT_DAIRY_RNG_LCFS,
+      livestock: DEFAULT_DAIRY_RNG_LCFS.livestock.map((l) => ({ ...l })),
+      monthlyTemperatureC: [...DEFAULT_DAIRY_RNG_LCFS.monthlyTemperatureC],
+      otherStorage: DEFAULT_DAIRY_RNG_LCFS.otherStorage.map((o) => ({ ...o, fractions: [...o.fractions] })),
+      nonBcsStorage: DEFAULT_DAIRY_RNG_LCFS.nonBcsStorage.map((o) => ({ ...o, fractions: [...o.fractions] })),
+    },
   };
 }
 
