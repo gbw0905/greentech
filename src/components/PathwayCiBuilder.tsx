@@ -566,10 +566,18 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
     setInputs((p) => ({ ...p, sourceVariants: { ...p.sourceVariants, [k]: v } }));
 
   const detail: DetailModules = inputs.detail ?? defaultDetailModules(inputs.feedstockId);
-  const setModule = <K extends DetailModuleKey>(key: K, patch: Partial<DetailModules[K]>) =>
+  const setModule = <K extends Exclude<DetailModuleKey, "dairyMethod">>(
+    key: K,
+    patch: Partial<DetailModules[K]>,
+  ) =>
     setInputs((p) => {
       const base = p.detail ?? defaultDetailModules(p.feedstockId);
-      return { ...p, detail: { ...base, [key]: { ...base[key], ...patch } } };
+      return { ...p, detail: { ...base, [key]: { ...(base[key] as object), ...patch } } };
+    });
+  const setDairyMethod = (method: DairyMethod) =>
+    setInputs((p) => {
+      const base = p.detail ?? defaultDetailModules(p.feedstockId);
+      return { ...p, detail: { ...base, dairyMethod: method } };
     });
   const moduleTotal = (key: DetailModuleKey) => `${ci(result.moduleTotals[key] ?? 0)} ${ciUnit.label}`;
 
