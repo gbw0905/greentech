@@ -2333,6 +2333,7 @@ export function defaultDetailModules(feedstockId?: string): DetailModules {
     coProducts: { ...DEFAULT_COPRODUCTS, items: DEFAULT_COPRODUCTS.items.map((i) => ({ ...i })) },
     distribution: { ...DEFAULT_DISTRIBUTION, legs: DEFAULT_DISTRIBUTION.legs.map((l) => ({ ...l })) },
     tailpipe: { ...DEFAULT_TAILPIPE },
+    dairyRng: { ...DEFAULT_DAIRY_RNG, enabled: feedstockId === "manure" },
   };
 }
 
