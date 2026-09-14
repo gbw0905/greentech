@@ -1312,7 +1312,7 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
     });
   }
 
-  for (const s of SOURCES) {
+  for (const s of dairy ? [] : SOURCES) {
     const qty = Number(input.energy[s.id]) || 0;
     if (qty === 0) continue;
     const variant = (SOURCE_VARIANTS[s.id] ?? []).find(
