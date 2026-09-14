@@ -1271,7 +1271,7 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
     DIRECT_FIELDS.find((f) => f.key === key)!.category;
 
   for (const f of DIRECT_FIELDS) {
-    const moduleKey = (Object.keys(MODULE_TO_DIRECT) as DetailModuleKey[]).find(
+    const moduleKey = (Object.keys(MODULE_TO_DIRECT) as Exclude<DetailModuleKey, "dairyRng">[]).find(
       (k) => MODULE_TO_DIRECT[k] === f.key,
     );
     const mod = moduleKey && detail ? detail[moduleKey] : undefined;
