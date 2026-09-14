@@ -22,6 +22,7 @@ import {
   scenarioFromPathway,
   type ChemicalItem,
   type CoProductItem,
+  type DairyMethod,
   type DetailModuleKey,
   type DetailModules,
   type ElectricityRegionId,
@@ -32,6 +33,15 @@ import {
   type TransportLeg,
   type TransportModeId,
 } from "@/lib/ci-model";
+import {
+  DIGESTER_LEAKAGE,
+  EGRID_REGIONS,
+  STORAGE_SYSTEMS,
+  type DairyRngLcfsInputs,
+  type DairyRngLcfsResult,
+  type LivestockCategory,
+  type StorageAllocation,
+} from "@/lib/rng-dairy-lcfs";
 import { ExportExcelButton } from "@/components/ExportExcelButton";
 import { SaveCiRunButton } from "@/components/SaveCiRunButton";
 import type { SheetRow, SheetSection, WorkbookChart, WorkbookExport } from "@/lib/excel-workbook";
@@ -281,6 +291,330 @@ function CollapsibleSection({
 }
 
 
+
+
+/** Input groups for the CARB LCFS Tier 1 dairy/swine manure method. */
+function DairyLcfsFields({
+  value,
+  onChange,
+  result,
+  num,
+}: {
+  value: DairyRngLcfsInputs;
+  onChange: (patch: Partial<DairyRngLcfsInputs>) => void;
+  result: DairyRngLcfsResult | null;
+  num: (n: number) => string;
+}) {
+  const setAnimal = (idx: number, patch: Partial<LivestockCategory>) =>
+    onChange({ livestock: value.livestock.map((a, i) => (i === idx ? { ...a, ...patch } : a)) });
+  const setStorage = (
+    field: "otherStorage" | "nonBcsStorage",
+    idx: number,
+    patch: Partial<StorageAllocation>,
+  ) =>
+    onChange({
+      [field]: value[field].map((s, i) => (i === idx ? { ...s, ...patch } : s)),
+    } as Partial<DairyRngLcfsInputs>);
+  const setFraction = (
+    field: "otherStorage" | "nonBcsStorage",
+    idx: number,
+    animalIdx: number,
+    v: number,
+  ) =>
+    setStorage(field, idx, {
+      fractions: value[field][idx]!.fractions.map((f, i) => (i === animalIdx ? v : f)),
+    });
+
+  const storageBlock = (field: "otherStorage" | "nonBcsStorage", label: string, hint: string) => (
+    <div className="space-y-3">
+      <h3 className="label-mono text-muted-foreground">{label}</h3>
+      <p className="text-xs text-muted-foreground">{hint}</p>
+      {value[field].map((row, idx) => (
+        <div key={`${field}-${idx}`} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Field label="Storage or treatment system">
+            <select
+              className={inputCls}
+              value={row.system}
+              onChange={(e) => setStorage(field, idx, { system: e.target.value })}
+            >
+              {STORAGE_SYSTEMS.map((sys) => (
+                <option key={sys} value={sys}>
+                  {sys}
+                </option>
+              ))}
+            </select>
+          </Field>
+          {value.livestock.map((a, ai) => (
+            <Num
+              key={`${field}-${idx}-${ai}`}
+              label={`Share of ${a.label.toLowerCase()} manure`}
+              step={0.01}
+              value={row.fractions[ai] ?? 0}
+              onChange={(v) => setFraction(field, idx, ai, v)}
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+
+  return (
+    <div className="space-y-6">
+      <div className="space-y-3">
+        <h3 className="label-mono text-muted-foreground">1. Project background</h3>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Field label="Digester type">
+            <select
+              className={inputCls}
+              value={value.digesterType}
+              onChange={(e) => onChange({ digesterType: e.target.value })}
+            >
+              {Object.keys(DIGESTER_LEAKAGE).map((d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Electricity region (eGRID)">
+            <select
+              className={inputCls}
+              value={value.electricityRegion}
+              onChange={(e) => onChange({ electricityRegion: e.target.value })}
+            >
+              {EGRID_REGIONS.map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Num
+            label="Average ambient temperature (°C)"
+            step={0.1}
+            value={value.annualTemperatureC}
+            onChange={(v) => onChange({ annualTemperatureC: v })}
+          />
+          <Num
+            label="Project reporting months"
+            step={1}
+            value={value.reportingMonths}
+            onChange={(v) => onChange({ reportingMonths: v })}
+          />
+          <Field label="Full lagoon cleanout each September in the baseline">
+            <select
+              className={inputCls}
+              value={value.septemberCleanout ? "yes" : "no"}
+              onChange={(e) => onChange({ septemberCleanout: e.target.value === "yes" })}
+            >
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </Field>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
+          {MONTH_LABELS.map((m, idx) => (
+            <Num
+              key={m}
+              label={`${m} temp (°C)`}
+              step={0.1}
+              value={value.monthlyTemperatureC[idx] ?? value.annualTemperatureC}
+              onChange={(v) =>
+                onChange({
+                  monthlyTemperatureC: MONTH_LABELS.map((_, i) =>
+                    i === idx ? v : (value.monthlyTemperatureC[i] ?? value.annualTemperatureC),
+                  ),
+                })
+              }
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <h3 className="label-mono text-muted-foreground">2. Herd and baseline manure</h3>
+        {value.livestock.map((a, idx) => (
+          <div key={a.label} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            <Field label="Livestock category">
+              <input
+                className={inputCls}
+                value={a.label}
+                onChange={(e) => setAnimal(idx, { label: e.target.value })}
+              />
+            </Field>
+            <Num
+              label="Average population (head)"
+              step={1}
+              value={a.population}
+              onChange={(v) => setAnimal(idx, { population: v })}
+            />
+            <Num
+              label="Volatile solids (kg/head/day)"
+              step={0.01}
+              value={a.vsRate}
+              onChange={(v) => setAnimal(idx, { vsRate: v })}
+            />
+            <Num
+              label="Max methane potential Bo (m³/kg VS)"
+              step={0.01}
+              value={a.bo}
+              onChange={(v) => setAnimal(idx, { bo: v })}
+            />
+            <Num
+              label="Share sent to the anaerobic system"
+              step={0.01}
+              value={a.msAnaerobic}
+              onChange={(v) => setAnimal(idx, { msAnaerobic: v })}
+            />
+          </div>
+        ))}
+        {storageBlock(
+          "otherStorage",
+          "Baseline non-anaerobic storage",
+          "Manure that did not go to the lagoon in the baseline, by system.",
+        )}
+      </div>
+
+      <div className="space-y-3">
+        <h3 className="label-mono text-muted-foreground">3. Project gas</h3>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Num
+            label="Raw biogas produced (scf)"
+            step={1000}
+            value={value.rawBiogasScf}
+            onChange={(v) => onChange({ rawBiogasScf: v })}
+          />
+          <Num
+            label="Raw biogas methane content"
+            step={0.01}
+            value={value.rawBiogasCh4}
+            onChange={(v) => onChange({ rawBiogasCh4: v })}
+          />
+          <Num
+            label="Biogas to upgrading (scf)"
+            step={1000}
+            value={value.biogasToUpgradingScf}
+            onChange={(v) => onChange({ biogasToUpgradingScf: v })}
+          />
+          <Num
+            label="Inlet methane content"
+            step={0.01}
+            value={value.biogasToUpgradingCh4}
+            onChange={(v) => onChange({ biogasToUpgradingCh4: v })}
+          />
+          <Num
+            label="Biomethane injected (MMBtu HHV)"
+            step={10}
+            value={value.biomethaneInjectedMmbtuHhv}
+            onChange={(v) => onChange({ biomethaneInjectedMmbtuHhv: v })}
+          />
+          <Num
+            label="Flared biomethane (scf)"
+            step={100}
+            value={value.flaredBiomethaneScf}
+            onChange={(v) => onChange({ flaredBiomethaneScf: v })}
+          />
+          <Num
+            label="Flared gas methane content"
+            step={0.01}
+            value={value.flaredBiomethaneCh4}
+            onChange={(v) => onChange({ flaredBiomethaneCh4: v })}
+          />
+          <Num
+            label="RNG to on-site electricity (MMBtu HHV)"
+            step={10}
+            value={value.onsiteElectricityRngMmbtuHhv}
+            onChange={(v) => onChange({ onsiteElectricityRngMmbtuHhv: v })}
+          />
+          <Num
+            label="Share of on-site electricity exported"
+            step={0.01}
+            value={value.exportedElectricityShare}
+            onChange={(v) => onChange({ exportedElectricityShare: v })}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <h3 className="label-mono text-muted-foreground">4. Project methane losses</h3>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Num
+            label="Vented biogas (scf)"
+            step={100}
+            value={value.ventedBiogasScf}
+            onChange={(v) => onChange({ ventedBiogasScf: v })}
+          />
+          <Num
+            label="Vented gas methane content"
+            step={0.01}
+            value={value.ventedBiogasCh4}
+            onChange={(v) => onChange({ ventedBiogasCh4: v })}
+          />
+          <Num
+            label="Volatile solids removed before the effluent pond"
+            step={0.01}
+            value={value.vsRemovedBeforePond}
+            onChange={(v) => onChange({ vsRemovedBeforePond: v })}
+          />
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Digester leakage uses the CARB standard value for the selected digester type
+          ({((DIGESTER_LEAKAGE[value.digesterType] ?? 0.02) * 100).toFixed(0)}%). Upgrading
+          fugitives are derived from the methane balance, with CARB&rsquo;s 2% floor applied.
+        </p>
+        {storageBlock(
+          "nonBcsStorage",
+          "Project non-BCS storage",
+          "Manure handled outside the biogas control system during the project.",
+        )}
+      </div>
+
+      <div className="space-y-3">
+        <h3 className="label-mono text-muted-foreground">5. Energy use</h3>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Num label="Digester grid electricity (kWh)" step={100} value={value.digesterGridKwh} onChange={(v) => onChange({ digesterGridKwh: v })} />
+          <Num label="Digester natural gas (MMBtu HHV)" step={10} value={value.digesterNgMmbtuHhv} onChange={(v) => onChange({ digesterNgMmbtuHhv: v })} />
+          <Num label="Digester diesel (gallons)" step={10} value={value.digesterDieselGal} onChange={(v) => onChange({ digesterDieselGal: v })} />
+          <Num label="Digester raw biogas (MMBtu LHV)" step={10} value={value.digesterRawBiogasMmbtuLhv} onChange={(v) => onChange({ digesterRawBiogasMmbtuLhv: v })} />
+          <Num label="Digester biomethane (MMBtu HHV)" step={10} value={value.digesterBiomethaneMmbtuHhv} onChange={(v) => onChange({ digesterBiomethaneMmbtuHhv: v })} />
+          <Num label="Upgrading grid electricity (kWh)" step={100} value={value.upgradingGridKwh} onChange={(v) => onChange({ upgradingGridKwh: v })} />
+          <Num label="Upgrading natural gas (MMBtu HHV)" step={10} value={value.upgradingNgMmbtuHhv} onChange={(v) => onChange({ upgradingNgMmbtuHhv: v })} />
+          <Num label="Upgrading diesel (gallons)" step={10} value={value.upgradingDieselGal} onChange={(v) => onChange({ upgradingDieselGal: v })} />
+          <Num label="Upgrading propane (gallons)" step={10} value={value.upgradingPropaneGal} onChange={(v) => onChange({ upgradingPropaneGal: v })} />
+          <Num label="Upgrading on-site biogas electricity (kWh)" step={100} value={value.upgradingOnsiteElecKwh} onChange={(v) => onChange({ upgradingOnsiteElecKwh: v })} />
+          <Num label="Upgrading raw biogas (MMBtu LHV)" step={10} value={value.upgradingRawBiogasMmbtuLhv} onChange={(v) => onChange({ upgradingRawBiogasMmbtuLhv: v })} />
+          <Num label="Upgrading biomethane (MMBtu HHV)" step={10} value={value.upgradingBiomethaneMmbtuHhv} onChange={(v) => onChange({ upgradingBiomethaneMmbtuHhv: v })} />
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <h3 className="label-mono text-muted-foreground">6. Delivery</h3>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Num
+            label="Pipeline distance to the fuelling stations (miles)"
+            step={10}
+            value={value.pipelineMiles}
+            onChange={(v) => onChange({ pipelineMiles: v })}
+          />
+        </div>
+        <p className="text-xs text-muted-foreground">
+          CNG compression and tailpipe emissions use CARB&rsquo;s standard values.
+        </p>
+      </div>
+
+      {result ? (
+        <p className="text-xs text-muted-foreground">
+          {num(result.baselineCh4PerMonth)} MT CH4 per month in the baseline against{" "}
+          {num(result.projectCh4PerMonth)} MT CH4 per month in the project ·{" "}
+          {(result.allocationFactor * 100).toFixed(1)}% of the credit allocated to the RNG sold ·{" "}
+          {num(result.dispensableMmbtu)} MMBtu dispensed ({num(result.annualMj)} MJ per year)
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function DetailSection({
   title,
@@ -566,10 +900,18 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
     setInputs((p) => ({ ...p, sourceVariants: { ...p.sourceVariants, [k]: v } }));
 
   const detail: DetailModules = inputs.detail ?? defaultDetailModules(inputs.feedstockId);
-  const setModule = <K extends DetailModuleKey>(key: K, patch: Partial<DetailModules[K]>) =>
+  const setModule = <K extends Exclude<DetailModuleKey, "dairyMethod">>(
+    key: K,
+    patch: Partial<DetailModules[K]>,
+  ) =>
     setInputs((p) => {
       const base = p.detail ?? defaultDetailModules(p.feedstockId);
-      return { ...p, detail: { ...base, [key]: { ...base[key], ...patch } } };
+      return { ...p, detail: { ...base, [key]: { ...(base[key] as object), ...patch } } };
+    });
+  const setDairyMethod = (method: DairyMethod) =>
+    setInputs((p) => {
+      const base = p.detail ?? defaultDetailModules(p.feedstockId);
+      return { ...p, detail: { ...base, dairyMethod: method } };
     });
   const moduleTotal = (key: DetailModuleKey) => `${ci(result.moduleTotals[key] ?? 0)} ${ciUnit.label}`;
 
@@ -990,7 +1332,11 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
       {dairyMode && inputs.feedstockId === "manure" ? (
         <DetailSection
           title="Dairy manure farm model"
-          description="Herd size, manure, digester and upgrading energy. Built on the GREET 2024 dairy RNG workbook."
+          description={
+            detail.dairyMethod === "lcfs"
+              ? "The CARB LCFS Tier 1 method for dairy and swine manure biomethane — herd, baseline manure storage, project gas, methane losses, energy use and delivery."
+              : "Herd size, manure, digester and upgrading energy. Built on the GREET 2024 dairy RNG workbook."
+          }
           enabled={detail.dairyRng.enabled}
           onToggle={(v) => setModule("dairyRng", { enabled: v })}
           total={moduleTotal("dairyRng")}
@@ -998,6 +1344,34 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
           tone="green"
           locked={!canEdit}
         >
+          <Field
+            label="Calculation method"
+            hint={
+              detail.dairyMethod === "lcfs"
+                ? "CARB Tier 1 CI Calculator for Dairy and Swine Manure Biomethane, release 07/01/2025."
+                : "Argonne GREET 2024 farm-level dairy RNG model."
+            }
+          >
+            <select
+              className={inputCls}
+              value={detail.dairyMethod}
+              onChange={(e) => setDairyMethod(e.target.value as DairyMethod)}
+            >
+              <option value="lcfs">CARB LCFS Tier 1 (dairy/swine manure)</option>
+              <option value="greet">GREET 2024 farm model</option>
+            </select>
+          </Field>
+
+          {detail.dairyMethod === "lcfs" ? (
+            <DairyLcfsFields
+              value={detail.dairyLcfs}
+              onChange={(patch) => setModule("dairyLcfs", patch)}
+              result={result.dairyLcfs ?? null}
+              num={num}
+            />
+          ) : (
+            <>
+
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Num label="Milking cows (head)" step={10} value={detail.dairyRng.dairyCows} onChange={(v) => setModule("dairyRng", { dairyCows: v })} />
             <Num label="Dry cows (head)" step={10} value={detail.dairyRng.dryCows} onChange={(v) => setModule("dairyRng", { dryCows: v })} />
@@ -1039,8 +1413,11 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
               {num(result.dairy.avoidedTonnesCo2e)} tonnes CO2e of avoided baseline emissions
             </p>
           ) : null}
+            </>
+          )}
         </DetailSection>
       ) : null}
+
 
       {dairyMode ? null : (
       <>
