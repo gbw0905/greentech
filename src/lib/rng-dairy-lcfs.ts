@@ -321,13 +321,13 @@ export function computeDairyRngLcfs(i: DairyRngLcfsInputs): DairyRngLcfsResult {
     let carryover = 0;
     // Two passes: the first warms the volatile-solids carryover up to steady
     // state, the second is the reported year.
-    for (let pass = 0; pass < 1; pass++) {
+    for (let pass = 0; pass < 2; pass++) {
       for (let m = 0; m < 12; m++) {
         const days = DAYS_IN_MONTH[m] ?? 30;
         const available = pos(cat.vsRate) * pos(cat.population) * clamp01(cat.msAnaerobic) * days * 0.8 + carryover;
         const f = vanTHoffFactor(temps[m] ?? i.annualTemperatureC);
         const degraded = available * f;
-        if (pass === 0) baselineAnaerobicYear += degraded * pos(cat.bo) * 0.68 * 0.001;
+        if (pass === 1) baselineAnaerobicYear += degraded * pos(cat.bo) * 0.68 * 0.001;
         const leftover = available - degraded;
         carryover = i.septemberCleanout && m === 8 ? 0 : leftover;
       }
