@@ -16,6 +16,7 @@ export function usePremium() {
   return {
     signedIn,
     premium: Boolean(data?.premium),
+    canEdit: Boolean(data?.canEdit),
     loading: loading || (signedIn && isLoading),
   };
 }
