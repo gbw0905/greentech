@@ -987,7 +987,7 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
       </section>
 
 
-      {inputs.feedstockId === "manure" ? (
+      {dairyMode && inputs.feedstockId === "manure" ? (
         <DetailSection
           title="Dairy manure farm model"
           description="Herd size, manure, digester and upgrading energy. Built on the GREET 2024 dairy RNG workbook; when it is on it replaces the sections below."
