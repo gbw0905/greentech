@@ -7,6 +7,16 @@
 // typical values and equivalent program documentation. They are starting points
 // for scenario work, not certified pathway scores.
 
+import {
+  computeDairyRng,
+  DAIRY_ROW_CATEGORY,
+  DEFAULT_DAIRY_RNG,
+  type DairyRngInputs,
+} from "./rng-dairy";
+
+export { DEFAULT_DAIRY_RNG, computeDairyRng };
+export type { DairyRngInputs };
+
 // ---------------------------------------------------------------------------
 // Energy / emission sources
 // ---------------------------------------------------------------------------
