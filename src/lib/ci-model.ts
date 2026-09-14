@@ -1334,7 +1334,7 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
   }
 
   // Distribution runs last so loss terms can carry the upstream carbon intensity.
-  if (detail) {
+  if (detail && !dairy) {
     const upstream = lineItems.reduce((a, l) => a + l.gPerMj, 0);
     const ds = computeDistribution(detail.distribution, upstream);
     moduleTotals.distribution = ds.gPerMj;
