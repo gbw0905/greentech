@@ -1042,7 +1042,10 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
         </DetailSection>
       ) : null}
 
+      {dairyMode ? null : (
+      <>
       <DetailSection
+
 
         title="Feedstock production"
         description="Cultivation, fertiliser and field N2O, collection, rendering and drying, per tonne of feedstock."
