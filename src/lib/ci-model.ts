@@ -1270,7 +1270,21 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
   const categoryOf = (key: keyof DirectTerms) =>
     DIRECT_FIELDS.find((f) => f.key === key)!.category;
 
-  for (const f of DIRECT_FIELDS) {
+  // The dairy manure farm model is a complete well-to-wheel pathway of its own,
+  // so when it is on it replaces every other term in the scenario.
+  const dairy = detail?.dairyRng?.enabled ? computeDairyRng(detail.dairyRng, regionFactor) : null;
+  if (dairy) {
+    moduleTotals.dairyRng = dairy.gPerMj;
+    for (const r of dairy.rows) {
+      if (r.gPerMj === 0) continue;
+      lineItems.push({
+        ...r,
+        category: (DAIRY_ROW_CATEGORY[r.key] ?? "Process other") as LineItem["category"],
+      });
+    }
+  }
+
+  for (const f of dairy ? [] : DIRECT_FIELDS) {
     const moduleKey = (Object.keys(MODULE_TO_DIRECT) as Exclude<DetailModuleKey, "dairyRng">[]).find(
       (k) => MODULE_TO_DIRECT[k] === f.key,
     );
