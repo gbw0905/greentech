@@ -169,15 +169,10 @@ function Field({
   );
 }
 
-/** Fired when the user types into any calculator field; reveals the results. */
+/** Kept for compatibility; results are always shown. */
 const CalcTouchContext = createContext<() => void>(() => {});
 
-/**
- * Number input that starts blank: the effective value appears as grey
- * placeholder text until the user types. Clearing the field returns it to the
- * blank/default state. External value changes (pathway switch, reset, unit
- * change) blank the field again so it shows the new default.
- */
+/** Editable number input pre-filled with the current pathway value. */
 function BlankNumInput({
   value,
   onChange,
@@ -191,15 +186,6 @@ function BlankNumInput({
   step?: number;
   ariaLabel?: string;
 }) {
-  const markTouched = useContext(CalcTouchContext);
-  const [draft, setDraft] = useState<string | null>(null);
-  if (draft !== null) {
-    const typed = Number(draft);
-    const differs =
-      !Number.isFinite(typed) ||
-      Math.abs(value - typed) > 1e-6 * Math.max(1, Math.abs(value));
-    if (differs) setDraft(null);
-  }
   return (
     <input
       type="number"
@@ -207,17 +193,9 @@ function BlankNumInput({
       step={step}
       aria-label={ariaLabel}
       className={inputCls}
-      placeholder={Number.isFinite(value) ? String(value) : "0"}
-      value={draft ?? ""}
+      value={Number.isFinite(value) ? value : 0}
       onChange={(e) => {
-        const t = e.target.value;
-        if (t === "") {
-          setDraft(null);
-          return;
-        }
-        setDraft(t);
-        markTouched();
-        const n = Number(t);
+        const n = Number(e.target.value);
         onChange(Number.isFinite(n) ? n : 0);
       }}
     />
@@ -560,7 +538,7 @@ export function PathwayCiBuilder() {
   const [ciUnitId, setCiUnitId] = useState<string>("g-mj");
   const [massUnitId, setMassUnitId] = useState<string>("t");
   /** Results stay hidden until the user has typed at least one value. */
-  const [touched, setTouched] = useState(false);
+  const [touched, setTouched] = useState(true);
   const markTouched = useCallback(() => setTouched(true), []);
 
   const { premium, canEdit, signedIn } = usePremium();
@@ -572,7 +550,7 @@ export function PathwayCiBuilder() {
   const ci = (g: number) => (g * ciUnit.factor).toFixed(ciUnit.decimals);
 
   const selectPathway = (id: string) => {
-    setTouched(false);
+    setTouched(true);
     setInputs(scenarioFromPathway(id, region));
   };
   const setEnergy = (k: SourceId, v: number) =>
@@ -940,7 +918,7 @@ export function PathwayCiBuilder() {
             <button
               type="button"
               onClick={() => {
-                setTouched(false);
+                setTouched(true);
                 setInputs(scenarioFromPathway(inputs.pathwayId, region));
               }}
               className="label-mono inline-flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3 font-bold text-foreground hover:border-accent"
