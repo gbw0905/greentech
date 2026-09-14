@@ -97,8 +97,8 @@ export const saveCiRunFn = createServerFn({ method: "POST" })
         credits_ci: n(data.creditsCi),
         annual_energy_mj: n(data.annualEnergyMj),
         annual_tonnes_co2e: n(data.annualTonnesCo2e),
-        inputs: data.inputs ?? {},
-        programs: data.programs ?? [],
+        inputs: JSON.parse(JSON.stringify(data.inputs ?? {})),
+        programs: JSON.parse(JSON.stringify(data.programs ?? [])),
       })
       .select("*")
       .single();
