@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Calculator } from "lucide-react";
 import { PageShell, PageHeading } from "@/components/PageShell";
 import { PathwayCiBuilder } from "@/components/PathwayCiBuilder";
