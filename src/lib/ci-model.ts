@@ -1354,7 +1354,7 @@ export function calculateScenario(input: ScenarioInputs): ScenarioResult {
   }
 
   const allocation =
-    detail?.coProducts.enabled && detail.coProducts.allocationPct < 100
+    !dairy && detail?.coProducts.enabled && detail.coProducts.allocationPct < 100
       ? Math.max(0, Math.min(100, detail.coProducts.allocationPct)) / 100
       : 1;
   if (allocation < 1) {
