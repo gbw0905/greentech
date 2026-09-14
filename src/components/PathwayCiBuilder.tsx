@@ -998,7 +998,11 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
       {dairyMode && inputs.feedstockId === "manure" ? (
         <DetailSection
           title="Dairy manure farm model"
-          description="Herd size, manure, digester and upgrading energy. Built on the GREET 2024 dairy RNG workbook."
+          description={
+            detail.dairyMethod === "lcfs"
+              ? "The CARB LCFS Tier 1 method for dairy and swine manure biomethane — herd, baseline manure storage, project gas, methane losses, energy use and delivery."
+              : "Herd size, manure, digester and upgrading energy. Built on the GREET 2024 dairy RNG workbook."
+          }
           enabled={detail.dairyRng.enabled}
           onToggle={(v) => setModule("dairyRng", { enabled: v })}
           total={moduleTotal("dairyRng")}
@@ -1006,6 +1010,34 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
           tone="green"
           locked={!canEdit}
         >
+          <Field
+            label="Calculation method"
+            hint={
+              detail.dairyMethod === "lcfs"
+                ? "CARB Tier 1 CI Calculator for Dairy and Swine Manure Biomethane, release 07/01/2025."
+                : "Argonne GREET 2024 farm-level dairy RNG model."
+            }
+          >
+            <select
+              className={inputCls}
+              value={detail.dairyMethod}
+              onChange={(e) => setDairyMethod(e.target.value as DairyMethod)}
+            >
+              <option value="lcfs">CARB LCFS Tier 1 (dairy/swine manure)</option>
+              <option value="greet">GREET 2024 farm model</option>
+            </select>
+          </Field>
+
+          {detail.dairyMethod === "lcfs" ? (
+            <DairyLcfsFields
+              value={detail.dairyLcfs}
+              onChange={(patch) => setModule("dairyLcfs", patch)}
+              result={result.dairyLcfs ?? null}
+              num={num}
+            />
+          ) : (
+            <>
+
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Num label="Milking cows (head)" step={10} value={detail.dairyRng.dairyCows} onChange={(v) => setModule("dairyRng", { dairyCows: v })} />
             <Num label="Dry cows (head)" step={10} value={detail.dairyRng.dryCows} onChange={(v) => setModule("dairyRng", { dryCows: v })} />
