@@ -168,7 +168,11 @@ export function computeDairyRng(i: DairyRngInputs, gridGPerKwh: number): DairyRn
   const elecG = (elecAdMmbtu + elecRngMmbtu) * elecFactorPerMmbtu;
 
   // --- feed loss ------------------------------------------------------------
-  const lossOf = (p: typeof f.lossAd, mmbtu: number, share: number) =>
+  const lossOf = (
+    p: { ch4: number; n2o: number; co2: number; ch4Leak: number },
+    mmbtu: number,
+    share: number,
+  ) =>
     (p.ch4 * i.gwpCh4 + p.n2o * i.gwpN2o + p.co2 + p.ch4Leak * i.gwpCh4) * mmbtu * share;
   const feedLossG =
     lossOf(f.lossAd, ngMmbtu, i.feedLossAd) +
