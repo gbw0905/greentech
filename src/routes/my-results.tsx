@@ -110,7 +110,7 @@ function MyResultsPage() {
             ))}
           </section>
 
-          <div className="grid gap-4">
+          <div className="grid min-w-0 gap-4">
             {list.map((run) => (
               <RunCard key={run.id} run={run} onDelete={() => remove.mutate(run.id)} />
             ))}
@@ -151,7 +151,7 @@ function RunCard({ run, onDelete }: { run: SavedCiRun; onDelete: () => void }) {
 
   return (
     <section
-      className="glass-panel border-l-4 p-5"
+      className="glass-panel min-w-0 border-l-4 p-5"
       style={{ borderLeftColor: run.ciTotal < 0 ? TONE.green : TONE.blue }}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -204,7 +204,7 @@ function RunCard({ run, onDelete }: { run: SavedCiRun; onDelete: () => void }) {
       </dl>
 
       {programs.length ? (
-        <div className="mt-4 overflow-x-auto border-t border-border pt-3">
+        <div className="mt-4 min-w-0 max-w-full overflow-x-auto border-t border-border pt-3">
           <table className="w-full min-w-[34rem] text-sm">
             <thead>
               <tr className="label-mono text-muted-foreground">
