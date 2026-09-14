@@ -61,6 +61,7 @@ export const Route = createFileRoute("/sitemap.xml")({
             priority: "0.7",
           })),
           { path: "/ci-calculator", changefreq: "monthly", priority: "0.8" },
+          { path: "/dairy-rng-calculator", changefreq: "monthly", priority: "0.7" },
           { path: "/get-alerts", changefreq: "monthly", priority: "0.6" },
           { path: "/data-sources", changefreq: "monthly", priority: "0.5" },
           { path: "/contact", changefreq: "monthly", priority: "0.5" },

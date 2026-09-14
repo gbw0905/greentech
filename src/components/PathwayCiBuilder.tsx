@@ -529,10 +529,17 @@ function ItemEditor<T extends ChemicalItem | CoProductItem>({
   );
 }
 
-export function PathwayCiBuilder() {
+/**
+ * "general" renders the multi-pathway lifecycle calculator (dairy manure model excluded).
+ * "dairy" renders the standalone dairy manure RNG farm model only.
+ */
+export type CiBuilderMode = "general" | "dairy";
+
+export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } = {}) {
+  const dairyMode = mode === "dairy";
   const [region, setRegion] = useState<ElectricityRegionId>("usAverage");
   const [inputs, setInputs] = useState<ScenarioInputs>(() =>
-    scenarioFromPathway("rd-uco", "usAverage"),
+    scenarioFromPathway(dairyMode ? "rng-dairy" : "rd-uco", "usAverage"),
   );
   const [units, setUnits] = useState<Partial<Record<SourceId, string>>>({});
   const [ciUnitId, setCiUnitId] = useState<string>("g-mj");
@@ -566,7 +573,10 @@ export function PathwayCiBuilder() {
     });
   const moduleTotal = (key: DetailModuleKey) => `${ci(result.moduleTotals[key] ?? 0)} ${ciUnit.label}`;
 
-  const groups = Array.from(new Set(PATHWAYS.map((p) => p.group)));
+  const availablePathways = dairyMode
+    ? PATHWAYS.filter((p) => p.id === "rng-dairy")
+    : PATHWAYS.filter((p) => p.id !== "rng-dairy");
+  const groups = Array.from(new Set(availablePathways.map((p) => p.group)));
   const feedstock = FEEDSTOCK_BY_ID[inputs.feedstockId];
 
   const annualTonnes = result.annualTonnesCo2e * massUnit.factor;
@@ -939,7 +949,7 @@ export function PathwayCiBuilder() {
               >
                 {groups.map((g) => (
                   <optgroup key={g} label={g}>
-                    {PATHWAYS.filter((p) => p.group === g).map((p) => (
+                    {availablePathways.filter((p) => p.group === g).map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.label}
                       </option>
@@ -977,10 +987,10 @@ export function PathwayCiBuilder() {
       </section>
 
 
-      {inputs.feedstockId === "manure" ? (
+      {dairyMode && inputs.feedstockId === "manure" ? (
         <DetailSection
           title="Dairy manure farm model"
-          description="Herd size, manure, digester and upgrading energy. Built on the GREET 2024 dairy RNG workbook; when it is on it replaces the sections below."
+          description="Herd size, manure, digester and upgrading energy. Built on the GREET 2024 dairy RNG workbook."
           enabled={detail.dairyRng.enabled}
           onToggle={(v) => setModule("dairyRng", { enabled: v })}
           total={moduleTotal("dairyRng")}
@@ -1032,7 +1042,10 @@ export function PathwayCiBuilder() {
         </DetailSection>
       ) : null}
 
+      {dairyMode ? null : (
+      <>
       <DetailSection
+
 
         title="Feedstock production"
         description="Cultivation, fertiliser and field N2O, collection, rendering and drying, per tonne of feedstock."
@@ -1473,6 +1486,10 @@ export function PathwayCiBuilder() {
           />
         </div>
       </DetailSection>
+      </>
+      )}
+
+
 
 
       {touched ? (

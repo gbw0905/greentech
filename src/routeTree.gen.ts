@@ -15,6 +15,7 @@ import { Route as AssistantRouteImport } from './routes/assistant'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CiCalculatorRouteImport } from './routes/ci-calculator'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as DairyRngCalculatorRouteImport } from './routes/dairy-rng-calculator'
 import { Route as DataSourcesRouteImport } from './routes/data-sources'
 import { Route as GetAlertsRouteImport } from './routes/get-alerts'
 import { Route as JobsRouteImport } from './routes/jobs'
@@ -83,6 +84,11 @@ const CiCalculatorRoute = CiCalculatorRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DairyRngCalculatorRoute = DairyRngCalculatorRouteImport.update({
+  id: '/dairy-rng-calculator',
+  path: '/dairy-rng-calculator',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DataSourcesRoute = DataSourcesRouteImport.update({
@@ -300,6 +306,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/ci-calculator': typeof CiCalculatorRoute
   '/contact': typeof ContactRoute
+  '/dairy-rng-calculator': typeof DairyRngCalculatorRoute
   '/data-sources': typeof DataSourcesRoute
   '/get-alerts': typeof GetAlertsRoute
   '/jobs': typeof JobsRoute
@@ -346,6 +353,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/ci-calculator': typeof CiCalculatorRoute
   '/contact': typeof ContactRoute
+  '/dairy-rng-calculator': typeof DairyRngCalculatorRoute
   '/data-sources': typeof DataSourcesRoute
   '/get-alerts': typeof GetAlertsRoute
   '/jobs': typeof JobsRoute
@@ -393,6 +401,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/ci-calculator': typeof CiCalculatorRoute
   '/contact': typeof ContactRoute
+  '/dairy-rng-calculator': typeof DairyRngCalculatorRoute
   '/data-sources': typeof DataSourcesRoute
   '/get-alerts': typeof GetAlertsRoute
   '/jobs': typeof JobsRoute
@@ -442,6 +451,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/ci-calculator'
     | '/contact'
+    | '/dairy-rng-calculator'
     | '/data-sources'
     | '/get-alerts'
     | '/jobs'
@@ -488,6 +498,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/ci-calculator'
     | '/contact'
+    | '/dairy-rng-calculator'
     | '/data-sources'
     | '/get-alerts'
     | '/jobs'
@@ -534,6 +545,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/ci-calculator'
     | '/contact'
+    | '/dairy-rng-calculator'
     | '/data-sources'
     | '/get-alerts'
     | '/jobs'
@@ -582,6 +594,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CiCalculatorRoute: typeof CiCalculatorRoute
   ContactRoute: typeof ContactRoute
+  DairyRngCalculatorRoute: typeof DairyRngCalculatorRoute
   DataSourcesRoute: typeof DataSourcesRoute
   GetAlertsRoute: typeof GetAlertsRoute
   JobsRoute: typeof JobsRoute
@@ -658,6 +671,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dairy-rng-calculator': {
+      id: '/dairy-rng-calculator'
+      path: '/dairy-rng-calculator'
+      fullPath: '/dairy-rng-calculator'
+      preLoaderRoute: typeof DairyRngCalculatorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/data-sources': {
@@ -985,6 +1005,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CiCalculatorRoute: CiCalculatorRoute,
   ContactRoute: ContactRoute,
+  DairyRngCalculatorRoute: DairyRngCalculatorRoute,
   DataSourcesRoute: DataSourcesRoute,
   GetAlertsRoute: GetAlertsRoute,
   JobsRoute: JobsRoute,
