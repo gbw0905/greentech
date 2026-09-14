@@ -20,6 +20,7 @@ import { Route as GetAlertsRouteImport } from './routes/get-alerts'
 import { Route as JobsRouteImport } from './routes/jobs'
 import { Route as MandatesRouteImport } from './routes/mandates'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as MyResultsRouteImport } from './routes/my-results'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProfilesRouteImport } from './routes/profiles'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -107,6 +108,11 @@ const MandatesRoute = MandatesRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MyResultsRoute = MyResultsRouteImport.update({
+  id: '/my-results',
+  path: '/my-results',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -299,6 +305,7 @@ export interface FileRoutesByFullPath {
   '/jobs': typeof JobsRoute
   '/mandates': typeof MandatesRoute
   '/mcp': typeof McpRoute
+  '/my-results': typeof MyResultsRoute
   '/privacy': typeof PrivacyRoute
   '/profiles': typeof ProfilesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -344,6 +351,7 @@ export interface FileRoutesByTo {
   '/jobs': typeof JobsRoute
   '/mandates': typeof MandatesRoute
   '/mcp': typeof McpRoute
+  '/my-results': typeof MyResultsRoute
   '/privacy': typeof PrivacyRoute
   '/profiles': typeof ProfilesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -390,6 +398,7 @@ export interface FileRoutesById {
   '/jobs': typeof JobsRoute
   '/mandates': typeof MandatesRoute
   '/mcp': typeof McpRoute
+  '/my-results': typeof MyResultsRoute
   '/privacy': typeof PrivacyRoute
   '/profiles': typeof ProfilesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -438,6 +447,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/mandates'
     | '/mcp'
+    | '/my-results'
     | '/privacy'
     | '/profiles'
     | '/sitemap.xml'
@@ -483,6 +493,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/mandates'
     | '/mcp'
+    | '/my-results'
     | '/privacy'
     | '/profiles'
     | '/sitemap.xml'
@@ -528,6 +539,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/mandates'
     | '/mcp'
+    | '/my-results'
     | '/privacy'
     | '/profiles'
     | '/sitemap.xml'
@@ -575,6 +587,7 @@ export interface RootRouteChildren {
   JobsRoute: typeof JobsRoute
   MandatesRoute: typeof MandatesRoute
   McpRoute: typeof McpRoute
+  MyResultsRoute: typeof MyResultsRoute
   PrivacyRoute: typeof PrivacyRoute
   ProfilesRoute: typeof ProfilesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -680,6 +693,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/my-results': {
+      id: '/my-results'
+      path: '/my-results'
+      fullPath: '/my-results'
+      preLoaderRoute: typeof MyResultsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -970,6 +990,7 @@ const rootRouteChildren: RootRouteChildren = {
   JobsRoute: JobsRoute,
   MandatesRoute: MandatesRoute,
   McpRoute: McpRoute,
+  MyResultsRoute: MyResultsRoute,
   PrivacyRoute: PrivacyRoute,
   ProfilesRoute: ProfilesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,

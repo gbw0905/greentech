@@ -1,0 +1,1 @@
+DELETE FROM public.ci_runs WHERE name = 'Test scenario';
