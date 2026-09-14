@@ -955,6 +955,159 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
       ],
     });
 
+    // Dairy manure RNG: the farm model replaces the generic lifecycle inputs, so
+    // every entered field is written out explicitly here.
+    if (detail.dairyRng.enabled && detail.dairyMethod === "lcfs") {
+      const d = detail.dairyLcfs;
+      const num2 = (v: number) => Number(v);
+      calcSections.push({
+        title: "CARB LCFS Tier 1 — project background",
+        header: ["Input", "Value", "Unit / note"],
+        rows: [
+          ["Digester type", d.digesterType, "Sets collection efficiency and leakage rate"],
+          ["Electricity region", d.electricityRegion, "eGRID region for grid power"],
+          ["Average annual temperature", num2(d.annualTemperatureC), "°C"],
+          ["September full cleanout", d.septemberCleanout ? "Yes" : "No", "Livestock Protocol cleanout rule"],
+          ["Reporting months", num2(d.reportingMonths), "months in the reporting period"],
+          ...d.monthlyTemperatureC.map((t, idx) => [
+            `Monthly temperature — month ${idx + 1}`,
+            num2(t),
+            "°C",
+          ] as SheetRow),
+        ],
+      });
+
+      calcSections.push({
+        title: "CARB LCFS Tier 1 — herd and baseline manure",
+        header: [
+          "Livestock category",
+          "Population (head)",
+          "VS excretion (kg/head/day)",
+          "Max methane potential Bo (m3 CH4/kg VS)",
+          "Fraction to anaerobic storage",
+        ],
+        rows: d.livestock.map((c) => [
+          c.label,
+          num2(c.population),
+          num2(c.vsRate),
+          num2(c.bo),
+          num2(c.msAnaerobic),
+        ]),
+      });
+
+      const storageRows = (list: typeof d.otherStorage, tag: string): SheetRow[] =>
+        list.map((s) => [
+          tag,
+          s.system,
+          ...d.livestock.map((_, idx) => num2(s.fractions?.[idx] ?? 0)),
+        ] as SheetRow);
+      calcSections.push({
+        title: "CARB LCFS Tier 1 — storage systems (share of manure by category)",
+        header: ["Set", "Storage system", ...d.livestock.map((c) => c.label)],
+        rows: [
+          ...storageRows(d.otherStorage, "Baseline non-anaerobic"),
+          ...storageRows(d.nonBcsStorage, "Project non-BCS"),
+        ],
+      });
+
+      calcSections.push({
+        title: "CARB LCFS Tier 1 — project gas and methane losses",
+        header: ["Input", "Value", "Unit / note"],
+        rows: [
+          ["Raw biogas produced", num2(d.rawBiogasScf), "scf over the reporting period"],
+          ["Raw biogas methane content", num2(d.rawBiogasCh4), "fraction"],
+          ["Biogas to upgrading", num2(d.biogasToUpgradingScf), "scf"],
+          ["Biogas to upgrading methane content", num2(d.biogasToUpgradingCh4), "fraction"],
+          ["Biomethane injected", num2(d.biomethaneInjectedMmbtuHhv), "MMBtu HHV"],
+          ["Flared biomethane", num2(d.flaredBiomethaneScf), "scf"],
+          ["Flared biomethane methane content", num2(d.flaredBiomethaneCh4), "fraction"],
+          ["Vented biogas", num2(d.ventedBiogasScf), "scf"],
+          ["Vented biogas methane content", num2(d.ventedBiogasCh4), "fraction"],
+          ["Biomethane to on-site electricity", num2(d.onsiteElectricityRngMmbtuHhv), "MMBtu HHV"],
+          ["Exported share of on-site electricity", num2(d.exportedElectricityShare), "fraction"],
+          ["VS removed before effluent ponds", num2(d.vsRemovedBeforePond), "fraction"],
+        ],
+      });
+
+      calcSections.push({
+        title: "CARB LCFS Tier 1 — energy use and delivery",
+        header: ["Input", "Value", "Unit / note"],
+        rows: [
+          ["Digester grid electricity", num2(d.digesterGridKwh), "kWh"],
+          ["Digester natural gas", num2(d.digesterNgMmbtuHhv), "MMBtu HHV"],
+          ["Digester diesel", num2(d.digesterDieselGal), "gal"],
+          ["Digester raw biogas", num2(d.digesterRawBiogasMmbtuLhv), "MMBtu LHV"],
+          ["Digester biomethane", num2(d.digesterBiomethaneMmbtuHhv), "MMBtu HHV"],
+          ["Upgrading grid electricity", num2(d.upgradingGridKwh), "kWh"],
+          ["Upgrading natural gas", num2(d.upgradingNgMmbtuHhv), "MMBtu HHV"],
+          ["Upgrading diesel", num2(d.upgradingDieselGal), "gal"],
+          ["Upgrading propane", num2(d.upgradingPropaneGal), "gal"],
+          ["Upgrading on-site electricity", num2(d.upgradingOnsiteElecKwh), "kWh"],
+          ["Upgrading raw biogas", num2(d.upgradingRawBiogasMmbtuLhv), "MMBtu LHV"],
+          ["Upgrading biomethane", num2(d.upgradingBiomethaneMmbtuHhv), "MMBtu HHV"],
+          ["Pipeline distance to station", num2(d.pipelineMiles), "miles"],
+        ],
+      });
+
+      const r = result.dairyLcfs;
+      if (r) {
+        calcSections.push({
+          title: "CARB LCFS Tier 1 — intermediate results",
+          header: ["Quantity", "Value", "Unit"],
+          rows: [
+            ["Dispensable biomethane", Number(r.dispensableMmbtu.toFixed(2)), "MMBtu LHV over the period"],
+            ["Energy basis", Number(r.periodMj.toFixed(0)), "MJ over the period"],
+            ["Annualised energy", Number(r.annualMj.toFixed(0)), "MJ/yr"],
+            ["Annual footprint", Number(r.annualTonnesCo2e.toFixed(2)), "t CO2e/yr"],
+            ["Baseline methane", Number(r.baselineCh4PerMonth.toFixed(3)), "MT CH4/month"],
+            ["  of which anaerobic storage", Number(r.baselineAnaerobicPerMonth.toFixed(3)), "MT CH4/month"],
+            ["  of which other storage", Number(r.baselineOtherPerMonth.toFixed(3)), "MT CH4/month"],
+            ["Project methane", Number(r.projectCh4PerMonth.toFixed(3)), "MT CH4/month"],
+            ["  effluent ponds", Number(r.effluentPondPerMonth.toFixed(3)), "MT CH4/month"],
+            ["  non-BCS storage", Number(r.nonBcsPerMonth.toFixed(3)), "MT CH4/month"],
+            ["  digester leakage", Number(r.digesterLeakagePerMonth.toFixed(3)), "MT CH4/month"],
+            ["  upgrading fugitives", Number(r.upgradingFugitivePerMonth.toFixed(3)), "MT CH4/month"],
+            ["  venting", Number(r.ventedPerMonth.toFixed(3)), "MT CH4/month"],
+            ["  flaring", Number(r.flaredPerMonth.toFixed(3)), "MT CH4/month"],
+            ["Upgrading fugitive fraction", Number(r.upgradingFugitiveFraction.toFixed(4)), "fraction of inlet methane"],
+            ["Allocation factor", Number(r.allocationFactor.toFixed(4)), "share of credit to RNG sold"],
+            ["Net methane avoided", Number(r.netCh4AvoidedMt.toFixed(3)), "MT CH4 over the period"],
+            ["Avoided methane credit", Number(r.avoidedCh4GPerMj.toFixed(3)), "gCO2e/MJ"],
+          ],
+        });
+      }
+    }
+
+    if (detail.dairyRng.enabled && detail.dairyMethod === "greet") {
+      const g = detail.dairyRng;
+      calcSections.push({
+        title: "Dairy RNG farm model (GREET) inputs",
+        header: ["Input", "Value", "Unit"],
+        rows: [
+          ["Milking cows", g.dairyCows, "head"],
+          ["Dry cows", g.dryCows, "head"],
+          ["Heifers", g.heifers, "head"],
+          ["Moisture of wet manure", g.moisture, "fraction"],
+          ["Manure, milking cow", g.manureDairyCowTpy, "t/head/yr"],
+          ["Manure, dry cow", g.manureDryCowTpy, "t/head/yr"],
+          ["Manure, heifer", g.manureHeiferTpy, "t/head/yr"],
+          ["RNG yield", g.rngBtuPerLbTs, "Btu/lb dry solids"],
+          ["Baseline MCF, cows", g.mcfCow, "fraction"],
+          ["Baseline MCF, heifers", g.mcfHeifer, "fraction"],
+          ["Biogas flaring", g.flaringBtuPerLbTs, "Btu/lb dry manure"],
+          ["Natural gas use", g.ngBtuPerMmbtu, "Btu/mmBtu RNG"],
+          ["Digester electricity", g.elecAdBtuPerMmbtu, "Btu/mmBtu RNG"],
+          ["Upgrading electricity", g.elecRngBtuPerMmbtu, "Btu/mmBtu RNG"],
+          ["Feed loss in digestion", g.feedLossAd, "fraction"],
+          ["Feed loss in upgrading", g.feedLossUpgrading, "fraction"],
+          ["Pipeline transmission", g.pipelineMiles, "miles"],
+          ["On-farm truck", g.truckMiles, "miles/yr"],
+          ["GWP of methane", g.gwpCh4, "—"],
+          ["GWP of nitrous oxide", g.gwpN2o, "—"],
+        ],
+      });
+    }
+
     const energyRows = SOURCES.flatMap((s) => {
       const qty = inputs.energy[s.id] ?? 0;
       if (!qty) return [];
