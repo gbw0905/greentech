@@ -949,7 +949,7 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
               >
                 {groups.map((g) => (
                   <optgroup key={g} label={g}>
-                    {PATHWAYS.filter((p) => p.group === g).map((p) => (
+                    {availablePathways.filter((p) => p.group === g).map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.label}
                       </option>
