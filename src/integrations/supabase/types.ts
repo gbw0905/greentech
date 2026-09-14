@@ -163,6 +163,63 @@ export type Database = {
         }
         Relationships: []
       }
+      ci_runs: {
+        Row: {
+          annual_energy_mj: number
+          annual_tonnes_co2e: number
+          ci_total: number
+          created_at: string
+          credits_ci: number
+          feedstock_label: string
+          gross_ci: number
+          id: string
+          inputs: Json
+          name: string
+          pathway_id: string
+          pathway_label: string
+          programs: Json
+          region_label: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          annual_energy_mj?: number
+          annual_tonnes_co2e?: number
+          ci_total: number
+          created_at?: string
+          credits_ci?: number
+          feedstock_label?: string
+          gross_ci?: number
+          id?: string
+          inputs?: Json
+          name?: string
+          pathway_id: string
+          pathway_label: string
+          programs?: Json
+          region_label?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          annual_energy_mj?: number
+          annual_tonnes_co2e?: number
+          ci_total?: number
+          created_at?: string
+          credits_ci?: number
+          feedstock_label?: string
+          gross_ci?: number
+          id?: string
+          inputs?: Json
+          name?: string
+          pathway_id?: string
+          pathway_label?: string
+          programs?: Json
+          region_label?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       flyer_generations: {
         Row: {
           created_at: string
