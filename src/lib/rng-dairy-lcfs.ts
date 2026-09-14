@@ -327,7 +327,7 @@ export function computeDairyRngLcfs(i: DairyRngLcfsInputs): DairyRngLcfsResult {
         const available = pos(cat.vsRate) * pos(cat.population) * clamp01(cat.msAnaerobic) * days * 0.8 + carryover;
         const f = vanTHoffFactor(temps[m] ?? i.annualTemperatureC);
         const degraded = available * f;
-        if (pass === 1) baselineAnaerobicYear += degraded * pos(cat.bo) * 0.68 * 0.001;
+        if (pass === 0) baselineAnaerobicYear += degraded * pos(cat.bo) * 0.68 * 0.001;
         const leftover = available - degraded;
         carryover = i.septemberCleanout && m === 8 ? 0 : leftover;
       }
