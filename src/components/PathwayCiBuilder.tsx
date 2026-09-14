@@ -33,6 +33,7 @@ import {
   type TransportModeId,
 } from "@/lib/ci-model";
 import { ExportExcelButton } from "@/components/ExportExcelButton";
+import { SaveCiRunButton } from "@/components/SaveCiRunButton";
 import type { SheetRow, SheetSection, WorkbookChart, WorkbookExport } from "@/lib/excel-workbook";
 import { Link } from "@tanstack/react-router";
 import { Lock } from "lucide-react";
