@@ -105,6 +105,13 @@ export function PageShell({
             </Link>
             <span className="mx-2 text-muted-foreground">·</span>
             <Link
+              to="/dairy-rng-calculator"
+              className="font-semibold text-foreground underline underline-offset-4 hover:text-primary"
+            >
+              Dairy RNG calculator
+            </Link>
+            <span className="mx-2 text-muted-foreground">·</span>
+            <Link
               to="/mandates"
               className="font-semibold text-foreground underline underline-offset-4 hover:text-primary"
             >
