@@ -1486,6 +1486,10 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
           />
         </div>
       </DetailSection>
+      </>
+      )}
+
+
 
 
       {touched ? (
