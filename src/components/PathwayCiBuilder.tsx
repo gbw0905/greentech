@@ -147,6 +147,12 @@ function exportSectionFor(item: LineItem): ExportSection {
   if (item.key === "landUseChange") return "Land use change";
   if (item.key === "feedstockTransport" || item.key.startsWith("tr-")) return "Transportation";
   if (item.category === "Process energy") return "Process energy";
+  if (item.key.startsWith("lcfs-") || item.key.startsWith("dairy-")) {
+    if (item.category === "Credits") return "Co-products and avoided emissions";
+    if (item.category === "Distribution and use") return "Fuel distribution";
+    if (item.category === "Process other") return "Chemicals and fugitive emissions";
+    return "Feedstock production";
+  }
   if (item.key === "processNonEnergy" || item.key.startsWith("chem-")) {
     return "Chemicals and fugitive emissions";
   }
@@ -157,6 +163,7 @@ function exportSectionFor(item: LineItem): ExportSection {
   if (item.key === "endUse" || item.key.startsWith("tp-")) return "Tailpipe and end use";
   return "Feedstock production";
 }
+
 
 const inputCls =
   "h-11 w-full rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground focus:border-accent focus:outline-none";
