@@ -2299,6 +2299,8 @@ export interface DetailModules {
   coProducts: CoProductInputs;
   distribution: DistributionInputs;
   tailpipe: TailpipeInputs;
+  /** Farm-level dairy manure RNG model; when enabled it replaces every other term. */
+  dairyRng: DairyRngInputs;
 }
 
 export type DetailModuleKey = keyof DetailModules;
