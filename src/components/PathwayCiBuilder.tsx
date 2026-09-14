@@ -538,7 +538,7 @@ export function PathwayCiBuilder() {
   const [ciUnitId, setCiUnitId] = useState<string>("g-mj");
   const [massUnitId, setMassUnitId] = useState<string>("t");
   /** Results stay hidden until the user has typed at least one value. */
-  const [touched, setTouched] = useState(false);
+  const [touched, setTouched] = useState(true);
   const markTouched = useCallback(() => setTouched(true), []);
 
   const { premium, canEdit, signedIn } = usePremium();
@@ -550,7 +550,7 @@ export function PathwayCiBuilder() {
   const ci = (g: number) => (g * ciUnit.factor).toFixed(ciUnit.decimals);
 
   const selectPathway = (id: string) => {
-    setTouched(false);
+    setTouched(true);
     setInputs(scenarioFromPathway(id, region));
   };
   const setEnergy = (k: SourceId, v: number) =>
@@ -918,7 +918,7 @@ export function PathwayCiBuilder() {
             <button
               type="button"
               onClick={() => {
-                setTouched(false);
+                setTouched(true);
                 setInputs(scenarioFromPathway(inputs.pathwayId, region));
               }}
               className="label-mono inline-flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3 font-bold text-foreground hover:border-accent"
