@@ -92,6 +92,11 @@
   --color-tracker-red: var(--tracker-red);
   --color-tracker-green: var(--tracker-green);
   --color-tracker-blue: var(--tracker-blue);
+  --color-ci-canvas: var(--ci-canvas);
+  --color-ci-panel: var(--ci-panel);
+  --color-ci-foreground: var(--ci-foreground);
+  --color-ci-muted: var(--ci-muted);
+  --color-ci-line: var(--ci-line);
 }
 
 :root {
@@ -161,6 +166,11 @@
   --tracker-red: oklch(0.55 0.2 25);
   --tracker-green: oklch(0.48 0.13 150);
   --tracker-blue: oklch(0.5 0.17 255);
+  --ci-canvas: oklch(0.15 0.018 260);
+  --ci-panel: oklch(0.2 0.022 260);
+  --ci-foreground: oklch(0.97 0.006 250);
+  --ci-muted: oklch(0.74 0.018 250);
+  --ci-line: oklch(0.34 0.025 260);
   --gradient-frost: linear-gradient(135deg, oklch(1 0 0), oklch(0.96 0.008 250));
   --gradient-primary: linear-gradient(120deg, var(--primary), var(--primary-glow));
   --gradient-aurora: linear-gradient(120deg, oklch(0.21 0.05 265) 0%, oklch(0.29 0.075 262) 55%, oklch(0.38 0.09 250) 100%);
@@ -247,6 +257,11 @@
   --tracker-red: oklch(0.68 0.18 25);
   --tracker-green: oklch(0.72 0.16 150);
   --tracker-blue: oklch(0.7 0.17 250);
+  --ci-canvas: oklch(0.13 0.018 260);
+  --ci-panel: oklch(0.18 0.022 260);
+  --ci-foreground: oklch(0.97 0.006 250);
+  --ci-muted: oklch(0.76 0.018 250);
+  --ci-line: oklch(0.32 0.025 260);
   --gradient-frost: linear-gradient(135deg, oklch(0.23 0.045 264), oklch(0.27 0.05 258));
   --gradient-primary: linear-gradient(120deg, var(--primary), var(--primary-glow));
   --gradient-aurora: linear-gradient(120deg, oklch(0.19 0.04 265) 0%, oklch(0.26 0.05 262) 55%, oklch(0.33 0.06 250) 100%);
@@ -380,6 +395,81 @@ input.chart-select {
     border-color 0.2s ease;
   &:hover {
     box-shadow: var(--shadow-card-hover);
+  }
+}
+
+/* Dark RGB Pro treatment, scoped to the carbon-intensity calculators. */
+@utility ci-rgb-shell {
+  --background: var(--ci-canvas);
+  --foreground: var(--ci-foreground);
+  --card: var(--ci-panel);
+  --card-foreground: var(--ci-foreground);
+  --surface: var(--ci-panel);
+  --surface-1: color-mix(in oklab, var(--ci-panel) 88%, var(--ci-canvas));
+  --surface-2: color-mix(in oklab, var(--ci-panel) 78%, var(--ci-foreground));
+  --muted: color-mix(in oklab, var(--ci-panel) 78%, var(--ci-foreground));
+  --muted-foreground: var(--ci-muted);
+  --border: var(--ci-line);
+  --input: var(--ci-line);
+  --ring: var(--tracker-blue);
+  color: var(--ci-foreground);
+  border: 1px solid var(--ci-line);
+  border-radius: calc(var(--radius) + 6px);
+  background: var(--ci-canvas);
+  padding: clamp(0.65rem, 2vw, 1rem);
+  box-shadow: 0 22px 55px -34px color-mix(in oklab, var(--tracker-blue) 48%, transparent);
+}
+
+@utility ci-rgb-panel {
+  background: var(--ci-panel);
+  border-color: var(--ci-line);
+  box-shadow: 0 12px 30px -24px color-mix(in oklab, var(--ci-canvas) 85%, transparent);
+}
+
+@utility ci-rgb-red {
+  background: color-mix(in oklab, var(--tracker-red) 27%, var(--ci-panel));
+}
+
+@utility ci-rgb-green {
+  background: color-mix(in oklab, var(--tracker-green) 25%, var(--ci-panel));
+}
+
+@utility ci-rgb-blue {
+  background: color-mix(in oklab, var(--tracker-blue) 27%, var(--ci-panel));
+}
+
+.ci-rgb-shell input,
+.ci-rgb-shell select {
+  background-color: var(--ci-canvas);
+  border-color: var(--ci-line);
+  color: var(--ci-foreground);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.ci-rgb-shell input:focus,
+.ci-rgb-shell select:focus {
+  border-color: var(--tracker-blue);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--tracker-blue) 24%, transparent);
+}
+
+.ci-rgb-shell option {
+  background: var(--ci-canvas);
+  color: var(--ci-foreground);
+}
+
+.ci-rgb-shell button {
+  transition: transform 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
+}
+
+.ci-rgb-shell button:hover {
+  transform: translateY(-1px);
+  border-color: var(--tracker-blue);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ci-rgb-shell button {
+    transition: none;
   }
 }
 

@@ -52,7 +52,7 @@ import { usePremium } from "@/hooks/usePremium";
 /** Shown in place of the detailed results when the account is not on the premium list. */
 function PremiumLocked({ signedIn }: { signedIn: boolean }) {
   return (
-    <section className="glass-panel border-l-4 p-5" style={{ borderLeftColor: "rgb(180, 35, 24)" }}>
+    <section className="glass-panel ci-rgb-panel ci-rgb-red border-l-4 p-5" style={{ borderLeftColor: "var(--tracker-red)" }}>
       <div className="flex items-start gap-2.5">
         <Lock className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
         <div className="min-w-0">
@@ -259,7 +259,7 @@ function CollapsibleSection({
 }) {
   const [open, setOpen] = useState(false);
   return (
-    <section className="glass-panel border-l-4 p-5" style={{ borderLeftColor: TONE_COLOR[tone] }}>
+    <section className={`glass-panel ci-rgb-panel ci-rgb-${tone} border-l-4 p-5`} style={{ borderLeftColor: TONE_COLOR[tone] }}>
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-3">
         <div className="flex min-w-0 items-start gap-2.5">
           <span
@@ -647,7 +647,7 @@ function DetailSection({
   const [open, setOpen] = useState(false);
   return (
     <section
-      className="glass-panel border-l-4 p-5"
+      className={`glass-panel ci-rgb-panel ci-rgb-${tone} border-l-4 p-5`}
       style={{ borderLeftColor: TONE_COLOR[tone] }}
     >
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-3">
@@ -1410,9 +1410,9 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
 
   return (
     <CalcTouchContext.Provider value={markTouched}>
-    <div className="space-y-4">
+    <div className="ci-rgb-shell space-y-4">
       <section
-        className="glass-panel border-l-4 p-5"
+        className="glass-panel ci-rgb-panel ci-rgb-green border-l-4 p-5"
         style={{ borderLeftColor: TONE_COLOR.green }}
       >
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
@@ -2033,7 +2033,7 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
       <>
       <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
         <div
-          className="glass-panel card-motion min-w-0 border-t-4 border-l-4 p-5"
+          className="glass-panel ci-rgb-panel ci-rgb-blue card-motion min-w-0 border-t-4 border-l-4 p-5"
           style={{
             borderTopColor: result.ciTotal < 0 ? TONE_COLOR.green : TONE_COLOR.blue,
             borderLeftColor: TONE_COLOR.blue,
@@ -2096,7 +2096,7 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
 
         {premium ? (
         <div
-          className="glass-panel min-w-0 border-l-4 p-5"
+          className="glass-panel ci-rgb-panel ci-rgb-blue min-w-0 border-l-4 p-5"
           style={{ borderLeftColor: TONE_COLOR.blue }}
         >
           <div className="mb-3 flex items-baseline justify-between gap-3 border-b border-border pb-2">
@@ -2224,7 +2224,7 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
 
       {premium ? (
       <section
-        className="glass-panel overflow-x-auto border-l-4 p-5"
+        className="glass-panel ci-rgb-panel ci-rgb-blue overflow-x-auto border-l-4 p-5"
         style={{ borderLeftColor: TONE_COLOR.blue }}
       >
         <div className="mb-3 flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-2">
@@ -2318,7 +2318,7 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
 
       {premium ? (
       <section
-        className="glass-panel overflow-x-auto border-l-4 p-5"
+        className="glass-panel ci-rgb-panel ci-rgb-blue overflow-x-auto border-l-4 p-5"
         style={{ borderLeftColor: TONE_COLOR.blue }}
       >
         <div className="mb-3 flex items-start gap-2.5">
@@ -2466,7 +2466,7 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
 
       {premium ? (
       <section
-        className="glass-panel border-l-4 p-5"
+        className="glass-panel ci-rgb-panel ci-rgb-green border-l-4 p-5"
         style={{ borderLeftColor: TONE_COLOR.green }}
       >
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -2532,7 +2532,7 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
       </>
       ) : (
       <section
-        className="glass-panel border-l-4 p-5"
+        className="glass-panel ci-rgb-panel ci-rgb-blue border-l-4 p-5"
         style={{ borderLeftColor: TONE_COLOR.blue }}
       >
         <div className="flex items-start gap-2.5">
