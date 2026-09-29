@@ -1,14 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { countryBySlug } from "@/lib/policy-taxonomy";
-import { feedQueryWithInitial, loadFeed } from "@/lib/feed-query";
-import { CountryProfileHeader } from "@/components/CountryProfileHeader";
-import { UpdateCard } from "@/components/UpdateCard";
+import { countryBySlug } from "@/features/policy/taxonomy";
+import { feedQueryWithInitial, loadFeed } from "@/features/policy/feed-query";
+import { CountryProfileHeader } from "@/features/countries/components/CountryProfileHeader";
+import { UpdateCard } from "@/features/policy/components/UpdateCard";
 import { CalendarRangeFilter } from "@/components/CalendarRangeFilter";
 import { EMPTY_RANGE, withinRange } from "@/components/DateRangeFilter";
-import { mandatesForCountry, updateMatchesMandate } from "@/lib/mandates";
-import { useVisitTracker } from "@/hooks/useVisitTracker";
+import { mandatesForCountry, updateMatchesMandate } from "@/features/countries/mandates";
+import { useVisitTracker } from "@/features/traffic/hooks/useVisitTracker";
 import { Activity, CalendarDays, FileCheck2 } from "lucide-react";
 
 export const Route = createFileRoute("/countries/$slug/updates")({
@@ -38,10 +38,11 @@ function CountryUpdatesPage() {
   useVisitTracker();
   const { slug } = Route.useParams();
   const country = countryBySlug(slug);
-  if (!country) return null;
   const { feed: initialFeed } = Route.useLoaderData();
   const { data, isFetching } = useQuery(feedQueryWithInitial(initialFeed));
   const [range, setRange] = useState(EMPTY_RANGE);
+
+  if (!country) return null;
 
   const trackedMandates = mandatesForCountry(slug);
   const keywords = (country.updateKeywords ?? []).map((k) => k.toLowerCase());
@@ -85,13 +86,22 @@ function CountryUpdatesPage() {
       <section className="mt-5 overflow-hidden rounded-lg border border-border bg-card shadow-[var(--shadow-card)]">
         <div className="grid gap-4 p-4 sm:grid-cols-[1fr_auto] sm:items-center sm:p-5">
           <div>
-            <p className="label-mono inline-flex items-center gap-1.5 text-muted-foreground"><Activity className="size-3.5 text-destructive" /> Live monitoring</p>
+            <p className="label-mono inline-flex items-center gap-1.5 text-muted-foreground">
+              <Activity className="size-3.5 text-destructive" /> Live monitoring
+            </p>
             <h2 className="mt-1 font-display text-xl font-extrabold">Latest updates first</h2>
-            <p className="mt-1 text-sm text-muted-foreground">{updates.length} matched item{updates.length === 1 ? "" : "s"}, newest to oldest, across {trackedMandates.length} tracked obligation{trackedMandates.length === 1 ? "" : "s"}.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {updates.length} matched item{updates.length === 1 ? "" : "s"}, newest to oldest,
+              across {trackedMandates.length} tracked obligation
+              {trackedMandates.length === 1 ? "" : "s"}.
+            </p>
           </div>
           <CalendarRangeFilter value={range} onChange={setRange} />
         </div>
-        <div className="flex items-center gap-2 border-t border-border bg-surface-1 px-4 py-2.5 text-xs text-muted-foreground sm:px-5"><CalendarDays className="size-3.5 text-tracker-blue" /> Select a preset or exact dates to review policy changes over time.</div>
+        <div className="flex items-center gap-2 border-t border-border bg-surface-1 px-4 py-2.5 text-xs text-muted-foreground sm:px-5">
+          <CalendarDays className="size-3.5 text-tracker-blue" /> Select a preset or exact dates to
+          review policy changes over time.
+        </div>
       </section>
 
       <section>
@@ -108,7 +118,9 @@ function CountryUpdatesPage() {
             <div key={update.id}>
               {isNew && (
                 <div className="mb-3 flex items-center gap-3 pt-2">
-                  <h3 className="font-display text-sm font-extrabold uppercase tracking-wide">{month}</h3>
+                  <h3 className="font-display text-sm font-extrabold uppercase tracking-wide">
+                    {month}
+                  </h3>
                   <span className="h-px flex-1 bg-border" />
                 </div>
               )}

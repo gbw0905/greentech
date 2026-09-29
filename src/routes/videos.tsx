@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Video } from "lucide-react";
-import { FUEL_TYPES, FUEL_ACCENT, type FuelType } from "@/lib/policy-taxonomy";
-import { VideoLibrary } from "@/components/VideoLibrary";
-import { LiveMediaFeed } from "@/components/LiveMediaFeed";
+import { FUEL_TYPES, FUEL_ACCENT, type FuelType } from "@/features/policy/taxonomy";
+import { LiveMediaFeed } from "@/features/videos/components/LiveMediaFeed";
+import { VideoLibrary } from "@/features/videos/components/VideoLibrary";
 import { PageShell, PageHeading } from "@/components/PageShell";
-import { useVisitTracker } from "@/hooks/useVisitTracker";
+import { useVisitTracker } from "@/features/traffic/hooks/useVisitTracker";
 
 const TITLE = "Video briefing room | Global Bioenergy Watch";
 const DESCRIPTION =
@@ -81,7 +81,6 @@ function VideosPage() {
           <source src="/videos/explainer.mp4" type="video/mp4" />
         </video>
       </section>
-
 
       <div className="glass-panel flex flex-wrap items-center gap-2 p-3">
         <span className="label-mono mr-1 text-muted-foreground">Fuel type</span>

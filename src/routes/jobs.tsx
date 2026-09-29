@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Briefcase } from "lucide-react";
-import { JobsPanel } from "@/components/JobsPanel";
+import { JobsPanel } from "@/features/jobs/components/JobsPanel";
+import { EMPLOYERS } from "@/features/jobs/data";
 import { PageShell, PageHeading } from "@/components/PageShell";
-import { useVisitTracker } from "@/hooks/useVisitTracker";
-import { EMPLOYERS } from "@/lib/jobs";
+import { useVisitTracker } from "@/features/traffic/hooks/useVisitTracker";
 
 const TITLE = "Biofuel & bioenergy jobs | Global Bioenergy Watch";
 const DESCRIPTION =
@@ -59,7 +59,12 @@ export const Route = createFileRoute("/jobs")({
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
           itemListElement: [
-            { "@type": "ListItem", position: 1, name: "Home", item: "https://globalbioenergywatch.org/" },
+            {
+              "@type": "ListItem",
+              position: 1,
+              name: "Home",
+              item: "https://globalbioenergywatch.org/",
+            },
             { "@type": "ListItem", position: 2, name: "Jobs", item: URL },
           ],
         }),
@@ -68,7 +73,6 @@ export const Route = createFileRoute("/jobs")({
   }),
   component: JobsPage,
 });
-
 
 function JobsPage() {
   useVisitTracker();

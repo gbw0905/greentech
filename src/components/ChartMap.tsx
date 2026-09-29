@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { geoNaturalEarth1, geoMercator, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
 import { heatColor } from "@/components/chart-kit";
-import type { NewsTarget } from "@/lib/open-news";
+import type { NewsTarget } from "@/features/markets/open-news";
 
 export type MapPoint = {
   key: string;
@@ -425,7 +425,9 @@ export function ChartMap({
               <path
                 key={`${f.properties.name}-${i}`}
                 d={path(f as never) ?? ""}
-                fill={isFocus ? "color-mix(in oklab, var(--primary) 16%, var(--card))" : "var(--muted)"}
+                fill={
+                  isFocus ? "color-mix(in oklab, var(--primary) 16%, var(--card))" : "var(--muted)"
+                }
                 stroke="var(--border)"
                 strokeWidth={0.6}
               />
@@ -443,7 +445,14 @@ export function ChartMap({
                 onClick={() => p.newsTarget && onSelect?.(p.newsTarget)}
               >
                 {/* Ground shadow so the pin reads as standing on its country */}
-                <ellipse cx={x} cy={y} rx={r * 0.5} ry={r * 0.18} fill="rgb(15,23,42)" opacity={0.22} />
+                <ellipse
+                  cx={x}
+                  cy={y}
+                  rx={r * 0.5}
+                  ry={r * 0.18}
+                  fill="rgb(15,23,42)"
+                  opacity={0.22}
+                />
                 {/* Map pin: tip sits exactly on the country anchor */}
                 <g transform={`translate(${x - 12 * s} ${y - 22 * s}) scale(${s})`}>
                   <path
@@ -486,7 +495,9 @@ export function ChartMap({
             <div className="chart-value text-foreground">
               {format(hover.p.value)} <span className="chart-sub">{unitLabel}</span>
             </div>
-            {hover.p.sub ? <div className="chart-sub mt-0.5 line-clamp-2">{hover.p.sub}</div> : null}
+            {hover.p.sub ? (
+              <div className="chart-sub mt-0.5 line-clamp-2">{hover.p.sub}</div>
+            ) : null}
           </div>
         ) : null}
       </div>

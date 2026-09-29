@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
-import { COUNTRIES } from "@/lib/policy-taxonomy";
+import { COUNTRIES } from "@/features/policy/taxonomy";
 
 const BASE_URL = "https://globalbioenergywatch.org";
 
@@ -54,7 +54,6 @@ export const Route = createFileRoute("/sitemap.xml")({
             "hydrogen",
             "rlpg",
             "methanol",
-
           ].map((panel) => ({
             path: `/supply/${panel}`,
             changefreq: "weekly" as const,

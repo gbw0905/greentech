@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
-import { confirmAlertSubscription } from "@/lib/alerts.functions";
+import { confirmAlertSubscription } from "@/features/alerts/server-functions";
+import { getErrorMessage } from "@/shared/errors";
 
 const TITLE = "Confirm policy alerts | Global Bioenergy Watch";
 const DESCRIPTION =
@@ -27,7 +28,7 @@ export const Route = createFileRoute("/alerts/confirm")({
   component: ConfirmPage,
   errorComponent: ({ error }) => (
     <div className="p-10 text-sm text-destructive" role="alert">
-      {error.message}
+      {getErrorMessage(error)}
     </div>
   ),
   notFoundComponent: () => <div className="p-10 text-sm">Nothing here.</div>,

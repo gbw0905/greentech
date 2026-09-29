@@ -38,7 +38,8 @@ export const Route = createFileRoute("/api/public/linkedin-publish")({
     handlers: {
       GET: async ({ request }) => {
         const token = new URL(request.url).searchParams.get("token") ?? "";
-        const { previewDraftByToken } = await import("@/lib/linkedin-draft.server");
+        const { previewDraftByToken } =
+          await import("@/features/linkedin/server/linkedin-draft.server");
         const draft = await previewDraftByToken(token);
 
         if (!draft) {
@@ -57,8 +58,10 @@ export const Route = createFileRoute("/api/public/linkedin-publish")({
 
         // Describe the real destination: direct company-page posting when the
         // custom OAuth app is connected, personal profile + mention otherwise.
-        const { getLinkedInSettings } = await import("@/lib/linkedin-settings.server");
-        const { getOrgConnectionStatus } = await import("@/lib/linkedin-org-oauth.server");
+        const { getLinkedInSettings } =
+          await import("@/features/linkedin/server/linkedin-settings.server");
+        const { getOrgConnectionStatus } =
+          await import("@/features/linkedin/server/linkedin-org-oauth.server");
         const settings = await getLinkedInSettings();
         const orgConn =
           settings.postingMode === "company_page" ? await getOrgConnectionStatus() : null;
@@ -85,7 +88,8 @@ export const Route = createFileRoute("/api/public/linkedin-publish")({
           token = body.token ?? "";
         }
 
-        const { publishDraftByToken } = await import("@/lib/linkedin-draft.server");
+        const { publishDraftByToken } =
+          await import("@/features/linkedin/server/linkedin-draft.server");
         const result = await publishDraftByToken(token);
 
         if (result.ok) {

@@ -24,3 +24,14 @@ cd <repository-name>
 npm i
 npm run dev
 ```
+
+## Architecture and database
+
+This is an unmanaged multi-package repository: the root contains the TanStack
+Start application and `remotion/` is a separate video package, without a root
+workspace configuration. See [Backend database reference](docs/backend-tables.md)
+for the Supabase tables, relationships, access policies, functions, and
+scheduled jobs.
+
+The incremental feature-organization rules and target source layout are in the
+[application architecture guide](docs/architecture.md).

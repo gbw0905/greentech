@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Download, Lock } from "lucide-react";
-import { downloadExcelWorkbook, type WorkbookExport } from "@/lib/excel-workbook";
-import { useAuthSession } from "@/hooks/useAuthSession";
-import { SignInPrompt } from "@/components/SignInPrompt";
+import { downloadExcelWorkbook, type WorkbookExport } from "@/shared/export/excel-workbook";
+import { SignInPrompt } from "@/features/auth/components/SignInPrompt";
+import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 
 /** Sign-in gated multi-sheet Excel download. */
 export function ExportExcelButton({
@@ -35,7 +35,9 @@ export function ExportExcelButton({
           }
         }}
         disabled={disabled || loading || busy}
-        title={signedIn ? "Download the full calculation as an Excel workbook" : "Sign in to download"}
+        title={
+          signedIn ? "Download the full calculation as an Excel workbook" : "Sign in to download"
+        }
         className="inline-flex items-center gap-1.5 border border-ink bg-ink px-2.5 py-1.5 text-xs font-semibold text-ink-foreground transition-opacity hover:opacity-85 disabled:opacity-40"
       >
         {signedIn ? <Download className="size-3.5" /> : <Lock className="size-3.5" />}

@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Calculator } from "lucide-react";
 import { PageShell, PageHeading } from "@/components/PageShell";
-import { PathwayCiBuilder } from "@/components/PathwayCiBuilder";
+import { PathwayCiBuilder } from "@/features/calculators/components/PathwayCiBuilder";
 
 const TITLE = "Dairy Manure RNG Carbon Intensity Calculator | Digester Farm Model";
 const DESCRIPTION =

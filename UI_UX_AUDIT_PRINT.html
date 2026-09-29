@@ -1,0 +1,809 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Global Bioenergy Watch — UI/UX Audit</title>
+<style>
+@page { size:A4; margin:16mm 17mm 18mm; }
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:#202624;font-family:Arial,"Segoe UI",sans-serif;font-size:10.2pt;line-height:1.48}
+h1{font-size:23pt;line-height:1.14;margin:0 0 4mm;color:#18201d;letter-spacing:-.025em;border-bottom:2px solid #303b36;padding-bottom:4mm}
+h1+p{font-size:10.5pt}
+h2{font-size:17pt;line-height:1.2;margin:9mm 0 4mm;color:#1f2a25;letter-spacing:-.015em;border-bottom:1px solid #aeb7b2;padding-bottom:2.5mm;page-break-after:avoid}
+h2.section{page-break-before:always}
+h3{font-size:13pt;line-height:1.25;margin:7mm 0 2.5mm;color:#293832;page-break-after:avoid}
+h4{font-size:10.8pt;line-height:1.3;margin:5mm 0 2mm;color:#293832;page-break-after:avoid;border-left:2px solid #596b62;padding-left:2.5mm}
+p{margin:0 0 3mm;orphans:3;widows:3}
+ul{margin:1mm 0 4mm;padding-left:5.5mm}
+li{margin:0 0 1.5mm;padding-left:.7mm}
+li::marker{color:#596b62}
+strong{font-weight:700;color:#151b18}
+code{font-family:Consolas,monospace;font-size:9pt;background:#f1f3f2;padding:.2mm .8mm;border-radius:.7mm;overflow-wrap:anywhere}
+h3+ul,h4+ul{border-left:1px solid #c9cecb;padding-left:7mm}
+.header-note{color:#59645f;font-size:9pt;margin-bottom:7mm}
+@media print{h1{margin-top:0}a{color:inherit}}
+</style></head><body><h1>Global Bioenergy Watch — UI/UX Audit and Component Specification</h1>
+<h2>Audit scope and product reality</h2>
+<p>This audit is based on the current TanStack Start/React repository, route definitions, component usage, responsive utility classes, static datasets, server functions, Supabase migrations, and media assets. It is not a redesign.</p>
+<p>Global Bioenergy Watch is not primarily a bioenergy project developer or industrial equipment company. It is an independent bioenergy policy, market, supply-chain, and analytical intelligence product. Its strongest current capabilities are live policy aggregation, jurisdiction profiles, mandate tracking, entity datasets, charts/maps, carbon-intensity calculators, email alerts, jobs discovery, and a grounded AI assistant. A future industrial visual language is appropriate, but turning the product into a generic corporate brochure would obscure its actual value.</p>
+<p>The application uses TanStack Router/Start, React Query, Supabase authentication and row-level security, Recharts, D3/TopoJSON maps, server functions, scheduled ingestion/email jobs, and a Tailwind-based token system. No code was changed during this audit.</p>
+<h2 class="section">1. Site architecture</h2>
+<h3>Public primary routes</h3>
+<h4>Page: <code>/</code> — Live dashboard</h4>
+<ul>
+<li><strong>Purpose:</strong> Main intelligence dashboard and product overview.</li>
+<li><strong>Primary audience:</strong> Analysts, investors, policy professionals, traders, researchers, institutional stakeholders, and bioenergy operators.</li>
+<li><strong>Main sections:</strong> Sticky brand/action header; horizontally scrolling section navigation; live market marquee; product introduction and live counts; five latest updates; markets; jurisdiction map and country focus; supply/producer dataset directory; jobs; email alerts; traffic statistics; methodology/AI disclosure; footer.</li>
+<li><strong>Primary CTA:</strong> Explore the live dashboard/map and open a country or dataset.</li>
+<li><strong>Secondary CTA:</strong> Rescan feeds, subscribe to alerts, open calculators, jobs, videos, or About.</li>
+<li><strong>Important functionality:</strong> Server-loaded and React Query-cached policy feed; manual feed refresh; update counts; map navigation; live market data; dataset routing; visit tracking; authenticated header state.</li>
+<li><strong>Important content:</strong> Policy and market update summaries, tracked jurisdictions, market quotes, supply dataset coverage, methodology limitations.</li>
+<li><strong>Current UI problems:</strong> The page tries to serve as homepage, dashboard, directory, jobs board, newsletter landing page, analytics panel, and legal disclosure simultaneously. The primary user task is unclear. The hero is a dense paragraph rather than an executive summary. A long row of equal-weight navigation pills creates horizontal scrolling and weak information architecture. “Rescan” exposes an operational action without explaining whether results are globally refreshed for everyone. Traffic analytics are user-facing despite being low-value to most visitors. Repeated cards, colored section bars, pastel tints, glass styling, gradients, flip/tilt animation, shimmer, and many accent colors make the product feel more like a feature demo than a sober intelligence service.</li>
+<li><strong>Redesign opportunity:</strong> Establish a clear top task hierarchy: monitor developments, inspect jurisdictions, research mandates, analyze supply, and model CI. Retain the dashboard character but give policy intelligence first priority and move lower-value promotional/operational material out of the main reading path.</li>
+</ul>
+<h4>Page: <code>/timeline</code> — Policy update timeline</h4>
+<ul>
+<li><strong>Purpose:</strong> Chronological, filterable list of policy/market updates.</li>
+<li><strong>Primary audience:</strong> Policy analysts, compliance teams, researchers, and traders.</li>
+<li><strong>Main sections:</strong> Standard page shell; page heading with result count; fuel filter chips with counts; country selector; clear action; update list/empty/loading state.</li>
+<li><strong>Primary CTA:</strong> Open and verify an update at its source.</li>
+<li><strong>Secondary CTA:</strong> Filter by fuel or jurisdiction; request an emailed AI brief from an update card.</li>
+<li><strong>Important functionality:</strong> Live feed query, multi-select fuel filtering, single-country filtering, newest-first sorting, loading and empty states.</li>
+<li><strong>Current UI problems:</strong> All fuel categories compete through color; the native country select and custom pill filters do not look like one system; the result count inside the title changes page-heading length; there is no search, date range, pagination, saved filter, or compact/dense view.</li>
+<li><strong>Redesign opportunity:</strong> Treat it as a professional research stream with persistent filters, clearer metadata, source credibility, date controls, and mobile filter disclosure.</li>
+</ul>
+<h4>Page: <code>/profiles</code> — Country policy profile index</h4>
+<ul>
+<li><strong>Purpose:</strong> Search and open tracked jurisdictions.</li>
+<li><strong>Primary audience:</strong> Policy, regulatory, market-entry, and institutional users.</li>
+<li><strong>Main sections:</strong> Heading; jurisdiction search; responsive country-card grid.</li>
+<li><strong>Primary CTA:</strong> Open a country profile.</li>
+<li><strong>Secondary CTA:</strong> Search jurisdictions.</li>
+<li><strong>Important functionality:</strong> Client-side name search; taxonomy-derived region, flag, and headline mandate.</li>
+<li><strong>Current UI problems:</strong> Cards show only region, name, and the first mandate value, which can be ambiguous without the mandate label or effective date. Search has no explicit label beyond placeholder. There is no regional grouping or comparison path.</li>
+<li><strong>Redesign opportunity:</strong> Improve scannability with mandate type/status, last reviewed date, and regional grouping while preserving direct routing.</li>
+</ul>
+<h4>Page: <code>/countries/:slug</code> — Country profile shell</h4>
+<ul>
+<li><strong>Purpose:</strong> Validate a slug and host nested country pages.</li>
+<li><strong>Primary audience:</strong> Same as profiles.</li>
+<li><strong>Main sections:</strong> Shared <code>CountryProfileHeader</code> and nested tabs/content for Overview, Mandates, and Updates.</li>
+<li><strong>Primary CTA:</strong> Move between country overview, mandate detail, and updates.</li>
+<li><strong>Important functionality:</strong> Taxonomy validation; nested routing; context passed to child pages.</li>
+<li><strong>Current UI problems:</strong> Country navigation is structurally separate from global navigation; users need a clear way to move to another country without returning to the profile index.</li>
+<li><strong>Redesign opportunity:</strong> Create a consistent jurisdiction workspace with country switcher, persistent subnavigation, evidence status, and last-reviewed metadata.</li>
+</ul>
+<h4>Page: <code>/countries/:slug/</code> — Country overview</h4>
+<ul>
+<li><strong>Purpose:</strong> Summarize a jurisdiction’s tracked mandate position and sources.</li>
+<li><strong>Main sections:</strong> Country header; “Targets at a glance”; official sources; shortcuts to mandates and updates; verification note.</li>
+<li><strong>Primary CTA:</strong> Open full mandate detail.</li>
+<li><strong>Secondary CTA:</strong> Review updates or official evidence.</li>
+<li><strong>Important functionality:</strong> Taxonomy-sourced mandates and source links.</li>
+<li><strong>Current UI problems:</strong> Summary values carry limited context; official evidence and navigation cards compete visually; no clear freshness/status indicator.</li>
+<li><strong>Redesign opportunity:</strong> Make the mandate status, effective dates, fuel scope, administering body, and evidence quality the dominant executive summary.</li>
+</ul>
+<h4>Page: <code>/countries/:slug/mandates</code> — Country mandate detail</h4>
+<ul>
+<li><strong>Purpose:</strong> Show requirements, timelines, compliance, and primary evidence.</li>
+<li><strong>Main sections:</strong> Country header; mandate detail cards; government/regulator evidence library.</li>
+<li><strong>Primary CTA:</strong> Open primary sources.</li>
+<li><strong>Secondary CTA:</strong> Navigate within the country workspace.</li>
+<li><strong>Important functionality:</strong> Structured mandate timeline, requirements, compliance mechanism, administrator, penalties, and sources.</li>
+<li><strong>Current UI problems:</strong> Detail is card-heavy, making relationships among dates, thresholds, and compliance rules harder to compare. Evidence is visually downstream even though source authority is crucial.</li>
+<li><strong>Redesign opportunity:</strong> Use a structured regulatory record with a timeline/table and source-confidence treatment rather than multiple decorative cards.</li>
+</ul>
+<h4>Page: <code>/countries/:slug/updates</code> — Country updates</h4>
+<ul>
+<li><strong>Purpose:</strong> Display feed items for one jurisdiction, grouped by month.</li>
+<li><strong>Main sections:</strong> Country header; update count/latest-first heading; month groups; update cards.</li>
+<li><strong>Primary CTA:</strong> Open original update sources.</li>
+<li><strong>Secondary CTA:</strong> Request an AI brief.</li>
+<li><strong>Important functionality:</strong> Live feed load, country filter, chronological sort/grouping.</li>
+<li><strong>Current UI problems:</strong> No local fuel/date/search filters; long histories will become unwieldy; month headings add structure but not analytical prioritization.</li>
+<li><strong>Redesign opportunity:</strong> Reuse the global research-stream filters, scoped to the current jurisdiction.</li>
+</ul>
+<h4>Page: <code>/mandates</code> — Worldwide mandate tracker</h4>
+<ul>
+<li><strong>Purpose:</strong> Search and filter all structured mandate records.</li>
+<li><strong>Primary audience:</strong> Compliance, policy, legal, investment, and market-entry teams.</li>
+<li><strong>Main sections:</strong> Heading; text search; fuel and status selects; result summary; expanded mandate cards containing timeline, requirements, compliance, and sources.</li>
+<li><strong>Primary CTA:</strong> Inspect a mandate and its primary source.</li>
+<li><strong>Secondary CTA:</strong> Open a country profile; filter/search.</li>
+<li><strong>Important functionality:</strong> Search, fuel/status filters, per-card expansion, structured compliance data, external sources.</li>
+<li><strong>Current UI problems:</strong> Long expanded cards are inefficient for comparison; filter controls are not consolidated; the page lacks sorting, saved/exported views, and a tabular mode. Expand/collapse affordance is visually modest relative to content volume.</li>
+<li><strong>Redesign opportunity:</strong> Provide summary table plus detail drawer, preserving all structured fields and sources.</li>
+</ul>
+<h4>Page: <code>/supply/:panel</code> — Supply dataset workspace (15 valid panel slugs)</h4>
+<ul>
+<li><strong>Valid routes:</strong> <code>stations</code>, <code>uco</code>, <code>ethanol</code>, <code>biopower</code>, <code>rng</code>, <code>biochar</code>, <code>pellets</code>, <code>terminals</code>, <code>marine</code>, <code>oil</code>, <code>saf</code>, <code>carriers</code>, <code>hydrogen</code>, <code>rlpg</code>, <code>methanol</code>.</li>
+<li><strong>Purpose:</strong> Present a focused entity/capacity dataset with multiple analytical views.</li>
+<li><strong>Primary audience:</strong> Investors, business-development teams, researchers, operators, suppliers, and market analysts.</li>
+<li><strong>Main sections:</strong> Dataset-specific hero; full analytical panel; related dataset directory; invalid-dataset fallback.</li>
+<li><strong>Primary CTA:</strong> Filter and inspect entities/data.</li>
+<li><strong>Secondary CTA:</strong> Switch view, open entity detail/news, export, request chart summary, or open another dataset.</li>
+<li><strong>Important functionality:</strong> Route validation; static dataset selection; reusable chart framework; heat map, scatter, bars, trend, geographic map, and table depending on dataset; filters/top-N/date controls; CSV/Excel export; entity sheet; quotes/logos/news; provenance notes.</li>
+<li><strong>Important content:</strong> Fuel stations, UCO suppliers, ethanol producers, biopower generators, RNG producers, biochar and pellet producers, terminals, marine suppliers/users, oil companies, SAF airlines, freight carriers, renewable hydrogen, renewable LPG, and biomethanol.</li>
+<li><strong>Current UI problems:</strong> The 15 workspaces are internally consistent in code but visually dense. Multiple view icons rely on tooltips/recognition; colored charts can exceed a controlled corporate palette; cards, maps, tables, news, and export actions crowd the same surface. Static figures can look “live” unless reporting year and review date are prominent.</li>
+<li><strong>Redesign opportunity:</strong> Create a disciplined research-workspace pattern with persistent dataset title/provenance, a clear view switcher, a filter rail, and table-first accessibility on mobile.</li>
+</ul>
+<h4>Page: <code>/ci-calculator</code> — General carbon-intensity calculator</h4>
+<ul>
+<li><strong>Purpose:</strong> Model lifecycle CI for biofuel pathways and compare against regulatory programs.</li>
+<li><strong>Primary audience:</strong> Engineers, project developers, investors, fuel producers, sustainability and regulatory teams.</li>
+<li><strong>Main sections:</strong> Heading; link to dairy model; multi-section pathway builder; results/benchmarks; save action when eligible; six-step methodology; FAQ; permitted-use and disclaimer content.</li>
+<li><strong>Primary CTA:</strong> Configure a pathway and obtain a CI result.</li>
+<li><strong>Secondary CTA:</strong> Save scenario, inspect program comparisons, switch to dairy RNG calculator.</li>
+<li><strong>Important functionality:</strong> Pathway/feedstock/region selection; editable units and activity data; calculation model; emissions/credit breakdown; program benchmarks; signed/negative CI display; auth/premium-gated saving; validation; saved payload.</li>
+<li><strong>Current UI problems:</strong> The builder is an approximately 1,100-line, information-dense component. Input, explanation, output, and benchmark comparison compete vertically. Legal copy is long and visually undifferentiated. Users need stronger indication of defaults versus user-entered values and calculation provenance.</li>
+<li><strong>Redesign opportunity:</strong> Use a staged technical workflow with persistent calculated summary and explicit assumptions, units, confidence, and reset/default states—without changing formulas.</li>
+</ul>
+<h4>Page: <code>/dairy-rng-calculator</code> — Dairy manure RNG calculator</h4>
+<ul>
+<li><strong>Purpose:</strong> Model a farm-level manure-to-RNG pathway and avoided methane credits.</li>
+<li><strong>Primary audience:</strong> Dairy operators, digester developers, engineers, investors, and LCFS teams.</li>
+<li><strong>Main sections:</strong> Heading; link to general calculator; dairy-mode builder; dairy-specific FAQ.</li>
+<li><strong>Primary CTA:</strong> Calculate dairy RNG CI.</li>
+<li><strong>Secondary CTA:</strong> Save results or switch calculators.</li>
+<li><strong>Important functionality:</strong> Same builder in <code>dairy</code> mode; herd/manure/digester/upgrading/transmission inputs; avoided-lagoon methane logic; program comparison.</li>
+<li><strong>Current UI problems:</strong> It inherits the general builder’s density and does not visually explain the manure → digestion → upgrading → pipeline chain.</li>
+<li><strong>Redesign opportunity:</strong> Add a functional process summary tied directly to input groups and results.</li>
+</ul>
+<h4>Page: <code>/jobs</code> — Bioenergy jobs desk</h4>
+<ul>
+<li><strong>Purpose:</strong> Construct external job searches, show employer links, and surface hiring news.</li>
+<li><strong>Primary audience:</strong> Experienced energy professionals and specialist candidates.</li>
+<li><strong>Main sections:</strong> Heading; function/seniority/region/remote/keyword filters; active-filter/reset state; external job-board searches; hiring news; employer directory.</li>
+<li><strong>Primary CTA:</strong> Run an external job search or visit an employer career page.</li>
+<li><strong>Secondary CTA:</strong> Filter and browse hiring news.</li>
+<li><strong>Important functionality:</strong> Query construction; portal-rendered dropdowns; external links; server-fetched news; compact mode on homepage.</li>
+<li><strong>Current UI problems:</strong> Pastel filter-group colors read as consumer UI; portal dropdown behavior closes on page scroll; the page aggregates searches rather than listing normalized vacancies, which must be communicated clearly.</li>
+<li><strong>Redesign opportunity:</strong> Present it explicitly as a professional search launcher and employer intelligence directory.</li>
+</ul>
+<h4>Page: <code>/videos</code> — Video library</h4>
+<ul>
+<li><strong>Purpose:</strong> Show the product explainer and curated external bioenergy video channels/hubs.</li>
+<li><strong>Primary audience:</strong> New users, researchers, and stakeholders seeking primers or official media.</li>
+<li><strong>Main sections:</strong> Heading; local explainer video/poster; searchable/filterable library; country and fuel metadata; external links.</li>
+<li><strong>Primary CTA:</strong> Play the explainer or open a source channel.</li>
+<li><strong>Secondary CTA:</strong> Search/filter videos.</li>
+<li><strong>Important functionality:</strong> HTML video, poster, searchable curated entries, modal/play state, external navigation.</li>
+<li><strong>Current UI problems:</strong> The explainer and research library serve different intentions; cards risk looking like a media startup rather than a reference library.</li>
+<li><strong>Redesign opportunity:</strong> Separate product orientation from official/technical media resources and foreground source authority.</li>
+</ul>
+<h4>Page: <code>/get-alerts</code> — Alert landing page</h4>
+<ul>
+<li><strong>Purpose:</strong> Explain and convert users to the daily policy digest.</li>
+<li><strong>Main sections:</strong> Heading; four benefit blocks; embedded <code>AlertSignup</code>; exploration links; dark closing CTA.</li>
+<li><strong>Primary CTA:</strong> Subscribe.</li>
+<li><strong>Secondary CTA:</strong> Explore timeline or country profiles.</li>
+<li><strong>Important functionality:</strong> Country/fuel multi-select, email submission, confirmation workflow.</li>
+<li><strong>Current UI problems:</strong> Benefits repeat claims already made elsewhere; “AI-written” is emphasized more than source quality and practical decision value.</li>
+<li><strong>Redesign opportunity:</strong> Lead with coverage, cadence, source traceability, and a sample digest.</li>
+</ul>
+<h4>Page: <code>/contact</code> — Contact</h4>
+<ul>
+<li><strong>Purpose:</strong> Direct press, partnership, correction, and general inquiries to LinkedIn.</li>
+<li><strong>Primary audience:</strong> Partners, media, contributors, institutional stakeholders.</li>
+<li><strong>Main sections:</strong> Custom header/hero; LinkedIn card; use-case explanation; legal links.</li>
+<li><strong>Primary CTA:</strong> Message on LinkedIn.</li>
+<li><strong>Secondary CTA:</strong> Return home or inspect legal pages.</li>
+<li><strong>Important functionality:</strong> External LinkedIn link only; there is no contact form.</li>
+<li><strong>Current UI problems:</strong> LinkedIn-only contact is a credibility and accessibility bottleneck for serious institutions, procurement, government, and users without LinkedIn. This route duplicates header/footer styling instead of using <code>PageShell</code>.</li>
+<li><strong>Redesign opportunity:</strong> Preserve the link but add role-based contact channels only if the business can support them; do not invent a form without a backend/operational owner.</li>
+</ul>
+<h4>Pages: <code>/about</code>, <code>/about/mission-vision</code>, <code>/about/team</code></h4>
+<ul>
+<li><strong>Purpose:</strong> Establish identity, methodology, mission/vision, and team credibility.</li>
+<li><strong>Main sections:</strong> Shared shell; overview narrative and links; mission/vision/editorial method; founder and policy/market contributor profiles with portrait assets and LinkedIn links.</li>
+<li><strong>Primary CTA:</strong> Understand the desk and verify team identity/method.</li>
+<li><strong>Secondary CTA:</strong> Open LinkedIn profiles or related About pages.</li>
+<li><strong>Important functionality:</strong> Nested routing and external links; no dynamic data.</li>
+<li><strong>Current UI problems:</strong> About navigation exists only in a homepage dropdown and back navigation always returns to the dashboard. Team credentials and editorial governance are too visually modest for a trust-dependent intelligence product. The phrase “independent desk” needs evidence and operating standards.</li>
+<li><strong>Redesign opportunity:</strong> Build a compact trust center around governance, methodology, corrections, provenance, and named expertise.</li>
+</ul>
+<h4>Page: <code>/data-sources</code> — Dataset provenance</h4>
+<ul>
+<li><strong>Purpose:</strong> Document methods, metrics, coverage, limitations, and citations per dataset.</li>
+<li><strong>Primary audience:</strong> Analysts, researchers, auditors, investors, and compliance users.</li>
+<li><strong>Main sections:</strong> Heading; compilation methodology; dataset anchor navigation; per-dataset metrics, coverage, limitations, and source links.</li>
+<li><strong>Primary CTA:</strong> Verify dataset provenance.</li>
+<li><strong>Secondary CTA:</strong> Jump to a dataset section/open a source.</li>
+<li><strong>Important functionality:</strong> Static provenance registry reused by exports and summaries.</li>
+<li><strong>Current UI problems:</strong> This is critical trust content but is relegated to footer navigation. Long stacked documentation is hard to navigate and reporting year/last reviewed date are not global navigation cues.</li>
+<li><strong>Redesign opportunity:</strong> Treat provenance as first-class metadata attached to every dataset and keep this page as the complete registry.</li>
+</ul>
+<h4>Pages: <code>/terms</code>, <code>/privacy</code></h4>
+<ul>
+<li><strong>Purpose:</strong> Legal terms and privacy disclosure.</li>
+<li><strong>Primary audience:</strong> All users; legal/procurement reviewers.</li>
+<li><strong>Main sections:</strong> Page heading and numbered text sections; cross-links/contact.</li>
+<li><strong>Primary CTA:</strong> Read/verify policy.</li>
+<li><strong>Important functionality:</strong> Static content only.</li>
+<li><strong>Current UI problems:</strong> Long undifferentiated single-column text has no table of contents or last-updated callout hierarchy.</li>
+<li><strong>Redesign opportunity:</strong> Improve legal-document navigation without changing approved language.</li>
+</ul>
+<h3>Account, premium, and operational routes</h3>
+<h4>Page: <code>/auth</code></h4>
+<ul>
+<li><strong>Purpose:</strong> Sign in or create an account.</li>
+<li><strong>Main sections:</strong> Standard shell; sign-in/sign-up mode tabs; email/password form; validation/error state; mode switch.</li>
+<li><strong>Primary CTA:</strong> Authenticate.</li>
+<li><strong>Important functionality:</strong> Supabase sign-in/sign-up; password minimum; redirect; live session.</li>
+<li><strong>Current UI problems:</strong> A general <code>PageShell</code> with dashboard-oriented header/footer surrounds a focused authentication task. Buttons are locally styled rather than consistently using the shared button primitive.</li>
+<li><strong>Redesign opportunity:</strong> A focused, trustworthy access page with clear reason to create an account and explicit premium boundaries.</li>
+</ul>
+<h4>Pages: <code>/assistant</code>, <code>/assistant/:threadId</code></h4>
+<ul>
+<li><strong>Purpose:</strong> Grounded AI analyst with optional saved conversations.</li>
+<li><strong>Main sections:</strong> Page shell/heading; anonymous sign-in prompt and chat; authenticated thread sidebar and 70vh chat workspace.</li>
+<li><strong>Primary CTA:</strong> Ask a policy/market/data question.</li>
+<li><strong>Secondary CTA:</strong> Create/select/delete conversations; follow tool/source output.</li>
+<li><strong>Important functionality:</strong> Streaming chat API; quota/auth handling; persisted Supabase threads/messages; URL synchronization; tools; cited/source-aware response UI; responsive two-column layout at large widths.</li>
+<li><strong>Current UI problems:</strong> Anonymous and authenticated behaviors are not explained clearly; destructive thread deletion has no confirmation; on mobile the thread list precedes the chat and can consume valuable space; the generic page heading reduces available workspace height.</li>
+<li><strong>Redesign opportunity:</strong> Treat it as a research workspace, make grounding and source scope explicit, collapse conversation history on mobile, and confirm destructive actions.</li>
+</ul>
+<h4>Page: <code>/my-results</code></h4>
+<ul>
+<li><strong>Purpose:</strong> Authenticated premium dashboard for saved CI scenarios.</li>
+<li><strong>Main sections:</strong> Heading; sign-in/premium/empty notices; summary metrics; saved run cards; benchmark comparison tables; delete action.</li>
+<li><strong>Primary CTA:</strong> Review a saved CI scenario.</li>
+<li><strong>Secondary CTA:</strong> Open calculator, request premium access, or delete a run.</li>
+<li><strong>Important functionality:</strong> Auth and premium checks; user-scoped Supabase query via RLS; summary calculations; horizontally scrollable tables; deletion.</li>
+<li><strong>Current UI problems:</strong> Delete has no confirmation; cards become very long; benchmark table requires horizontal scrolling; premium conversion routes to a LinkedIn-only contact page.</li>
+<li><strong>Redesign opportunity:</strong> Add scenario comparison and clear destructive confirmation while preserving user ownership and formulas.</li>
+</ul>
+<h4>Page: <code>/settings/linkedin</code></h4>
+<ul>
+<li><strong>Purpose:</strong> Owner-only configuration of automated LinkedIn posting.</li>
+<li><strong>Primary audience:</strong> Site owner/admin, not general users.</li>
+<li><strong>Main sections:</strong> Admin-key gate; company page URL; custom LinkedIn app connection; OAuth connect/reconnect/disconnect; posting destination choice; daily flyer settings and save actions.</li>
+<li><strong>Primary CTA:</strong> Configure/save posting integration.</li>
+<li><strong>Important functionality:</strong> Admin key; server functions; LinkedIn OAuth; organization connection; managed/custom destination; secret-dependent states.</li>
+<li><strong>Current UI problems:</strong> The route is visually part of the public site and discoverability/access expectations are unclear. Secret/configuration instructions are embedded in UI. Disconnect is destructive without a strong confirmation pattern.</li>
+<li><strong>Redesign opportunity:</strong> Use a clearly separated admin console shell; do not surface in public navigation.</li>
+</ul>
+<h4>Page: <code>/alerts/confirm</code></h4>
+<ul>
+<li><strong>Purpose:</strong> Confirm an email-alert subscription token.</li>
+<li><strong>Main sections:</strong> Centered success/error state and home link.</li>
+<li><strong>Primary CTA:</strong> Return home or sign up again.</li>
+<li><strong>Important functionality:</strong> Loader calls confirmation server function; handles expired/used/missing token.</li>
+<li><strong>Current UI problems:</strong> Does not use the main shell or reinforce selected coverage; error recovery points only broadly toward homepage alerts.</li>
+<li><strong>Redesign opportunity:</strong> Dedicated transactional state with direct retry link to <code>/get-alerts</code>.</li>
+</ul>
+<h4>Route: <code>/.lovable/oauth/consent</code></h4>
+<ul>
+<li><strong>Purpose:</strong> Lovable platform OAuth consent flow.</li>
+<li><strong>Audience:</strong> Integration users/system flow.</li>
+<li><strong>Important functionality:</strong> OAuth scopes and approval/denial; platform-controlled dependency.</li>
+<li><strong>Constraint:</strong> Preserve route and consent semantics; visually isolate from marketing navigation.</li>
+</ul>
+<h3>Non-page/system routes</h3>
+<p>The repository also exposes <code>/api/chat</code>, public ingestion/email/flyer/LinkedIn endpoints, LinkedIn OAuth callback, MCP endpoint and tool routes, OAuth resource metadata, sitemap XML, robots, and web-app manifest assets. These are not redesignable pages but their URLs, request/response contracts, authorization, cron callers, and callbacks must remain intact.</p>
+<h2 class="section">2. Component inventory</h2>
+<h3>Global components</h3>
+<h4>Component: <code>PageShell</code></h4>
+<ul>
+<li><strong>Used on:</strong> Nearly every secondary page.</li>
+<li><strong>Purpose:</strong> Sticky header, brand, auth state, dashboard back link, max-width content container, legal/data footer.</li>
+<li><strong>Contains:</strong> Logo; LinkedIn-linked brand name; descriptor; <code>AuthButton</code>; back action; main slot; disclaimer; footer links.</li>
+<li><strong>Interactions/data:</strong> Supabase session through <code>AuthButton</code>; router links.</li>
+<li><strong>Responsive behavior:</strong> Compact logo/text/action labels on mobile; 80rem max width; reduced horizontal padding.</li>
+<li><strong>Must preserve:</strong> Route outlet content, auth affordance, key legal/data links.</li>
+<li><strong>Can visually change:</strong> Entire header/footer composition, labeling, width, and navigation model.</li>
+<li><strong>Issue:</strong> “Back to dashboard” is not contextual navigation and creates a dead-end architecture on all secondary pages.</li>
+</ul>
+<h4>Component: <code>PageHeading</code></h4>
+<ul>
+<li><strong>Used on:</strong> About, calculators, data sources, alerts, jobs, mandates, profiles, timeline, videos, assistant, settings, legal pages.</li>
+<li><strong>Purpose:</strong> Consistent branded page title and subtitle.</li>
+<li><strong>Contains:</strong> Icon, kicker, title, subtitle, accent rule.</li>
+<li><strong>Responsive behavior:</strong> 3rem-ish desktop title reduced on small screens.</li>
+<li><strong>Must preserve:</strong> Semantic <code>h1</code> and supplied text.</li>
+<li><strong>Can visually change:</strong> Dark “ink bar,” icon, accent line, spacing.</li>
+<li><strong>Issue:</strong> Identical high-emphasis banner treatment flattens distinctions between legal documents, analytical workspaces, and marketing pages.</li>
+</ul>
+<h4>Components: <code>AuthButton</code>, <code>SignInPrompt</code></h4>
+<ul>
+<li><strong>Used on:</strong> Headers, assistant, premium features.</li>
+<li><strong>Purpose:</strong> Reflect session state, sign in/out, explain gated actions.</li>
+<li><strong>Data dependencies:</strong> Supabase live auth session; React Query cache cleared on sign-out.</li>
+<li><strong>Must preserve:</strong> Sign-out sequence and navigation; authentication state.</li>
+<li><strong>Can visually change:</strong> Labels, placement, account menu pattern.</li>
+</ul>
+<h4>Components: UI primitives</h4>
+<ul>
+<li><strong>Inventory:</strong> Button/button group, input/input group, textarea, label/form, checkbox, radio, select, switch, slider, tabs, table, card, badge, avatar, alert/dialog/alert-dialog, sheet/drawer/sidebar, dropdown/context/navigation/menubar, popover/hover card/tooltip, accordion/collapsible, calendar, carousel, chart wrapper, command, pagination, progress, resizable panels, scroll area, separator, skeleton/spinner, toast, toggle/toggle group, aspect ratio.</li>
+<li><strong>Purpose:</strong> Radix/shadcn-style base behavior.</li>
+<li><strong>Must preserve:</strong> Keyboard, focus, ARIA, portal, and controlled-state behavior.</li>
+<li><strong>Can visually change:</strong> Tokens, radii, density, color, elevation, type.</li>
+<li><strong>Issue:</strong> Feature code frequently bypasses these primitives with bespoke buttons, inputs, selects, dropdowns, cards, and tables, producing inconsistent states and accessibility.</li>
+</ul>
+<h3>Navigation components</h3>
+<h4>Component: Homepage section navigation</h4>
+<ul>
+<li><strong>Used on:</strong> <code>/</code> only, inline in route.</li>
+<li><strong>Contains:</strong> Markets, map, supply, jobs, alerts, methodology anchors; calculator/video routes; <code>AboutMenu</code>.</li>
+<li><strong>Responsive behavior:</strong> Horizontally scrolling row; items become flex-equal on larger widths.</li>
+<li><strong>Must preserve:</strong> Access to major destinations.</li>
+<li><strong>Can visually change:</strong> Replace with hierarchical global navigation.</li>
+<li><strong>Issue:</strong> Page anchors, product routes, and corporate information are mixed at equal priority.</li>
+</ul>
+<h4>Component: <code>AboutMenu</code></h4>
+<ul>
+<li><strong>Used on:</strong> Homepage navigation only.</li>
+<li><strong>Interactions:</strong> Hover/click open, portal positioning, Escape/outside click, viewport repositioning.</li>
+<li><strong>Must preserve:</strong> Routes to all About pages.</li>
+<li><strong>Can visually change:</strong> Prefer accessible global navigation/menu.</li>
+<li><strong>Issue:</strong> Opens on mouse enter but has limited menu-style keyboard movement; secondary pages have no equivalent About navigation.</li>
+</ul>
+<h4>Components: <code>CountryProfileHeader</code>, country nested navigation, <code>CountryTrackingStrip</code></h4>
+<ul>
+<li><strong>Used on:</strong> Country profile routes and map/country focus areas.</li>
+<li><strong>Purpose:</strong> Identify jurisdiction, summarize region/mandate, route among country views.</li>
+<li><strong>Dependencies:</strong> Policy taxonomy and route slug.</li>
+<li><strong>Must preserve:</strong> Slug context and Overview/Mandates/Updates access.</li>
+<li><strong>Can visually change:</strong> Country switcher, breadcrumb, tabs, density.</li>
+</ul>
+<h3>Content and policy components</h3>
+<h4>Component: <code>UpdateCard</code></h4>
+<ul>
+<li><strong>Used on:</strong> Homepage latest list, global timeline, country updates, related feeds.</li>
+<li><strong>Contains:</strong> Title/summary, source/domain, date, category, jurisdiction/fuel metadata, external source action, optional compact layout, <code>BriefRequestButton</code>.</li>
+<li><strong>Data dependencies:</strong> Policy feed record and taxonomy; external URL.</li>
+<li><strong>Must preserve:</strong> Source attribution, timestamps, categorization, source link, brief request.</li>
+<li><strong>Can visually change:</strong> Card/list structure and metadata hierarchy.</li>
+</ul>
+<h4>Components: <code>LiveMarquee</code>, <code>TopUpdatesTicker</code>, <code>LiveMediaFeed</code></h4>
+<ul>
+<li><strong>Used on:</strong> Dashboard or analytical contexts.</li>
+<li><strong>Purpose:</strong> Compact live market/news awareness.</li>
+<li><strong>Dependencies:</strong> Market/news server functions.</li>
+<li><strong>Responsive behavior:</strong> Overflow/marquee treatments.</li>
+<li><strong>Must preserve:</strong> Data values and links if retained.</li>
+<li><strong>Can visually change:</strong> Static ticker, compact strip, or contextual placement.</li>
+<li><strong>Legacy candidate:</strong> Multiple ticker/feed patterns may be redundant and should be consolidated after usage analytics.</li>
+</ul>
+<h4>Component: <code>MandateDetailCard</code></h4>
+<ul>
+<li><strong>Used on:</strong> Country mandate detail.</li>
+<li><strong>Purpose:</strong> Render structured mandates and compliance data.</li>
+<li><strong>Must preserve:</strong> Timeline, requirements, administrator, mechanism, penalty, tradable unit, and evidence.</li>
+<li><strong>Can visually change:</strong> Table/timeline/detail drawer.</li>
+</ul>
+<h3>Industry/data/statistics components</h3>
+<h4>Component: <code>WorldPolicyMap</code></h4>
+<ul>
+<li><strong>Used on:</strong> Homepage jurisdiction section.</li>
+<li><strong>Purpose:</strong> Geographic navigation and update-density overview.</li>
+<li><strong>Interactions:</strong> Hover, click, zoom/pan, reset/navigation to a country; tooltip.</li>
+<li><strong>Data dependencies:</strong> <code>/world-110m.json</code>, country taxonomy, update counts.</li>
+<li><strong>Responsive behavior:</strong> SVG scales inside container; pointer interaction; constrained height.</li>
+<li><strong>Must preserve:</strong> Country mapping, click destination, counts, keyboard-equivalent route access.</li>
+<li><strong>Can visually change:</strong> Projection, legend, controls, adjacent list.</li>
+<li><strong>Issue:</strong> Map geography is not an accessible substitute for a country list and small countries are difficult targets.</li>
+</ul>
+<h4>Components: <code>OilPricePanel</code>, entity quote hooks, <code>LiveMarquee</code></h4>
+<ul>
+<li><strong>Used on:</strong> Homepage markets and oil dataset.</li>
+<li><strong>Purpose:</strong> Display commodity/equity market context.</li>
+<li><strong>Dependencies:</strong> Cached server-side external market quotes.</li>
+<li><strong>Must preserve:</strong> Symbol/value/change/time and stale/error handling.</li>
+<li><strong>Can visually change:</strong> Density, chart treatment, grouping.</li>
+</ul>
+<h4>Component family: <code>SupplyProducersSection</code> and <code>SupplyPanelBody</code></h4>
+<ul>
+<li><strong>Used on:</strong> Homepage directory and <code>/supply/:panel</code>.</li>
+<li><strong>Purpose:</strong> Route to and render 15 supply/producer workspaces.</li>
+<li><strong>Contains:</strong> Image card, icon, count/stat, blurb, link; dataset component dispatcher.</li>
+<li><strong>Dependencies:</strong> Static panel registry, imported images, panel-specific datasets.</li>
+<li><strong>Responsive behavior:</strong> 1/2/3-column directory.</li>
+<li><strong>Must preserve:</strong> All valid panel IDs, labels, routing, data, and dispatch.</li>
+<li><strong>Can visually change:</strong> Directory taxonomy, card style, imagery, grouping.</li>
+</ul>
+<h4>Component family: dataset panels</h4>
+<ul>
+<li><strong>Components:</strong> <code>BiofuelProductionPanel</code>, <code>UcoSuppliersPanel</code>, <code>EthanolProductionPanel</code>, <code>BioPowerGeneratorsPanel</code>, <code>RngProducersPanel</code>, <code>BiocharProducersPanel</code>, <code>WoodPelletProducersPanel</code>, <code>BlendingTerminalsPanel</code>, <code>MarineBiofuelPanel</code>, <code>OilStocksPanel</code>, <code>SafAirlinesPanel</code>, <code>CarriersPanel</code>, <code>RenewableHydrogenPanel</code>, <code>RenewableLpgPanel</code>, <code>BioMethanolPanel</code>.</li>
+<li><strong>Used on:</strong> Corresponding <code>/supply/:panel</code> route.</li>
+<li><strong>Purpose:</strong> Normalize dataset-specific records into shared chart/table views.</li>
+<li><strong>Contains:</strong> Filter bar, panel view tabs, trend/scatter/map/bars/table/heat views as applicable, provenance, entity detail, exports, AI summary.</li>
+<li><strong>Dependencies:</strong> Static curated arrays; dataset provenance; quotes/news/logo services for applicable entities.</li>
+<li><strong>Responsive behavior:</strong> Filters wrap; charts have fixed/min dimensions; tables scroll horizontally; view choice changes rendered component.</li>
+<li><strong>Must preserve:</strong> Every record/metric, unit, source, reporting year, view-dependent transformation, and external link.</li>
+<li><strong>Can visually change:</strong> Layout, view navigation, color encoding, label density.</li>
+<li><strong>Duplication:</strong> The 15 panel files repeat normalization, filtering, news-map, and chart assembly patterns. Redesign specifications should define one dataset-workspace contract even if refactoring is deferred.</li>
+</ul>
+<h4>Component family: <code>chart-kit</code></h4>
+<ul>
+<li><strong>Components:</strong> <code>ChartPanel</code>, <code>PanelActions</code>, <code>ChartBars</code>, <code>ChartTrend</code>, <code>ChartTable</code>, <code>ChartHeat</code>, <code>ChartScatter</code>, format/summary helpers and view constants.</li>
+<li><strong>Purpose:</strong> Shared analytical frame and alternate data representations.</li>
+<li><strong>Interactions:</strong> Switch views, hover tooltips, open entity details/news, export/summarize.</li>
+<li><strong>Must preserve:</strong> Units, axes, legends, sorting, selections, and underlying records.</li>
+<li><strong>Can visually change:</strong> Chart grammar and control layout.</li>
+</ul>
+<h4>Component: <code>ChartMap</code></h4>
+<ul>
+<li><strong>Purpose:</strong> Plot entity points with zoom/pan, cluster/tooltip/detail behavior.</li>
+<li><strong>Dependencies:</strong> TopoJSON and geocoded dataset rows.</li>
+<li><strong>Must preserve:</strong> Coordinates, entities, geographic interaction, list/table fallback.</li>
+</ul>
+<h4>Component: <code>EntityDetailSheet</code></h4>
+<ul>
+<li><strong>Used on:</strong> Dataset charts/tables.</li>
+<li><strong>Purpose:</strong> Show selected entity metadata, metrics, quote changes, related news, and links without losing workspace context.</li>
+<li><strong>Interactions:</strong> Open/close sheet and external actions.</li>
+<li><strong>Must preserve:</strong> Selected entity context and data.</li>
+<li><strong>Can visually change:</strong> Side panel/full-screen mobile detail.</li>
+</ul>
+<h4>Components: <code>ChartFilterBar</code>, <code>DateRangeFilter</code>, <code>CalendarRangeFilter</code></h4>
+<ul>
+<li><strong>Purpose:</strong> Reusable selection, search, top-N, country/category, and date constraints.</li>
+<li><strong>Must preserve:</strong> Filter semantics and empty/all behavior.</li>
+<li><strong>Can visually change:</strong> Consolidated filter panel and active-filter chips.</li>
+</ul>
+<h4>Components: <code>ExportCsvButton</code>, <code>ExportExcelButton</code>, branded export helpers</h4>
+<ul>
+<li><strong>Purpose:</strong> Download current dataset/view with provenance.</li>
+<li><strong>Must preserve:</strong> File content, applied filter scope, source citations, and client download behavior.</li>
+<li><strong>Can visually change:</strong> Placement and labels.</li>
+</ul>
+<h4>Component: <code>ChartSummaryAssistant</code></h4>
+<ul>
+<li><strong>Purpose:</strong> Generate an AI explanation of the current chart/filter context.</li>
+<li><strong>Dependencies:</strong> Server function, quota/auth rules, source/provenance payload.</li>
+<li><strong>Must preserve:</strong> Context payload and error/rate-limit behavior.</li>
+<li><strong>Can visually change:</strong> Drawer/inline analysis and source treatment.</li>
+</ul>
+<h4>Components: <code>Counter</code>, <code>TrafficPanel</code></h4>
+<ul>
+<li><strong>Purpose:</strong> Animated metrics and site traffic disclosure.</li>
+<li><strong>Dependencies:</strong> Protected server-side traffic stats.</li>
+<li><strong>Can visually change:</strong> Static numbers; admin-only relocation.</li>
+<li><strong>Legacy candidate:</strong> Public traffic stats do not support the primary research task and should remain only if they provide deliberate credibility evidence.</li>
+</ul>
+<h3>Forms</h3>
+<h4>Component: <code>AlertSignup</code></h4>
+<ul>
+<li><strong>Used on:</strong> Homepage and <code>/get-alerts</code>.</li>
+<li><strong>Contains:</strong> Country and fuel multi-selects, select-all, active chips, email field, submit/status states.</li>
+<li><strong>Dependencies:</strong> Country/fuel taxonomy; subscription server function; confirmation email/token; subscriber table.</li>
+<li><strong>Responsive behavior:</strong> Filters and email/submit stack on mobile; dropdowns are bounded scroll panels.</li>
+<li><strong>Must preserve:</strong> Empty selection meaning “all,” exact selected values, email validation, confirmation/suppression/already-confirmed/error states.</li>
+<li><strong>Can visually change:</strong> Progressive disclosure and native accessible multiselect pattern.</li>
+<li><strong>Issue:</strong> Custom dropdown lacks full listbox keyboard behavior; selected-name summary can become extremely long before truncation.</li>
+</ul>
+<h4>Component: <code>BriefRequestButton</code></h4>
+<ul>
+<li><strong>Used on:</strong> Update cards.</li>
+<li><strong>Contains:</strong> Inline reveal email form; pending/sent/rate-limited/suppressed/not-found/error states.</li>
+<li><strong>Must preserve:</strong> Update ID, email validation, rate limiting, delivery status.</li>
+<li><strong>Can visually change:</strong> Dialog or side panel.</li>
+</ul>
+<h4>Auth form</h4>
+<ul>
+<li><strong>Used on:</strong> <code>/auth</code>.</li>
+<li><strong>Contains:</strong> Mode switch, email/password, validation/server error, submit.</li>
+<li><strong>Must preserve:</strong> Supabase operations and redirect behavior.</li>
+</ul>
+<h4>Calculator form system: <code>PathwayCiBuilder</code></h4>
+<ul>
+<li><strong>Used on:</strong> Both calculator routes with <code>general</code> or <code>dairy</code> mode.</li>
+<li><strong>Contains:</strong> Many numeric inputs/selects/sliders, units, defaults, lifecycle sections, formula-driven results, charts/comparisons, premium save state.</li>
+<li><strong>Dependencies:</strong> <code>ci-calculator</code>, <code>rng-dairy</code>, <code>rng-dairy-lcfs</code>, GHG/program datasets, auth/premium hooks.</li>
+<li><strong>Responsive behavior:</strong> Grids collapse; controls wrap; technical tables/charts may scroll.</li>
+<li><strong>Must preserve:</strong> Calculation formulas, defaults, ranges, unit conversions, mode-specific fields, program benchmarks, and result payload.</li>
+<li><strong>Can visually change:</strong> Step grouping, input density, summary position, disclosure.</li>
+</ul>
+<h4>LinkedIn settings forms</h4>
+<ul>
+<li><strong>Used on:</strong> Owner settings route.</li>
+<li><strong>Must preserve:</strong> Admin-key gate, server-only secret handling, OAuth callback, destination and automation settings.</li>
+<li><strong>Can visually change:</strong> Admin-only settings patterns.</li>
+</ul>
+<h3>AI assistant components</h3>
+<h4>Components: <code>AssistantWorkspace</code>, <code>AssistantChat</code>, <code>ThreadList</code>, <code>ChatDock</code>, <code>useAssistantThreads</code></h4>
+<ul>
+<li><strong>Used on:</strong> Assistant routes; <code>ChatDock</code> is available as a compact entry pattern.</li>
+<li><strong>Purpose:</strong> Streaming research conversation, saved history, tool calls, source-aware responses.</li>
+<li><strong>Dependencies:</strong> <code>/api/chat</code>, Supabase threads/messages, auth/quota logic, MCP/search tools.</li>
+<li><strong>Must preserve:</strong> Streaming protocol, message roles/parts, tool states, thread ownership, route synchronization, anonymous limits, and source links.</li>
+<li><strong>Can visually change:</strong> Workspace layout, history drawer, prompt and tool-result presentation.</li>
+</ul>
+<h4>AI element primitives</h4>
+<ul>
+<li><strong>Inventory:</strong> Conversation/scroll/download, message/response/actions/branch controls, prompt input/attachments/tool menus, tool input/output/collapsible state, code block, shimmer.</li>
+<li><strong>Must preserve:</strong> Stream-part rendering, accessible controls, copy/download, and tool lifecycle state.</li>
+<li><strong>Can visually change:</strong> Visual density and branding.</li>
+</ul>
+<h2 class="section">3. Page-by-page structural recommendations</h2>
+<p>The architecture entries above describe every page in detail. The following captures section disposition for the major product flows.</p>
+<h3>Home dashboard, top to bottom</h3>
+<p>1. <strong>Sticky header and navigation</strong> — retain access and auth; replace mixed anchor/route pill strip with hierarchical global navigation. 2. <strong>Live marquee</strong> — reconsider; retain only if timestamped and genuinely decision-useful. 3. <strong>Product introduction + live counts</strong> — retain but shorten; separate value proposition from methodology. 4. <strong>Top five updates</strong> — retain and increase priority; add clear “view all timeline” action. 5. <strong>Markets</strong> — retain but move according to user research; clarify relevance to bioenergy. 6. <strong>Jurisdiction map/country focus</strong> — retain; pair with searchable accessible country list. 7. <strong>Supply dataset directory</strong> — retain; group the 15 datasets by value chain rather than one flat grid. 8. <strong>Jobs preview</strong> — move lower or to its own navigation destination; it is secondary to intelligence. 9. <strong>Alert signup</strong> — retain as a conversion point after users see evidence of coverage. 10. <strong>Traffic panel</strong> — reconsider or move to About/admin. 11. <strong>Methodology and AI disclosure</strong> — retain, condense, and link to a full trust/method page. 12. <strong>Footer</strong> — retain legal/data routes; add complete information architecture.</p>
+<h3>Country workspace</h3>
+<p>1. Global header/breadcrumb — retain access; add country switcher. 2. Country executive summary — retain and strengthen. 3. Persistent Overview/Mandates/Updates navigation — retain. 4. Targets at a glance — retain; add labels, dates, status. 5. Structured compliance/timeline — retain; merge card fragments into a comparable record. 6. Evidence library — retain and elevate. 7. Updates — retain; reuse global filters. 8. Verification note — retain as provenance metadata rather than generic footer prose.</p>
+<h3>Supply dataset workspace</h3>
+<p>1. Dataset title/description/stat — retain. 2. Reporting year, last reviewed, sources, limitations — move into persistent top metadata. 3. Filters — retain; consolidate and expose active state. 4. View switcher — retain only applicable views and use text labels with icons. 5. Visualization/table — retain; table must remain an accessible equivalent. 6. Entity detail — retain as contextual drawer/full-screen mobile sheet. 7. Export and AI summary — retain; clarify whether output reflects current filters. 8. Related dataset directory — retain but reduce to contextual links.</p>
+<h3>Calculators</h3>
+<p>1. Heading and scope — retain. 2. Calculator switch link — retain and make part of calculator navigation. 3. Assumptions/defaults summary — add as a required UX layer over existing values. 4. Input workflow — retain fields/formulas; group into staged lifecycle sections. 5. Persistent result summary — retain outputs and improve visibility. 6. Emissions breakdown and program comparison — retain, with units/source labels. 7. Save scenario — retain auth/premium rules; explain gating before data entry where relevant. 8. Method/FAQ/legal — retain; collapse or move detailed reference copy below primary workflow.</p>
+<h3>Mandate tracker and timeline</h3>
+<p>1. Heading/scope — retain. 2. Unified search/filter bar — merge controls. 3. Result count/sort/clear state — retain and strengthen. 4. Summary list/table — retain content; allow dense comparison. 5. Detail expansion/drawer — preserve all requirements, timelines, compliance, penalties, and sources. 6. Original source/brief request — retain and make source authority unambiguous.</p>
+<h2 class="section">4. Content hierarchy</h2>
+<p>Only categories present in the repository are included.</p>
+<h3>P1 — Critical</h3>
+<ul>
+<li>Current mandates, blending/GHG obligations, effective dates, phase-in timelines, and status.</li>
+<li>Jurisdiction and fuel scope.</li>
+<li>Primary government/regulator sources and source links.</li>
+<li>Compliance administrator, mechanism, penalties, and tradable units.</li>
+<li>Latest policy developments with publication date and original source.</li>
+<li>Calculator inputs, units, assumptions, lifecycle CI result, gross emissions, credits, and program benchmarks.</li>
+<li>Dataset metric definitions, units, reporting year, last reviewed date, coverage, and known limitations.</li>
+<li>Authentication, ownership, and premium state for saved results/assistant histories.</li>
+</ul>
+<h3>P2 — Important</h3>
+<ul>
+<li>Supply-chain participants and capacity/volume/ranking data across the 15 tracked datasets.</li>
+<li>Country overview and target summaries.</li>
+<li>Market prices/quotes and timestamp/change context.</li>
+<li>Carbon savings/program status and annual energy/footprint outputs.</li>
+<li>Filters, search, sorting/view state, export scope, and AI-summary scope.</li>
+<li>Methodology, AI processing disclosure, and verification warnings.</li>
+<li>Alert coverage preferences and cadence.</li>
+</ul>
+<h3>P3 — Supporting</h3>
+<ul>
+<li>Related news for entities and hiring.</li>
+<li>Jobs search launchers and employer directory.</li>
+<li>Curated video channels and product explainer.</li>
+<li>Team biographies and LinkedIn profiles.</li>
+<li>Related datasets and country shortcuts.</li>
+<li>Aggregate counts such as number of updates, jurisdictions, producers, or employers.</li>
+</ul>
+<h3>P4 — Optional</h3>
+<ul>
+<li>Public traffic analytics.</li>
+<li>Decorative ticker repetition.</li>
+<li>Card illustrations where they do not add facility/process evidence.</li>
+<li>Flip, tilt, shimmer, sheen, hover-lift, and animated counter treatments.</li>
+</ul>
+<h2 class="section">5. Current design problems</h2>
+<h3>Visual hierarchy and information architecture</h3>
+<ul>
+<li>The home route assigns similar section-heading weight to core policy intelligence, jobs, alerts, and methodology. Equal styling does not equal equal business value.</li>
+<li>Secondary pages have no full global navigation; “Back to dashboard” is the dominant escape hatch. This forces hub-and-spoke browsing and obscures relationships among timeline, profiles, mandates, datasets, calculators, and assistant.</li>
+<li>Fifteen supply datasets appear as one undifferentiated card grid. Grouping by feedstock, conversion/fuel, infrastructure, and end-use would support mature users’ mental models.</li>
+<li>Critical provenance is separated into a footer route instead of appearing beside every number.</li>
+</ul>
+<h3>Typography and density</h3>
+<ul>
+<li>Sora extra-bold headings, Manrope body, IBM Plex Mono labels, widespread uppercase tracking, and many tiny <code>text-xs</code>/sub-11px labels create a stylized “data dashboard” voice but reduce legibility in dense technical contexts.</li>
+<li>Body content is often rendered at 12–14px, including methodology, chart context, legal caveats, and card metadata. This is too small for mature professional audiences and prolonged reading.</li>
+<li>Extra-bold styling is used for brand, headings, card titles, metrics, and buttons, weakening emphasis hierarchy.</li>
+<li>Long hero copy (roughly a full paragraph of product claims) is not scannable.</li>
+</ul>
+<h3>Color and professional credibility</h3>
+<ul>
+<li>The system defines numerous chart, region, fuel, market, tracker, RGB-card, signal, ink, and menu colors. These are semantically useful but collectively create visual noise.</li>
+<li>Pastel job-filter groups, gradient card backgrounds, multicolor section borders, image overlays, “brand-gradient-text,” aurora/frost gradients, and colored cards conflict with the requested restrained industrial tone.</li>
+<li>Color is sometimes both decoration and data encoding; users cannot reliably infer when a hue has meaning.</li>
+<li>Dark green/navy and white can support credibility, but current gradient/sheens and many accent hues push toward a template/dashboard aesthetic.</li>
+</ul>
+<h3>Layout and spacing</h3>
+<ul>
+<li>An 80rem canvas accommodates data well, but pages alternate between wide analytical panels and narrow card prose without an explicit content-width system.</li>
+<li>Repeated <code>glass-panel</code>, bordered cards, nested cards, and section bars create “boxes inside boxes,” especially in calculators, datasets, mandates, and jobs.</li>
+<li>The homepage is extremely long and combines unrelated intentions; users cannot form a stable overview of product scope.</li>
+<li>Legal pages need reading-width constraints and in-page navigation; analytical tables need width, while prose should not inherit the same container logic.</li>
+</ul>
+<h3>Component consistency</h3>
+<ul>
+<li><code>PageShell</code> and the homepage each implement separate headers/footers; <code>/contact</code> implements another bespoke shell.</li>
+<li>Native selects, custom portal dropdowns, inline absolute dropdowns, Radix selects, pill filters, and card-based choices coexist.</li>
+<li>Buttons are repeatedly hand-authored with different radius, border, color, casing, and focus behavior despite a shared button primitive.</li>
+<li>Similar filter and card patterns are duplicated among alerts, jobs, timeline, mandates, and chart panels.</li>
+<li>Supply panels repeat near-identical assembly code, increasing the risk of behavioral and visual drift.</li>
+</ul>
+<h3>Navigation and CTA clarity</h3>
+<ul>
+<li>Homepage navigation mixes same-page anchors and destination pages without visual distinction.</li>
+<li>The brand name links externally to LinkedIn in headers rather than to the product home, while only the logo returns home. This violates common expectations.</li>
+<li>“Rescan” appears primary in the header but is an operational refresh, not the main visitor goal.</li>
+<li>Primary conversion differs by page—explore, subscribe, calculate, sign in, message on LinkedIn—without a coherent account/premium proposition.</li>
+<li>“Contact us” often resolves to LinkedIn, which is not clear until clicked.</li>
+</ul>
+<h3>Accessibility</h3>
+<ul>
+<li>Many controls remove outlines (<code>outline-none</code>/<code>focus:outline-none</code>) and rely on border/color changes; focus treatment is not consistently visible.</li>
+<li>Custom alert multiselects provide checkbox inputs but not a full combobox/listbox keyboard model; the homepage About menu lacks arrow-key menu navigation.</li>
+<li>World maps and chart-only views require explicit table/list alternatives and meaningful accessible summaries.</li>
+<li>Some color-coded fuel/region/status states need redundant text/symbol encoding and verified contrast.</li>
+<li>Several icon-only delete/actions have labels, which is good, but destructive actions generally lack confirmation.</li>
+<li>Small type, horizontally scrolling navigation/tables, hover-dependent explanations, and animated effects can disproportionately affect older users.</li>
+<li>The styles include multiple continuous/entrance/tilt/shimmer animations; a consistent <code>prefers-reduced-motion</code> policy is not evident.</li>
+<li>External-link behavior and new-tab indication are inconsistent.</li>
+</ul>
+<h3>Responsive/mobile behavior</h3>
+<ul>
+<li>The code contains thoughtful breakpoints, stacking, wrapping, truncation, overflow scrolling, and mobile label substitutions; it is not desktop-only.</li>
+<li>However, horizontal scrolling is the default answer for homepage navigation and technical tables. Discoverability of off-screen content is weak.</li>
+<li>Map targets and dense chart labels will be difficult on narrow/touch screens.</li>
+<li>Long selected-country/fuel summaries truncate without an easy mobile review until chips appear.</li>
+<li>The assistant places thread history above chat on small screens rather than behind a drawer.</li>
+<li><code>PageHeading</code> plus sticky header consumes significant vertical space before calculator/assistant workspaces.</li>
+<li>Cards in large datasets create excessive mobile scroll; table/card mode should be chosen intentionally by information type.</li>
+</ul>
+<h3>Images and icons</h3>
+<ul>
+<li>The repository contains 15 generated/stock-like supply images, a logo, two team portraits, a video poster, icons, and no authentic facility/project photography library.</li>
+<li>Generic dataset illustrations may imply operational ownership rather than research coverage. Captions currently call them “illustration” but do not establish source or authenticity.</li>
+<li>Lucide icons are heavily used for nearly every heading/control. Excessive iconography can make an expert tool feel generic.</li>
+<li>The supply grid’s imagery is visually dominant despite the data being the actual product.</li>
+</ul>
+<h3>Data presentation</h3>
+<ul>
+<li>Alternate chart types are plentiful, but more views are not automatically better. Each dataset needs a default view chosen for its analytical question.</li>
+<li>Static curated datasets, live quotes, live policy updates, and calculated outputs coexist without a strong visual freshness taxonomy.</li>
+<li>Reporting year, reviewed date, sources, and limitations must sit closer to the chart/table title and exports.</li>
+<li>Legends, units, benchmark definitions, and denominator context must remain visible; tooltips alone are insufficient.</li>
+<li>AI-generated summaries/briefs need a consistent generated-content label and direct source grounding.</li>
+</ul>
+<h2 class="section">6. Functional constraints</h2>
+<h3>Functionality that cannot change</h3>
+<ul>
+<li>All public and operational route paths, including nested country and supply slugs, API callbacks, MCP paths, sitemap, OAuth metadata, and alert-confirm URLs.</li>
+<li>TanStack route loaders, head metadata/canonical URLs/structured data, and nested outlets.</li>
+<li>Live policy ingestion, categorization, feed refresh/query caching, country/fuel taxonomy values, and source URLs.</li>
+<li>Scheduled Supabase/pg_cron calls to ingestion, alert, flyer, and LinkedIn endpoints.</li>
+<li>Supabase authentication, live session behavior, premium checks, RLS ownership for <code>ci_runs</code>, <code>chat_threads</code>, and <code>chat_messages</code>, and service-role-only tables/settings.</li>
+<li>Alert email field, country/fuel preferences, empty-selection-as-all semantics, confirmation token flow, suppression and rate-limit states, unsubscribe behavior, and daily cadence.</li>
+<li>AI brief update ID/email relationship and status handling.</li>
+<li>Calculator formulas, factor data, default values, validation/ranges, unit conversions, pathway and dairy modes, negative CI support, benchmarks, result payload, and disclaimers.</li>
+<li>Saved CI run ownership, scenario fields, auth/premium gating, list metrics, program comparisons, and delete capability.</li>
+<li>Assistant streaming message/tool protocol, grounding/search tools, source links, quotas, thread persistence, URL synchronization, and anonymous/authenticated behavior.</li>
+<li>Dataset records, field definitions, coordinates, entity identifiers, units, filters, sorting, transformations, reporting periods, citations, and export contents.</li>
+<li>External market/news/job/logo/video/LinkedIn integrations and their loading, stale, failure, and empty states.</li>
+<li>Map country/entity click destinations and accessible non-map navigation.</li>
+<li>LinkedIn admin gate, OAuth connect/callback/disconnect, company page destination, and automation settings.</li>
+<li>Visit tracking privacy/security boundaries; client code must not gain direct access to protected analytics/subscriber tables.</li>
+</ul>
+<h3>Functionality that can be visually redesigned</h3>
+<ul>
+<li>Global header, primary/secondary navigation, page shells, breadcrumbs, country tabs/switcher, and footer.</li>
+<li>Page heading styles and content-width rules.</li>
+<li>Cards, tables, filters, dropdowns, chips, dialogs, sheets, form layouts, button hierarchy, error/success/loading states.</li>
+<li>Homepage section order and grouping, provided every retained capability remains reachable.</li>
+<li>Chart control placement, default view, legends, palettes, tooltips, detail drawer, and responsive fallback.</li>
+<li>Calculator step/group presentation and result persistence.</li>
+<li>Assistant thread navigation and mobile layout.</li>
+<li>Alert and auth conversion presentation.</li>
+<li>Dataset directory grouping and image prominence.</li>
+<li>Motion may be reduced or removed when it carries no state/function.</li>
+</ul>
+<h3>Legacy or low-value functionality to validate before retaining</h3>
+<ul>
+<li>Public traffic statistics on the homepage.</li>
+<li>Manual public “Rescan” control versus an internal/admin refresh or passive timestamp.</li>
+<li>Multiple ticker/marquee patterns.</li>
+<li>Flip/tilt, shimmer, reveal, sheen, hover-lift, animated counter, and decorative gradient effects.</li>
+<li>Homepage jobs module if policy intelligence is the primary acquisition path.</li>
+<li>All six chart modes on every dataset; retain data access, but validate which modes answer real questions.</li>
+<li>Generated supply illustrations if authentic industry evidence is unavailable.</li>
+<li>LinkedIn-only contact and premium-request workflow.</li>
+</ul>
+<p>These are review candidates, not authorization to remove them.</p>
+<h2 class="section">7. Bioenergy-specific design opportunities</h2>
+<ul>
+<li><strong>Policy lifecycle:</strong> Visualize proposal → adoption → effective date → phase-in → target year for mandate records already containing timelines.</li>
+<li><strong>Mandate comparison:</strong> Compare obligation type, fuel, blend/GHG target, status, administrator, mechanism, and penalty across jurisdictions using existing structured fields.</li>
+<li><strong>Value-chain taxonomy:</strong> Organize the 15 datasets into feedstocks/inputs (UCO), conversion/fuel production (ethanol, RNG, biochar, pellets, hydrogen, renewable LPG, biomethanol, biopower), infrastructure/distribution (stations, terminals), and end users/markets (marine, SAF airlines, carriers, oil companies).</li>
+<li><strong>Dairy RNG process:</strong> Tie existing inputs/results to manure collection → digester → gas upgrading → pipeline/end use, with avoided lagoon methane shown as a distinct credit rather than a decorative sustainability diagram.</li>
+<li><strong>General CI lifecycle:</strong> Use the already implemented stages—feedstock, inbound transport, processing energy/inputs, co-products/avoided emissions, distribution, energy normalization—as functional navigation and result explanation.</li>
+<li><strong>Emissions bridge:</strong> Show gross lifecycle emissions minus credits equals net CI, with units and program benchmarks. This uses current calculator outputs.</li>
+<li><strong>Freshness and evidence:</strong> Create a visual grammar for live feed, delayed market quote, static reporting-year dataset, calculated scenario, and AI-generated interpretation.</li>
+<li><strong>Geographic intelligence:</strong> Pair the existing policy map and entity map points with accessible ranked/list views; show data coverage, not decorative globes.</li>
+<li><strong>Capacity/ranking:</strong> Use restrained bars, dot plots, and tables for producer/capacity rankings; keep absolute units and reporting year visible.</li>
+<li><strong>Provenance panel:</strong> Surface current dataset registry fields—metrics, coverage, limitations, sources, reporting year, last reviewed—within every workspace.</li>
+<li><strong>Source authority:</strong> Distinguish official government/regulator records from established press and generated summaries using existing source metadata.</li>
+</ul>
+<p>Do not invent project case studies, certifications, client logos, plant ownership, safety records, environmental-impact totals, CO2 reduction claims, partners, testimonials, project locations, or technology IP; the repository does not contain them.</p>
+<h2 class="section">8. Future visual direction</h2>
+<h3>Brand personality</h3>
+<p>Authoritative, analytical, independent, technical, restrained, globally aware, evidence-led, and environmentally literate.</p>
+<h3>Typography direction</h3>
+<ul>
+<li>Use a serious, highly legible grotesk or humanist sans for headings; avoid making every heading extra-bold.</li>
+<li>Use a neutral workhorse sans with generous x-height for body text and forms at a minimum comfortable reading size.</li>
+<li>Use a restrained tabular-number/monospaced face only for figures, dates, units, codes, and compact metadata—not every label.</li>
+<li>Establish distinct editorial, workspace, legal, and data-density scales.</li>
+<li>Prioritize 16px-ish body reading size and robust contrast for the mature audience.</li>
+</ul>
+<h3>Color direction</h3>
+<ul>
+<li>Build the core UI from deep mineral navy/charcoal, warm off-white, stone, and steel gray.</li>
+<li>Use a desaturated forest or deep olive as the institutional sustainability accent, not as the entire interface.</li>
+<li>Reserve one warm energy accent—muted amber/copper—for attention, effective dates, or energy-flow emphasis.</li>
+<li>Keep red/amber/green for status and variance only; ensure text/icon redundancy.</li>
+<li>Maintain a separate, limited categorical chart palette designed for contrast and color-vision deficiency. Do not reuse every category color decoratively.</li>
+<li>Remove uncontrolled gradients, RGB card cycling, pastel filter-group panels, and glow effects.</li>
+</ul>
+<h3>Photography direction</h3>
+<ul>
+<li>Prefer documentary images of actual refineries, digesters, pellet mills, biomass yards, terminals, storage, pipelines, laboratory sampling, logistics, control rooms, and engineers inspecting equipment.</li>
+<li>Show scale, material texture, process, and safety context. Include people only when doing credible work in a real setting.</li>
+<li>Caption location, facility/process, date, and source/license where known.</li>
+<li>If authentic images cannot be sourced, use restrained technical diagrams or data-first layouts rather than synthetic “industrial” imagery.</li>
+<li>Avoid leaves-in-hands, glowing planets, generic turbines, handshake teams, overly clean CGI plants, and imagery that implies the organization owns tracked facilities.</li>
+</ul>
+<h3>Graphic direction</h3>
+<ul>
+<li>Use editorial grids, fine rules, measured whitespace, tabular numerals, map coordinates, process lines, and schematic annotations.</li>
+<li>Make diagrams functional: policy timelines, CI lifecycle, manure-to-RNG flow, value-chain grouping, and emissions bridges.</li>
+<li>Use large numeric statistics only when unit, date, source, and denominator are adjacent.</li>
+<li>Use subtle material texture sparingly—paper, brushed metal, or cartographic grain—without harming chart clarity.</li>
+<li>Motion should explain state changes, loading, filtering, zoom, or disclosure; otherwise remove it.</li>
+</ul>
+<h2 class="section">9. Future design-system requirements</h2>
+<h3>Foundations</h3>
+<ul>
+<li>Semantic color tokens: canvas, surface, elevated surface, text, muted text, border, action, sustainability accent, energy accent, positive/warning/negative/info, focus, disabled.</li>
+<li>Separate visualization tokens for ordinal, sequential, diverging, regional, fuel, and market data.</li>
+<li>Type scales for editorial pages, analytical workspaces, legal copy, data tables, and numeric metrics.</li>
+<li>Spacing/density modes, content-width rules, grid, elevation, border, radius, icon, and reduced-motion rules.</li>
+<li>Explicit freshness/provenance tokens: live, delayed, reporting-year static, calculated, AI-generated.</li>
+</ul>
+<h3>Buttons and actions</h3>
+<ul>
+<li>Primary, secondary, outline, quiet/text, destructive, icon-only, external-link, and loading/success states.</li>
+<li>Action groups for export, view choice, filters, and entity detail.</li>
+<li>Minimum touch targets, visible focus, and consistent disabled logic.</li>
+</ul>
+<h3>Navigation</h3>
+<ul>
+<li>Global desktop navigation and mobile drawer.</li>
+<li>Account/auth menu.</li>
+<li>Breadcrumbs.</li>
+<li>Country workspace tabs and country switcher.</li>
+<li>Dataset workspace navigation and related-dataset links.</li>
+<li>In-page table of contents for legal/method pages.</li>
+</ul>
+<h3>Forms and filters</h3>
+<ul>
+<li>Text, email, password, numeric-with-unit, select, searchable select, checkbox group, radio/card choice, switch, slider, date/range, multiselect, active-filter chip, and validation/help states.</li>
+<li>Unified filter toolbar with mobile filter sheet, result count, reset, and applied-state summary.</li>
+<li>Alert signup, authentication, CI input workflow, scenario naming, admin settings, and inline brief request patterns.</li>
+</ul>
+<h3>Cards/list records</h3>
+<ul>
+<li>Policy update list row/card.</li>
+<li>Country summary record.</li>
+<li>Mandate summary and mandate detail.</li>
+<li>Dataset directory record.</li>
+<li>Entity/ranking record.</li>
+<li>Metric/stat card.</li>
+<li>Source/evidence record.</li>
+<li>Saved scenario card.</li>
+<li>Employer/job-search record.</li>
+<li>Team profile.</li>
+<li>Video/resource record.</li>
+<li>Methodology/limitation callout.</li>
+</ul>
+<h3>Data and technical components</h3>
+<ul>
+<li>Dataset workspace shell.</li>
+<li>Chart title block with metric, unit, coverage, reporting year, reviewed date, source, and limitation access.</li>
+<li>View switcher; filter toolbar; legends; tooltips; annotations; empty/loading/error/stale states.</li>
+<li>Bar, dot/scatter, line/trend, heat matrix, map, signed/diverging emissions chart, and responsive table.</li>
+<li>Entity detail drawer/full-screen mobile view.</li>
+<li>Export menu and AI chart-summary panel.</li>
+<li>Policy timeline and compliance comparison table.</li>
+<li>CI lifecycle stepper, assumption summary, emissions bridge, benchmark comparison, and result status.</li>
+</ul>
+<h3>Feedback and overlays</h3>
+<ul>
+<li>Dialog, confirmation dialog, sheet/drawer, popover, tooltip, toast, inline status, skeleton, and error recovery.</li>
+<li>Confirmation is required for saved-run deletion, thread deletion, and LinkedIn disconnection.</li>
+</ul>
+<h3>Content/trust components</h3>
+<ul>
+<li>Source authority label, original-source link, AI-generated disclosure, freshness timestamp, reporting-period badge, limitation note, citation list, and data-method panel.</li>
+<li>Footer with complete route architecture and institutional contact details only where operationally supported.</li>
+</ul>
+</body></html>

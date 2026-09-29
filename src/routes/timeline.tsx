@@ -2,11 +2,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Layers, X } from "lucide-react";
-import { feedQueryWithInitial, loadFeed } from "@/lib/feed-query";
-import { COUNTRIES, FUEL_TYPES, FUEL_ACCENT, flagFor, type FuelType } from "@/lib/policy-taxonomy";
-import { UpdateCard } from "@/components/UpdateCard";
+import { feedQueryWithInitial, loadFeed } from "@/features/policy/feed-query";
+import {
+  COUNTRIES,
+  FUEL_TYPES,
+  FUEL_ACCENT,
+  flagFor,
+  type FuelType,
+} from "@/features/policy/taxonomy";
+import { UpdateCard } from "@/features/policy/components/UpdateCard";
 import { PageShell, PageHeading } from "@/components/PageShell";
-import { useVisitTracker } from "@/hooks/useVisitTracker";
+import { useVisitTracker } from "@/features/traffic/hooks/useVisitTracker";
 
 const TITLE = "Policy update timeline | Global Bioenergy Watch";
 const DESCRIPTION =
@@ -33,7 +39,7 @@ function TimelinePage() {
   useVisitTracker();
   const { feed: initialFeed } = Route.useLoaderData();
   const { data: feed, isFetching } = useQuery(feedQueryWithInitial(initialFeed));
-  const updates = feed?.updates ?? [];
+  const updates = useMemo(() => feed?.updates ?? [], [feed?.updates]);
   const [fuels, setFuels] = useState<FuelType[]>([]);
   const [country, setCountry] = useState<string | null>(null);
 

@@ -18,6 +18,9 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
-    plugins: [mcpPlugin()],
+    // The MCP plugin currently compares Windows paths without normalizing
+    // separators and rejects this otherwise valid routes directory. MCP is
+    // Lovable editor tooling, not part of the application runtime.
+    plugins: process.platform === "win32" ? [] : [mcpPlugin()],
   },
 });

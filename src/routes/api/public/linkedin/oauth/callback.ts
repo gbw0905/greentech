@@ -27,9 +27,8 @@ export const Route = createFileRoute("/api/public/linkedin/oauth/callback")({
           return redirectToSettings({ org: "error", detail });
         }
 
-        const { isCustomAppConfigured, verifyState, completeOrgConnect } = await import(
-          "@/lib/linkedin-org-oauth.server"
-        );
+        const { isCustomAppConfigured, verifyState, completeOrgConnect } =
+          await import("@/features/linkedin/server/linkedin-org-oauth.server");
 
         if (!isCustomAppConfigured()) {
           return redirectToSettings({
@@ -45,7 +44,8 @@ export const Route = createFileRoute("/api/public/linkedin/oauth/callback")({
         }
 
         try {
-          const { getLinkedInSettings } = await import("@/lib/linkedin-settings.server");
+          const { getLinkedInSettings } =
+            await import("@/features/linkedin/server/linkedin-settings.server");
           const settings = await getLinkedInSettings();
           const { orgName, personName } = await completeOrgConnect(code, settings.companyOrgId);
           return redirectToSettings({ org: "connected", orgName, person: personName });

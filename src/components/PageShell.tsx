@@ -1,13 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import siteLogo from "@/assets/logo.png";
-import { AuthButton } from "@/components/AuthButton";
+import { AuthButton } from "@/features/auth/components/AuthButton";
 
-export function PageShell({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function PageShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-30 border-b border-menubar-fg/10 bg-menubar-bg text-menubar-fg backdrop-blur-xl">
@@ -55,8 +51,8 @@ export function PageShell({
         <main className="reveal space-y-6">{children}</main>
         <footer className="mt-8 space-y-3 border-t border-border pt-6 pb-10">
           <p className="text-xs text-muted-foreground">
-            Updates are aggregated from live web sources and auto-classified by jurisdiction and fuel
-            type. Verify against primary legislation before use in compliance decisions.
+            Updates are aggregated from live web sources and auto-classified by jurisdiction and
+            fuel type. Verify against primary legislation before use in compliance decisions.
           </p>
           <p className="text-sm font-bold text-foreground">
             © 2026 All rights reserved — Global Bioenergy Watch
@@ -88,6 +84,13 @@ export function PageShell({
               className="font-semibold text-foreground underline underline-offset-4 hover:text-primary"
             >
               Data sources
+            </Link>
+            <span className="mx-2 text-muted-foreground">Â·</span>
+            <Link
+              to="/document-analyzer"
+              className="font-semibold text-foreground underline underline-offset-4 hover:text-primary"
+            >
+              Document analyzer
             </Link>
             <span className="mx-2 text-muted-foreground">·</span>
             <Link

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { sendTemplateEmail } from "@/lib/email-templates/send-email";
+import { sendTemplateEmail } from "@/infrastructure/email/send-email";
 
 /** Daily flyer with the top 10 bioenergy policy headlines, sent to the desk owner. */
 async function run() {

@@ -1,24 +1,33 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { RefreshCw, AlertTriangle, Map, Factory, TrendingUp, BellRing, Briefcase, Linkedin } from "lucide-react";
-import { refreshPolicyFeed } from "@/lib/policy.functions";
-import { feedQueryWithInitial, loadFeed } from "@/lib/feed-query";
-import { AuthButton } from "@/components/AuthButton";
+import {
+  RefreshCw,
+  AlertTriangle,
+  Map,
+  Factory,
+  TrendingUp,
+  BellRing,
+  Briefcase,
+  Linkedin,
+} from "lucide-react";
+import { refreshPolicyFeed } from "@/features/policy/server-functions";
+import { feedQueryWithInitial, loadFeed } from "@/features/policy/feed-query";
+import { AuthButton } from "@/features/auth/components/AuthButton";
 import siteLogo from "@/assets/logo.png";
-import { UpdateCard, formatDate } from "@/components/UpdateCard";
-import { WorldPolicyMap } from "@/components/WorldPolicyMap";
+import { UpdateCard, formatDate } from "@/features/policy/components/UpdateCard";
+import { WorldPolicyMap } from "@/features/countries/components/WorldPolicyMap";
 
-import { OilPricePanel } from "@/components/OilPricePanel";
-import { SupplyProducersSection } from "@/components/SupplyProducersSection";
-import { LiveMarquee } from "@/components/LiveMarquee";
+import { OilPricePanel } from "@/features/markets/components/OilPricePanel";
+import { SupplyProducersSection } from "@/features/supply/components/SupplyProducersSection";
+import { LiveMarquee } from "@/features/markets/components/LiveMarquee";
 
-import { AlertSignup } from "@/components/AlertSignup";
-import { JobsPanel } from "@/components/JobsPanel";
-import { TrafficPanel } from "@/components/TrafficPanel";
-import { useVisitTracker } from "@/hooks/useVisitTracker";
+import { AlertSignup } from "@/features/alerts/components/AlertSignup";
+import { JobsPanel } from "@/features/jobs/components/JobsPanel";
+import { TrafficPanel } from "@/features/traffic/components/TrafficPanel";
+import { useVisitTracker } from "@/features/traffic/hooks/useVisitTracker";
 import { AboutMenu } from "@/components/AboutMenu";
-
+import { getErrorMessage } from "@/shared/errors";
 
 const TITLE = "Global Bioenergy Watch | Worldwide Biofuel Policy Tracker";
 
@@ -68,7 +77,7 @@ export const Route = createFileRoute("/")({
   component: Index,
   errorComponent: ({ error }) => (
     <div className="p-10 text-sm text-destructive" role="alert">
-      {error.message}
+      {getErrorMessage(error)}
     </div>
   ),
   notFoundComponent: () => <div className="p-10 text-sm">Nothing here.</div>,
@@ -140,7 +149,11 @@ function Dashboard() {
     },
   });
   const busy = isFetching || rescan.isPending;
-  const data = feed ?? { updates: [], fetchedAt: null as string | null, error: null as string | null };
+  const data = feed ?? {
+    updates: [],
+    fetchedAt: null as string | null,
+    error: null as string | null,
+  };
   const navigate = useNavigate();
 
   const counts = useMemo(() => {
@@ -239,7 +252,6 @@ function Dashboard() {
       <LiveMarquee />
 
       <div className="mx-auto max-w-[80rem] px-5 py-5 lg:px-8 lg:py-6">
-
         <main className="space-y-8">
           <section className="grid items-stretch gap-5 lg:grid-cols-[1.1fr_minmax(0,1fr)]">
             <div className="card-motion h-full rounded-lg border border-border bg-white px-6 py-6 shadow-sm sm:px-8 sm:py-7">
@@ -251,7 +263,15 @@ function Dashboard() {
                 AI powered global bioenergy outlook
               </h1>
               <p className="mt-2 max-w-[72ch] text-sm/relaxed text-muted-foreground">
-                Global Bioenergy Watch scans official government sources, regulators, intergovernmental agencies and credible energy media worldwide, then uses AI to classify and summarise every biofuel policy and market update by jurisdiction, fuel type and relevance. Track mandates, blending targets, tax credits and SAF incentives across ethanol, biodiesel, renewable diesel and sustainable aviation fuel in one live dashboard. Click any country on the jurisdiction map to see its full policy profile, latest news and market context. The desk refreshes continuously so analysts, traders, researchers and investors can monitor the global bioenergy outlook without chasing headlines across dozens of sites.
+                Global Bioenergy Watch scans official government sources, regulators,
+                intergovernmental agencies and credible energy media worldwide, then uses AI to
+                classify and summarise every biofuel policy and market update by jurisdiction, fuel
+                type and relevance. Track mandates, blending targets, tax credits and SAF incentives
+                across ethanol, biodiesel, renewable diesel and sustainable aviation fuel in one
+                live dashboard. Click any country on the jurisdiction map to see its full policy
+                profile, latest news and market context. The desk refreshes continuously so
+                analysts, traders, researchers and investors can monitor the global bioenergy
+                outlook without chasing headlines across dozens of sites.
               </p>
               <dl className="mt-5 grid grid-cols-3 gap-2 border-t border-border pt-4 sm:gap-4">
                 {[
@@ -433,24 +453,15 @@ function Dashboard() {
               Contact us
             </a>
             <span className="text-muted-foreground">·</span>
-            <Link
-              to="/terms"
-              className="underline underline-offset-4 hover:text-primary"
-            >
+            <Link to="/terms" className="underline underline-offset-4 hover:text-primary">
               Terms of Use
             </Link>
             <span className="text-muted-foreground">·</span>
-            <Link
-              to="/privacy"
-              className="underline underline-offset-4 hover:text-primary"
-            >
+            <Link to="/privacy" className="underline underline-offset-4 hover:text-primary">
               Privacy Policy
             </Link>
             <span className="text-muted-foreground">·</span>
-            <Link
-              to="/mandates"
-              className="underline underline-offset-4 hover:text-primary"
-            >
+            <Link to="/mandates" className="underline underline-offset-4 hover:text-primary">
               Mandate tracker
             </Link>
           </p>

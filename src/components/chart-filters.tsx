@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { X } from "lucide-react";
-import { COUNTRIES, COUNTRY_FLAG,
-  COUNTRY_NAME_FLAG } from "@/lib/policy-taxonomy";
+import { COUNTRIES, COUNTRY_FLAG, COUNTRY_NAME_FLAG } from "@/features/policy/taxonomy";
 
 export type ChartFilterOption = {
   value: string;

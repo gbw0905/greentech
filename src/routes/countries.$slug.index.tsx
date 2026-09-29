@@ -1,10 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, ExternalLink, FileText, Layers, Newspaper } from "lucide-react";
-import { countryBySlug } from "@/lib/policy-taxonomy";
-import { CountryProfileHeader } from "@/components/CountryProfileHeader";
-import { governmentSitesForCountry, mandatesForCountry } from "@/lib/mandates";
-import { useVisitTracker } from "@/hooks/useVisitTracker";
-import { CountryTrackingStrip } from "@/components/CountryTrackingStrip";
+import { countryBySlug } from "@/features/policy/taxonomy";
+import { CountryProfileHeader } from "@/features/countries/components/CountryProfileHeader";
+import { governmentSitesForCountry, mandatesForCountry } from "@/features/countries/mandates";
+import { useVisitTracker } from "@/features/traffic/hooks/useVisitTracker";
+import { CountryTrackingStrip } from "@/features/countries/components/CountryTrackingStrip";
 
 export const Route = createFileRoute("/countries/$slug/")({
   head: ({ params }) => {
@@ -19,9 +19,10 @@ export const Route = createFileRoute("/countries/$slug/")({
       ? `Latest ${name} biofuel and bioenergy policy updates: ${frameworks.join(", ")}. Mandates, blending targets and market news, tracked daily by Global Bioenergy Watch.`
       : `Mandates, blending targets and the latest bioenergy policy updates for ${name}.`;
     const url = `https://globalbioenergywatch.org/countries/${params.slug}`;
-    const keywords = Array.from(
-      new Set([...(country?.updateKeywords ?? []), ...frameworks]),
-    ).slice(0, 10);
+    const keywords = Array.from(new Set([...(country?.updateKeywords ?? []), ...frameworks])).slice(
+      0,
+      10,
+    );
     return {
       meta: [
         { title },
@@ -73,7 +74,11 @@ function CountryOverviewPage() {
     <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10">
       <CountryProfileHeader country={country} />
       <div className="mt-5">
-        <CountryTrackingStrip mandates={trackedMandates.length} targets={country.mandates.length} sources={govSites.length} />
+        <CountryTrackingStrip
+          mandates={trackedMandates.length}
+          targets={country.mandates.length}
+          sources={govSites.length}
+        />
       </div>
 
       <div className="mt-6 grid overflow-hidden rounded-lg border border-border bg-card shadow-[var(--shadow-card)] lg:grid-cols-12">
@@ -83,7 +88,12 @@ function CountryOverviewPage() {
             <p className="mt-3 max-w-3xl text-base/relaxed text-foreground">{country.blurb}</p>
             <div className="mt-4 flex flex-wrap gap-2">
               {country.frameworks.map((f) => (
-                <span key={f} className="label-mono rounded-md border border-tracker-green/30 bg-tracker-green/10 px-2.5 py-1 text-tracker-green">{f}</span>
+                <span
+                  key={f}
+                  className="label-mono rounded-md border border-tracker-green/30 bg-tracker-green/10 px-2.5 py-1 text-tracker-green"
+                >
+                  {f}
+                </span>
               ))}
             </div>
           </section>
@@ -94,15 +104,24 @@ function CountryOverviewPage() {
                 <p className="label-mono text-muted-foreground">Current policy markers</p>
                 <h2 className="mt-1 font-display text-xl font-extrabold">Targets at a glance</h2>
               </div>
-              <Link to="/countries/$slug/mandates" params={{ slug }} className="label-mono inline-flex shrink-0 items-center gap-1.5 font-bold text-primary hover:underline">Full detail <ArrowRight className="size-3.5" /></Link>
+              <Link
+                to="/countries/$slug/mandates"
+                params={{ slug }}
+                className="label-mono inline-flex shrink-0 items-center gap-1.5 font-bold text-primary hover:underline"
+              >
+                Full detail <ArrowRight className="size-3.5" />
+              </Link>
             </div>
             <dl className="mt-4 grid border-y border-border sm:grid-cols-2">
-          {country.mandates.map((m) => (
-            <div key={m.label} className="grid gap-1 border-b border-border p-4 transition-colors last:border-b-0 hover:bg-surface-1 sm:odd:border-r">
-              <dt className="label-mono font-bold text-muted-foreground">{m.label}</dt>
-              <dd className="font-mono text-sm font-semibold text-foreground">{m.value}</dd>
-            </div>
-          ))}
+              {country.mandates.map((m) => (
+                <div
+                  key={m.label}
+                  className="grid gap-1 border-b border-border p-4 transition-colors last:border-b-0 hover:bg-surface-1 sm:odd:border-r"
+                >
+                  <dt className="label-mono font-bold text-muted-foreground">{m.label}</dt>
+                  <dd className="font-mono text-sm font-semibold text-foreground">{m.value}</dd>
+                </div>
+              ))}
             </dl>
           </section>
         </div>
@@ -114,38 +133,59 @@ function CountryOverviewPage() {
               <h2 className="mt-1 font-display text-lg font-bold">Official sources</h2>
             </div>
             <ul className="divide-y divide-ink-foreground/10 px-2 py-2">
-            {govSites.map((s) => (
-              <li key={s.url}>
-                <a
-                  href={s.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex min-w-0 items-center justify-between gap-3 rounded-md px-3 py-3 text-sm text-ink-foreground transition-colors hover:bg-ink-foreground/10"
-                >
-                  <span className="min-w-0 truncate">{s.label}</span>
-                  <ExternalLink className="size-3.5 shrink-0" />
-                </a>
-              </li>
-            ))}
+              {govSites.map((s) => (
+                <li key={s.url}>
+                  <a
+                    href={s.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex min-w-0 items-center justify-between gap-3 rounded-md px-3 py-3 text-sm text-ink-foreground transition-colors hover:bg-ink-foreground/10"
+                  >
+                    <span className="min-w-0 truncate">{s.label}</span>
+                    <ExternalLink className="size-3.5 shrink-0" />
+                  </a>
+                </li>
+              ))}
             </ul>
           </section>
 
           <nav className="space-y-2 p-4" aria-label="Country tracking shortcuts">
-            <Link to="/countries/$slug/mandates" params={{ slug }} className="group flex items-center gap-3 border border-border bg-card p-4 transition-colors hover:bg-surface-2">
-              <span className="grid size-9 place-items-center rounded-md bg-tracker-blue/10 text-tracker-blue"><Layers className="size-4" /></span>
-              <span className="min-w-0 flex-1"><span className="block text-sm font-bold">Mandates &amp; targets</span><span className="block text-xs text-muted-foreground">Timeline and compliance</span></span>
+            <Link
+              to="/countries/$slug/mandates"
+              params={{ slug }}
+              className="group flex items-center gap-3 border border-border bg-card p-4 transition-colors hover:bg-surface-2"
+            >
+              <span className="grid size-9 place-items-center rounded-md bg-tracker-blue/10 text-tracker-blue">
+                <Layers className="size-4" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-bold">Mandates &amp; targets</span>
+                <span className="block text-xs text-muted-foreground">Timeline and compliance</span>
+              </span>
               <ArrowRight className="size-4 text-muted-foreground group-hover:text-primary" />
             </Link>
-            <Link to="/countries/$slug/updates" params={{ slug }} className="group flex items-center gap-3 border border-border bg-card p-4 transition-colors hover:bg-surface-2">
-              <span className="grid size-9 place-items-center rounded-md bg-destructive/10 text-destructive"><Newspaper className="size-4" /></span>
-              <span className="min-w-0 flex-1"><span className="block text-sm font-bold">Live updates</span><span className="block text-xs text-muted-foreground">Calendar-filtered changes</span></span>
+            <Link
+              to="/countries/$slug/updates"
+              params={{ slug }}
+              className="group flex items-center gap-3 border border-border bg-card p-4 transition-colors hover:bg-surface-2"
+            >
+              <span className="grid size-9 place-items-center rounded-md bg-destructive/10 text-destructive">
+                <Newspaper className="size-4" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-bold">Live updates</span>
+                <span className="block text-xs text-muted-foreground">
+                  Calendar-filtered changes
+                </span>
+              </span>
               <ArrowRight className="size-4 text-muted-foreground group-hover:text-primary" />
             </Link>
           </nav>
 
           <div className="flex items-start gap-3 p-5 text-xs/relaxed text-muted-foreground">
             <FileText className="mt-0.5 size-4 shrink-0 text-tracker-red" />
-            Information is compiled from the linked government records and reviewed against published timelines.
+            Information is compiled from the linked government records and reviewed against
+            published timelines.
           </div>
         </aside>
       </div>

@@ -2,13 +2,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { LayoutDashboard, Trash2 } from "lucide-react";
 import { PageShell, PageHeading } from "@/components/PageShell";
-import { usePremium } from "@/hooks/usePremium";
+import { usePremium } from "@/features/premium/hooks/usePremium";
 import {
   deleteCiRunFn,
   listCiRunsFn,
   type SavedCiRun,
   type SavedProgram,
-} from "@/lib/ci-runs.functions";
+} from "@/features/calculators/server-functions";
 
 const TITLE = "My carbon intensity results | Global Bioenergy Watch";
 const DESCRIPTION =
@@ -95,7 +95,11 @@ function MyResultsPage() {
             {[
               ["Saved scenarios", String(list.length), TONE.blue],
               ["Lowest carbon intensity", best == null ? "—" : `${fmt(best)} gCO2e/MJ`, TONE.green],
-              ["Average across scenarios", average == null ? "—" : `${fmt(average)} gCO2e/MJ`, TONE.blue],
+              [
+                "Average across scenarios",
+                average == null ? "—" : `${fmt(average)} gCO2e/MJ`,
+                TONE.blue,
+              ],
             ].map(([label, value, color]) => (
               <div
                 key={label}

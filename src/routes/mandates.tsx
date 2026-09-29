@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CheckCircle2, Circle, ExternalLink, Scale, Search } from "lucide-react";
 import { PageHeading, PageShell } from "@/components/PageShell";
-import { CountryFlag } from "@/components/CountryFlag";
+import { CountryFlag } from "@/features/countries/components/CountryFlag";
 import {
   MANDATES,
   MANDATE_FUELS,
@@ -10,7 +10,7 @@ import {
   mandateStatusTone,
   type MandateFuel,
   type MandateStatus,
-} from "@/lib/mandates";
+} from "@/features/countries/mandates";
 
 const TITLE = "Biofuel mandate tracker — every active blending obligation | Global Bioenergy Watch";
 const DESCRIPTION =
@@ -45,7 +45,11 @@ export const Route = createFileRoute("/mandates")({
           name: "Biofuel mandate tracker",
           description: DESCRIPTION,
           url: URL,
-          isPartOf: { "@type": "WebSite", name: "Global Bioenergy Watch", url: "https://globalbioenergywatch.org" },
+          isPartOf: {
+            "@type": "WebSite",
+            name: "Global Bioenergy Watch",
+            url: "https://globalbioenergywatch.org",
+          },
           mainEntity: {
             "@type": "ItemList",
             numberOfItems: MANDATES.length,
@@ -143,8 +147,8 @@ function MandatesPage() {
 
         <p className="mt-3 text-xs text-muted-foreground">
           Showing {filtered.length} of {MANDATES.length} tracked mandates. Percentages are the
-          obligation as written in law — always verify against the primary document before using them
-          in a compliance decision.
+          obligation as written in law — always verify against the primary document before using
+          them in a compliance decision.
         </p>
       </section>
 
@@ -204,7 +208,9 @@ function MandatesPage() {
                           <Circle className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
                         )}
                         <div className="min-w-0">
-                          <div className="label-mono text-xs font-bold text-foreground">{t.period}</div>
+                          <div className="label-mono text-xs font-bold text-foreground">
+                            {t.period}
+                          </div>
                           <p className="text-xs/relaxed text-muted-foreground">{t.target}</p>
                         </div>
                       </li>
@@ -213,7 +219,9 @@ function MandatesPage() {
                 </div>
 
                 <div>
-                  <h3 className="label-mono text-xs font-bold text-muted-foreground">Requirements</h3>
+                  <h3 className="label-mono text-xs font-bold text-muted-foreground">
+                    Requirements
+                  </h3>
                   <ul className="mt-3 list-disc space-y-2 pl-4 text-xs/relaxed text-muted-foreground">
                     {m.requirements.map((r) => (
                       <li key={r}>{r}</li>
@@ -293,7 +301,9 @@ function FilterPills({
             onClick={() => onChange(opt)}
             aria-pressed={active}
             className={`label-mono rounded-full border px-2.5 py-1 text-[0.65rem] font-bold transition-colors ${
-              active ? "border-foreground bg-foreground text-background" : `${tone} hover:border-foreground`
+              active
+                ? "border-foreground bg-foreground text-background"
+                : `${tone} hover:border-foreground`
             }`}
           >
             {opt === "all" ? "All" : opt}

@@ -6,12 +6,12 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
-
+import { reportLovableError } from "@/infrastructure/telemetry/lovable-error-reporting";
 
 function NotFoundComponent() {
   return (
@@ -35,7 +35,7 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
@@ -87,7 +87,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "author", content: "Global Bioenergy Watch" },
       { name: "google-site-verification", content: "kk1yedKT7BHoNWBTFpeMTp_j7INL7XAT6U2QS4AfQj8" },
       { property: "og:site_name", content: "Global Bioenergy Watch" },
-      { property: "og:title", content: "Global Bioenergy Watch — Worldwide Biofuel Policy Tracker" },
+      {
+        property: "og:title",
+        content: "Global Bioenergy Watch — Worldwide Biofuel Policy Tracker",
+      },
       {
         property: "og:description",
         content:
@@ -144,7 +147,6 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
-      
     </QueryClientProvider>
   );
 }

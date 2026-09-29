@@ -5,8 +5,8 @@ import {
   SUPPLY_PANELS,
   SupplyPanelBody,
   type PanelId,
-} from "@/components/SupplyProducersSection";
-import { SUPPLY_SEO } from "@/lib/supply-seo";
+} from "@/features/supply/components/SupplyProducersSection";
+import { SUPPLY_SEO } from "@/features/supply/seo";
 
 function findPanel(id: string) {
   return SUPPLY_PANELS.find((p) => p.id === id);
@@ -20,7 +20,9 @@ export const Route = createFileRoute("/supply/$panel")({
   },
   head: ({ loaderData, params }) => {
     const seo = SUPPLY_SEO[(loaderData?.panelId ?? params.panel) as PanelId];
-    const title = seo ? `${seo.title} | Global Bioenergy Watch` : "Dataset — Global Bioenergy Watch";
+    const title = seo
+      ? `${seo.title} | Global Bioenergy Watch`
+      : "Dataset — Global Bioenergy Watch";
     const description = seo?.description ?? loaderData?.blurb ?? "Global biofuel supply dataset.";
     const url = `https://globalbioenergywatch.org/supply/${params.panel}`;
     return {
@@ -70,7 +72,10 @@ function SupplyDatasetPage() {
   return (
     <PageShell>
       {/* Green ribbon header for the focused dataset */}
-      <div className="ink-bar ribbon-sheen px-5 py-6 sm:px-7" style={{ borderLeft: `4px solid ${panel.tone}` }}>
+      <div
+        className="ink-bar ribbon-sheen px-5 py-6 sm:px-7"
+        style={{ borderLeft: `4px solid ${panel.tone}` }}
+      >
         <div className="flex items-center gap-2 text-accent">
           <panel.icon className="size-3.5" />
           <span className="kicker" style={{ color: "var(--ink-accent)" }}>
@@ -88,7 +93,10 @@ function SupplyDatasetPage() {
       </div>
 
       {/* The focused dataset — the only thing on this page */}
-      <section className="glass-panel flip-in-side min-w-0 p-4 sm:p-5" style={{ perspective: "900px" }}>
+      <section
+        className="glass-panel flip-in-side min-w-0 p-4 sm:p-5"
+        style={{ perspective: "900px" }}
+      >
         <SupplyPanelBody id={panelId} />
       </section>
 

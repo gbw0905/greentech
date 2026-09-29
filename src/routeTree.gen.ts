@@ -17,6 +17,7 @@ import { Route as CiCalculatorRouteImport } from './routes/ci-calculator'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DairyRngCalculatorRouteImport } from './routes/dairy-rng-calculator'
 import { Route as DataSourcesRouteImport } from './routes/data-sources'
+import { Route as DocumentAnalyzerRouteImport } from './routes/document-analyzer'
 import { Route as GetAlertsRouteImport } from './routes/get-alerts'
 import { Route as JobsRouteImport } from './routes/jobs'
 import { Route as MandatesRouteImport } from './routes/mandates'
@@ -35,6 +36,7 @@ import { Route as AboutMissionVisionRouteImport } from './routes/about.mission-v
 import { Route as AboutTeamRouteImport } from './routes/about.team'
 import { Route as AlertsConfirmRouteImport } from './routes/alerts.confirm'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiDocumentAnalyzeRouteImport } from './routes/api/document-analyze'
 import { Route as AssistantThreadIdRouteImport } from './routes/assistant.$threadId'
 import { Route as CountriesSlugRouteImport } from './routes/countries.$slug'
 import { Route as SettingsLinkedinRouteImport } from './routes/settings.linkedin'
@@ -94,6 +96,11 @@ const DairyRngCalculatorRoute = DairyRngCalculatorRouteImport.update({
 const DataSourcesRoute = DataSourcesRouteImport.update({
   id: '/data-sources',
   path: '/data-sources',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocumentAnalyzerRoute = DocumentAnalyzerRouteImport.update({
+  id: '/document-analyzer',
+  path: '/document-analyzer',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GetAlertsRoute = GetAlertsRouteImport.update({
@@ -186,6 +193,11 @@ const AlertsConfirmRoute = AlertsConfirmRouteImport.update({
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDocumentAnalyzeRoute = ApiDocumentAnalyzeRouteImport.update({
+  id: '/api/document-analyze',
+  path: '/api/document-analyze',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AssistantThreadIdRoute = AssistantThreadIdRouteImport.update({
@@ -308,6 +320,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/dairy-rng-calculator': typeof DairyRngCalculatorRoute
   '/data-sources': typeof DataSourcesRoute
+  '/document-analyzer': typeof DocumentAnalyzerRoute
   '/get-alerts': typeof GetAlertsRoute
   '/jobs': typeof JobsRoute
   '/mandates': typeof MandatesRoute
@@ -325,6 +338,7 @@ export interface FileRoutesByFullPath {
   '/about/team': typeof AboutTeamRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/document-analyze': typeof ApiDocumentAnalyzeRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
   '/countries/$slug': typeof CountriesSlugRouteWithChildren
   '/settings/linkedin': typeof SettingsLinkedinRoute
@@ -355,6 +369,7 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/dairy-rng-calculator': typeof DairyRngCalculatorRoute
   '/data-sources': typeof DataSourcesRoute
+  '/document-analyzer': typeof DocumentAnalyzerRoute
   '/get-alerts': typeof GetAlertsRoute
   '/jobs': typeof JobsRoute
   '/mandates': typeof MandatesRoute
@@ -372,6 +387,7 @@ export interface FileRoutesByTo {
   '/about/team': typeof AboutTeamRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/document-analyze': typeof ApiDocumentAnalyzeRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
   '/settings/linkedin': typeof SettingsLinkedinRoute
   '/supply/$panel': typeof SupplyPanelRoute
@@ -403,6 +419,7 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/dairy-rng-calculator': typeof DairyRngCalculatorRoute
   '/data-sources': typeof DataSourcesRoute
+  '/document-analyzer': typeof DocumentAnalyzerRoute
   '/get-alerts': typeof GetAlertsRoute
   '/jobs': typeof JobsRoute
   '/mandates': typeof MandatesRoute
@@ -420,6 +437,7 @@ export interface FileRoutesById {
   '/about/team': typeof AboutTeamRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/document-analyze': typeof ApiDocumentAnalyzeRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
   '/countries/$slug': typeof CountriesSlugRouteWithChildren
   '/settings/linkedin': typeof SettingsLinkedinRoute
@@ -453,6 +471,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/dairy-rng-calculator'
     | '/data-sources'
+    | '/document-analyzer'
     | '/get-alerts'
     | '/jobs'
     | '/mandates'
@@ -470,6 +489,7 @@ export interface FileRouteTypes {
     | '/about/team'
     | '/alerts/confirm'
     | '/api/chat'
+    | '/api/document-analyze'
     | '/assistant/$threadId'
     | '/countries/$slug'
     | '/settings/linkedin'
@@ -500,6 +520,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/dairy-rng-calculator'
     | '/data-sources'
+    | '/document-analyzer'
     | '/get-alerts'
     | '/jobs'
     | '/mandates'
@@ -517,6 +538,7 @@ export interface FileRouteTypes {
     | '/about/team'
     | '/alerts/confirm'
     | '/api/chat'
+    | '/api/document-analyze'
     | '/assistant/$threadId'
     | '/settings/linkedin'
     | '/supply/$panel'
@@ -547,6 +569,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/dairy-rng-calculator'
     | '/data-sources'
+    | '/document-analyzer'
     | '/get-alerts'
     | '/jobs'
     | '/mandates'
@@ -564,6 +587,7 @@ export interface FileRouteTypes {
     | '/about/team'
     | '/alerts/confirm'
     | '/api/chat'
+    | '/api/document-analyze'
     | '/assistant/$threadId'
     | '/countries/$slug'
     | '/settings/linkedin'
@@ -596,6 +620,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   DairyRngCalculatorRoute: typeof DairyRngCalculatorRoute
   DataSourcesRoute: typeof DataSourcesRoute
+  DocumentAnalyzerRoute: typeof DocumentAnalyzerRoute
   GetAlertsRoute: typeof GetAlertsRoute
   JobsRoute: typeof JobsRoute
   MandatesRoute: typeof MandatesRoute
@@ -611,6 +636,7 @@ export interface RootRouteChildren {
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   AlertsConfirmRoute: typeof AlertsConfirmRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiDocumentAnalyzeRoute: typeof ApiDocumentAnalyzeRoute
   CountriesSlugRoute: typeof CountriesSlugRouteWithChildren
   SettingsLinkedinRoute: typeof SettingsLinkedinRoute
   SupplyPanelRoute: typeof SupplyPanelRoute
@@ -685,6 +711,13 @@ declare module '@tanstack/react-router' {
       path: '/data-sources'
       fullPath: '/data-sources'
       preLoaderRoute: typeof DataSourcesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/document-analyzer': {
+      id: '/document-analyzer'
+      path: '/document-analyzer'
+      fullPath: '/document-analyzer'
+      preLoaderRoute: typeof DocumentAnalyzerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/get-alerts': {
@@ -811,6 +844,13 @@ declare module '@tanstack/react-router' {
       path: '/api/chat'
       fullPath: '/api/chat'
       preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/document-analyze': {
+      id: '/api/document-analyze'
+      path: '/api/document-analyze'
+      fullPath: '/api/document-analyze'
+      preLoaderRoute: typeof ApiDocumentAnalyzeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/assistant/$threadId': {
@@ -1007,6 +1047,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   DairyRngCalculatorRoute: DairyRngCalculatorRoute,
   DataSourcesRoute: DataSourcesRoute,
+  DocumentAnalyzerRoute: DocumentAnalyzerRoute,
   GetAlertsRoute: GetAlertsRoute,
   JobsRoute: JobsRoute,
   MandatesRoute: MandatesRoute,
@@ -1023,6 +1064,7 @@ const rootRouteChildren: RootRouteChildren = {
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   AlertsConfirmRoute: AlertsConfirmRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiDocumentAnalyzeRoute: ApiDocumentAnalyzeRoute,
   CountriesSlugRoute: CountriesSlugRouteWithChildren,
   SettingsLinkedinRoute: SettingsLinkedinRoute,
   SupplyPanelRoute: SupplyPanelRoute,

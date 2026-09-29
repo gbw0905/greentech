@@ -2,7 +2,7 @@ import { lazy, Suspense } from "react";
 import { ClientOnly, createFileRoute, Outlet, useMatches } from "@tanstack/react-router";
 
 const AssistantWorkspace = lazy(() =>
-  import("@/components/assistant/AssistantWorkspace").then((module) => ({
+  import("@/features/assistant/components/AssistantWorkspace").then((module) => ({
     default: module.AssistantWorkspace,
   })),
 );

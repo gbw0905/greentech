@@ -1,13 +1,13 @@
 import { cloneElement, isValidElement, useMemo, useState } from "react";
 import type { ReactElement } from "react";
 import { Link } from "@tanstack/react-router";
-import { REFERENCE_NOTE, sourcesFor } from "@/lib/data-sources";
-import { certificationLabel } from "@/lib/certifications";
-import { datasetFor } from "@/lib/datasets/provenance";
+import { REFERENCE_NOTE, sourcesFor } from "@/shared/data/data-sources";
+import { certificationLabel } from "@/features/markets/certifications";
+import { datasetFor } from "@/shared/data/provenance";
 
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/shared/hooks/use-mobile";
 import type { LucideIcon } from "lucide-react";
-import type { NewsTarget } from "@/lib/open-news";
+import type { NewsTarget } from "@/features/markets/open-news";
 import {
   ResponsiveContainer,
   ScatterChart,
@@ -23,11 +23,11 @@ import {
   Line,
   Legend,
 } from "recharts";
-import { panelTrend, totalSeries } from "@/lib/history-series";
+import { panelTrend, totalSeries } from "@/features/markets/history-series";
 import {
   ChartSummaryAssistant,
   type ChartSummaryPayload,
-} from "@/components/ChartSummaryAssistant";
+} from "@/features/chart-summary/components/ChartSummaryAssistant";
 
 /**
  * Download & share actions for every panel: the panel's own export button
@@ -86,7 +86,6 @@ export function summaryOf(opts: {
     })),
   };
 }
-
 
 /** Shared number formatter for every chart in the app. */
 export const chartFmt = (n: number, d = 0) =>
@@ -318,11 +317,10 @@ export function ChartTrend({ panel }: { panel: string }) {
     (a, b) => (b.points.at(-1)?.value ?? 0) - (a.points.at(-1)?.value ?? 0),
   );
   const capped = rankedSeries.length > MAX_TREND_LINES;
-  const series =
-    mode === "total" ? [totalSeries(trend)] : rankedSeries.slice(0, MAX_TREND_LINES);
-  const years = Array.from(
-    new Set(series.flatMap((sr) => sr.points.map((p) => p.year))),
-  ).sort((a, b) => a - b);
+  const series = mode === "total" ? [totalSeries(trend)] : rankedSeries.slice(0, MAX_TREND_LINES);
+  const years = Array.from(new Set(series.flatMap((sr) => sr.points.map((p) => p.year)))).sort(
+    (a, b) => a - b,
+  );
   const rows = years.map((year) => {
     const row: Record<string, number | null> = { year };
     for (const sr of series) row[sr.key] = sr.points.find((p) => p.year === year)?.value ?? null;
@@ -468,7 +466,9 @@ export function ChartTable({
                   target ? "cursor-pointer" : ""
                 }`}
               >
-                <td className="chart-axis py-1.5 tabular-nums">{String(idx + 1).padStart(2, "0")}</td>
+                <td className="chart-axis py-1.5 tabular-nums">
+                  {String(idx + 1).padStart(2, "0")}
+                </td>
                 <td className="py-1.5">
                   <div className="flex items-center gap-2">
                     {item.logo ? <TileLogo src={item.logo} alt={item.label} size={16} /> : null}
@@ -687,8 +687,8 @@ export function ChartHeat({
           <p className="chart-sub mt-1 leading-snug text-muted-foreground">{measureHelp}</p>
         ) : null}
         <p className="chart-sub mt-1 leading-snug text-muted-foreground">
-          Tile size and colour both scale with the value ({format(min)} – {format(max)}{" "}
-          {unitLabel}). Hover a tile for its own figures.
+          Tile size and colour both scale with the value ({format(min)} – {format(max)} {unitLabel}
+          ). Hover a tile for its own figures.
         </p>
       </div>
       <div
@@ -735,9 +735,7 @@ export function ChartHeat({
               }}
             >
               <div className="flex min-w-0 items-start gap-1.5">
-                {showLogo ? (
-                  <TileLogo src={item.logo!} alt={item.label} size={logoSize} />
-                ) : null}
+                {showLogo ? <TileLogo src={item.logo!} alt={item.label} size={logoSize} /> : null}
                 <div className="min-w-0">
                   <div
                     className="chart-label truncate leading-tight"
@@ -796,7 +794,9 @@ export function ChartHeat({
               </div>
               <div className="chart-value text-foreground">
                 {format(hovered.value)}
-                <span className="chart-sub ml-1 font-normal text-muted-foreground">{unitLabel}</span>
+                <span className="chart-sub ml-1 font-normal text-muted-foreground">
+                  {unitLabel}
+                </span>
               </div>
               {measureHelp ? (
                 <p className="chart-sub mt-1 leading-snug text-muted-foreground">{measureHelp}</p>
@@ -973,10 +973,14 @@ export function ChartScatter({
           </div>
           <div className="flex justify-between gap-4">
             <span className="chart-sub text-muted-foreground">{sizeAxis.label}</span>
-            <span className="chart-value text-foreground">{formatSize ? formatSize(p.size) : formatY(p.size)}</span>
+            <span className="chart-value text-foreground">
+              {formatSize ? formatSize(p.size) : formatY(p.size)}
+            </span>
           </div>
           {typeof p.changePct === "number" ? (
-            <div className={`chart-sub font-mono tabular-nums ${p.changePct >= 0 ? "text-primary" : "text-destructive"}`}>
+            <div
+              className={`chart-sub font-mono tabular-nums ${p.changePct >= 0 ? "text-primary" : "text-destructive"}`}
+            >
               {p.changePct >= 0 ? "▲" : "▼"} {pct(p.changePct)} today
             </div>
           ) : null}
@@ -1000,7 +1004,8 @@ export function ChartScatter({
           </span>
           {reg && r !== null ? (
             <span className="chart-sub text-muted-foreground">
-              Trend slope: {reg.m >= 0 ? "+" : ""}{reg.m.toExponential(2)} · R² {(r * r).toFixed(2)}
+              Trend slope: {reg.m >= 0 ? "+" : ""}
+              {reg.m.toExponential(2)} · R² {(r * r).toFixed(2)}
             </span>
           ) : null}
         </div>
@@ -1018,17 +1023,29 @@ export function ChartScatter({
           <span className="chart-sub text-muted-foreground">— {yAxis.unit}</span>
         </div>
         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-          <span className="chart-sub uppercase tracking-wide text-muted-foreground">Bubble size</span>
+          <span className="chart-sub uppercase tracking-wide text-muted-foreground">
+            Bubble size
+          </span>
           <span className="chart-label text-foreground">{sizeAxis.label}</span>
           <span className="chart-sub text-muted-foreground">— {sizeAxis.unit}</span>
         </div>
-        {xAxis.help ? <p className="chart-sub leading-snug text-muted-foreground">{xAxis.help}</p> : null}
-        {yAxis.help ? <p className="chart-sub leading-snug text-muted-foreground">{yAxis.help}</p> : null}
+        {xAxis.help ? (
+          <p className="chart-sub leading-snug text-muted-foreground">{xAxis.help}</p>
+        ) : null}
+        {yAxis.help ? (
+          <p className="chart-sub leading-snug text-muted-foreground">{yAxis.help}</p>
+        ) : null}
       </div>
 
       <div className="h-[22rem] w-full min-w-0 overflow-hidden rounded-sm border border-border/60 bg-card p-1.5 sm:h-[26rem] lg:h-[30rem]">
         <ResponsiveContainer width="100%" height="100%">
-          <ScatterChart margin={isMobile ? { top: 8, right: 8, bottom: 32, left: 0 } : { top: 10, right: 20, bottom: 40, left: 10 }}>
+          <ScatterChart
+            margin={
+              isMobile
+                ? { top: 8, right: 8, bottom: 32, left: 0 }
+                : { top: 10, right: 20, bottom: 40, left: 10 }
+            }
+          >
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.5} />
             <XAxis
               type="number"
@@ -1069,7 +1086,10 @@ export function ChartScatter({
                   })}
             />
             <ZAxis type="number" dataKey="size" range={isMobile ? [24, 160] : [60, 600]} />
-            <Tooltip content={<CustomTooltip />} cursor={{ stroke: "var(--muted-foreground)", strokeDasharray: "3 3" }} />
+            <Tooltip
+              content={<CustomTooltip />}
+              cursor={{ stroke: "var(--muted-foreground)", strokeDasharray: "3 3" }}
+            />
             {groups.map((g) => (
               <Scatter
                 key={g}
@@ -1116,14 +1136,15 @@ export function ChartScatter({
             </span>
           ))}
           {groups.length > (isMobile ? 5 : 10) ? (
-            <span className="text-muted-foreground">+{groups.length - (isMobile ? 5 : 10)} more</span>
+            <span className="text-muted-foreground">
+              +{groups.length - (isMobile ? 5 : 10)} more
+            </span>
           ) : null}
         </div>
       </div>
     </div>
   );
 }
-
 
 export function ChartPanel({
   icon: Icon,
@@ -1144,7 +1165,7 @@ export function ChartPanel({
   footnote,
   filters,
   actions,
-  
+
   children,
 }: {
   icon: LucideIcon;
@@ -1188,66 +1209,68 @@ export function ChartPanel({
       {metricOptions || limitOptions || viewOptions || actions || filters ? (
         <div className="mb-3 flex flex-col gap-3 rounded-md border border-border bg-surface-2/60 p-3">
           <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-2 xl:flex xl:flex-wrap">
-          {filters
-            ? isValidElement(filters)
-              ? cloneElement(filters as ReactElement<any>, { bare: true })
-              : filters
-            : null}
-          {viewOptions ? (
-            <label className="order-2 flex min-w-0 flex-col gap-1.5 sm:min-w-40 sm:flex-1 xl:w-auto xl:flex-none">
-              <span className="label-mono text-muted-foreground">{viewLabel}</span>
-              <select
-                className="chart-select h-10 w-full min-w-0 xl:w-44"
-                value={viewValue}
-                onChange={(e) => onViewChange?.(e.target.value)}
-                aria-label={`Choose the chart type for ${title}`}
-              >
-                {viewOptions.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ) : null}
-          {metricOptions ? (
-            <label className="order-3 flex min-w-0 flex-col gap-1.5 sm:min-w-40 sm:flex-1 xl:w-auto xl:flex-none">
-              <span className="label-mono text-muted-foreground">{metricLabel}</span>
-              <select
-                className="chart-select h-10 w-full min-w-0 xl:min-w-52"
-                value={metricValue}
-                onChange={(e) => onMetricChange?.(e.target.value)}
-                aria-label={`Choose the value shown in the ${title} chart`}
-              >
-                {metricOptions.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ) : null}
-          {limitOptions ? (
-            <label className="order-4 flex min-w-0 flex-col gap-1.5 sm:min-w-40 sm:flex-1 xl:w-auto xl:flex-none">
-              <span className="label-mono text-muted-foreground">Show</span>
-              <select
-                className="chart-select h-10 w-full min-w-0 xl:w-40"
-                value={limitValue}
-                onChange={(e) => onLimitChange?.(e.target.value)}
-                aria-label={`Choose how many entities the ${title} chart shows`}
-              >
-                {limitOptions.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ) : null}
+            {filters
+              ? isValidElement(filters)
+                ? cloneElement(filters as ReactElement<any>, { bare: true })
+                : filters
+              : null}
+            {viewOptions ? (
+              <label className="order-2 flex min-w-0 flex-col gap-1.5 sm:min-w-40 sm:flex-1 xl:w-auto xl:flex-none">
+                <span className="label-mono text-muted-foreground">{viewLabel}</span>
+                <select
+                  className="chart-select h-10 w-full min-w-0 xl:w-44"
+                  value={viewValue}
+                  onChange={(e) => onViewChange?.(e.target.value)}
+                  aria-label={`Choose the chart type for ${title}`}
+                >
+                  {viewOptions.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
+            {metricOptions ? (
+              <label className="order-3 flex min-w-0 flex-col gap-1.5 sm:min-w-40 sm:flex-1 xl:w-auto xl:flex-none">
+                <span className="label-mono text-muted-foreground">{metricLabel}</span>
+                <select
+                  className="chart-select h-10 w-full min-w-0 xl:min-w-52"
+                  value={metricValue}
+                  onChange={(e) => onMetricChange?.(e.target.value)}
+                  aria-label={`Choose the value shown in the ${title} chart`}
+                >
+                  {metricOptions.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
+            {limitOptions ? (
+              <label className="order-4 flex min-w-0 flex-col gap-1.5 sm:min-w-40 sm:flex-1 xl:w-auto xl:flex-none">
+                <span className="label-mono text-muted-foreground">Show</span>
+                <select
+                  className="chart-select h-10 w-full min-w-0 xl:w-40"
+                  value={limitValue}
+                  onChange={(e) => onLimitChange?.(e.target.value)}
+                  aria-label={`Choose how many entities the ${title} chart shows`}
+                >
+                  {limitOptions.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
           </div>
           {actions ? (
             <div className="grid grid-cols-2 items-center gap-2 border-t border-border/70 pt-3 sm:flex sm:justify-end [&>button]:h-10 [&>button]:w-full [&>button]:justify-center sm:[&>button]:w-auto">
-              <span className="label-mono col-span-2 mr-auto text-muted-foreground">Download &amp; share</span>
+              <span className="label-mono col-span-2 mr-auto text-muted-foreground">
+                Download &amp; share
+              </span>
               {actions
                 ? isValidElement(actions)
                   ? cloneElement(actions as ReactElement<any>, { portalTarget: panelNode })
@@ -1298,7 +1321,6 @@ export function ChartPanel({
           </details>
         </>
       ) : null}
-
     </div>
   );
 }

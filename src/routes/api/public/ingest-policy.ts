@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 /** Called hourly by the scheduled job, and on demand by the dashboard's rescan button. */
 async function run() {
-  const { ingestPolicyUpdates } = await import("@/lib/policy-ingest.server");
+  const { ingestPolicyUpdates } = await import("@/features/policy/server/policy-ingest.server");
   try {
     const result = await ingestPolicyUpdates();
     return Response.json({ ok: true, ...result });

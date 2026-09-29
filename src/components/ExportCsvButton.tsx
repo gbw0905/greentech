@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { Download, Lock } from "lucide-react";
-import { downloadBrandedCsv, type BrandedExport } from "@/lib/branded-export";
-import { useAuthSession } from "@/hooks/useAuthSession";
-import { SignInPrompt } from "@/components/SignInPrompt";
+import { downloadBrandedCsv, type BrandedExport } from "@/shared/export/branded-export";
+import { SignInPrompt } from "@/features/auth/components/SignInPrompt";
+import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 
 /** Shared "Export CSV" action for chart panels. Requires a signed-in user. */
 export function ExportCsvButton({
@@ -19,9 +19,8 @@ export function ExportCsvButton({
   const { signedIn, loading } = useAuthSession();
   const [askSignIn, setAskSignIn] = useState(false);
 
-  const prompt = askSignIn && !signedIn ? (
-    <SignInPrompt action="download this data as CSV" />
-  ) : null;
+  const prompt =
+    askSignIn && !signedIn ? <SignInPrompt action="download this data as CSV" /> : null;
 
   return (
     <>

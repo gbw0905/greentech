@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { generateFlyerImage, emailFlyer } from "@/lib/gemini-flyer.server";
+import { generateFlyerImage, emailFlyer } from "@/features/linkedin/server/gemini-flyer.server";
 
 /** Daily cron endpoint: generates today's AI flyer and emails it to the digest address. */
 export const Route = createFileRoute("/api/public/daily-gemini-flyer")({

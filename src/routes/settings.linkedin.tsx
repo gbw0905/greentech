@@ -21,10 +21,8 @@ import {
   saveLinkedInSettingsFn,
   startLinkedInOrgConnectFn,
   disconnectLinkedInOrgFn,
-} from "@/lib/linkedin.functions";
-import { generateFlyerNowFn } from "@/lib/gemini-flyer.functions";
-
-
+} from "@/features/linkedin/server-functions";
+import { generateFlyerNowFn } from "@/features/linkedin/flyer-server-functions";
 
 type PostingMode = "personal_mention" | "company_page";
 
@@ -75,7 +73,10 @@ function LinkedInSettingsPage() {
   const [adminKey, setAdminKey] = useState("");
   const [unlocked, setUnlocked] = useState(false);
   const [settings, setSettings] = useState<SettingsState | null>(null);
-  const [companyPosting, setCompanyPosting] = useState<{ available: boolean; detail: string } | null>(null);
+  const [companyPosting, setCompanyPosting] = useState<{
+    available: boolean;
+    detail: string;
+  } | null>(null);
   const [orgConnection, setOrgConnection] = useState<OrgConnectionState | null>(null);
   const [url, setUrl] = useState("");
   const [mode, setMode] = useState<PostingMode>("personal_mention");
@@ -84,7 +85,6 @@ function LinkedInSettingsPage() {
   const [message, setMessage] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
 
   const generateFlyer = useServerFn(generateFlyerNowFn);
-
 
   async function unlock() {
     setBusy(true);
@@ -108,7 +108,9 @@ function LinkedInSettingsPage() {
     setBusy(true);
     setMessage(null);
     try {
-      const res = await saveSettings({ data: { adminKey, companyPageUrl: url, postingMode: mode } });
+      const res = await saveSettings({
+        data: { adminKey, companyPageUrl: url, postingMode: mode },
+      });
       setSettings(res.settings);
       setMessage({ kind: "ok", text: "Settings saved. The next daily post will use them." });
     } catch (e) {
@@ -125,7 +127,10 @@ function LinkedInSettingsPage() {
       const res = await startConnect({ data: { adminKey } });
       window.location.href = res.url; // leaves the page; busy state stays
     } catch (e) {
-      setMessage({ kind: "err", text: e instanceof Error ? e.message : "Could not start connection" });
+      setMessage({
+        kind: "err",
+        text: e instanceof Error ? e.message : "Could not start connection",
+      });
       setBusy(false);
     }
   }
@@ -139,7 +144,10 @@ function LinkedInSettingsPage() {
       setOrgConnection(res.orgConnection);
       setCompanyPosting(res.companyPosting);
       if (mode === "company_page") setMode("personal_mention");
-      setMessage({ kind: "ok", text: "Custom app disconnected. Posts now use the managed connection." });
+      setMessage({
+        kind: "ok",
+        text: "Custom app disconnected. Posts now use the managed connection.",
+      });
     } catch (e) {
       setMessage({ kind: "err", text: e instanceof Error ? e.message : "Could not disconnect" });
     } finally {
@@ -157,14 +165,16 @@ function LinkedInSettingsPage() {
         text: `Flyer generated for ${res.dayKey} and emailed${res.suppressed ? " (recipient suppressed)" : ""}.`,
       });
     } catch (e) {
-      setMessage({ kind: "err", text: e instanceof Error ? e.message : "Could not generate flyer" });
+      setMessage({
+        kind: "err",
+        text: e instanceof Error ? e.message : "Could not generate flyer",
+      });
     } finally {
       setFlyerBusy(false);
     }
   }
 
   return (
-
     <PageShell>
       <PageHeading
         icon={Linkedin}
@@ -260,9 +270,10 @@ function LinkedInSettingsPage() {
               Custom LinkedIn app (company-page posting)
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Your own LinkedIn app with the <span className="label-mono">w_organization_social</span>{" "}
-              scope lets posts publish directly as the organization. The sign-in must be done by an
-              admin of the company page.
+              Your own LinkedIn app with the{" "}
+              <span className="label-mono">w_organization_social</span> scope lets posts publish
+              directly as the organization. The sign-in must be done by an admin of the company
+              page.
             </p>
 
             {!orgConnection?.configured ? (
@@ -319,7 +330,11 @@ function LinkedInSettingsPage() {
                 disabled={busy}
                 className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#0a66c2] px-5 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
               >
-                {busy ? <Loader2 className="size-4 animate-spin" /> : <Linkedin className="size-4" />}
+                {busy ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Linkedin className="size-4" />
+                )}
                 Connect with LinkedIn
               </button>
             )}
@@ -327,7 +342,9 @@ function LinkedInSettingsPage() {
 
           {/* Posting mode */}
           <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-            <h2 className="font-display text-lg font-extrabold text-foreground">Posting destination</h2>
+            <h2 className="font-display text-lg font-extrabold text-foreground">
+              Posting destination
+            </h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <button
                 type="button"
@@ -340,7 +357,9 @@ function LinkedInSettingsPage() {
               >
                 <div className="flex items-center gap-2">
                   <UserRound className="size-4 text-primary" />
-                  <span className="text-sm font-extrabold text-foreground">Personal + page tag</span>
+                  <span className="text-sm font-extrabold text-foreground">
+                    Personal + page tag
+                  </span>
                 </div>
                 <p className="mt-2 text-xs/relaxed text-muted-foreground">
                   Posts appear on your personal profile and tag the company page as a mention, so
@@ -393,11 +412,14 @@ function LinkedInSettingsPage() {
 
           {/* AI daily flyer */}
           <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-            <h2 className="font-display text-lg font-extrabold text-foreground">AI daily LinkedIn flyer</h2>
+            <h2 className="font-display text-lg font-extrabold text-foreground">
+              AI daily LinkedIn flyer
+            </h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Generate an AI image flyer from today's top bioenergy headlines. It is emailed to{" "}
-              <span className="label-mono">LINKEDIN_DRAFT_EMAIL</span> and can be shared on LinkedIn.
-              Requires a <span className="label-mono">GEMINI_API_KEY</span> project secret.
+              <span className="label-mono">LINKEDIN_DRAFT_EMAIL</span> and can be shared on
+              LinkedIn. Requires a <span className="label-mono">GEMINI_API_KEY</span> project
+              secret.
             </p>
             <button
               type="button"
@@ -405,7 +427,11 @@ function LinkedInSettingsPage() {
               disabled={flyerBusy}
               className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#0a66c2] px-5 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
             >
-              {flyerBusy ? <Loader2 className="size-4 animate-spin" /> : <Image className="size-4" />}
+              {flyerBusy ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Image className="size-4" />
+              )}
               Generate flyer now
             </button>
           </div>
@@ -419,7 +445,6 @@ function LinkedInSettingsPage() {
             {busy && <Loader2 className="size-4 animate-spin" />}
             Save settings
           </button>
-
 
           {message && (
             <p

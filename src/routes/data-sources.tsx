@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { BookOpen, ExternalLink } from "lucide-react";
 import { PageHeading, PageShell } from "@/components/PageShell";
-import { DATASETS } from "@/lib/datasets/provenance";
-import { REFERENCE_NOTE } from "@/lib/data-sources";
+import { DATASETS } from "@/shared/data/provenance";
+import { REFERENCE_NOTE } from "@/shared/data/data-sources";
 
 const TITLE = "Data sources & methodology — Global Bioenergy Watch";
 const DESCRIPTION =
