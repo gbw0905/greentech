@@ -35,3 +35,7 @@ scheduled jobs.
 
 The incremental feature-organization rules and target source layout are in the
 [application architecture guide](docs/architecture.md).
+
+## Deployment
+
+Production deployments are built from `main` with Vercel.
