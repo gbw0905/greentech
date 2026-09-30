@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   RefreshCw,
   AlertTriangle,
@@ -10,12 +10,13 @@ import {
   BellRing,
   Briefcase,
   Linkedin,
+  Menu,
+  X,
 } from "lucide-react";
 import { refreshPolicyFeed } from "@/features/policy/server-functions";
 import { feedQueryWithInitial, loadFeed } from "@/features/policy/feed-query";
 import { AuthButton } from "@/features/auth/components/AuthButton";
 import siteLogo from "@/assets/logo.png";
-import { UpdateCard, formatDate } from "@/features/policy/components/UpdateCard";
 import { WorldPolicyMap } from "@/features/countries/components/WorldPolicyMap";
 
 import { OilPricePanel } from "@/features/markets/components/OilPricePanel";
@@ -28,16 +29,18 @@ import { TrafficPanel } from "@/features/traffic/components/TrafficPanel";
 import { useVisitTracker } from "@/features/traffic/hooks/useVisitTracker";
 import { AboutMenu } from "@/components/AboutMenu";
 import { getErrorMessage } from "@/shared/errors";
+import { HomeHero } from "@/features/home/components/HomeHero";
+import { LatestUpdatesSection } from "@/features/home/components/LatestUpdatesSection";
 
 const TITLE = "Global Bioenergy Watch | Worldwide Biofuel Policy Tracker";
 
 const SECTIONS: { href: string; label: string; tone: string }[] = [
-  { href: "#markets", label: "MARKETS", tone: "var(--chart-2)" },
-  { href: "#map", label: "JURISDICTION MAP", tone: "var(--chart-3)" },
-  { href: "#production", label: "SUPPLY & PRODUCERS", tone: "var(--chart-6)" },
-  { href: "#jobs", label: "JOBS", tone: "var(--chart-7)" },
-  { href: "#alerts", label: "EMAIL ALERTS", tone: "var(--chart-4)" },
-  { href: "#disclaimer", label: "METHOD & DISCLAIMER", tone: "var(--chart-8)" },
+  { href: "#markets", label: "Markets", tone: "var(--chart-2)" },
+  { href: "#map", label: "Jurisdiction map", tone: "var(--chart-3)" },
+  { href: "#production", label: "Supply and producers", tone: "var(--chart-6)" },
+  { href: "#jobs", label: "Jobs", tone: "var(--chart-7)" },
+  { href: "#alerts", label: "Email alerts", tone: "var(--chart-4)" },
+  { href: "#disclaimer", label: "Method and disclaimer", tone: "var(--chart-8)" },
 ];
 
 const DESCRIPTION =
@@ -138,6 +141,7 @@ function SectionHeading({
 }
 
 function Dashboard() {
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   useVisitTracker();
   const queryClient = useQueryClient();
   const { feed: initialFeed } = Route.useLoaderData();
@@ -175,146 +179,151 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-30 border-b border-menubar-fg/10 bg-menubar-bg text-menubar-fg backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[80rem] items-center justify-between gap-2 px-4 py-2 sm:gap-4 sm:px-5 sm:py-2.5 lg:px-8">
-          <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+      <header className="sticky top-0 z-50 border-b border-[#d6e1ea] bg-white/[.88] font-['Instrument_Sans'] text-[#0e2a43] backdrop-blur-[14px] backdrop-saturate-[1.4]">
+        <div className="mx-auto flex h-16 max-w-[1240px] items-center gap-3 px-5 min-[621px]:px-8 min-[1160px]:gap-7">
+          <div className="flex min-w-0 items-center gap-3">
             <img
               src={siteLogo}
               alt="Global Bioenergy Watch logo: a globe with a leaf and rising data line"
               width={1024}
               height={1024}
-              className="size-8 shrink-0 rounded-md object-contain sm:size-9"
+              className="size-9 shrink-0 object-contain"
             />
             <div className="min-w-0">
               <a
                 href="https://www.linkedin.com/company/global-bioenergy-watch/?viewAsMember=true"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="brand-gradient-text block truncate font-display text-[0.8125rem] leading-none font-extrabold tracking-tight sm:text-xl lg:text-[1.4rem]"
+                className="block truncate font-['Bricolage_Grotesque'] text-[1.05rem] leading-[1.15] font-semibold tracking-[-0.01em] text-[#0e2a43] no-underline"
               >
                 Global Bioenergy Watch
               </a>
-              <div className="kicker mt-1 hidden items-center gap-1.5 text-menubar-muted sm:flex">
-                <span className="size-1.5 rounded-full bg-menubar-fg" />
-                Independent policy &amp; market desk
+              <div className="hidden text-xs leading-[1.25] text-[#7b8ea0] min-[1160px]:block">
+                Policy, Markets, Sustainability
               </div>
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-2 sm:gap-4">
-            <div className="hidden text-right sm:block">
-              <div className="label-mono text-menubar-muted">Last scan</div>
-              <div className="font-mono text-xs text-menubar-fg">
-                {busy && !feed ? "scanning…" : formatDate(data.fetchedAt)}
-              </div>
+
+          <nav aria-label="Page sections" className="hidden min-[1160px]:block">
+            <div className="flex items-center gap-0.5">
+              {SECTIONS.slice(0, 5).map((section, index) => (
+                <a
+                  key={section.href}
+                  href={section.href}
+                  className={`inline-flex h-9 items-center rounded-lg px-3 text-sm font-medium whitespace-nowrap transition-colors ${
+                    index === 0
+                      ? "bg-[#e3f4ee] text-[#178a6b]"
+                      : "text-[#4c6278] hover:bg-[#eef3f7] hover:text-[#0e2a43]"
+                  }`}
+                >
+                  {section.label}
+                </a>
+              ))}
+              <AboutMenu />
             </div>
-            <AuthButton />
+          </nav>
+
+          <div className="ml-auto flex shrink-0 items-center gap-3">
             <button
               type="button"
               onClick={() => rescan.mutate()}
               disabled={busy}
               aria-label="Rescan feeds"
-              className="label-mono pill-motion inline-flex items-center gap-2 rounded-md bg-menubar-fg px-2.5 py-1.5 font-bold text-menubar-bg hover:opacity-90 disabled:opacity-60 sm:px-3.5 sm:py-2"
+              className="hidden h-9 items-center justify-center gap-2 rounded-[9px] border border-[#d6e1ea] bg-white px-3 text-sm font-semibold text-[#0e2a43] transition-colors hover:border-[#178a6b] disabled:opacity-60 min-[561px]:inline-flex min-[621px]:px-3.5 min-[1160px]:min-w-[120px]"
             >
               <RefreshCw className={`size-3.5 ${busy ? "animate-spin" : ""}`} />
-              <span className="hidden sm:inline">Rescan</span>
+              <span className="hidden min-[621px]:inline">Rescan</span>
+            </button>
+            <div className="[&_a]:grid [&_a]:size-10 [&_a]:place-items-center [&_a]:rounded-full [&_a]:border [&_a]:border-[#d6e1ea] [&_a]:bg-[#e3f4ee] [&_a]:p-0 [&_a]:text-[#178a6b] [&_a]:shadow-none [&_a]:hover:border-[#178a6b] [&_a_.auth-label]:sr-only [&_a_svg]:size-4 [&_button]:grid [&_button]:size-10 [&_button]:place-items-center [&_button]:rounded-full [&_button]:border [&_button]:border-[#d6e1ea] [&_button]:bg-[#e3f4ee] [&_button]:p-0 [&_button]:text-[#178a6b] [&_button]:shadow-none [&_button]:hover:border-[#178a6b] [&_button_span]:hidden [&>div>span]:hidden">
+              <AuthButton />
+            </div>
+            <button
+              type="button"
+              aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileNavOpen}
+              onClick={() => setMobileNavOpen((open) => !open)}
+              className="grid size-10 place-items-center rounded-[10px] border border-[#d6e1ea] bg-white text-[#0e2a43] min-[1160px]:hidden"
+            >
+              {mobileNavOpen ? <X className="size-5" /> : <Menu className="size-5" />}
             </button>
           </div>
         </div>
+
         <nav
-          aria-label="Page sections"
-          className="mx-auto flex max-w-[80rem] items-stretch gap-2 overflow-x-auto border-t border-menubar-fg/20 bg-menubar-nav px-4 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-3 sm:px-5 sm:py-2.5 lg:px-8"
+          aria-label="Mobile page sections"
+          className={`absolute top-full right-0 left-0 z-50 border-b border-[#d6e1ea] bg-white px-5 pt-2 pb-4 shadow-[0_24px_40px_-28px_rgba(14,42,67,.5)] transition-all duration-200 min-[1160px]:hidden ${
+            mobileNavOpen
+              ? "visible translate-y-0 opacity-100"
+              : "invisible pointer-events-none -translate-y-2 opacity-0"
+          }`}
         >
-          {SECTIONS.map((s) => (
+          {SECTIONS.map((section, index) => (
             <a
-              key={s.href}
-              href={s.href}
-              className="label-mono pill-motion group inline-flex min-w-max items-center justify-center gap-2 text-center whitespace-nowrap border border-menubar-fg/40 bg-menubar-nav px-3 py-1.5 text-xs font-extrabold text-menubar-fg shadow-sm hover:border-menubar-fg hover:bg-menubar-fg/10 sm:flex-1 sm:px-4 sm:py-2"
+              key={section.href}
+              href={section.href}
+              onClick={() => setMobileNavOpen(false)}
+              className={`block border-b border-[#d6e1ea] px-1 py-3 font-medium no-underline ${index === 0 ? "text-[#178a6b]" : "text-[#0e2a43]"}`}
             >
-              {s.label}
+              {section.label}
             </a>
           ))}
           <Link
             to="/ci-calculator"
-            className="label-mono pill-motion group inline-flex min-w-max items-center justify-center gap-2 text-center whitespace-nowrap border border-menubar-fg/40 bg-menubar-nav px-3 py-1.5 text-xs font-extrabold text-menubar-fg shadow-sm hover:border-menubar-fg hover:bg-menubar-fg/10 sm:flex-1 sm:px-4 sm:py-2"
+            onClick={() => setMobileNavOpen(false)}
+            className="block border-b border-[#d6e1ea] px-1 py-3 font-medium text-[#0e2a43] no-underline"
           >
-            CI CALCULATOR
+            CI calculator
           </Link>
           <Link
             to="/videos"
-            className="label-mono pill-motion group inline-flex min-w-max items-center justify-center gap-2 text-center whitespace-nowrap border border-menubar-fg/40 bg-menubar-nav px-3 py-1.5 text-xs font-extrabold text-menubar-fg shadow-sm hover:border-menubar-fg hover:bg-menubar-fg/10 sm:flex-1 sm:px-4 sm:py-2"
+            onClick={() => setMobileNavOpen(false)}
+            className="block border-b border-[#d6e1ea] px-1 py-3 font-medium text-[#0e2a43] no-underline"
           >
-            VIDEOS
+            Videos
           </Link>
-          <AboutMenu />
+          <Link
+            to="/about"
+            onClick={() => setMobileNavOpen(false)}
+            className="block border-b border-[#d6e1ea] px-1 py-3 font-medium text-[#0e2a43] no-underline"
+          >
+            About us
+          </Link>
+          <Link
+            to="/about/mission-vision"
+            onClick={() => setMobileNavOpen(false)}
+            className="block border-b border-[#d6e1ea] px-1 py-3 font-medium text-[#0e2a43] no-underline"
+          >
+            Mission &amp; vision
+          </Link>
+          <Link
+            to="/about/team"
+            onClick={() => setMobileNavOpen(false)}
+            className="block border-b border-[#d6e1ea] px-1 py-3 font-medium text-[#0e2a43] no-underline"
+          >
+            Team members
+          </Link>
+          <button
+            type="button"
+            onClick={() => {
+              setMobileNavOpen(false);
+              rescan.mutate();
+            }}
+            disabled={busy}
+            className="mt-2 hidden w-full items-center justify-center gap-2 rounded-[9px] border border-[#d6e1ea] bg-white px-3 py-2.5 text-sm font-medium text-[#4c6278] disabled:opacity-60 max-[560px]:flex"
+          >
+            <RefreshCw className={`size-3.5 ${busy ? "animate-spin" : ""}`} />
+            Rescan sources
+          </button>
         </nav>
       </header>
 
       <LiveMarquee />
 
-      <div className="mx-auto max-w-[80rem] px-5 py-5 lg:px-8 lg:py-6">
+      <HomeHero updates={topFive} stats={stats} />
+      <LatestUpdatesSection updates={topFive} />
+
+      <div className="mx-auto max-w-[80rem] px-5 py-8 lg:px-8 lg:py-10">
         <main className="space-y-8">
-          <section className="grid items-stretch gap-5 lg:grid-cols-[1.1fr_minmax(0,1fr)]">
-            <div className="card-motion h-full rounded-lg border border-border bg-white px-6 py-6 shadow-sm sm:px-8 sm:py-7">
-              <div className="kicker inline-flex items-center gap-2 text-muted-foreground">
-                <span className="size-1.5 rounded-full bg-accent" />
-                Live policy &amp; market intelligence
-              </div>
-              <h1 className="mt-2 font-display text-[1.65rem] leading-[1.05] font-extrabold tracking-[-0.03em] text-foreground sm:text-[2.1rem] lg:text-[2.35rem]">
-                AI powered global bioenergy outlook
-              </h1>
-              <p className="mt-2 max-w-[72ch] text-sm/relaxed text-muted-foreground">
-                Global Bioenergy Watch scans official government sources, regulators,
-                intergovernmental agencies and credible energy media worldwide, then uses AI to
-                classify and summarise every biofuel policy and market update by jurisdiction, fuel
-                type and relevance. Track mandates, blending targets, tax credits and SAF incentives
-                across ethanol, biodiesel, renewable diesel and sustainable aviation fuel in one
-                live dashboard. Click any country on the jurisdiction map to see its full policy
-                profile, latest news and market context. The desk refreshes continuously so
-                analysts, traders, researchers and investors can monitor the global bioenergy
-                outlook without chasing headlines across dozens of sites.
-              </p>
-              <dl className="mt-5 grid grid-cols-3 gap-2 border-t border-border pt-4 sm:gap-4">
-                {[
-                  ["Updates", String(stats.total)],
-                  ["Jurisdictions", String(stats.countries)],
-                  ["Policy items", String(stats.policy)],
-                ].map(([label, value]) => (
-                  <div key={label} className="min-w-0">
-                    <dt className="font-mono text-[0.58rem] leading-tight uppercase break-words tracking-[0.08em] text-muted-foreground sm:text-[0.6875rem] sm:tracking-[0.18em]">
-                      {label}
-                    </dt>
-                    <dd className="mt-1 font-display text-xl font-extrabold tabular-nums text-foreground sm:text-2xl">
-                      {value}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-
-            <div className="card-motion flex flex-col rounded-lg border border-border bg-white p-4 shadow-sm">
-              <div className="mb-2.5 flex items-baseline justify-between gap-3 border-b border-border pb-2">
-                <span className="kicker">Top 5 latest updates</span>
-                <span className="label-mono text-muted-foreground/70">Live</span>
-              </div>
-              {topFive.length > 0 ? (
-                <ol className="flex flex-1 flex-col divide-y divide-border">
-                  {topFive.map((update, i) => (
-                    <li key={update.id} className="flex flex-1 items-stretch gap-3">
-                      <span className="flex items-center font-mono text-sm font-bold text-muted-foreground/50 tabular-nums">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <UpdateCard update={update} compact />
-                    </li>
-                  ))}
-                </ol>
-              ) : (
-                <div className="p-4 text-sm text-muted-foreground">
-                  {busy ? "Scanning global sources…" : "No updates available yet."}
-                </div>
-              )}
-            </div>
-          </section>
-
           {data.error && (
             <p className="glass-panel border-l-4 border-l-destructive p-4 text-sm text-muted-foreground">
               Live scan issue: {data.error}
