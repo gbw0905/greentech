@@ -2,6 +2,110 @@
 @source "../src";
 @import "tw-animate-css";
 
+@keyframes hero_ping {
+  70%,
+  100% {
+    box-shadow: 0 0 0 7px rgb(23 138 107 / 0%);
+  }
+}
+
+@keyframes hero_progress {
+  from {
+    transform: scaleX(0.02);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.home-live-pill::before {
+  animation: hero_ping 2.4s ease-out infinite;
+}
+
+.home-hero-progress {
+  animation: hero_progress 5.2s linear forwards;
+}
+
+@keyframes hero_card_in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.home-hero-card-content {
+  animation: hero_card_in 0.26s ease-out;
+}
+
+.home-globe-placeholder {
+  transition: opacity 0.3s ease;
+}
+
+.home-policy-globe[data-ready="true"] + .home-globe-placeholder {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-live-pill::before,
+  .home-hero-card-content,
+  .home-hero-progress {
+    animation: none;
+  }
+}
+
+.hero-topic-chip {
+  border: 1px solid #d6e1ea;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 70%);
+  padding: 6px 12px;
+  color: #4c6278;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    color 0.2s,
+    border-color 0.2s,
+    background-color 0.2s;
+}
+
+.hero-topic-chip:hover {
+  border-color: #178a6b;
+  background: #e3f4ee;
+  color: #178a6b;
+}
+
+@media (max-width: 620px) {
+  .home-globe-stage {
+    aspect-ratio: auto;
+  }
+
+  .home-policy-globe {
+    position: relative;
+    inset: auto;
+    display: block;
+    aspect-ratio: 1 / 1;
+    width: 100%;
+    height: auto;
+  }
+
+  .home-globe-placeholder {
+    bottom: auto;
+    aspect-ratio: 1 / 1;
+    height: auto;
+  }
+
+  .home-hero-card {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    margin-top: 12px;
+  }
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme {
@@ -173,7 +277,12 @@
   --ci-line: oklch(0.34 0.025 260);
   --gradient-frost: linear-gradient(135deg, oklch(1 0 0), oklch(0.96 0.008 250));
   --gradient-primary: linear-gradient(120deg, var(--primary), var(--primary-glow));
-  --gradient-aurora: linear-gradient(120deg, oklch(0.21 0.05 265) 0%, oklch(0.29 0.075 262) 55%, oklch(0.38 0.09 250) 100%);
+  --gradient-aurora: linear-gradient(
+    120deg,
+    oklch(0.21 0.05 265) 0%,
+    oklch(0.29 0.075 262) 55%,
+    oklch(0.38 0.09 250) 100%
+  );
   --shadow-frost: 0 1px 2px color-mix(in oklab, var(--foreground) 5%, transparent);
   --shadow-lift: 0 8px 24px -12px color-mix(in oklab, var(--foreground) 22%, transparent);
   --shadow-card:
@@ -264,15 +373,16 @@
   --ci-line: oklch(0.32 0.025 260);
   --gradient-frost: linear-gradient(135deg, oklch(0.23 0.045 264), oklch(0.27 0.05 258));
   --gradient-primary: linear-gradient(120deg, var(--primary), var(--primary-glow));
-  --gradient-aurora: linear-gradient(120deg, oklch(0.19 0.04 265) 0%, oklch(0.26 0.05 262) 55%, oklch(0.33 0.06 250) 100%);
+  --gradient-aurora: linear-gradient(
+    120deg,
+    oklch(0.19 0.04 265) 0%,
+    oklch(0.26 0.05 262) 55%,
+    oklch(0.33 0.06 250) 100%
+  );
   --shadow-frost: 0 1px 2px rgb(0 0 0 / 0.25);
   --shadow-lift: 0 10px 28px -14px rgb(0 0 0 / 0.6);
-  --shadow-card:
-    0 1px 1px rgb(0 0 0 / 0.3),
-    0 8px 22px -14px rgb(0 0 0 / 0.6);
-  --shadow-card-hover:
-    0 1px 1px rgb(0 0 0 / 0.35),
-    0 16px 36px -18px rgb(0 0 0 / 0.7);
+  --shadow-card: 0 1px 1px rgb(0 0 0 / 0.3), 0 8px 22px -14px rgb(0 0 0 / 0.6);
+  --shadow-card-hover: 0 1px 1px rgb(0 0 0 / 0.35), 0 16px 36px -18px rgb(0 0 0 / 0.7);
   --sidebar: oklch(0.115 0.02 240);
   --sidebar-foreground: oklch(0.96 0.005 235);
   --sidebar-primary: oklch(0.72 0.22 230);
@@ -291,7 +401,6 @@
   * {
     border-color: var(--color-border);
   }
-
 
   body {
     background-color: var(--color-background);
@@ -357,8 +466,12 @@
   background-image:
     linear-gradient(45deg, transparent 50%, var(--primary) 50%),
     linear-gradient(135deg, var(--primary) 50%, transparent 50%);
-  background-position: right 0.85rem center, right 0.6rem center;
-  background-size: 5px 5px, 5px 5px;
+  background-position:
+    right 0.85rem center,
+    right 0.6rem center;
+  background-size:
+    5px 5px,
+    5px 5px;
   background-repeat: no-repeat;
   cursor: pointer;
   box-shadow: 0 1px 2px color-mix(in oklab, var(--foreground) 8%, transparent);
@@ -459,7 +572,10 @@ input.chart-select {
 }
 
 .ci-rgb-shell button {
-  transition: transform 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background-color 0.18s ease;
 }
 
 .ci-rgb-shell button:hover {
@@ -527,7 +643,6 @@ input.chart-select {
 @utility surface-gradient-primary {
   background-image: var(--gradient-primary);
 }
-
 
 @utility surface-gradient-frost {
   background-image: var(--gradient-frost);
@@ -738,8 +853,16 @@ input.chart-select {
 /** Faint plotting-paper backdrop behind a chart area. */
 @utility chart-grid-bg {
   background-image:
-    linear-gradient(to right, color-mix(in oklab, var(--border) 55%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in oklab, var(--border) 45%, transparent) 1px, transparent 1px);
+    linear-gradient(
+      to right,
+      color-mix(in oklab, var(--border) 55%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--border) 45%, transparent) 1px,
+      transparent 1px
+    );
   background-size: 44px 44px;
 }
 
@@ -949,8 +1072,8 @@ input.chart-select {
 @utility marquee-track {
   display: flex;
   width: max-content;
-  gap: 1.5rem;
-  animation: marquee-slide 45s linear infinite;
+  gap: 0;
+  animation: marquee-slide 70s linear infinite;
   &:hover {
     animation-play-state: paused;
   }
@@ -1016,4 +1139,3 @@ input.chart-select {
     opacity: 0;
   }
 }
-

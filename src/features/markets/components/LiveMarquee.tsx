@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Activity, TrendingDown, TrendingUp } from "lucide-react";
+import { TrendingDown, TrendingUp } from "lucide-react";
 import { getOilPricesFn } from "@/features/markets/oil-server-functions";
 import { fetchTrafficStats } from "@/features/traffic/client";
 import { getPolicyFeed } from "@/features/policy/server-functions";
@@ -20,16 +20,20 @@ function PricePill({
 }) {
   const up = change >= 0;
   return (
-    <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-      <span className="font-mono text-[10px] opacity-80">{symbol}</span>
-      <span className="font-semibold">{label}</span>
-      <span className="font-mono tabular-nums">
-        ${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+    <span className="inline-flex items-center gap-2.5 whitespace-nowrap">
+      <span className="sr-only">{symbol}</span>
+      <span className="font-semibold text-[#0e2a43]">{label}</span>
+      <span className="text-[#4c6278] tabular-nums">
+        {price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
       </span>
       <span
-        className={`inline-flex items-center gap-0.5 font-mono text-[10px] tabular-nums ${up ? "text-emerald-300" : "text-rose-300"}`}
+        className={`inline-flex items-center gap-0.5 tabular-nums ${up ? "text-[#178a6b]" : "text-[#b4233c]"}`}
       >
-        {up ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
+        {up ? (
+          <TrendingUp className="sr-only size-3" />
+        ) : (
+          <TrendingDown className="sr-only size-3" />
+        )}
         {up ? "+" : ""}
         {changePct.toFixed(2)}%
       </span>
@@ -63,14 +67,10 @@ export function LiveMarquee() {
   const liveNow = trafficData?.live_now ?? 0;
   const totalViews = trafficData?.total_views ?? 0;
 
-  const content = (
+  const renderContent = (copy: string) => (
     <>
-      <span className="inline-flex shrink-0 items-center gap-1.5 px-3 font-bold text-menubar-fg">
-        <Activity className="size-3.5" /> Live desk
-      </span>
-
       {quotes.map((q) => (
-        <span key={q.symbol} className="marquee-item shrink-0">
+        <span key={`${copy}-${q.symbol}`} className="shrink-0 px-[22px]">
           <PricePill
             label={q.label}
             price={q.price}
@@ -82,29 +82,50 @@ export function LiveMarquee() {
       ))}
 
       {latest.map((u) => (
-        <span key={u.id} className="marquee-item shrink-0 whitespace-nowrap opacity-90">
-          <span className="font-mono text-[10px] opacity-70">{u.countryName ?? "Global"}</span>
-          <span className="mx-1.5 opacity-40">·</span>
-          <span>{u.title}</span>
+        <span
+          key={`${copy}-${u.id}`}
+          className="shrink-0 px-[22px] whitespace-nowrap text-[#4c6278]"
+        >
+          <span className="text-[#7b8ea0]">{u.countryName ?? "Global"}</span>
+          <span className="mx-2 text-[#d6e1ea]">·</span>
+          <span className="font-medium text-[#0e2a43]">{u.title}</span>
         </span>
       ))}
 
-      <span className="marquee-item inline-flex shrink-0 items-center gap-1.5 opacity-90">
-        <span className="pulse-dot size-2 rounded-full bg-emerald-400" />
-        <span className="font-semibold">{liveNow}</span>
-        <span className="opacity-80">viewing now</span>
-        <span className="mx-1 opacity-40">·</span>
-        <span className="font-mono tabular-nums">{totalViews.toLocaleString()}</span>
-        <span className="opacity-80">total views</span>
+      <span className="inline-flex shrink-0 items-center gap-1.5 px-[22px] text-[#4c6278]">
+        <span className="pulse-dot size-2 rounded-full bg-[#178a6b]" />
+        <span className="font-semibold text-[#0e2a43]">{liveNow}</span>
+        <span>viewing now</span>
+        <span className="mx-1 text-[#d6e1ea]">·</span>
+        <span className="tabular-nums">{totalViews.toLocaleString()}</span>
+        <span>total views</span>
       </span>
     </>
   );
 
+  const lastScan = feedData?.fetchedAt
+    ? new Date(feedData.fetchedAt).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        timeZone: "UTC",
+      })
+    : "—";
+
   return (
-    <div className="overflow-hidden border-y border-menubar-fg/10 bg-menubar-bg text-menubar-fg">
-      <div className="marquee-track items-center py-1.5 text-xs">
-        {content}
-        {content}
+    <div className="flex h-[42px] items-stretch overflow-hidden border-b border-[#d6e1ea] bg-white font-['Instrument_Sans'] text-[13px]">
+      <div className="relative z-10 flex shrink-0 items-center gap-2 border-r border-[#d6e1ea] bg-white px-5 font-semibold text-[#0e2a43]">
+        <span className="pulse-dot size-[7px] rounded-full bg-[#178a6b]" />
+        Markets
+      </div>
+      <div className="min-w-0 flex-1 overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_40px,#000_calc(100%-40px),transparent)]">
+        <div className="marquee-track h-full items-center">
+          {renderContent("first")}
+          {renderContent("second")}
+        </div>
+      </div>
+      <div className="relative z-10 hidden shrink-0 items-center gap-1.5 border-l border-[#d6e1ea] bg-white px-5 text-[#7b8ea0] min-[761px]:flex">
+        Last scan <span className="font-semibold text-[#4c6278]">{lastScan}</span>
       </div>
     </div>
   );
