@@ -1,3 +1,4 @@
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from "ai";
 import { ASSISTANT_MODEL, SYSTEM_PROMPT, assistantTools } from "./assistant.server";
@@ -53,8 +54,14 @@ export async function handleChatRequest(request: Request) {
     return new Response("Messages are required", { status: 400 });
   }
 
-  const apiKey = process.env["LOVABLE_API_KEY"];
-  if (!apiKey) return new Response("AI is not configured", { status: 500 });
+  const geminiApiKey = process.env["GEMINI_API_KEY"];
+  const lovableApiKey = process.env["LOVABLE_API_KEY"];
+  const useGemini = process.env["ASSISTANT_AI_PROVIDER"] === "gemini";
+  if (useGemini ? !geminiApiKey : !lovableApiKey) {
+    return new Response(`${useGemini ? "Gemini" : "Lovable"} AI is not configured`, {
+      status: 500,
+    });
+  }
 
   const userId = await userIdFromRequest(request);
   try {
@@ -63,14 +70,19 @@ export async function handleChatRequest(request: Request) {
     return new Response(e instanceof Error ? e.message : "Rate limited", { status: 429 });
   }
 
-  const openai = createOpenAI({
-    baseURL: "https://ai.gateway.lovable.dev/v1",
-    apiKey: "unused",
-    headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
-  });
+  const model = useGemini
+    ? createGoogleGenerativeAI({ apiKey: geminiApiKey! })("gemini-2.5-flash")
+    : createOpenAI({
+        baseURL: "https://ai.gateway.lovable.dev/v1",
+        apiKey: "unused",
+        headers: {
+          "Lovable-API-Key": lovableApiKey!,
+          "X-Lovable-AIG-SDK": "vercel-ai-sdk",
+        },
+      }).responses(ASSISTANT_MODEL);
 
   const result = streamText({
-    model: openai.responses(ASSISTANT_MODEL),
+    model,
     system: SYSTEM_PROMPT,
     messages: await convertToModelMessages(messages.slice(-30)),
     tools: assistantTools,
