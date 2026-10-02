@@ -474,7 +474,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
-    | '/supply'
     | '/assistant'
     | '/auth'
     | '/ci-calculator'
@@ -575,7 +574,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/about'
-    | '/supply'
     | '/assistant'
     | '/auth'
     | '/ci-calculator'
@@ -653,8 +651,8 @@ export interface RootRouteChildren {
   ApiDocumentAnalyzeRoute: typeof ApiDocumentAnalyzeRoute
   CountriesSlugRoute: typeof CountriesSlugRouteWithChildren
   SettingsLinkedinRoute: typeof SettingsLinkedinRoute
-  SupplyIndexRoute: typeof SupplyIndexRoute
   SupplyPanelRoute: typeof SupplyPanelRoute
+  SupplyIndexRoute: typeof SupplyIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicDailyFlyerEmailRoute: typeof ApiPublicDailyFlyerEmailRoute
@@ -1089,8 +1087,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiDocumentAnalyzeRoute: ApiDocumentAnalyzeRoute,
   CountriesSlugRoute: CountriesSlugRouteWithChildren,
   SettingsLinkedinRoute: SettingsLinkedinRoute,
-  SupplyIndexRoute: SupplyIndexRoute,
   SupplyPanelRoute: SupplyPanelRoute,
+  SupplyIndexRoute: SupplyIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicDailyFlyerEmailRoute: ApiPublicDailyFlyerEmailRoute,
