@@ -40,6 +40,7 @@ import { Route as ApiDocumentAnalyzeRouteImport } from './routes/api/document-an
 import { Route as AssistantThreadIdRouteImport } from './routes/assistant.$threadId'
 import { Route as CountriesSlugRouteImport } from './routes/countries.$slug'
 import { Route as SettingsLinkedinRouteImport } from './routes/settings.linkedin'
+import { Route as SupplyIndexRouteImport } from './routes/supply.index'
 import { Route as SupplyPanelRouteImport } from './routes/supply.$panel'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
@@ -215,6 +216,11 @@ const SettingsLinkedinRoute = SettingsLinkedinRouteImport.update({
   path: '/settings/linkedin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SupplyIndexRoute = SupplyIndexRouteImport.update({
+  id: '/supply/',
+  path: '/supply/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SupplyPanelRoute = SupplyPanelRouteImport.update({
   id: '/supply/$panel',
   path: '/supply/$panel',
@@ -344,6 +350,7 @@ export interface FileRoutesByFullPath {
   '/settings/linkedin': typeof SettingsLinkedinRoute
   '/supply/$panel': typeof SupplyPanelRoute
   '/about/': typeof AboutIndexRoute
+  '/supply/': typeof SupplyIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/daily-flyer-email': typeof ApiPublicDailyFlyerEmailRoute
@@ -392,6 +399,7 @@ export interface FileRoutesByTo {
   '/settings/linkedin': typeof SettingsLinkedinRoute
   '/supply/$panel': typeof SupplyPanelRoute
   '/about': typeof AboutIndexRoute
+  '/supply': typeof SupplyIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/daily-flyer-email': typeof ApiPublicDailyFlyerEmailRoute
@@ -443,6 +451,7 @@ export interface FileRoutesById {
   '/settings/linkedin': typeof SettingsLinkedinRoute
   '/supply/$panel': typeof SupplyPanelRoute
   '/about/': typeof AboutIndexRoute
+  '/supply/': typeof SupplyIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/daily-flyer-email': typeof ApiPublicDailyFlyerEmailRoute
@@ -465,6 +474,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/supply'
     | '/assistant'
     | '/auth'
     | '/ci-calculator'
@@ -495,6 +505,7 @@ export interface FileRouteTypes {
     | '/settings/linkedin'
     | '/supply/$panel'
     | '/about/'
+    | '/supply/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/daily-flyer-email'
@@ -543,6 +554,7 @@ export interface FileRouteTypes {
     | '/settings/linkedin'
     | '/supply/$panel'
     | '/about'
+    | '/supply'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/daily-flyer-email'
@@ -563,6 +575,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/about'
+    | '/supply'
     | '/assistant'
     | '/auth'
     | '/ci-calculator'
@@ -593,6 +606,7 @@ export interface FileRouteTypes {
     | '/settings/linkedin'
     | '/supply/$panel'
     | '/about/'
+    | '/supply/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/daily-flyer-email'
@@ -639,6 +653,7 @@ export interface RootRouteChildren {
   ApiDocumentAnalyzeRoute: typeof ApiDocumentAnalyzeRoute
   CountriesSlugRoute: typeof CountriesSlugRouteWithChildren
   SettingsLinkedinRoute: typeof SettingsLinkedinRoute
+  SupplyIndexRoute: typeof SupplyIndexRoute
   SupplyPanelRoute: typeof SupplyPanelRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -874,6 +889,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsLinkedinRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/supply/': {
+      id: '/supply/'
+      path: '/supply'
+      fullPath: '/supply/'
+      preLoaderRoute: typeof SupplyIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/supply/$panel': {
       id: '/supply/$panel'
       path: '/supply/$panel'
@@ -1067,6 +1089,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiDocumentAnalyzeRoute: ApiDocumentAnalyzeRoute,
   CountriesSlugRoute: CountriesSlugRouteWithChildren,
   SettingsLinkedinRoute: SettingsLinkedinRoute,
+  SupplyIndexRoute: SupplyIndexRoute,
   SupplyPanelRoute: SupplyPanelRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,

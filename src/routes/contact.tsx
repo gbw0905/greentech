@@ -1,8 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Linkedin, ArrowLeft } from "lucide-react";
-import siteLogo from "@/assets/logo.png";
+import { Linkedin } from "lucide-react";
 
 const LINKEDIN_URL = "https://www.linkedin.com/company/global-bioenergy-watch/";
 
@@ -29,39 +28,7 @@ export const Route = createFileRoute("/contact")({
 
 function ContactPage() {
   return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-30 border-b border-menubar-fg/10 bg-menubar-bg text-menubar-fg backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[80rem] items-center justify-between gap-2 px-4 py-2 sm:gap-4 sm:px-5 sm:py-2.5 lg:px-8">
-          <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
-            <Link to="/" className="shrink-0">
-              <img
-                src={siteLogo}
-                alt="Global Bioenergy Watch logo"
-                width={1024}
-                height={1024}
-                className="size-8 rounded-md object-contain sm:size-9"
-              />
-            </Link>
-            <div className="min-w-0">
-              <Link
-                to="/"
-                className="block truncate font-display text-base leading-none font-extrabold tracking-tight text-menubar-fg transition-colors hover:text-menubar-fg/80 sm:text-xl lg:text-[1.4rem]"
-              >
-                Global Bioenergy Watch
-              </Link>
-            </div>
-          </div>
-          <Link
-            to="/"
-            className="label-mono inline-flex shrink-0 items-center gap-2 border border-menubar-fg/40 bg-menubar-nav px-2.5 py-1.5 font-bold text-menubar-fg transition-all hover:border-menubar-fg hover:bg-menubar-fg/10 sm:px-3.5 sm:py-2"
-          >
-            <ArrowLeft className="size-3.5" />
-            <span className="hidden sm:inline">Back to dashboard</span>
-            <span className="sm:hidden">Back</span>
-          </Link>
-        </div>
-      </header>
-
+    <div>
       <main className="mx-auto max-w-[80rem] px-5 py-8 lg:px-8 lg:py-12">
         <div className="mx-auto max-w-2xl">
           <div className="ink-bar mb-6 px-5 py-6 sm:px-7">
@@ -73,7 +40,8 @@ function ContactPage() {
               Get in touch
             </h1>
             <p className="mt-2 max-w-3xl text-sm/relaxed text-ink-muted">
-              Reach the Global Bioenergy Watch desk on LinkedIn for press, partnerships, data corrections, or general inquiries.
+              Reach the Global Bioenergy Watch desk on LinkedIn for press, partnerships, data
+              corrections, or general inquiries.
             </p>
             <div className="mt-4 h-0.5 w-24 rounded-full bg-accent" />
           </div>
@@ -96,8 +64,12 @@ function ContactPage() {
                   <Linkedin className="size-6 fill-current" />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-display text-base font-bold text-foreground">Global Bioenergy Watch</p>
-                  <p className="truncate text-sm text-muted-foreground">linkedin.com/company/global-bioenergy-watch</p>
+                  <p className="font-display text-base font-bold text-foreground">
+                    Global Bioenergy Watch
+                  </p>
+                  <p className="truncate text-sm text-muted-foreground">
+                    linkedin.com/company/global-bioenergy-watch
+                  </p>
                 </div>
               </a>
               <Button asChild className="mt-4 w-full bg-accent text-white hover:bg-accent/90">
@@ -112,38 +84,12 @@ function ContactPage() {
           <div className="mt-8 rounded-md border border-border bg-muted/50 p-4 text-sm text-muted-foreground">
             <p className="font-semibold text-foreground">Contact method</p>
             <p className="mt-1">
-              LinkedIn is the fastest way to reach the Global Bioenergy Watch desk for press, partnerships, data corrections, or general inquiries.
+              LinkedIn is the fastest way to reach the Global Bioenergy Watch desk for press,
+              partnerships, data corrections, or general inquiries.
             </p>
           </div>
         </div>
       </main>
-
-      <footer className="border-t border-border bg-menubar-bg py-8 text-menubar-fg">
-        <div className="mx-auto max-w-[80rem] px-5 lg:px-8">
-          <p className="text-xs text-menubar-muted">
-            Updates are aggregated from live web sources and auto-classified by jurisdiction and fuel type. Verify
-            against primary legislation before use in compliance decisions.
-          </p>
-          <p className="mt-3 text-sm font-bold text-menubar-fg">
-            © 2026 All rights reserved — Global Bioenergy Watch
-          </p>
-          <p className="mt-2 flex flex-wrap gap-x-2 gap-y-1 text-sm">
-            <Link
-              to="/terms"
-              className="font-semibold text-menubar-fg underline underline-offset-4 hover:text-menubar-fg/80"
-            >
-              Terms of Use
-            </Link>
-            <span className="text-menubar-muted">·</span>
-            <Link
-              to="/privacy"
-              className="font-semibold text-menubar-fg underline underline-offset-4 hover:text-menubar-fg/80"
-            >
-              Privacy Policy
-            </Link>
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }

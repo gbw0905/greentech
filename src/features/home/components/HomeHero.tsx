@@ -1,3 +1,4 @@
+import { MotionReveal } from "@/components/MotionReveal";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import type { PolicyUpdate } from "@/features/policy/contracts";
@@ -36,7 +37,7 @@ export function HomeHero({
   return (
     <section className="overflow-hidden bg-[#eef3f7] font-['Instrument_Sans'] text-[#0e2a43]">
       <div className="mx-auto grid max-w-[1240px] items-center gap-6 px-5 pt-11 min-[621px]:px-8 min-[961px]:grid-cols-[minmax(0,1fr)_minmax(0,1.02fr)] min-[961px]:gap-10 min-[961px]:pt-16">
-        <div className="max-w-[560px]">
+        <MotionReveal className="max-w-[560px]">
           <div className="home-live-pill inline-flex items-center gap-[9px] rounded-full border border-[#d6e1ea] bg-white py-1.5 pr-3.5 pl-3 text-[13px] font-medium text-[#4c6278] before:size-[7px] before:rounded-full before:bg-[#178a6b]">
             Live policy and market intelligence
           </div>
@@ -85,7 +86,7 @@ export function HomeHero({
               Tax credits
             </Link>
           </div>
-        </div>
+        </MotionReveal>
 
         <div className="home-globe-stage relative mx-auto aspect-square w-full max-w-[640px] min-[621px]:max-w-[560px] min-[961px]:ml-auto min-[961px]:max-w-[640px]">
           <DottedPolicyGlobe
@@ -189,9 +190,10 @@ export function HomeHero({
               label: "Policy items",
               note: "Mandates, incentives and rules you can filter by fuel type.",
             },
-          ].map((stat) => (
-            <div
+          ].map((stat, index) => (
+            <MotionReveal
               key={stat.label}
+              delay={index * 0.09}
               className="border-b border-[#d6e1ea] py-6 min-[701px]:border-b-0 min-[701px]:px-7 min-[701px]:py-[26px] min-[701px]:pb-[34px] min-[701px]:first:pl-0 min-[701px]:[&+div]:border-l"
             >
               <dd className="font-['Bricolage_Grotesque'] text-[clamp(1.9rem,3vw,2.6rem)] leading-none font-semibold tracking-[-0.03em] tabular-nums">
@@ -199,7 +201,7 @@ export function HomeHero({
               </dd>
               <dt className="mt-2.5 text-[15px] font-semibold">{stat.label}</dt>
               <p className="mt-0.5 max-w-[30ch] text-sm text-[#4c6278]">{stat.note}</p>
-            </div>
+            </MotionReveal>
           ))}
         </dl>
       </div>

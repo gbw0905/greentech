@@ -17,7 +17,7 @@ const ITEMS = [
  * portal with fixed positioning so the nav's horizontal scroll container
  * (overflow-x-auto) cannot clip it.
  */
-export function AboutMenu() {
+export function AboutMenu({ home = false }: { home?: boolean }) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState({ top: 0, left: 0, width: 0 });
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -84,7 +84,7 @@ export function AboutMenu() {
                 return (
                   <a
                     key={item.href}
-                    href={item.href}
+                    href={home ? item.href : `/${item.href}`}
                     role="menuitem"
                     onClick={() => setOpen(false)}
                     className={itemClass}

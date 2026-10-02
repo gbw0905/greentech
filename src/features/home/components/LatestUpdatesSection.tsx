@@ -1,3 +1,4 @@
+import { MotionReveal } from "@/components/MotionReveal";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -118,7 +119,7 @@ export function LatestUpdatesSection({ updates }: { updates: PolicyUpdate[] }) {
       className="scroll-mt-[106px] border-t border-[#d6e1ea] bg-[#eef3f7] py-16 font-['Instrument_Sans'] text-[#0e2a43] min-[961px]:py-20"
     >
       <div className="mx-auto max-w-[1240px] px-5 min-[621px]:px-8">
-        <div className="flex flex-col justify-between gap-6 min-[821px]:flex-row min-[821px]:items-end">
+        <MotionReveal className="flex flex-col justify-between gap-6 min-[821px]:flex-row min-[821px]:items-end">
           <div>
             <h2 className="font-['Bricolage_Grotesque'] text-[clamp(2rem,3.4vw,2.75rem)]/[1.05] font-semibold tracking-[-0.03em]">
               Latest updates
@@ -156,7 +157,7 @@ export function LatestUpdatesSection({ updates }: { updates: PolicyUpdate[] }) {
               </button>
             ))}
           </div>
-        </div>
+        </MotionReveal>
 
         <p className="mt-7 text-xs font-medium text-[#7b8ea0]">
           Showing {visibleUpdates.length} {visibleUpdates.length === 1 ? "update" : "updates"}
@@ -164,11 +165,19 @@ export function LatestUpdatesSection({ updates }: { updates: PolicyUpdate[] }) {
 
         {visibleUpdates.length > 0 ? (
           <div className="mt-4 grid gap-5 min-[901px]:grid-cols-[1.05fr_1fr]">
-            <FeaturedUpdate update={visibleUpdates[0]!} />
+            <MotionReveal className="flex [&>a]:w-full">
+              <FeaturedUpdate update={visibleUpdates[0]!} />
+            </MotionReveal>
             {visibleUpdates.length > 1 && (
               <div className="grid gap-5 min-[541px]:grid-cols-2">
-                {visibleUpdates.slice(1).map((update) => (
-                  <UpdateTile key={update.id} update={update} />
+                {visibleUpdates.slice(1).map((update, index) => (
+                  <MotionReveal
+                    key={update.id}
+                    delay={(index + 1) * 0.09}
+                    className="flex [&>a]:w-full"
+                  >
+                    <UpdateTile update={update} />
+                  </MotionReveal>
                 ))}
               </div>
             )}

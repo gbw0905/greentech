@@ -1,28 +1,108 @@
-import { geoNaturalEarth1, geoPath, geoGraticule10 } from "d3-geo";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { geoEquirectangular, geoPath, geoGraticule10 } from "d3-geo";
+import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { feature } from "topojson-client";
-import { Link } from "@tanstack/react-router";
 import { Minus, Plus, Maximize2 } from "lucide-react";
 import {
   COUNTRIES,
-  POLICY_STATUS_COLOR,
   policyStatusFor,
+  type CountryProfile,
   type PolicyStatus,
 } from "@/features/policy/taxonomy";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { getCountryIndicesFn } from "@/features/countries/server-functions";
+import { MAP_STATUS_COLORS } from "./map-presentation";
+import { COUNTRY_MARKETS } from "@/features/countries/country-markets";
+
 interface GeoFeature {
   type: "Feature";
   properties: { name: string };
   geometry: unknown;
 }
-
+interface Point {
+  x: number;
+  y: number;
+}
+interface View extends Point {
+  z: number;
+}
+type HoverHandler = (slug: string | null, bounds?: DOMRect) => void;
+interface MapShape {
+  name: string;
+  path: string;
+  country: CountryProfile | undefined;
+  color: string;
+  opacity: number;
+}
 const WIDTH = 900;
-const HEIGHT = 400;
+const HEIGHT = 450;
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 8;
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+const constrain = (view: View): View => ({
+  ...view,
+  x: clamp(view.x, WIDTH * (1 - view.z), 0),
+  y: clamp(view.y, HEIGHT * (1 - view.z), 0),
+});
 
-const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+const CountryShape = memo(function CountryShape({
+  shape,
+  active,
+  hovered,
+  onHover,
+  onSelect,
+}: {
+  shape: MapShape;
+  active: boolean;
+  hovered: boolean;
+  onHover: HoverHandler;
+  onSelect: (slug: string) => void;
+}) {
+  return (
+    <path
+      d={shape.path}
+      fill={shape.color}
+      fillOpacity={hovered ? 0.95 : shape.opacity}
+      stroke="#fff"
+      strokeWidth={0.55}
+      vectorEffect="non-scaling-stroke"
+      className={shape.country ? "jurisdiction-country" : "jurisdiction-untracked"}
+      data-country={shape.country?.slug}
+      data-selected={active || undefined}
+      onPointerEnter={(event) =>
+        onHover(shape.country?.slug ?? null, event.currentTarget.getBoundingClientRect())
+      }
+      onPointerMove={() => onHover(shape.country?.slug ?? null)}
+      onPointerLeave={() => onHover(null)}
+      onClick={() => shape.country && onSelect(shape.country.slug)}
+    />
+  );
+});
+
+// Pointer movement only moves the tooltip; geographic paths remain memoized.
+const CountryLayer = memo(function CountryLayer({
+  shapes,
+  active,
+  hover,
+  onHover,
+  onSelect,
+}: {
+  shapes: MapShape[];
+  active: string | null;
+  hover: string | null;
+  onHover: HoverHandler;
+  onSelect: (slug: string) => void;
+}) {
+  return shapes.map((shape) => (
+    <CountryShape
+      key={shape.name}
+      shape={shape}
+      active={!!shape.country && shape.country.slug === active}
+      hovered={!!shape.country && shape.country.slug === hover}
+      onHover={onHover}
+      onSelect={onSelect}
+    />
+  ));
+});
 
 export function WorldPolicyMap({
   counts,
@@ -34,7 +114,21 @@ export function WorldPolicyMap({
   onSelect: (slug: string | null) => void;
 }) {
   const [features, setFeatures] = useState<GeoFeature[] | null>(null);
-  const { data: marketData } = useQuery({
+  const [mapError, setMapError] = useState(false);
+  const [hover, setHover] = useState<string | null>(null);
+  const [hoverBounds, setHoverBounds] = useState<{ left: number; right: number } | null>(null);
+  const [tip, setTip] = useState<Point | null>(null);
+  const [view, setView] = useState<View>({ z: 1, x: 0, y: 0 });
+  const [tooltipSize, setTooltipSize] = useState({ width: 248, height: 222 });
+  const containerRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const viewRef = useRef(view);
+  viewRef.current = view;
+  const drag = useRef<{ start: Point; original: View; pointerId: number } | null>(null);
+  const moved = useRef(false);
+  const tooltipId = useId();
+  const { data: marketData, isFetching } = useQuery({
     queryKey: ["country-indices"],
     queryFn: () => getCountryIndicesFn(),
     staleTime: 5 * 60 * 1000,
@@ -42,292 +136,355 @@ export function WorldPolicyMap({
     placeholderData: keepPreviousData,
     gcTime: Infinity,
   });
-  const indices = marketData?.indices ?? {};
-  const [hover, setHover] = useState<string | null>(null);
-  const [tip, setTip] = useState<{ x: number; y: number } | null>(null);
-  const [view, setView] = useState({ z: 1, x: 0, y: 0 });
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const drag = useRef<{ px: number; py: number; ox: number; oy: number } | null>(null);
-  const moved = useRef(false);
 
   useEffect(() => {
-    let cancelled = false;
-    fetch("/world-110m.json")
-      .then((r) => r.json())
+    const controller = new AbortController();
+    fetch("/world-110m.json", { signal: controller.signal })
+      .then((response) => {
+        if (!response.ok) throw new Error("Map unavailable");
+        return response.json();
+      })
       .then((topo) => {
-        if (cancelled) return;
-        const geo = feature(topo, topo.objects.countries) as unknown as {
-          features: GeoFeature[];
-        };
+        if (controller.signal.aborted) return;
+        const geo = feature(topo, topo.objects.countries) as unknown as { features: GeoFeature[] };
         setFeatures(geo.features);
       })
-      .catch(() => setFeatures([]));
-    return () => {
-      cancelled = true;
-    };
+      .catch(() => {
+        if (!controller.signal.aborted) setMapError(true);
+      });
+    return () => controller.abort();
   }, []);
 
-  const { path, graticule, projection } = useMemo(() => {
-    const proj = geoNaturalEarth1().fitSize([WIDTH, HEIGHT], { type: "Sphere" });
-    const p = geoPath(proj);
-    return { path: p, graticule: p(geoGraticule10()) ?? "", projection: proj };
+  const { path, graticule } = useMemo(() => {
+    const projection = geoEquirectangular().fitSize([WIDTH, HEIGHT], { type: "Sphere" });
+    const path = geoPath(projection);
+    return { path, graticule: path(geoGraticule10()) ?? "" };
   }, []);
+  const byMapName = useMemo(
+    () =>
+      new Map(
+        COUNTRIES.filter((country) => country.mapName).map((country) => [country.mapName, country]),
+      ),
+    [],
+  );
+  const bySlug = useMemo(() => new Map(COUNTRIES.map((country) => [country.slug, country])), []);
+  const shapes = useMemo(
+    () =>
+      (features ?? []).map((geo): MapShape => {
+        const country = byMapName.get(geo.properties.name);
+        const count = country ? (counts[country.slug] ?? 0) : 0;
+        return {
+          name: geo.properties.name,
+          path: path(geo as never) ?? "",
+          country,
+          color: MAP_STATUS_COLORS[policyStatusFor(country)],
+          opacity: country ? (count > 0 ? Math.min(0.7 + count * 0.04, 0.95) : 0.55) : 1,
+        };
+      }),
+    [features, byMapName, path, counts],
+  );
 
-  const byMapName = useMemo(() => {
-    const m = new Map<string, (typeof COUNTRIES)[number]>();
-    for (const c of COUNTRIES) if (c.mapName) m.set(c.mapName, c);
-    return m;
+  const localPoint = useCallback((clientX: number, clientY: number): Point => {
+    const svg = svgRef.current;
+    const matrix = svg?.getScreenCTM();
+    if (!svg || !matrix) return { x: WIDTH / 2, y: HEIGHT / 2 };
+    const point = svg.createSVGPoint();
+    point.x = clientX;
+    point.y = clientY;
+    return point.matrixTransform(matrix.inverse());
   }, []);
-
-  const zoomAt = useCallback((factor: number, px?: number, py?: number) => {
-    const el = containerRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const cx = px ?? rect.width / 2;
-    const cy = py ?? rect.height / 2;
-    setView((v) => {
-      const next = clamp(v.z * factor, MIN_ZOOM, MAX_ZOOM);
-      const k = next / v.z;
-      return { z: next, x: cx - (cx - v.x) * k, y: cy - (cy - v.y) * k };
+  const zoomAt = useCallback((factor: number, point: Point = { x: WIDTH / 2, y: HEIGHT / 2 }) => {
+    setHover(null);
+    setTip(null);
+    setView((previous) => {
+      const z = clamp(previous.z * factor, MIN_ZOOM, MAX_ZOOM);
+      const ratio = z / previous.z;
+      return constrain({
+        z,
+        x: point.x - (point.x - previous.x) * ratio,
+        y: point.y - (point.y - previous.y) * ratio,
+      });
     });
   }, []);
-
-  const zoomAtRef = useRef(zoomAt);
-  zoomAtRef.current = zoomAt;
-
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const onWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      const dy = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 100 : 1);
-      const rect = el.getBoundingClientRect();
-      zoomAtRef.current(Math.exp(-dy * 0.0018), e.clientX - rect.left, e.clientY - rect.top);
+    const node = containerRef.current;
+    if (!node) return;
+    const onWheel = (event: WheelEvent) => {
+      const delta =
+        event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? node.clientHeight : 1);
+      // Let the page continue scrolling once the map has reached its minimum zoom.
+      if (delta > 0 && viewRef.current.z <= MIN_ZOOM) return;
+      event.preventDefault();
+      zoomAt(Math.exp(-delta * 0.0018), localPoint(event.clientX, event.clientY));
     };
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel);
-  }, []);
+    node.addEventListener("wheel", onWheel, { passive: false });
+    return () => node.removeEventListener("wheel", onWheel);
+  }, [localPoint, zoomAt]);
 
-  const hovered = hover ? byMapName.get(hover) : null;
-  const hoveredIndex = hovered ? indices[hovered.slug] : undefined;
-  const zoomed = view.z > 1.01 || view.x !== 0 || view.y !== 0;
+  const handleHover = useCallback<HoverHandler>((slug, countryBounds) => {
+    if (drag.current) return;
+    setHover(slug);
+    if (!slug) setHoverBounds(null);
+    else if (countryBounds && containerRef.current) {
+      const canvasLeft = containerRef.current.getBoundingClientRect().left;
+      setHoverBounds({
+        left: countryBounds.left - canvasLeft,
+        right: countryBounds.right - canvasLeft,
+      });
+    }
+  }, []);
+  const handleSelect = useCallback(
+    (slug: string) => {
+      if (!moved.current) onSelect(slug);
+    },
+    [onSelect],
+  );
+  const hovered = hover ? bySlug.get(hover) : undefined;
+  const hoveredIndex = hovered ? marketData?.indices[hovered.slug] : undefined;
+  const knownMarket = hovered ? COUNTRY_MARKETS[hovered.slug] : undefined;
+  useEffect(() => {
+    const node = tooltipRef.current;
+    if (!node) return;
+    const observer = new ResizeObserver(([entry]) => {
+      if (!entry) return;
+      setTooltipSize({ width: node.offsetWidth, height: node.offsetHeight });
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [hovered?.slug]);
+  const bounds = containerRef.current;
+  const canvasWidth = bounds?.clientWidth ?? WIDTH;
+  const canvasHeight = bounds?.clientHeight ?? HEIGHT;
+  const tooltipGap = 18;
+  // Keep the country visible as well as leaving a gap beside the pointer.
+  const rightPosition = tip ? Math.max(tip.x + tooltipGap, (hoverBounds?.right ?? 0) + 12) : 0;
+  const leftPosition = tip
+    ? Math.min(
+        tip.x - tooltipGap - tooltipSize.width,
+        (hoverBounds?.left ?? canvasWidth) - tooltipSize.width - 12,
+      )
+    : 0;
+  const fitsOutsideRight = rightPosition + tooltipSize.width <= canvasWidth - 12;
+  const fitsOutsideLeft = leftPosition >= 12;
+  const fitsRight = !!tip && tip.x + tooltipGap + tooltipSize.width <= canvasWidth - 12;
+  const fitsLeft = !!tip && tip.x - tooltipGap - tooltipSize.width >= 12;
+  const tipLeft = tip
+    ? clamp(
+        fitsOutsideRight
+          ? rightPosition
+          : fitsOutsideLeft
+            ? leftPosition
+            : fitsRight
+              ? tip.x + tooltipGap
+              : tip.x - tooltipGap - tooltipSize.width,
+        12,
+        Math.max(12, canvasWidth - tooltipSize.width - 12),
+      )
+    : 0;
+  const tipTop = tip
+    ? clamp(
+        // On narrow screens, use the available vertical space if neither side fits.
+        fitsRight || fitsLeft
+          ? tip.y - tooltipSize.height / 2
+          : tip.y + tooltipGap + tooltipSize.height <= canvasHeight - 12
+            ? tip.y + tooltipGap
+            : tip.y - tooltipSize.height - tooltipGap,
+        12,
+        Math.max(12, canvasHeight - tooltipSize.height - 12),
+      )
+    : 0;
 
   return (
-    <div className="flex h-full flex-col">
-      <div
-        ref={containerRef}
-        className="relative min-h-[320px] w-full flex-1 cursor-grab overflow-hidden rounded-[var(--radius)] border border-border bg-surface-2/40 aspect-[16/9] sm:aspect-[2/1] xl:aspect-[21/9] active:cursor-grabbing"
-        style={{ touchAction: "none" }}
-        onPointerDown={(e) => {
-          drag.current = { px: e.clientX, py: e.clientY, ox: view.x, oy: view.y };
-          moved.current = false;
-        }}
-        onPointerMove={(e) => {
-          const rect = e.currentTarget.getBoundingClientRect();
-          setTip({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-          const d = drag.current;
-          if (!d) return;
-          const dx = e.clientX - d.px;
-          const dy = e.clientY - d.py;
-          if (Math.abs(dx) + Math.abs(dy) > 3) moved.current = true;
-          setView((v) => ({ ...v, x: d.ox + dx, y: d.oy + dy }));
-        }}
-        onPointerUp={() => {
-          drag.current = null;
-        }}
-        onPointerLeave={() => {
-          drag.current = null;
-          setHover(null);
-          setTip(null);
-        }}
-      >
-        <svg
-          viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-          className="h-full w-full select-none"
-          role="img"
-          aria-label="World map of biofuel policy activity"
+    <>
+      <div className="jurisdiction-map-padding">
+        <div
+          ref={containerRef}
+          className="jurisdiction-map-canvas"
+          data-zoom={view.z.toFixed(2)}
+          onPointerDown={(event) => {
+            if (!event.isPrimary || event.button !== 0) return;
+            moved.current = false;
+            drag.current = {
+              start: localPoint(event.clientX, event.clientY),
+              original: view,
+              pointerId: event.pointerId,
+            };
+          }}
+          onPointerMove={(event) => {
+            const node = event.currentTarget;
+            const rect = node.getBoundingClientRect();
+            const current = drag.current;
+            if (!current) {
+              setTip({ x: event.clientX - rect.left, y: event.clientY - rect.top });
+              return;
+            }
+            if (event.pointerId !== current.pointerId) return;
+            const point = localPoint(event.clientX, event.clientY);
+            const dx = point.x - current.start.x;
+            const dy = point.y - current.start.y;
+            if (Math.abs(dx) + Math.abs(dy) <= 4 && !moved.current) return;
+            moved.current = true;
+            if (!node.hasPointerCapture(event.pointerId)) node.setPointerCapture(event.pointerId);
+            setHover(null);
+            setTip(null);
+            setView(
+              constrain({
+                ...current.original,
+                x: current.original.x + dx,
+                y: current.original.y + dy,
+              }),
+            );
+          }}
+          onPointerUp={(event) => {
+            drag.current = null;
+            if (event.currentTarget.hasPointerCapture(event.pointerId))
+              event.currentTarget.releasePointerCapture(event.pointerId);
+          }}
+          onPointerCancel={() => {
+            drag.current = null;
+            setHover(null);
+            setTip(null);
+          }}
+          onLostPointerCapture={() => {
+            drag.current = null;
+          }}
+          onPointerLeave={() => {
+            if (!drag.current) {
+              setHover(null);
+              setTip(null);
+            }
+          }}
         >
-          <g transform={`translate(${view.x},${view.y}) scale(${view.z})`}>
-            <path d={graticule} fill="none" stroke="var(--grid)" strokeWidth={0.4} opacity={0.5} />
-            {features?.map((f, i) => {
-              const country = byMapName.get(f.properties.name);
-              const count = country ? (counts[country.slug] ?? 0) : 0;
-              const isActive = country && country.slug === activeCountry;
-              const isHover = Boolean(country) && f.properties.name === hover;
-              const hasActivity = country && count > 0;
-              const status = country ? policyStatusFor(country) : null;
-              return (
-                <path
-                  key={i}
-                  d={path(f as never) ?? ""}
-                  fill={status ? POLICY_STATUS_COLOR[status] : "var(--muted)"}
-                  fillOpacity={
-                    country
-                      ? isHover
-                        ? 0.95
-                        : hasActivity
-                          ? Math.min(0.7 + count * 0.04, 0.95)
-                          : 0.55
-                      : 1
-                  }
-                  stroke={
-                    isActive
-                      ? "var(--primary)"
-                      : isHover
-                        ? "var(--foreground)"
-                        : "var(--muted-foreground)"
-                  }
-                  strokeWidth={(isActive ? 1.6 : isHover ? 1 : 0.6) / view.z}
-                  className={
-                    country
-                      ? "cursor-pointer transition-[fill-opacity] duration-200"
-                      : "pointer-events-none"
-                  }
-                  onMouseEnter={() => country && setHover(f.properties.name)}
-                  onClick={() => {
-                    if (moved.current || !country) return;
-                    onSelect(country.slug === activeCountry ? null : country.slug);
-                  }}
-                />
-              );
-            })}
-          </g>
-        </svg>
-
-        {hovered && tip && (
-          <div
-            className="pointer-events-none absolute z-10 w-56 -translate-x-1/2 -translate-y-[calc(100%+10px)] rounded-md border border-border bg-surface px-2.5 py-1.5 shadow-[var(--shadow-lift)]"
-            style={{ left: tip.x, top: tip.y }}
+          <svg
+            ref={svgRef}
+            viewBox={"0 0 " + WIDTH + " " + HEIGHT}
+            className="jurisdiction-map-svg"
+            role="img"
+            aria-label="World map of biofuel policy activity"
           >
-            <div className="font-display text-xs font-semibold whitespace-nowrap">
-              {hovered.name}
-            </div>
-            <div className="label-mono text-primary">{counts[hovered.slug] ?? 0} updates</div>
-            <div
-              className="label-mono mt-1 inline-flex items-center gap-1.5"
-              style={{ color: POLICY_STATUS_COLOR[policyStatusFor(hovered)] }}
-            >
-              <span
-                className="size-2 rounded-[2px]"
-                style={{ background: POLICY_STATUS_COLOR[policyStatusFor(hovered)] }}
+            <g transform={"translate(" + view.x + "," + view.y + ") scale(" + view.z + ")"}>
+              <path
+                d={graticule}
+                className="jurisdiction-graticule"
+                vectorEffect="non-scaling-stroke"
               />
-              {policyStatusFor(hovered)}
+              <CountryLayer
+                shapes={shapes}
+                active={activeCountry}
+                hover={hover}
+                onHover={handleHover}
+                onSelect={handleSelect}
+              />
+            </g>
+          </svg>
+          {hovered && tip && (
+            <div
+              ref={tooltipRef}
+              id={tooltipId}
+              role="tooltip"
+              className="jurisdiction-tooltip"
+              style={{ left: tipLeft, top: tipTop }}
+            >
+              <h3>{hovered.name}</h3>
+              <p className="jurisdiction-tip-count">{counts[hovered.slug] ?? 0} updates</p>
+              <span className="jurisdiction-tip-status">
+                <i style={{ background: MAP_STATUS_COLORS[policyStatusFor(hovered)] }} />
+                {policyStatusFor(hovered)}
+              </span>
+              <dl>
+                <div>
+                  <dt>Index</dt>
+                  <dd>{hoveredIndex?.index ?? knownMarket?.index ?? "—"}</dd>
+                </div>
+                <div>
+                  <dt>Last</dt>
+                  <dd>
+                    {hoveredIndex
+                      ? hoveredIndex.price.toLocaleString("en-US", { maximumFractionDigits: 2 }) +
+                        " " +
+                        hoveredIndex.currency
+                      : knownMarket
+                        ? isFetching
+                          ? "Loading…"
+                          : "Unavailable"
+                        : "—"}
+                  </dd>
+                </div>
+                <div>
+                  <dt>1D</dt>
+                  <dd
+                    className={
+                      hoveredIndex ? (hoveredIndex.changePct >= 0 ? "positive" : "negative") : ""
+                    }
+                  >
+                    {hoveredIndex
+                      ? (hoveredIndex.changePct >= 0 ? "▲ " : "▼ ") +
+                        Math.abs(hoveredIndex.changePct).toFixed(2) +
+                        "%"
+                      : "—"}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Region</dt>
+                  <dd>{hovered.region}</dd>
+                </div>
+              </dl>
             </div>
-            <dl className="mt-1.5 space-y-1 border-t border-border pt-1.5 font-mono text-[10px] text-muted-foreground">
-              <div className="flex items-baseline justify-between gap-2">
-                <dt>Index</dt>
-                <dd className="truncate text-right text-foreground">
-                  {hoveredIndex?.index ?? "—"}
-                </dd>
-              </div>
-              <div className="flex items-baseline justify-between gap-2">
-                <dt>Last</dt>
-                <dd className="text-right text-foreground">
-                  {hoveredIndex
-                    ? `${hoveredIndex.price.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${hoveredIndex.currency}`
-                    : "loading…"}
-                </dd>
-              </div>
-              <div className="flex items-baseline justify-between gap-2">
-                <dt>1D</dt>
-                <dd
-                  className="text-right"
-                  style={{
-                    color: hoveredIndex
-                      ? hoveredIndex.changePct >= 0
-                        ? "var(--success, oklch(0.65 0.18 150))"
-                        : "var(--destructive)"
-                      : undefined,
-                  }}
-                >
-                  {hoveredIndex
-                    ? `${hoveredIndex.changePct >= 0 ? "▲" : "▼"} ${Math.abs(hoveredIndex.changePct).toFixed(2)}%`
-                    : "—"}
-                </dd>
-              </div>
-              <div className="flex items-baseline justify-between gap-2">
-                <dt>Region</dt>
-                <dd className="truncate text-right text-foreground">{hovered.region}</dd>
-              </div>
-            </dl>
+          )}
+          <div
+            className="jurisdiction-zoom"
+            onPointerDown={(event) => event.stopPropagation()}
+            onPointerMove={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              aria-label="Zoom in"
+              disabled={view.z >= MAX_ZOOM}
+              onClick={() => zoomAt(1.4)}
+            >
+              <Plus size={14} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              aria-label="Zoom out"
+              disabled={view.z <= MIN_ZOOM}
+              onClick={() => zoomAt(1 / 1.4)}
+            >
+              <Minus size={14} aria-hidden="true" />
+            </button>
+            {view.z > MIN_ZOOM && (
+              <button
+                type="button"
+                aria-label="Reset view"
+                onClick={() => {
+                  setView({ z: 1, x: 0, y: 0 });
+                  setHover(null);
+                  setTip(null);
+                }}
+              >
+                <Maximize2 size={13} aria-hidden="true" />
+              </button>
+            )}
+            <output aria-label="Map zoom">{view.z.toFixed(1)}×</output>
           </div>
-        )}
-
-        <div className="absolute top-2 right-2 flex flex-col gap-1">
-          {[
-            { icon: Plus, label: "Zoom in", run: () => zoomAt(1.4) },
-            { icon: Minus, label: "Zoom out", run: () => zoomAt(1 / 1.4) },
-          ].map(({ icon: Icon, label, run }) => (
-            <button
-              key={label}
-              type="button"
-              aria-label={label}
-              onPointerDown={(e) => e.stopPropagation()}
-              onClick={run}
-              className="grid size-7 place-items-center rounded-md border border-border bg-surface/90 text-muted-foreground backdrop-blur transition-colors hover:text-primary"
-            >
-              <Icon className="size-3.5" />
-            </button>
-          ))}
-          {zoomed && (
-            <button
-              type="button"
-              aria-label="Reset view"
-              onPointerDown={(e) => e.stopPropagation()}
-              onClick={() => setView({ z: 1, x: 0, y: 0 })}
-              className="grid size-7 place-items-center rounded-md border border-border bg-surface/90 text-muted-foreground backdrop-blur transition-colors hover:text-primary"
-            >
-              <Maximize2 className="size-3.5" />
-            </button>
+          {!features && (
+            <div className="jurisdiction-map-message" role="status">
+              {mapError ? "Map unavailable. Please reload to try again." : "Loading map…"}
+            </div>
           )}
         </div>
-
-        {!features && (
-          <div className="label-mono absolute inset-0 flex items-center justify-center text-muted-foreground">
-            Loading map…
-          </div>
-        )}
       </div>
-
-      <div className="mt-2.5 flex flex-wrap items-center justify-between gap-x-5 gap-y-2">
-        <div className="label-mono flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground">
-          {(
-            ["Mandated", "Policy framework", "In development", "No framework"] as PolicyStatus[]
-          ).map((s) => (
-            <span key={s} className="inline-flex items-center gap-1.5">
-              <span
-                className="size-2.5 rounded-[3px] border border-border"
-                style={{ background: POLICY_STATUS_COLOR[s] }}
-              />
-              {s}
+      <footer className="jurisdiction-map-legend">
+        <div>
+          {(Object.keys(MAP_STATUS_COLORS) as PolicyStatus[]).map((status) => (
+            <span key={status}>
+              <i style={{ background: MAP_STATUS_COLORS[status] }} />
+              {status}
             </span>
           ))}
         </div>
-
-        {hovered ? (
-          <div className="label-mono text-foreground">
-            {hovered.name} ·{" "}
-            <Link
-              to="/countries/$slug"
-              params={{ slug: hovered.slug }}
-              className="text-primary underline-offset-4 hover:underline"
-            >
-              full profile page
-            </Link>
-          </div>
-        ) : (
-          <div className="label-mono text-muted-foreground">
-            Scroll to zoom · drag to pan · click a country to load its profile below
-          </div>
-        )}
-        {hoveredIndex && (
-          <div className="label-mono font-mono text-muted-foreground">
-            {hoveredIndex.index}{" "}
-            {hoveredIndex.price.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-          </div>
-        )}
-        <div className="label-mono font-mono text-muted-foreground">{view.z.toFixed(1)}×</div>
-      </div>
-    </div>
+        <p>Scroll to zoom · drag to pan · click a country to load its profile below</p>
+      </footer>
+    </>
   );
 }

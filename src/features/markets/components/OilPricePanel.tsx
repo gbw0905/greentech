@@ -1,191 +1,366 @@
+import { MotionReveal } from "@/components/MotionReveal";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import { Loader2, RefreshCw, Sparkles, TrendingDown, TrendingUp, X } from "lucide-react";
+import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
+import {
+  ChevronDown,
+  Loader2,
+  RefreshCw,
+  Sparkles,
+  TrendingDown,
+  TrendingUp,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { getOilPricesFn, type OilQuote } from "@/features/markets/oil-server-functions";
 import { marketOutlookFn } from "@/features/markets/outlook-server-functions";
 
-const assetColor = (symbol: string) => {
-  if (symbol === "CL=F") return "var(--market-crude)";
-  if (symbol === "^GSPC") return "var(--market-equity)";
-  if (symbol === "NG=F") return "var(--market-gas)";
-  return "var(--primary)";
-};
-
-function Chart({ q, color }: { q: OilQuote; color: string }) {
-  const [hover, setHover] = useState<number | null>(null);
-  const w = 220;
-  const h = 72;
-  const padL = 34; // room for y-axis labels
-  const plotW = w - padL;
-  const pts = q.series;
-  if (pts.length < 2) return null;
-  const lo = Math.min(...pts.map((p) => p.c));
-  const hi = Math.max(...pts.map((p) => p.c));
-  const span = hi - lo || 1;
-  const xy = pts.map((p, i) => {
-    const x = padL + (i / (pts.length - 1)) * plotW;
-    const y = h - ((p.c - lo) / span) * (h - 12) - 6;
-    return [x, y] as const;
+const assetColor = (symbol: string) =>
+  symbol === "^GSPC" ? "#178a6b" : symbol === "NG=F" ? "#8262b5" : "#0e2a43";
+const number = (value: number) =>
+  value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const price = (q: OilQuote, value: number) => (q.unit === "index" ? "" : "$") + number(value);
+const percent = (value: number) => (value >= 0 ? "+" : "") + value.toFixed(2) + "%";
+const date = (timestamp: number) =>
+  new Date(timestamp).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
   });
-  // Smooth the polyline with a Catmull-Rom → cubic bezier conversion.
-  const line = xy
+const marketStyle = (symbol: string): CSSProperties =>
+  ({ "--market-color": assetColor(symbol) }) as CSSProperties;
+
+function stats(q: OilQuote) {
+  const closes = q.series.map((point) => point.c);
+  const first = closes[0];
+  const last = closes.at(-1);
+  return {
+    low: closes.length ? Math.min(...closes) : null,
+    high: closes.length ? Math.max(...closes) : null,
+    last: last ?? null,
+    trend:
+      first !== undefined && first !== 0 && last !== undefined
+        ? ((last - first) / first) * 100
+        : null,
+  };
+}
+
+// Use the same daily-close series for both chart sizes; never substitute demo data.
+function curve(points: Array<[number, number]>) {
+  return points
     .map(([x, y], i) => {
-      if (i === 0) return `M${x.toFixed(2)},${y.toFixed(2)}`;
-      const [x0, y0] = xy[i - 1]!;
-      const [xp, yp] = xy[i - 2] ?? xy[i - 1]!;
-      const [xn, yn] = xy[i + 1] ?? xy[i]!;
-      const c1x = x0 + (x - xp) / 6;
-      const c1y = y0 + (y - yp) / 6;
-      const c2x = x - (xn - x0) / 6;
-      const c2y = y - (yn - y0) / 6;
-      return `C${c1x.toFixed(2)},${c1y.toFixed(2)} ${c2x.toFixed(2)},${c2y.toFixed(2)} ${x.toFixed(2)},${y.toFixed(2)}`;
+      if (i === 0) return "M" + x.toFixed(2) + "," + y.toFixed(2);
+      const [x0, y0] = points[i - 1]!;
+      const [xp, yp] = points[i - 2] ?? points[i - 1]!;
+      const [xn, yn] = points[i + 1] ?? points[i]!;
+      return (
+        "C" +
+        (x0 + (x - xp) / 6).toFixed(2) +
+        "," +
+        (y0 + (y - yp) / 6).toFixed(2) +
+        " " +
+        (x - (xn - x0) / 6).toFixed(2) +
+        "," +
+        (y - (yn - y0) / 6).toFixed(2) +
+        " " +
+        x.toFixed(2) +
+        "," +
+        y.toFixed(2)
+      );
     })
     .join(" ");
-  const up = q.change >= 0;
-  const stroke = color;
-  const active = hover ?? pts.length - 1;
-  const id = `oilFill-${q.symbol.replace(/\W/g, "")}`;
-  const glowId = `${id}-glow`;
-  const fmt = (n: number) =>
-    n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const compact = (n: number) =>
-    n.toLocaleString(undefined, { maximumFractionDigits: n >= 1000 ? 0 : 1 });
-  const cur = q.unit === "index" ? "" : "$";
-  const first = pts[0]!.c;
-  const last = pts[pts.length - 1]!.c;
-  const periodPct = first ? ((last - first) / first) * 100 : 0;
-  const dateOf = (t: number) =>
-    new Date(t).toLocaleDateString(undefined, { month: "short", day: "numeric" });
-  const yTicks = [0, 0.5, 1].map((t) => ({ v: lo + span * t, y: h - t * (h - 12) - 6 }));
+}
 
+function DailyBadge({ q }: { q: OilQuote }) {
+  const Icon = q.change >= 0 ? TrendingUp : TrendingDown;
   return (
-    <div className="relative flex h-full flex-col">
-      <div className="label-mono flex items-center justify-between text-muted-foreground">
-        <span>30-day trend</span>
-        <span className="font-mono font-semibold tabular-nums" style={{ color }}>
-          {periodPct >= 0 ? "+" : ""}
-          {periodPct.toFixed(2)}% 30D
+    <span className={"benchmark-badge " + (q.change >= 0 ? "positive" : "negative")}>
+      <Icon size={14} aria-hidden="true" />
+      {percent(q.changePct)}
+    </span>
+  );
+}
+
+function MarketCard({
+  q,
+  active,
+  onSelect,
+}: {
+  q: OilQuote;
+  active: boolean;
+  onSelect: () => void;
+}) {
+  const { low, high, trend } = stats(q);
+  const points: Array<[number, number]> = q.series.map((point, i) => [
+    2 + (i / Math.max(1, q.series.length - 1)) * 276,
+    36 - ((point.c - (low ?? point.c)) / ((high ?? point.c) - (low ?? point.c) || 1)) * 30,
+  ]);
+  const line = curve(points);
+  return (
+    <button
+      type="button"
+      className="benchmark-card"
+      aria-pressed={active}
+      aria-controls="benchmark-detail"
+      onClick={onSelect}
+      style={marketStyle(q.symbol)}
+    >
+      <span className="benchmark-card-row">
+        <span className="benchmark-card-name">{q.label}</span>
+        <span className="benchmark-symbol">{q.symbol}</span>
+      </span>
+      <span className="benchmark-card-row">
+        <span className="benchmark-card-price">
+          {price(q, q.price)}
+          <small>{q.unit}</small>
         </span>
-      </div>
+        <DailyBadge q={q} />
+      </span>
       <svg
-        viewBox={`0 0 ${w} ${h}`}
-        className="mt-1 min-h-[72px] flex-1 w-full overflow-visible"
-        onMouseLeave={() => setHover(null)}
-        onMouseMove={(e) => {
-          const r = e.currentTarget.getBoundingClientRect();
-          const ratio = ((e.clientX - r.left) / r.width - padL / w) / (plotW / w);
-          setHover(Math.max(0, Math.min(pts.length - 1, Math.round(ratio * (pts.length - 1)))));
-        }}
+        className="benchmark-spark"
+        viewBox="0 0 280 42"
+        preserveAspectRatio="none"
+        aria-hidden="true"
       >
-        <defs>
-          <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={stroke} stopOpacity="0.45" />
-            <stop offset="55%" stopColor={stroke} stopOpacity="0.14" />
-            <stop offset="100%" stopColor={stroke} stopOpacity="0" />
-          </linearGradient>
-          <filter id={glowId} x="-20%" y="-40%" width="140%" height="180%">
-            <feGaussianBlur stdDeviation="2.4" result="b" />
-            <feMerge>
-              <feMergeNode in="b" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-        {yTicks.map((t) => (
-          <g key={t.v}>
-            <line
-              x1={padL}
-              x2={w}
-              y1={t.y}
-              y2={t.y}
-              stroke="var(--border)"
-              strokeWidth="1"
-              strokeDasharray="2 3"
-              vectorEffect="non-scaling-stroke"
-            />
-            <text
-              x={padL - 4}
-              y={t.y + 3}
-              textAnchor="end"
-              className="fill-muted-foreground font-mono"
-              style={{ fontSize: 7 }}
-            >
-              {compact(t.v)}
-            </text>
-          </g>
-        ))}
-        <path d={`${line} L${w},${h} L${padL},${h} Z`} fill={`url(#${id})`} />
+        {points.length > 1 && (
+          <path d={line + " L278,42 L2,42 Z"} className="benchmark-spark-area" />
+        )}
         <path
           d={line}
-          fill="none"
-          stroke={stroke}
-          strokeWidth="2.25"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-          vectorEffect="non-scaling-stroke"
-          filter={`url(#${glowId})`}
-          className="spark-draw"
-        />
-        <line
-          x1={xy[active]![0]}
-          x2={xy[active]![0]}
-          y1="0"
-          y2={h}
-          stroke={stroke}
-          strokeWidth="1"
-          strokeDasharray="3 3"
-          opacity="0.5"
+          pathLength={1}
+          className="benchmark-spark-line"
           vectorEffect="non-scaling-stroke"
         />
-        <circle cx={xy[active]![0]} cy={xy[active]![1]} r="7" fill={stroke} opacity="0.18" />
-        <circle
-          cx={xy[active]![0]}
-          cy={xy[active]![1]}
-          r="3.5"
-          fill="var(--surface)"
-          stroke={stroke}
-          strokeWidth="2"
-          vectorEffect="non-scaling-stroke"
-        />
+        {points.length === 1 && (
+          <circle cx={points[0]![0]} cy={points[0]![1]} r={3} fill="var(--market-color)" />
+        )}
       </svg>
-      <div className="label-mono mt-1 flex justify-between px-0.5 text-muted-foreground">
-        <span className="font-mono">{dateOf(pts[0]!.t)}</span>
-        <span className="font-mono">{dateOf(pts[Math.floor(pts.length / 2)]!.t)}</span>
-        <span className="font-mono">{dateOf(pts[pts.length - 1]!.t)}</span>
-      </div>
-      <div className="label-mono mt-0.5 flex justify-between text-[9px] text-muted-foreground">
-        <span>Y axis: {q.unit === "index" ? "index level" : `price USD ${q.unit}`}</span>
-        <span>X axis: date (last 30 days)</span>
-      </div>
-      <div className="label-mono mt-1.5 flex items-center justify-between gap-2 rounded-md border border-border/70 bg-surface-2/70 px-2 py-1 text-muted-foreground backdrop-blur-sm">
-        <span>{hover === null ? "latest close" : dateOf(pts[active]!.t)}</span>
-        <span className="font-mono font-semibold tabular-nums" style={{ color }}>
-          {cur}
-          {fmt(pts[active]!.c)}
+      <span className="benchmark-card-row benchmark-card-foot">
+        <span>30-day trend</span>
+        <b className={trend !== null && trend < 0 ? "negative" : "positive"}>
+          {trend === null ? "—" : percent(trend)}
+        </b>
+      </span>
+    </button>
+  );
+}
+
+function MarketChart({ q }: { q: OilQuote }) {
+  const container = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState({ width: 640, height: 300 });
+  const [hover, setHover] = useState<number | null>(null);
+  const fillId = useId();
+  useEffect(() => {
+    const node = container.current;
+    if (!node) return;
+    const observer = new ResizeObserver(([entry]) => {
+      if (!entry) return;
+      const { width, height } = entry.contentRect;
+      if (width > 0 && height > 0) setSize({ width, height });
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+  const { low, high } = stats(q);
+  const left = size.width < 400 ? 48 : 56;
+  const right = size.width - 14;
+  const top = 22;
+  const bottom = size.height - 32;
+  const span = low !== null && high !== null ? high - low || Math.max(Math.abs(low) * 0.02, 1) : 1;
+  const floor = (low ?? 0) - span * 0.12;
+  const ceiling = (high ?? 0) + span * 0.12;
+  const scale = ceiling - floor || 1;
+  const points: Array<[number, number]> = q.series.map((point, i) => [
+    left + (i / Math.max(1, q.series.length - 1)) * (right - left),
+    bottom - ((point.c - floor) / scale) * (bottom - top),
+  ]);
+  const line = curve(points);
+  const active = hover === null ? points.length - 1 : Math.min(hover, points.length - 1);
+  const point = points[active] ?? [left, bottom];
+  const quotePoint = q.series[active];
+  const previous = q.series[active - 1]?.c;
+  const daily =
+    quotePoint && previous !== undefined && previous !== 0
+      ? ((quotePoint.c - previous) / previous) * 100
+      : null;
+  const dateIndices = [...new Set([0, Math.floor((points.length - 1) / 2), points.length - 1])];
+
+  return (
+    <>
+      <div
+        ref={container}
+        className="benchmark-chart-wrap"
+        tabIndex={points.length ? 0 : undefined}
+        role="group"
+        aria-label={
+          q.label +
+          " daily closing prices. Use left and right arrow keys to explore. " +
+          (quotePoint ? date(quotePoint.t) + ": " + price(q, quotePoint.c) : "History unavailable.")
+        }
+        onPointerMove={(event) => {
+          if (!points.length) return;
+          const bounds = event.currentTarget.getBoundingClientRect();
+          const ratio = (event.clientX - bounds.left - left) / (right - left);
+          setHover(
+            Math.max(0, Math.min(points.length - 1, Math.round(ratio * (points.length - 1)))),
+          );
+        }}
+        onPointerLeave={() => setHover(null)}
+        onBlur={() => setHover(null)}
+        onKeyDown={(event) => {
+          if (!points.length) return;
+          const index = hover ?? points.length - 1;
+          if (event.key === "ArrowLeft") setHover(Math.max(0, index - 1));
+          else if (event.key === "ArrowRight") setHover(Math.min(points.length - 1, index + 1));
+          else if (event.key === "Home") setHover(0);
+          else if (event.key === "End") setHover(points.length - 1);
+          else if (event.key === "Escape") setHover(null);
+          else return;
+          event.preventDefault();
+        }}
+      >
+        {points.length ? (
+          <svg
+            className="benchmark-chart"
+            viewBox={"0 0 " + size.width + " " + size.height}
+            aria-hidden="true"
+          >
+            <defs>
+              <linearGradient id={fillId} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="var(--market-color)" stopOpacity=".26" />
+                <stop offset="100%" stopColor="var(--market-color)" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            {[0, 0.5, 1].map((fraction) => {
+              const y = bottom - fraction * (bottom - top);
+              const value = floor + scale * fraction;
+              return (
+                <g key={fraction}>
+                  <line className="benchmark-grid" x1={left} x2={right} y1={y} y2={y} />
+                  <text className="benchmark-tick" x={left - 10} y={y + 4} textAnchor="end">
+                    {value.toLocaleString("en-US", {
+                      maximumFractionDigits: Math.abs(value) >= 1000 ? 0 : 1,
+                    })}
+                  </text>
+                </g>
+              );
+            })}
+            {points.length > 1 && (
+              <path
+                d={line + " L" + right + "," + bottom + " L" + left + "," + bottom + " Z"}
+                fill={"url(#" + fillId + ")"}
+              />
+            )}
+            <path className="benchmark-line" pathLength={1} d={line} />
+            {dateIndices.map((index) => (
+              <text
+                className="benchmark-tick"
+                key={index}
+                x={points[index]![0]}
+                y={size.height - 8}
+                textAnchor={index === 0 ? "start" : index === points.length - 1 ? "end" : "middle"}
+              >
+                {date(q.series[index]!.t)}
+              </text>
+            ))}
+            {hover !== null && (
+              <line
+                x1={point[0]}
+                x2={point[0]}
+                y1={top}
+                y2={bottom}
+                className="benchmark-crosshair"
+              />
+            )}
+            <circle cx={point[0]} cy={point[1]} r={10} fill="var(--market-color)" opacity=".14" />
+            <circle cx={point[0]} cy={point[1]} r={5} className="benchmark-point" />
+          </svg>
+        ) : (
+          <p className="benchmark-history-empty">Price history unavailable right now.</p>
+        )}
+        {hover !== null && quotePoint && (
+          <div
+            className="benchmark-tooltip"
+            aria-hidden="true"
+            style={{
+              left: Math.max(105, Math.min(size.width - 105, point[0])),
+              top: Math.max(88, point[1]! - 14),
+            }}
+          >
+            <span>{date(quotePoint.t)}</span>
+            <b>{price(q, quotePoint.c)}</b>
+            <span className={daily !== null && daily < 0 ? "negative" : "positive"}>
+              {daily === null ? "First available close" : percent(daily) + " vs previous close"}
+            </span>
+          </div>
+        )}
+        <span className="sr-only" aria-live="polite">
+          {hover !== null && quotePoint ? date(quotePoint.t) + ", " + price(q, quotePoint.c) : ""}
         </span>
       </div>
-      <dl className="mt-1.5 grid grid-cols-3 gap-1 text-center">
-        {[
-          ["30d high", hi],
-          ["30d low", lo],
-          ["prev close", q.prevClose],
-        ].map(([k, v]) => (
-          <div
-            key={k as string}
-            className="rounded-md border border-border/60 bg-surface-2/40 px-1 py-1"
-          >
-            <dt className="label-mono text-muted-foreground">{k as string}</dt>
-            <dd className="font-mono text-[11px] font-semibold tabular-nums text-foreground">
-              {cur}
-              {fmt(v as number)}
-            </dd>
-          </div>
-        ))}
-      </dl>
+      <p className="benchmark-caption">
+        <span>
+          {q.unit === "index" ? "Index level" : "Price (" + q.currency + " " + q.unit + ")"}
+        </span>
+        <span>Daily close, last 30 days</span>
+      </p>
+    </>
+  );
+}
+
+function MarketStats({ q }: { q: OilQuote }) {
+  const { low, high, last } = stats(q);
+  const position =
+    last !== null && low !== null && high !== null && high !== low
+      ? Math.max(0, Math.min(1, (last - low) / (high - low)))
+      : 0.5;
+  return (
+    <div className="benchmark-stats">
+      <div
+        className="benchmark-stat benchmark-range-box"
+        role="group"
+        aria-label="30-day closing price range"
+      >
+        <div className="benchmark-stat-label">30-day range</div>
+        {low !== null && high !== null && last !== null ? (
+          <>
+            <div className="benchmark-range" aria-hidden="true">
+              <span className="benchmark-range-fill" style={{ width: position * 100 + "%" }} />
+              <span className="benchmark-range-dot" style={{ left: position * 100 + "%" }} />
+              <span
+                className="benchmark-range-chip"
+                style={{
+                  left: position * 100 + "%",
+                  transform: "translateX(-" + position * 100 + "%)",
+                }}
+              >
+                {price(q, last)}
+              </span>
+            </div>
+            <div className="benchmark-range-ends">
+              <span>{price(q, low)}</span>
+              <span>{price(q, high)}</span>
+            </div>
+            <span className="sr-only">
+              Low {price(q, low)}, high {price(q, high)}, latest close {price(q, last)}.
+            </span>
+          </>
+        ) : (
+          <div className="benchmark-stat-value">—</div>
+        )}
+      </div>
+      <div className="benchmark-stat">
+        <div className="benchmark-stat-label">Latest close</div>
+        <div className="benchmark-stat-value">{last === null ? "—" : price(q, last)}</div>
+      </div>
+      <div className="benchmark-stat">
+        <div className="benchmark-stat-label">Previous close</div>
+        <div className="benchmark-stat-value">{price(q, q.prevClose)}</div>
+      </div>
     </div>
   );
 }
+
+type Outlook = { text: string; loading: boolean; error?: string };
 
 export function OilPricePanel() {
   const { data, isLoading, dataUpdatedAt } = useQuery({
@@ -196,12 +371,14 @@ export function OilPricePanel() {
     staleTime: Infinity,
     gcTime: Infinity,
   });
-
   const [selected, setSelected] = useState<string | null>(null);
-  const [outlook, setOutlook] = useState<Record<string, { text: string; loading: boolean }>>({});
-
+  const [outlookOpen, setOutlookOpen] = useState(false);
+  const [outlook, setOutlook] = useState<Record<string, Outlook>>({});
+  const pendingOutlook = useRef(new Set<string>());
+  const outlookId = useId();
   const requestOutlook = async (q: OilQuote) => {
-    if (outlook[q.symbol]?.loading) return;
+    if (pendingOutlook.current.has(q.symbol)) return;
+    pendingOutlook.current.add(q.symbol);
     setOutlook((s) => ({ ...s, [q.symbol]: { text: "", loading: true } }));
     try {
       const { outlook: text } = await marketOutlookFn({
@@ -218,190 +395,173 @@ export function OilPricePanel() {
       });
       setOutlook((s) => ({ ...s, [q.symbol]: { text, loading: false } }));
     } catch (e) {
-      setOutlook((s) => ({ ...s, [q.symbol]: { text: "", loading: false } }));
       const msg = e instanceof Error ? e.message : "Outlook failed";
-      toast.error(
-        /unauthori[sz]ed|401/i.test(msg) ? "Please sign in to generate an AI outlook." : msg,
-      );
+      const error = /unauthori[sz]ed|401/i.test(msg)
+        ? "Please sign in to generate an AI outlook."
+        : msg;
+      setOutlook((s) => ({ ...s, [q.symbol]: { text: "", loading: false, error } }));
+      toast.error(error);
+    } finally {
+      pendingOutlook.current.delete(q.symbol);
     }
   };
-
   const quotes = data?.quotes ?? [];
-  const selectedQuote = quotes.find((q) => q.symbol === selected);
-  const selectedOutlook = selected ? outlook[selected] : undefined;
+  const q = quotes.find((quote) => quote.symbol === selected) ?? quotes[0];
+  const selectedOutlook = q ? outlook[q.symbol] : undefined;
   const stale = data?.stale ?? false;
   const asOf = data?.asOf ?? dataUpdatedAt;
   const stamp = asOf
-    ? new Date(asOf).toLocaleTimeString(undefined, {
+    ? new Date(asOf).toLocaleTimeString("en-US", {
         hour: "2-digit",
         minute: "2-digit",
         timeZone: "UTC",
       }) + " UTC"
     : "—";
+  const trend = q ? stats(q).trend : null;
 
   return (
-    <div className="glass-panel rise flex h-full flex-col space-y-3 p-4">
-      <header className="flex flex-wrap items-end justify-between gap-x-5 gap-y-2 border-b border-border/70 pb-2.5">
-        <div className="min-w-0">
-          <p className="label-mono text-muted-foreground">Benchmark markets</p>
-          <h2 className="mt-0.5 font-display text-base font-bold tracking-tight text-foreground sm:text-lg">
-            Crude Oil, Equities &amp; Natural Gas
-          </h2>
-          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-            {[
-              ["CL=F", "WTI crude"],
-              ["^GSPC", "S&P 500"],
-              ["NG=F", "Natural Gas"],
-            ].map(([sym, name]) => (
-              <span
-                key={sym}
-                className="label-mono inline-flex items-center gap-1.5 rounded-md border border-border bg-surface-2/70 px-2 py-0.5 text-muted-foreground"
-              >
-                <span className="font-mono font-semibold text-foreground">{sym}</span>
-                {name}
-              </span>
-            ))}
-          </div>
+    <div className="benchmark-inner">
+      <MotionReveal as="header" className="benchmark-header">
+        <div>
+          <h2 id="markets-title">Crude oil, S&amp;P 500 and natural gas prices in real time</h2>
+          <p>
+            Live benchmark markets that move biofuel economics: 30-day trend, daily change and last
+            close for each.
+          </p>
         </div>
-        <div className="flex flex-col items-start gap-1.5 sm:items-end">
-          {stale ? (
-            <span className="label-mono inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-2/70 px-2.5 py-1 text-muted-foreground">
-              <span className="size-2 rounded-full bg-muted-foreground" />
-              last close
-            </span>
-          ) : (
-            <span className="label-mono inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-primary">
-              <span className="pulse-dot size-2 rounded-full bg-primary" />
-              live
-            </span>
-          )}
-          <span className="label-mono text-muted-foreground">
-            {stale ? "as of" : "updated"}{" "}
-            <span className="font-mono tabular-nums text-foreground">{stamp}</span>
+        <div className="benchmark-meta">
+          <span className="benchmark-live">
+            <span
+              className={quotes.length && !stale ? "benchmark-live-dot" : "benchmark-offline-dot"}
+            />
+            {quotes.length
+              ? stale
+                ? "Last close"
+                : "Live"
+              : isLoading
+                ? "Loading"
+                : "Unavailable"}
+          </span>
+          <span>
+            {stale ? "As of" : "Updated"} <b>{stamp}</b>
           </span>
         </div>
-      </header>
-
-      {isLoading && quotes.length === 0 && (
-        <div className="scanning-bar h-24 flex-1 rounded-[var(--radius)]" />
+      </MotionReveal>
+      {isLoading && !quotes.length && (
+        <div className="benchmark-loading" role="status">
+          <Loader2 size={20} className="animate-spin" />
+          Loading benchmark markets…
+        </div>
       )}
-      {!isLoading && quotes.length === 0 && (
-        <p className="text-sm text-muted-foreground">Price feed unavailable right now.</p>
+      {!isLoading && !quotes.length && (
+        <p className="benchmark-loading" role="status">
+          Price feed unavailable right now.
+        </p>
       )}
-
-      <div className="grid min-h-0 flex-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {quotes.map((q) => {
-          const up = q.change >= 0;
-          const color = assetColor(q.symbol);
-          const active = selected === q.symbol;
-          return (
-            <button
-              key={q.symbol}
-              type="button"
-              onClick={() => {
-                setSelected(active ? null : q.symbol);
-                if (!active && !outlook[q.symbol]?.text) void requestOutlook(q);
-              }}
-              aria-pressed={active}
-              className={`flex cursor-pointer flex-col space-y-1 rounded-[var(--radius)] border bg-surface-2/60 p-3 text-left transition-all duration-300 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 ${
-                active ? "ring-2 ring-primary/50 -translate-y-0.5" : ""
-              }`}
-              style={{
-                boxShadow: `inset 0 2px 0 0 ${color}`,
-                borderColor: active ? color : `${color}40`,
-              }}
-            >
-              <div className="flex items-baseline justify-between gap-2">
-                <span className="text-sm font-semibold">{q.label}</span>
-                <span
-                  className={`label-mono inline-flex items-center gap-1 rounded-full px-2 py-0.5 ${
-                    up ? "" : "bg-destructive/10 text-destructive"
-                  }`}
-                  style={up ? { backgroundColor: `${color}14`, color } : undefined}
-                >
-                  {up ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
-                  {up ? "+" : ""}
-                  {q.changePct.toFixed(2)}%
-                </span>
-              </div>
-              <div className="font-display text-lg font-bold tabular-nums" style={{ color }}>
-                {q.unit === "index" ? "" : "$"}
-                {q.price.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-                <span className="ml-1 font-mono text-xs font-normal text-muted-foreground">
-                  {q.unit}
-                </span>
-              </div>
-              <div className="label-mono text-muted-foreground">
-                1D change{" "}
-                <span
-                  className={`font-mono font-semibold tabular-nums ${up ? "" : "text-destructive"}`}
-                  style={up ? { color } : undefined}
-                >
-                  {up ? "+" : ""}
-                  {q.change.toFixed(2)}
-                </span>{" "}
-                · <span className="font-mono tabular-nums">{q.symbol}</span>
-              </div>
-              <div className="min-h-0 flex-1">
-                <Chart q={q} color={color} />
-              </div>
-              <span className="label-mono mt-1 inline-flex items-center gap-1 text-[9px] text-muted-foreground/80">
-                <Sparkles className="size-3" /> click for AI market outlook
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {selectedQuote && (
-        <div
-          className="rise rounded-[var(--radius)] border p-3.5"
-          style={{
-            borderColor: `${assetColor(selectedQuote.symbol)}55`,
-            background: `color-mix(in oklab, ${assetColor(selectedQuote.symbol)} 6%, var(--surface-2))`,
-          }}
-        >
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="label-mono flex items-center gap-1.5 text-muted-foreground">
-              <Sparkles className="size-3.5" style={{ color: assetColor(selectedQuote.symbol) }} />
-              AI market outlook — {selectedQuote.label}
-            </p>
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => void requestOutlook(selectedQuote)}
-                disabled={selectedOutlook?.loading}
-                className="label-mono inline-flex items-center gap-1 rounded-md border border-border bg-surface px-2 py-1 text-muted-foreground transition hover:text-foreground disabled:opacity-50"
-              >
-                <RefreshCw className={`size-3 ${selectedOutlook?.loading ? "animate-spin" : ""}`} />
-                regenerate
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelected(null)}
-                className="label-mono inline-flex items-center gap-1 rounded-md border border-border bg-surface px-2 py-1 text-muted-foreground transition hover:text-foreground"
-              >
-                <X className="size-3" /> close
-              </button>
-            </div>
+      {q && (
+        <div className="benchmark-layout">
+          <div className="benchmark-cards" role="group" aria-label="Choose a benchmark">
+            {quotes.map((quote) => (
+              <MarketCard
+                key={quote.symbol}
+                q={quote}
+                active={q.symbol === quote.symbol}
+                onSelect={() => {
+                  if (q.symbol !== quote.symbol) {
+                    setSelected(quote.symbol);
+                    setOutlookOpen(false);
+                  }
+                }}
+              />
+            ))}
           </div>
-          {selectedOutlook?.loading ? (
-            <p className="mt-2.5 flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="size-4 animate-spin" /> Writing a 150-word outlook from the latest
-              price action…
-            </p>
-          ) : (
-            <p className="mt-2.5 text-sm leading-relaxed text-foreground">
-              {selectedOutlook?.text ?? "Click regenerate to write the outlook."}
-            </p>
-          )}
-          <p className="label-mono mt-2.5 text-[9px] text-muted-foreground/80">
-            AI-generated from the 30-day price series shown above. May contain errors — always
-            cross-verify before acting.
-          </p>
+          <article
+            className="benchmark-panel"
+            id="benchmark-detail"
+            aria-label={q.label + " market details"}
+            style={marketStyle(q.symbol)}
+          >
+            <div className="benchmark-body" key={q.symbol}>
+              <div className="benchmark-panel-top">
+                <div className="benchmark-id">
+                  <h3>{q.label}</h3>
+                  <span className="benchmark-symbol">{q.symbol}</span>
+                </div>
+                <span
+                  className={
+                    "benchmark-trend " + (trend !== null && trend < 0 ? "negative" : "positive")
+                  }
+                >
+                  {trend === null ? "—" : percent(trend)} 30D
+                </span>
+              </div>
+              <div className="benchmark-price-row">
+                <div className="benchmark-price">
+                  {price(q, q.price)}
+                  <small>{q.unit}</small>
+                </div>
+                <DailyBadge q={q} />
+                <span className="benchmark-daily">
+                  1D change{" "}
+                  <b className={q.change >= 0 ? "positive" : "negative"}>
+                    {q.change >= 0 ? "+" : ""}
+                    {number(q.change)}
+                  </b>
+                </span>
+              </div>
+              <MarketChart q={q} />
+              <MarketStats q={q} />
+            </div>
+            <div className="benchmark-outlook">
+              <button
+                type="button"
+                className="benchmark-ai"
+                aria-expanded={outlookOpen}
+                aria-controls={outlookId}
+                onClick={() => {
+                  setOutlookOpen(!outlookOpen);
+                  if (!outlookOpen && !selectedOutlook?.text) void requestOutlook(q);
+                }}
+              >
+                <Sparkles size={16} aria-hidden="true" />
+                AI market outlook
+                <ChevronDown size={14} aria-hidden="true" />
+              </button>
+              <div id={outlookId} hidden={!outlookOpen} className="benchmark-ai-content">
+                <div className="benchmark-ai-actions">
+                  <span>{q.label}</span>
+                  <button
+                    type="button"
+                    onClick={() => void requestOutlook(q)}
+                    disabled={selectedOutlook?.loading}
+                  >
+                    <RefreshCw size={13} aria-hidden="true" />
+                    Regenerate
+                  </button>
+                  <button type="button" onClick={() => setOutlookOpen(false)}>
+                    <X size={13} aria-hidden="true" />
+                    Close
+                  </button>
+                </div>
+                <p aria-live="polite">
+                  {selectedOutlook?.loading ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+                      Writing an outlook from the latest price action…
+                    </>
+                  ) : (
+                    selectedOutlook?.error ||
+                    selectedOutlook?.text ||
+                    "Generate an outlook from this market’s current price series."
+                  )}
+                </p>
+                <small>
+                  AI-generated from the 30-day price series shown above. May contain errors — always
+                  cross-verify before acting.
+                </small>
+              </div>
+            </div>
+          </article>
         </div>
       )}
     </div>
