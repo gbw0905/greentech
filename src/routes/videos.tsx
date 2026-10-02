@@ -1,11 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { Video } from "lucide-react";
-import { FUEL_TYPES, FUEL_ACCENT, type FuelType } from "@/features/policy/taxonomy";
+import { Link, createFileRoute } from "@tanstack/react-router";
+import { useRef, useState } from "react";
+import { useReducedMotion } from "motion/react";
+import { FUEL_TYPES, type FuelType, type Region } from "@/features/policy/taxonomy";
 import { LiveMediaFeed } from "@/features/videos/components/LiveMediaFeed";
 import { VideoLibrary } from "@/features/videos/components/VideoLibrary";
-import { PageShell, PageHeading } from "@/components/PageShell";
+import { VideoHero } from "@/features/videos/components/VideoHero";
+import { VideoFilters } from "@/features/videos/components/VideoFilters";
+import { LiveMarquee } from "@/features/markets/components/LiveMarquee";
+import "@/features/videos/videos.css";
 import { useVisitTracker } from "@/features/traffic/hooks/useVisitTracker";
+import type { LiveVideo } from "@/features/videos/contracts";
 
 const TITLE = "Video briefing room | Global Bioenergy Watch";
 const DESCRIPTION =
@@ -55,64 +59,90 @@ function VideosPage() {
   useVisitTracker();
   const [fuels, setFuels] = useState<FuelType[]>([]);
   const [country, setCountry] = useState<string | null>(null);
-
+  const [regions, setRegions] = useState<Region[]>([]);
+  const [policies, setPolicies] = useState<string[]>([]);
+  const [selectedVideo, setSelectedVideo] = useState<LiveVideo | null>(null);
+  const playerRef = useRef<HTMLDivElement>(null);
+  const reducedMotion = useReducedMotion();
+  const playVideo = (video: LiveVideo) => {
+    setSelectedVideo(video);
+    playerRef.current?.focus({ preventScroll: true });
+    playerRef.current?.scrollIntoView({
+      behavior: reducedMotion ? "instant" : "smooth",
+      block: "start",
+    });
+  };
   const toggleFuel = (f: FuelType) =>
     setFuels((list) => (list.includes(f) ? list.filter((v) => v !== f) : [...list, f]));
-
+  const toggleRegion = (r: Region) =>
+    setRegions((list) => (list.includes(r) ? list.filter((v) => v !== r) : [...list, r]));
+  const togglePolicy = (p: string) =>
+    setPolicies((list) => (list.includes(p) ? list.filter((v) => v !== p) : [...list, p]));
+  const clearFilters = () => {
+    setFuels([]);
+    setCountry(null);
+    setRegions([]);
+    setPolicies([]);
+  };
   return (
-    <PageShell>
-      <PageHeading
-        icon={Video}
-        title="Video briefing room"
-        subtitle="YouTube channels and official video hubs, linked to the countries and policies they cover."
-      />
-
-      <section className="glass-panel overflow-hidden">
-        <div className="panel-head">
-          <h2 className="label-mono text-muted-foreground">What is Global Bioenergy Watch?</h2>
-          <span className="label-mono text-accent">23-second explainer</span>
-        </div>
-        <video
-          controls
-          preload="none"
-          poster="/videos/explainer-poster.jpg"
-          className="aspect-video w-full bg-black"
-        >
-          <source src="/videos/explainer.mp4" type="video/mp4" />
-        </video>
-      </section>
-
-      <div className="glass-panel flex flex-wrap items-center gap-2 p-3">
-        <span className="label-mono mr-1 text-muted-foreground">Fuel type</span>
-        {FUEL_TYPES.map((f) => {
-          const active = fuels.includes(f);
-          const tint = FUEL_ACCENT[f];
-          return (
+    <div className="videos-page">
+      <LiveMarquee />
+      <main className="videos-shell">
+        <nav className="videos-breadcrumb" aria-label="Breadcrumb">
+          <Link to="/">Global Bioenergy Watch</Link>
+          <span>/</span>
+          <Link to="/" hash="markets">
+            Markets
+          </Link>
+          <span>/</span>
+          <span aria-current="page">Video briefing room</span>
+        </nav>
+        <VideoHero
+          selectedVideo={selectedVideo}
+          playerRef={playerRef}
+          onShowExplainer={() => setSelectedVideo(null)}
+        />
+        <div className="videos-fuel-bar" role="group" aria-label="Filter videos by fuel type">
+          <span>Fuel type</span>
+          {FUEL_TYPES.map((f, index) => (
             <button
               key={f}
               type="button"
+              aria-pressed={fuels.includes(f)}
               onClick={() => toggleFuel(f)}
-              aria-pressed={active}
-              className="label-mono inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-all hover:-translate-y-0.5"
-              style={
-                active
-                  ? { backgroundColor: tint, borderColor: tint, color: "var(--primary-foreground)" }
-                  : {
-                      backgroundColor: `color-mix(in oklab, ${tint} 12%, var(--surface))`,
-                      borderColor: `color-mix(in oklab, ${tint} 35%, transparent)`,
-                      color: tint,
-                    }
-              }
+              className={`videos-fuel-chip tone-${index % 3}${fuels.includes(f) ? " is-active" : ""}`}
             >
               {f}
             </button>
-          );
-        })}
-      </div>
-
-      <LiveMediaFeed fuels={fuels} country={country} />
-
-      <VideoLibrary regions={[]} fuels={fuels} country={country} onSelectCountry={setCountry} />
-    </PageShell>
+          ))}
+        </div>
+        <div className="videos-layout">
+          <VideoFilters
+            country={country}
+            onCountry={setCountry}
+            fuels={fuels}
+            onFuel={toggleFuel}
+            regions={regions}
+            onRegion={toggleRegion}
+            policies={policies}
+            onPolicy={togglePolicy}
+            onClear={clearFilters}
+          />
+          <LiveMediaFeed
+            fuels={fuels}
+            country={country}
+            selectedVideoId={selectedVideo?.id ?? null}
+            onPlayVideo={playVideo}
+          />
+        </div>
+        <VideoLibrary
+          regions={regions}
+          fuels={fuels}
+          country={country}
+          policies={policies}
+          onSelectCountry={setCountry}
+        />
+      </main>
+    </div>
   );
 }

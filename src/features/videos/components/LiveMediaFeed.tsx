@@ -1,9 +1,12 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { motion, useInView, useReducedMotion } from "motion/react";
 import { PlayCircle, Newspaper, RefreshCw, ExternalLink } from "lucide-react";
 import { getLiveMediaFn } from "@/features/videos/server-functions";
 import { COUNTRIES, type FuelType } from "@/features/policy/taxonomy";
+import type { LiveVideo } from "../contracts";
+import "../videos.css";
 
 const BASE_KEYWORDS = [
   "bioenergy policy",
@@ -12,7 +15,6 @@ const BASE_KEYWORDS = [
   "renewable diesel",
   "biogas biomethane",
 ];
-
 const FUEL_KEYWORD: Record<FuelType, string> = {
   Ethanol: "ethanol blending policy",
   Biodiesel: "biodiesel mandate",
@@ -21,115 +23,199 @@ const FUEL_KEYWORD: Record<FuelType, string> = {
   Biogas: "biomethane biogas policy",
   Feedstock: "biofuel feedstock supply",
 };
-
 const nameFor = (slug: string) => COUNTRIES.find((c) => c.slug === slug)?.name ?? slug;
 
-export function LiveMediaFeed({ fuels, country }: { fuels: FuelType[]; country: string | null }) {
+function VideoResults({
+  videos,
+  selectedVideoId,
+  onPlayVideo,
+}: {
+  videos: LiveVideo[];
+  selectedVideoId: string | null;
+  onPlayVideo: ((video: LiveVideo) => void) | undefined;
+}) {
+  const [visibleCount, setVisibleCount] = useState(8);
+  const sentinel = useRef<HTMLDivElement>(null);
+  const nearEnd = useInView(sentinel, { margin: "0px 0px 300px 0px" });
+  const reduced = useReducedMotion();
+  const hasMore = visibleCount < videos.length;
+  useEffect(() => {
+    if (nearEnd && hasMore && !reduced) setVisibleCount((count) => count + 8);
+  }, [nearEnd, hasMore, reduced]);
+  return (
+    <>
+      <div className="videos-card-grid">
+        {videos.slice(0, visibleCount).map((v, index) => (
+          <motion.a
+            key={v.id}
+            href={v.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`videos-live-card${selectedVideoId === v.id ? " is-selected" : ""}`}
+            aria-current={selectedVideoId === v.id ? "true" : undefined}
+            aria-label={onPlayVideo ? `Play ${v.title} in the video player` : undefined}
+            onClick={(event) => {
+              if (
+                !onPlayVideo ||
+                event.button !== 0 ||
+                event.metaKey ||
+                event.ctrlKey ||
+                event.shiftKey ||
+                event.altKey ||
+                !/^[\w-]{11}$/.test(v.id)
+              )
+                return;
+              event.preventDefault();
+              onPlayVideo(v);
+            }}
+            initial={false}
+            whileInView={reduced ? {} : { opacity: [0.55, 1], y: [12, 0] }}
+            viewport={{ once: true, amount: 0.1 }}
+            transition={{ duration: 0.4, delay: (index % 8) * 0.06 }}
+          >
+            <div className="videos-thumb">
+              <img
+                src={v.thumbnail}
+                alt={v.title}
+                loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.style.visibility = "hidden";
+                }}
+              />
+              <PlayCircle className="videos-thumb-play" aria-hidden="true" />
+              <span className="videos-thumb-source">{v.channel}</span>
+              {v.duration && <span className="videos-duration">{v.duration}</span>}
+            </div>
+            <div className="videos-live-body">
+              <h3>{v.title}</h3>
+              <p>
+                {v.channel}
+                {v.published && (
+                  <>
+                    <span>·</span>
+                    {v.published}
+                  </>
+                )}
+              </p>
+            </div>
+          </motion.a>
+        ))}
+      </div>
+      {hasMore ? (
+        <div ref={sentinel} className="videos-load-more">
+          <button type="button" onClick={() => setVisibleCount((count) => count + 8)}>
+            Load more videos{" "}
+            <span>
+              {Math.min(visibleCount, videos.length)} / {videos.length}
+            </span>
+          </button>
+        </div>
+      ) : (
+        <p className="videos-feed-end">You’re up to date · {videos.length} videos in this feed</p>
+      )}
+    </>
+  );
+}
+
+export function LiveMediaFeed({
+  fuels,
+  country,
+  selectedVideoId = null,
+  onPlayVideo,
+}: {
+  fuels: FuelType[];
+  country: string | null;
+  selectedVideoId?: string | null;
+  onPlayVideo?: (video: LiveVideo) => void;
+}) {
   const keywords = useMemo(() => {
     const topics = fuels.length ? fuels.map((f) => FUEL_KEYWORD[f]) : BASE_KEYWORDS;
     const prefix = country ? `${nameFor(country)} ` : "";
     return Array.from(new Set(topics.map((t) => `${prefix}${t}`))).slice(0, 6);
   }, [fuels, country]);
-
   const fetchMedia = useServerFn(getLiveMediaFn);
-  const { data, isFetching, refetch } = useQuery({
+  const { data, isFetching, isError, refetch } = useQuery({
     queryKey: ["live-media", keywords],
     queryFn: () => fetchMedia({ data: { keywords } }),
     staleTime: 15 * 60_000,
   });
-
   const videos = data?.videos ?? [];
   const articles = data?.articles ?? [];
-
+  const reduced = useReducedMotion();
   return (
-    <section className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+    <section className="videos-feed" aria-labelledby="video-live-title" aria-busy={isFetching}>
+      <header className="videos-section-head">
         <div>
-          <h3 className="font-display text-xl font-bold">Live search — YouTube &amp; web</h3>
-          <p className="text-xs text-muted-foreground">Fresh results for: {keywords.join(" · ")}</p>
+          <h2 id="video-live-title">Live search — YouTube &amp; web</h2>
+          <p>Fresh results for: {keywords.join(" · ")}</p>
         </div>
         <button
           type="button"
+          className="videos-refresh"
           onClick={() => refetch()}
-          className="label-mono inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-2 px-3 py-1.5 text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+          disabled={isFetching}
         >
-          <RefreshCw className={`size-3 ${isFetching ? "animate-spin" : ""}`} /> Refresh
+          <RefreshCw size={14} className={isFetching ? "videos-spinning" : ""} aria-hidden="true" />
+          {isFetching ? "Refreshing…" : "Refresh"}
         </button>
-      </div>
-
-      {isFetching && videos.length === 0 && (
-        <p className="glass-panel p-6 text-sm text-muted-foreground">
-          Searching YouTube and the web…
-        </p>
-      )}
-
-      {videos.length > 0 && (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {videos.map((v) => (
-            <a
-              key={v.id}
-              href={v.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="glass-panel lift group flex flex-col overflow-hidden"
-            >
-              <div className="relative">
-                <img
-                  src={v.thumbnail}
-                  alt={v.title}
-                  loading="lazy"
-                  className="aspect-video w-full object-cover"
-                />
-                <PlayCircle className="absolute bottom-2 left-2 size-6 text-primary drop-shadow transition-transform group-hover:scale-110" />
-                {v.duration && (
-                  <span className="label-mono absolute bottom-2 right-2 rounded bg-background/80 px-1.5 py-0.5 text-[0.6rem]">
-                    {v.duration}
-                  </span>
-                )}
+      </header>
+      {isFetching && videos.length === 0 && articles.length === 0 && (
+        <div role="status">
+          <p className="videos-loading-label">Searching YouTube and the web…</p>
+          <div className="videos-card-grid" aria-hidden="true">
+            {Array.from({ length: 8 }, (_, i) => (
+              <div className="videos-skeleton" key={i}>
+                <div className="videos-skeleton-thumb" />
+                <div className="videos-skeleton-line" />
+                <div className="videos-skeleton-line short" />
               </div>
-              <div className="flex flex-1 flex-col gap-1 p-3">
-                <p className="font-display text-sm font-semibold leading-snug transition-colors group-hover:text-primary">
-                  {v.title}
-                </p>
-                <p className="mt-auto font-mono text-[0.65rem] text-muted-foreground">
-                  {v.channel}
-                  {v.published ? ` · ${v.published}` : ""}
-                </p>
-              </div>
-            </a>
-          ))}
-        </div>
-      )}
-
-      {articles.length > 0 && (
-        <div>
-          <h4 className="label-mono flex items-center gap-2 text-muted-foreground">
-            <Newspaper className="size-3.5" /> Web coverage
-          </h4>
-          <div className="mt-2 grid gap-2 sm:grid-cols-2">
-            {articles.slice(0, 18).map((a) => (
-              <a
-                key={a.url}
-                href={a.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="glass-panel lift flex flex-col gap-1 p-3 text-sm transition-colors hover:text-primary"
-              >
-                <span className="font-medium leading-snug">{a.title}</span>
-                <span className="flex items-center gap-1 font-mono text-[0.65rem] text-muted-foreground">
-                  {a.source}
-                  {a.published ? ` · ${new Date(a.published).toLocaleDateString()}` : ""}
-                  <ExternalLink className="size-3" />
-                </span>
-              </a>
             ))}
           </div>
         </div>
       )}
-
+      {videos.length > 0 && (
+        <VideoResults
+          key={keywords.join("|")}
+          videos={videos}
+          selectedVideoId={selectedVideoId}
+          onPlayVideo={onPlayVideo}
+        />
+      )}
+      {articles.length > 0 && (
+        <section className="videos-web-coverage" aria-labelledby="video-web-title">
+          <h3 id="video-web-title">
+            <Newspaper size={16} aria-hidden="true" />
+            Web coverage
+          </h3>
+          <div className="videos-article-grid">
+            {articles.slice(0, 18).map((a, index) => (
+              <motion.a
+                key={a.url}
+                href={a.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="videos-article-card"
+                initial={false}
+                whileInView={reduced ? {} : { opacity: [0.55, 1], y: [12, 0] }}
+                viewport={{ once: true, amount: 0.1 }}
+                transition={{ duration: 0.4, delay: (index % 4) * 0.06 }}
+              >
+                <h4>{a.title}</h4>
+                <p>
+                  {a.source}
+                  {a.published ? ` · ${new Date(a.published).toLocaleDateString()}` : ""}
+                  <ExternalLink size={12} aria-hidden="true" />
+                </p>
+              </motion.a>
+            ))}
+          </div>
+        </section>
+      )}
       {!isFetching && videos.length === 0 && articles.length === 0 && (
-        <p className="glass-panel p-6 text-sm text-muted-foreground">
-          No live results right now — the curated hubs below still apply.
+        <p className="videos-empty" role="status">
+          {isError
+            ? "Live search is unavailable right now. Try Refresh, or explore the official hubs below."
+            : "No live results right now — the curated hubs below still apply."}
         </p>
       )}
     </section>

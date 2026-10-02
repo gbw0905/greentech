@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Briefcase } from "lucide-react";
 import { JobsPanel } from "@/features/jobs/components/JobsPanel";
 import { EMPLOYERS } from "@/features/jobs/data";
-import { PageShell, PageHeading } from "@/components/PageShell";
+import { JobsHero } from "@/features/jobs/components/JobsHero";
+import { LiveMarquee } from "@/features/markets/components/LiveMarquee";
 import { useVisitTracker } from "@/features/traffic/hooks/useVisitTracker";
 
 const TITLE = "Biofuel & bioenergy jobs | Global Bioenergy Watch";
@@ -77,13 +77,12 @@ export const Route = createFileRoute("/jobs")({
 function JobsPage() {
   useVisitTracker();
   return (
-    <PageShell>
-      <PageHeading
-        icon={Briefcase}
-        title="Bioenergy jobs desk"
-        subtitle="Roles across biorefineries, policy teams, trading floors and R&D labs — refined by function, seniority and region."
-      />
-      <JobsPanel />
-    </PageShell>
+    <div className="jobs-page">
+      <LiveMarquee />
+      <main className="jobs-main">
+        <JobsHero />
+        <JobsPanel />
+      </main>
+    </div>
   );
 }

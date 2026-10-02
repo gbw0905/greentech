@@ -104,7 +104,7 @@ function MultiSelectDropdown({
   );
 }
 
-export function AlertSignup() {
+export function AlertSignup({ appearance = "default" }: { appearance?: "default" | "footer" }) {
   const subscribe = useServerFn(subscribeToAlerts);
   const [email, setEmail] = useState("");
   const [fuels, setFuels] = useState<FuelType[]>([]);
@@ -145,36 +145,48 @@ export function AlertSignup() {
   const fuelSummary = (names: string[]) =>
     names.length === 0 ? "All fuel types" : names.join(", ");
 
+  const coverageControls = (
+    <div className="mb-4 grid gap-3 sm:grid-cols-2">
+      <MultiSelectDropdown
+        label="Country"
+        icon={MapPin}
+        options={countryOptions}
+        selected={countries}
+        onChange={setCountries}
+        renderSummary={countrySummary}
+      />
+      <MultiSelectDropdown
+        label="Fuel type"
+        icon={Fuel}
+        options={fuelOptions}
+        selected={fuels}
+        onChange={(values) => setFuels(values as FuelType[])}
+        renderSummary={fuelSummary}
+      />
+    </div>
+  );
+
   return (
-    <div className="rounded-lg border border-border bg-white p-5 shadow-sm sm:p-6">
-      <p className="mb-4 text-sm text-muted-foreground">
-        Pick your coverage and subscribe to a daily AI-written digest of bioenergy policy and market
-        updates.
-      </p>
+    <div
+      className={
+        appearance === "footer"
+          ? "footer-alert-signup"
+          : "rounded-lg border border-border bg-white p-5 shadow-sm sm:p-6"
+      }
+    >
+      {appearance === "default" && (
+        <p className="mb-4 text-sm text-muted-foreground">
+          Pick your coverage and subscribe to a daily AI-written digest of bioenergy policy and
+          market updates.
+        </p>
+      )}
 
       {/* Compact filters */}
-      <div className="mb-4 grid gap-3 sm:grid-cols-2">
-        <MultiSelectDropdown
-          label="Country"
-          icon={MapPin}
-          options={countryOptions}
-          selected={countries}
-          onChange={setCountries}
-          renderSummary={countrySummary}
-        />
-        <MultiSelectDropdown
-          label="Fuel type"
-          icon={Fuel}
-          options={fuelOptions}
-          selected={fuels}
-          onChange={(values) => setFuels(values as FuelType[])}
-          renderSummary={fuelSummary}
-        />
-      </div>
+      {appearance === "default" && coverageControls}
 
       {/* Active chips */}
       {(countries.length > 0 || fuels.length > 0) && (
-        <div className="mb-4 flex flex-wrap gap-2">
+        <div className="alert-selected-coverage mb-4 flex flex-wrap gap-2">
           {countries.map((slug) => {
             const c = COUNTRIES.find((x: { slug: string; name: string }) => x.slug === slug);
             return (
@@ -255,6 +267,13 @@ export function AlertSignup() {
       <p className="mt-2 text-xs text-muted-foreground">
         Daily digest only. Unsubscribe any time via the link in every email.
       </p>
+
+      {appearance === "footer" && (
+        <details className="footer-coverage-options">
+          <summary>Choose countries and fuel types</summary>
+          {coverageControls}
+        </details>
+      )}
 
       {status === "confirmation_sent" && (
         <p className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary">

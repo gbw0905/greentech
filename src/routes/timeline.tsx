@@ -1,8 +1,9 @@
+import { loadNavigationFeed } from "@/features/policy/navigation-feed";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Layers, X } from "lucide-react";
-import { feedQueryWithInitial, loadFeed } from "@/features/policy/feed-query";
+import { feedQueryWithInitial } from "@/features/policy/feed-query";
 import {
   COUNTRIES,
   FUEL_TYPES,
@@ -31,7 +32,7 @@ export const Route = createFileRoute("/timeline")({
     ],
     links: [{ rel: "canonical", href: "https://globalbioenergywatch.org/timeline" }],
   }),
-  loader: () => loadFeed(),
+  loader: ({ context }) => loadNavigationFeed(context.queryClient),
   component: TimelinePage,
 });
 

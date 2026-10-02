@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 const ITEMS = [
-  { href: "#disclaimer", label: "Method and disclaimer" },
+  { href: "#disclaimer", label: "What we do" },
   { to: "/ci-calculator", label: "CI calculator" },
   { to: "/videos", label: "Videos" },
   { to: "/about", label: "About us" },
@@ -82,15 +82,16 @@ export function AboutMenu() {
 
               if ("href" in item) {
                 return (
-                  <a
+                  <Link
                     key={item.href}
-                    href={item.href}
+                    to="/"
+                    hash={item.href.slice(1)}
                     role="menuitem"
                     onClick={() => setOpen(false)}
                     className={itemClass}
                   >
                     {item.label}
-                  </a>
+                  </Link>
                 );
               }
 

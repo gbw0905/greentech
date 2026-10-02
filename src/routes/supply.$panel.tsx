@@ -107,8 +107,7 @@ function SupplyDatasetPage() {
             Explore other datasets
           </h2>
           <Link
-            to="/"
-            hash="production"
+            to="/supply"
             className="label-mono inline-flex shrink-0 items-center gap-1.5 font-bold text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="size-3.5" /> All datasets
@@ -152,11 +151,10 @@ function SupplyNotFound() {
       <div className="glass-panel p-6 text-center">
         <h1 className="font-display text-2xl font-extrabold text-foreground">Dataset not found</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          That supply dataset does not exist. Pick one from the dashboard instead.
+          That supply dataset does not exist. Pick one from the supply directory instead.
         </p>
         <Link
-          to="/"
-          hash="production"
+          to="/supply"
           className="label-mono mt-4 inline-flex items-center gap-1.5 font-bold text-foreground underline underline-offset-4"
         >
           <ArrowLeft className="size-3.5" /> Back to Supply &amp; producers

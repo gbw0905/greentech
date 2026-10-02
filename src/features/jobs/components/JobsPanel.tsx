@@ -1,17 +1,20 @@
+import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Briefcase,
+  ArrowUpRight,
+  CheckCircle2,
   Check,
   ChevronDown,
   ExternalLink,
-  Newspaper,
   Search,
   RotateCcw,
+  X,
 } from "lucide-react";
 import { createPortal } from "react-dom";
 import {
   CATEGORY_QUERY,
+  EMPLOYERS,
   JOB_BOARDS,
   JOB_CATEGORIES,
   JOB_REGIONS,
@@ -21,6 +24,8 @@ import {
 import type { JobCategory, Seniority } from "@/features/jobs/contracts";
 import { getHiringNewsFn } from "@/features/jobs/server-functions";
 import { logoForDomain } from "@/features/markets/entity-logos";
+import { MotionReveal } from "@/components/MotionReveal";
+import { EmployerDirectory } from "./EmployerDirectory";
 
 /** Light pastel tones per filter group — active picks up the group's tint. */
 const GROUP_TONES = {
@@ -80,16 +85,34 @@ function Dropdown({
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  const [pos, setPos] = useState({ top: 0, left: 0, width: 0 });
+  const keyboardOpenRef = useRef(false);
+  const [pos, setPos] = useState({ top: 0, left: 0, width: 0, maxHeight: 288 });
   const t = GROUP_TONES[tone];
 
   useEffect(() => {
     if (!open) return;
     const rect = triggerRef.current?.getBoundingClientRect();
     if (rect) {
-      const width = Math.max(rect.width, 220);
+      const width = Math.min(Math.max(rect.width, 220), window.innerWidth - 16);
       const left = Math.max(8, Math.min(rect.left, window.innerWidth - width - 8));
-      setPos({ top: rect.bottom + 6, left, width });
+      const desiredHeight = Math.min(288, options.length * 41);
+      const below = window.innerHeight - rect.bottom - 14;
+      const above = rect.top - 14;
+      const opensAbove = below < Math.min(desiredHeight, 180) && above > below;
+      const maxHeight = Math.max(80, Math.min(desiredHeight, opensAbove ? above : below));
+      setPos({
+        top: opensAbove ? rect.top - maxHeight - 6 : rect.bottom + 6,
+        left,
+        width,
+        maxHeight,
+      });
+    }
+    if (keyboardOpenRef.current) {
+      const option =
+        menuRef.current?.querySelector<HTMLButtonElement>('[aria-selected="true"]') ??
+        menuRef.current?.querySelector<HTMLButtonElement>('[role="option"]');
+      option?.focus({ preventScroll: true });
+      keyboardOpenRef.current = false;
     }
     const onPointerDown = (e: PointerEvent) => {
       const target = e.target as Node;
@@ -97,7 +120,10 @@ function Dropdown({
       setOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") {
+        setOpen(false);
+        triggerRef.current?.focus({ preventScroll: true });
+      }
     };
     // The menu is fixed-positioned; close it when the page scrolls or the
     // window resizes so it never floats detached from its trigger. Ignore
@@ -119,23 +145,32 @@ function Dropdown({
       window.removeEventListener("scroll", onScroll, true);
       window.removeEventListener("resize", close);
     };
-  }, [open]);
+  }, [open, options.length]);
 
   return (
     <div className="relative min-w-0 flex-1">
       <button
         ref={triggerRef}
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={(event) => {
+          keyboardOpenRef.current = event.detail === 0;
+          setOpen((value) => !value);
+        }}
+        onKeyDown={(event) => {
+          if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+          event.preventDefault();
+          keyboardOpenRef.current = true;
+          if (open) menuRef.current?.querySelector<HTMLButtonElement>('[role="option"]')?.focus();
+          else setOpen(true);
+        }}
+        aria-label={`${label}: ${valueLabel}`}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className={`flex w-full items-center justify-between gap-2 rounded-lg border ${t.border} ${t.bg} px-3 py-2.5 text-left shadow-sm ring-1 ring-transparent transition-all hover:shadow-md focus:outline-none focus:ring-2 ${t.ring}`}
+        className={`jobs-filter jobs-filter-${tone}`}
       >
         <span className="min-w-0">
-          <span className={`block text-[0.65rem] font-bold uppercase tracking-wider ${t.muted}`}>
-            {label}
-          </span>
-          <span className={`block truncate text-sm font-semibold ${t.text}`}>{valueLabel}</span>
+          <span className="jobs-filter-label">{label}</span>
+          <span className="jobs-filter-value">{valueLabel}</span>
         </span>
         <ChevronDown
           className={`size-4 shrink-0 ${t.text} transition-transform ${open ? "rotate-180" : ""}`}
@@ -147,9 +182,42 @@ function Dropdown({
           <div
             ref={menuRef}
             role="listbox"
+            aria-label={label}
+            onKeyDown={(event) => {
+              if (event.key === "Tab") {
+                setOpen(false);
+                triggerRef.current?.focus({ preventScroll: true });
+                return;
+              }
+              if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+              event.preventDefault();
+              const options = Array.from(
+                event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="option"]'),
+              );
+              const current = options.indexOf(document.activeElement as HTMLButtonElement);
+              const next =
+                event.key === "Home"
+                  ? 0
+                  : event.key === "End"
+                    ? options.length - 1
+                    : (current + (event.key === "ArrowDown" ? 1 : -1) + options.length) %
+                      options.length;
+              const option = options[next];
+              if (!option) return;
+              option.focus({ preventScroll: true });
+              const menu = event.currentTarget;
+              if (option.offsetTop < menu.scrollTop) menu.scrollTop = option.offsetTop;
+              else if (option.offsetTop + option.offsetHeight > menu.scrollTop + menu.clientHeight)
+                menu.scrollTop = option.offsetTop + option.offsetHeight - menu.clientHeight;
+            }}
             aria-multiselectable={multi}
-            className="fixed z-50 max-h-72 overflow-y-auto rounded-lg border border-border bg-surface-1 shadow-xl"
-            style={{ top: pos.top, left: pos.left, width: pos.width }}
+            className="jobs-filter-menu fixed z-[60] max-h-72 overflow-y-auto rounded-xl border border-[#d6e1ea] bg-white shadow-xl"
+            style={{
+              top: pos.top,
+              left: pos.left,
+              width: pos.width,
+              maxHeight: pos.maxHeight,
+            }}
           >
             {options.map((opt) => {
               const isSelected = selected.includes(opt.value);
@@ -161,9 +229,12 @@ function Dropdown({
                   aria-selected={isSelected}
                   onClick={() => {
                     onSelect(opt.value);
-                    if (!multi) setOpen(false);
+                    if (!multi) {
+                      setOpen(false);
+                      triggerRef.current?.focus({ preventScroll: true });
+                    }
                   }}
-                  className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-surface-2"
+                  className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-sm text-[#0e2a43] transition-colors hover:bg-[#edf4f8] focus-visible:bg-[#e3f4ee] focus-visible:outline-none"
                 >
                   <span className="truncate">{opt.label}</span>
                   {isSelected && <Check className={`size-4 ${t.check}`} />}
@@ -177,7 +248,33 @@ function Dropdown({
   );
 }
 
-export function JobsPanel({ compact = false }: { compact?: boolean }) {
+function SourceLogo({ name, domain }: { name: string; domain: string }) {
+  const [failed, setFailed] = useState(false);
+  const logo = logoForDomain(domain, 64);
+  return (
+    <span className="jobs-source-icon">
+      {logo && !failed ? (
+        <img
+          src={logo}
+          alt=""
+          width={28}
+          height={28}
+          loading="lazy"
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        name
+          .split(/[ /]/)
+          .filter(Boolean)
+          .map((part) => part[0])
+          .slice(0, 2)
+          .join("")
+      )}
+    </span>
+  );
+}
+
+export function JobsPanel() {
   const [categories, setCategories] = useState<JobCategory[]>([]);
   const [seniority, setSeniority] = useState<Seniority | null>(null);
   const [regionName, setRegionName] = useState<string>("Worldwide");
@@ -227,183 +324,227 @@ export function JobsPanel({ compact = false }: { compact?: boolean }) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="glass-panel overflow-hidden">
-        <div className="panel-head">
-          <h3 className="label-mono flex items-center gap-2 text-muted-foreground">
-            <Briefcase className="size-3.5" /> Refine your search
-            {activeCount > 0 && <span className="text-accent">· {activeCount} active</span>}
-          </h3>
+    <div className="jobs-desk">
+      <section id="job-search" className="jobs-search" aria-label="Refine your job search">
+        <div className="jobs-search-toolbar">
+          <label className="jobs-search-input">
+            <Search size={17} aria-hidden="true" />
+            <span className="sr-only">Job keyword</span>
+            <input
+              id="job-keyword"
+              value={keyword}
+              onChange={(event) => setKeyword(event.target.value)}
+              placeholder="Search roles, companies, or keywords…"
+            />
+          </label>
+          <Dropdown
+            tone="region"
+            label="Region"
+            valueLabel={region.name}
+            options={JOB_REGIONS.map((r) => ({ value: r.name, label: r.name }))}
+            selected={[region.name]}
+            onSelect={setRegionName}
+          />
+          <Dropdown
+            tone="function"
+            label="Function"
+            valueLabel={
+              categories.length === 0
+                ? "All functions"
+                : categories.length === 1
+                  ? categories[0]!
+                  : `${categories[0]!} +${categories.length - 1}`
+            }
+            options={JOB_CATEGORIES.map((c) => ({ value: c, label: c }))}
+            selected={categories}
+            multi
+            onSelect={(v) => toggle(categories, setCategories, v as JobCategory)}
+          />
+          <Dropdown
+            tone="seniority"
+            label="Seniority"
+            valueLabel={seniority ?? "Any level"}
+            options={SENIORITY_LEVELS.map((level) => ({ value: level, label: level }))}
+            selected={seniority ? [seniority] : []}
+            onSelect={(v) => setSeniority(seniority === v ? null : (v as Seniority))}
+          />
           <button
             type="button"
-            onClick={reset}
-            disabled={activeCount === 0}
-            className="label-mono flex items-center gap-1 text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40"
+            onClick={() => setRemoteOnly((value) => !value)}
+            aria-pressed={remoteOnly}
+            className="jobs-remote"
           >
-            <RotateCcw className="size-3" /> Reset
+            <span>{remoteOnly && <Check size={12} />}</span>Remote only
           </button>
         </div>
-
-        <div className="space-y-4 p-5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-            <Dropdown
-              tone="function"
-              label="Function"
-              valueLabel={
-                categories.length === 0
-                  ? "All functions"
-                  : categories.length === 1
-                    ? categories[0]!
-                    : `${categories[0]!} +${categories.length - 1}`
-              }
-              options={JOB_CATEGORIES.map((c) => ({ value: c, label: c }))}
-              selected={categories}
-              multi
-              onSelect={(v) => toggle(categories, setCategories, v as JobCategory)}
-            />
-            <Dropdown
-              tone="seniority"
-              label="Seniority"
-              valueLabel={seniority ?? "Any level"}
-              options={SENIORITY_LEVELS.map((s) => ({ value: s, label: s }))}
-              selected={seniority ? [seniority] : []}
-              onSelect={(v) => setSeniority(seniority === v ? null : (v as Seniority))}
-            />
-            <Dropdown
-              tone="region"
-              label="Region"
-              valueLabel={region.name}
-              options={JOB_REGIONS.map((r) => ({ value: r.name, label: r.name }))}
-              selected={[region.name]}
-              onSelect={(v) => setRegionName(v)}
-            />
-          </div>
-
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-            <div className="min-w-0 flex-1">
-              <label
-                htmlFor="job-keyword"
-                className="mb-1.5 block text-[0.65rem] font-bold uppercase tracking-wider text-muted-foreground"
+        {activeCount > 0 && (
+          <div className="jobs-active-filters" aria-label="Active job filters">
+            {categories.map((category) => (
+              <button
+                type="button"
+                key={category}
+                aria-label={`Remove ${category} filter`}
+                onClick={() => toggle(categories, setCategories, category)}
               >
-                Keyword
-              </label>
-              <input
-                id="job-keyword"
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-                placeholder="e.g. fermentation, HVO, carbon intensity"
-                className="w-full rounded-lg border border-border bg-surface-1 px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-primary focus:ring-1 focus:ring-primary/20"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => setRemoteOnly((v) => !v)}
-              aria-pressed={remoteOnly}
-              className={`shrink-0 rounded-lg border px-4 py-2 text-sm font-semibold transition-all ${
-                remoteOnly
-                  ? "border-emerald-400 bg-emerald-100 text-emerald-900 shadow-sm"
-                  : "border-border bg-surface-1 text-foreground hover:bg-surface-2"
-              }`}
-            >
-              {remoteOnly ? "Remote only ✓" : "Remote only"}
+                {category}
+                <X size={13} />
+              </button>
+            ))}
+            {seniority && (
+              <button
+                type="button"
+                aria-label="Remove seniority filter"
+                onClick={() => setSeniority(null)}
+              >
+                {seniority}
+                <X size={13} />
+              </button>
+            )}
+            {region.location && (
+              <button
+                type="button"
+                aria-label="Remove region filter"
+                onClick={() => setRegionName("Worldwide")}
+              >
+                {region.name}
+                <X size={13} />
+              </button>
+            )}
+            <button type="button" className="jobs-reset" onClick={reset}>
+              <RotateCcw size={13} />
+              Reset all ({activeCount})
             </button>
           </div>
-        </div>
-      </div>
+        )}
+      </section>
 
-      <div className="glass-panel">
-        <div className="panel-head">
-          <h3 className="label-mono flex items-center gap-2 text-muted-foreground">
-            <Search className="size-3.5" /> Open searches
-          </h3>
-          <span className="label-mono max-w-[60%] truncate text-accent" title={query}>
-            {query}
+      <MotionReveal className="jobs-stats" aria-label="Career directory coverage">
+        {[
+          [EMPLOYERS.length, "Bioenergy employers"],
+          [JOB_REGIONS.length - 1, "Regional searches"],
+          [JOB_BOARDS.length, "Trusted sources"],
+          [JOB_CATEGORIES.length, "Career functions"],
+        ].map(([value, label]) => (
+          <div key={label}>
+            <strong>{value}</strong>
+            <span>{label}</span>
+          </div>
+        ))}
+      </MotionReveal>
+
+      <section id="job-sources" className="jobs-section" aria-labelledby="jobs-sources-title">
+        <MotionReveal className="jobs-section-heading">
+          <div>
+            <h2 id="jobs-sources-title">Browse job sources</h2>
+            <p>Explore opportunities on trusted job boards, using your selected filters.</p>
+          </div>
+          <span className="jobs-count">
+            {JOB_BOARDS.length} sources · {region.name}
           </span>
-        </div>
-        <div className="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-3">
-          {JOB_BOARDS.map((b) => {
-            const logo = logoForDomain(b.domain, 64);
-            return (
+        </MotionReveal>
+        <div className="jobs-source-grid">
+          {JOB_BOARDS.map((board, index) => (
+            <MotionReveal as="article" key={board.name} delay={Math.min(index * 0.04, 0.2)}>
               <a
-                key={b.name}
-                href={b.url({ keywords: query, location: region.location })}
+                href={board.url({ keywords: query, location: region.location })}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group rounded-lg border border-border bg-surface-1 p-4 transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)]"
+                className="jobs-source-card"
               >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="flex min-w-0 items-center gap-2">
-                    <span className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded border border-border bg-white">
-                      {logo ? (
-                        <img
-                          src={logo}
-                          alt=""
-                          width={28}
-                          height={28}
-                          loading="lazy"
-                          className="size-full object-contain p-0.5"
-                        />
-                      ) : (
-                        <span className="label-mono text-[0.6rem] text-muted-foreground">
-                          {b.name.slice(0, 2).toUpperCase()}
-                        </span>
-                      )}
-                    </span>
-                    <span className="truncate font-display text-sm font-bold text-foreground">
-                      {b.name}
-                    </span>
-                  </span>
-                  <ExternalLink className="size-3.5 text-muted-foreground transition-colors group-hover:text-primary" />
+                <div className="jobs-source-top">
+                  <SourceLogo name={board.name} domain={board.domain} />
+                  <ArrowUpRight size={17} aria-hidden="true" />
                 </div>
-                <p className="mt-1 text-xs text-muted-foreground">{b.note}</p>
+                <h3>{board.name}</h3>
+                <p>{board.note}</p>
+                <span className="jobs-careers-link">
+                  Search opportunities <ExternalLink size={12} aria-hidden="true" />
+                </span>
+              </a>
+            </MotionReveal>
+          ))}
+        </div>
+      </section>
+
+      <section className="jobs-section jobs-hiring-section" aria-labelledby="jobs-hiring-title">
+        <MotionReveal className="jobs-section-heading">
+          <div>
+            <span className="jobs-section-kicker">Workforce intelligence</span>
+            <h2 id="jobs-hiring-title">Hiring signals</h2>
+            <p>Recruitment and workforce developments across the global bioenergy sector.</p>
+          </div>
+          <span className="jobs-count" aria-live="polite">
+            {news.isFetching ? "Updating…" : `${news.data?.items.length ?? 0} items`}
+          </span>
+        </MotionReveal>
+        <div className="jobs-news-list" aria-busy={news.isFetching}>
+          {news.isLoading && (
+            <p className="jobs-empty" role="status">
+              Scanning recruitment news…
+            </p>
+          )}
+          {news.isError && (
+            <div className="jobs-empty" role="alert">
+              Hiring news could not be loaded.{" "}
+              <button className="jobs-text-button" type="button" onClick={() => news.refetch()}>
+                Try again
+              </button>
+            </div>
+          )}
+          {!news.isLoading && !news.isError && !news.data?.items.length && (
+            <p className="jobs-empty" role="status">
+              No recent hiring news for these filters — widen the function or region selection.
+            </p>
+          )}
+          {news.data?.items.slice(0, 10).map((item) => {
+            const date = item.published ? new Date(item.published) : null;
+            const validDate =
+              date && Number.isFinite(date.getTime()) ? date.toISOString().slice(0, 10) : null;
+            return (
+              <a
+                key={item.url}
+                href={item.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="jobs-news-card"
+              >
+                <div>
+                  <h3>{item.title}</h3>
+                  <p>
+                    {item.source}
+                    {validDate && (
+                      <>
+                        {" "}
+                        · <time dateTime={validDate}>{validDate}</time>
+                      </>
+                    )}
+                  </p>
+                </div>
+                <span className="jobs-news-category">Hiring news</span>
+                <ArrowUpRight size={18} aria-hidden="true" />
               </a>
             );
           })}
         </div>
-      </div>
+      </section>
 
-      <div className="glass-panel">
-        <div className="panel-head">
-          <h3 className="label-mono flex items-center gap-2 text-muted-foreground">
-            <Newspaper className="size-3.5" /> Hiring signals
-          </h3>
-          <span className="label-mono text-muted-foreground/70">
-            {news.isFetching ? "Loading…" : `${news.data?.items.length ?? 0} items`}
-          </span>
-        </div>
-        <div className="divide-y divide-border">
-          {news.isLoading && (
-            <p className="p-5 text-sm text-muted-foreground">Scanning recruitment news…</p>
-          )}
-          {!news.isLoading && !news.data?.items.length && (
-            <p className="p-5 text-sm text-muted-foreground">
-              No recent hiring news for these filters — widen the fuel or region selection.
+      <EmployerDirectory />
+
+      <MotionReveal className="jobs-endnote">
+        <div>
+          <CheckCircle2 size={22} aria-hidden="true" />
+          <div>
+            <h2>Your next step starts at the source.</h2>
+            <p>
+              Openings and applications are hosted on employer and job-board websites. Check each
+              source for current availability and application details.
             </p>
-          )}
-          {news.data?.items.slice(0, 10).map((item) => (
-            <a
-              key={item.url}
-              href={item.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block px-5 py-3 transition-colors hover:bg-surface-2"
-            >
-              <p className="text-sm font-semibold text-foreground">{item.title}</p>
-              <p className="label-mono mt-1 text-muted-foreground">
-                {item.source}
-                {item.published ? ` · ${new Date(item.published).toISOString().slice(0, 10)}` : ""}
-              </p>
-            </a>
-          ))}
+          </div>
         </div>
-      </div>
-
-      {compact && (
-        <p className="label-mono flex items-center gap-2 text-muted-foreground">
-          <Briefcase className="size-3.5" /> Openings are listed on employer and job-board sites;
-          verify details before applying.
-        </p>
-      )}
+        <Link className="jobs-button" to="/contact">
+          Contact the careers desk <ArrowUpRight size={16} />
+        </Link>
+      </MotionReveal>
     </div>
   );
 }

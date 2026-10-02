@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "@/infrastructure/telemetry/lovable-error-reporting";
+import { SiteLayout } from "@/components/SiteLayout";
 
 function NotFoundComponent() {
   return (
@@ -127,13 +128,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  const { queryClient } = Route.useRouteContext();
   return (
     <html lang="en">
       <head>
         <HeadContent />
       </head>
       <body>
-        {children}
+        <QueryClientProvider client={queryClient}>
+          <SiteLayout>{children}</SiteLayout>
+        </QueryClientProvider>
         <Scripts />
       </body>
     </html>
@@ -141,12 +145,6 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function RootComponent() {
-  const { queryClient } = Route.useRouteContext();
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
-    </QueryClientProvider>
-  );
+  // Required: nested routes render here. Removing <Outlet /> breaks all child routes.
+  return <Outlet />;
 }
