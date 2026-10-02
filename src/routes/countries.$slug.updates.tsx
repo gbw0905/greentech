@@ -1,8 +1,9 @@
+import { loadNavigationFeed } from "@/features/policy/navigation-feed";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { countryBySlug } from "@/features/policy/taxonomy";
-import { feedQueryWithInitial, loadFeed } from "@/features/policy/feed-query";
+import { feedQueryWithInitial } from "@/features/policy/feed-query";
 import { CountryProfileHeader } from "@/features/countries/components/CountryProfileHeader";
 import { UpdateCard } from "@/features/policy/components/UpdateCard";
 import { CalendarRangeFilter } from "@/components/CalendarRangeFilter";
@@ -12,6 +13,7 @@ import { useVisitTracker } from "@/features/traffic/hooks/useVisitTracker";
 import { Activity, CalendarDays, FileCheck2 } from "lucide-react";
 
 export const Route = createFileRoute("/countries/$slug/updates")({
+  loader: ({ context }) => loadNavigationFeed(context.queryClient),
   head: ({ params }) => {
     const name = countryBySlug(params.slug)?.name ?? "Country";
     const title = `${name} Bioenergy Policy Updates | Global Bioenergy Watch`;
@@ -30,7 +32,6 @@ export const Route = createFileRoute("/countries/$slug/updates")({
       links: [{ rel: "canonical", href: url }],
     };
   },
-  loader: () => loadFeed(),
   component: CountryUpdatesPage,
 });
 

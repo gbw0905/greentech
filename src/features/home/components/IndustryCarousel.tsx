@@ -268,7 +268,7 @@ export function IndustryCarousel() {
                       width={1600}
                       height={900}
                       loading={
-                        index === active || index === (active + 1) % SLIDES.length
+                        visible && (index === active || index === (active + 1) % SLIDES.length)
                           ? "eager"
                           : "lazy"
                       }

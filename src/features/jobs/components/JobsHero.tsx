@@ -1,4 +1,5 @@
-import { ArrowUpRight, BriefcaseBusiness } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { BriefcaseBusiness } from "lucide-react";
 import { MotionReveal } from "@/components/MotionReveal";
 import { EMPLOYERS, JOB_BOARDS } from "@/features/jobs/data";
 
@@ -22,11 +23,11 @@ export function JobsHero() {
         </p>
         <div className="jobs-hero-actions">
           <a className="jobs-button jobs-button-primary" href="#job-search">
-            Browse jobs <ArrowUpRight size={16} />
+            Browse jobs
           </a>
-          <a className="jobs-button" href="/#alerts">
+          <Link className="jobs-button" to="/" hash="alerts">
             Get email alerts
-          </a>
+          </Link>
         </div>
       </MotionReveal>
       <MotionReveal className="jobs-discovery" delay={0.12}>

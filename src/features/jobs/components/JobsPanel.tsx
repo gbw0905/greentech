@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -540,9 +541,9 @@ export function JobsPanel() {
             </p>
           </div>
         </div>
-        <a className="jobs-button" href="/contact">
+        <Link className="jobs-button" to="/contact">
           Contact the careers desk <ArrowUpRight size={16} />
-        </a>
+        </Link>
       </MotionReveal>
     </div>
   );

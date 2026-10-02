@@ -21,7 +21,8 @@ const CAPABILITIES = [
     description:
       "Monitor government agencies, regulators, and credible media outlets for policy developments affecting ethanol, biodiesel, renewable diesel, SAF, and emerging feedstocks.",
     tags: ["Mandates", "Regulation", "Country tracking"],
-    href: "/#map",
+    to: "/",
+    hash: "map",
     tracking: "Bioenergy signals worldwide",
   },
   {
@@ -30,7 +31,8 @@ const CAPABILITIES = [
     description:
       "Follow market developments across the bioenergy sector and benchmark crude oil, equities, and natural gas alongside policy intelligence.",
     tags: ["Crude oil", "Equities", "Natural gas"],
-    href: "/#markets",
+    to: "/",
+    hash: "markets",
     tracking: "Policy and market developments",
   },
   {
@@ -39,7 +41,8 @@ const CAPABILITIES = [
     description:
       "Policy acts and market moves are classified by jurisdiction and fuel type, then published to a live tracker with source citations.",
     tags: ["Latest updates", "Jurisdictions", "Source citations"],
-    href: "/#updates",
+    to: "/",
+    hash: "updates",
     tracking: "Developments across jurisdictions",
   },
   {
@@ -48,7 +51,7 @@ const CAPABILITIES = [
     description:
       "Explore the companies moving the sector — oil majors, SAF airlines, fuel retailers, marine suppliers, and used cooking oil traders.",
     tags: ["Producers", "Suppliers", "Users"],
-    href: "/supply",
+    to: "/supply",
     tracking: "Companies across the value chain",
   },
   {
@@ -57,7 +60,8 @@ const CAPABILITIES = [
     description:
       "AI-powered summaries turn dense regulatory filings into readable briefings delivered by email on demand. Verify generated summaries against their original sources.",
     tags: ["AI summaries", "Daily digest", "Email alerts"],
-    href: "/#alerts",
+    to: "/",
+    hash: "alerts",
     tracking: "Policy and market briefings",
   },
   {
@@ -66,7 +70,7 @@ const CAPABILITIES = [
     description:
       "Connect with bioenergy careers across biorefineries, policy teams, trading desks, and research and development — with openings organised by function, seniority, and region.",
     tags: ["Jobs", "Companies", "Careers"],
-    href: "/jobs",
+    to: "/jobs",
     tracking: "Careers across the bioenergy sector",
   },
 ] as const;
@@ -119,9 +123,13 @@ function IntelligenceNetwork({ active }: { active: number }) {
           <span>Tracking</span>
           <p>{capability.tracking}</p>
         </div>
-        <a href={capability.href} aria-label={`Explore ${capability.title}`}>
+        <Link
+          to={capability.to}
+          hash={"hash" in capability ? capability.hash : ""}
+          aria-label={`Explore ${capability.title}`}
+        >
           <ArrowRight size={18} />
-        </a>
+        </Link>
       </div>
     </div>
   );
@@ -133,7 +141,11 @@ export function IntelligenceSection() {
   const [active, setActive] = useState(0);
   return (
     <div className="intelligence-surface">
-      <section className="intelligence-section" aria-labelledby="intelligence-title">
+      <section
+        id="disclaimer"
+        className="intelligence-section scroll-mt-[88px]"
+        aria-labelledby="intelligence-title"
+      >
         <MotionReveal as="header" className="intelligence-heading">
           <div>
             <p className="intelligence-eyebrow">The global bioenergy intelligence desk</p>
@@ -208,9 +220,9 @@ export function IntelligenceSection() {
                       <p>{item.description}</p>
                       <div className="intelligence-tags">
                         {item.tags.map((tag) => (
-                          <a key={tag} href={item.href}>
+                          <Link key={tag} to={item.to} hash={"hash" in item ? item.hash : ""}>
                             {tag}
-                          </a>
+                          </Link>
                         ))}
                       </div>
                     </div>

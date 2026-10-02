@@ -1,17 +1,14 @@
+import { loadNavigationFeed } from "@/features/policy/navigation-feed";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { AlertTriangle, BellRing } from "lucide-react";
-import { feedQueryWithInitial, loadFeed } from "@/features/policy/feed-query";
+import { feedQueryWithInitial } from "@/features/policy/feed-query";
 import { PolicyMapSection } from "@/features/countries/components/PolicyMapSection";
 
 import { OilPricePanel } from "@/features/markets/components/OilPricePanel";
 import { LiveMarquee } from "@/features/markets/components/LiveMarquee";
 
-import { AlertSignup } from "@/features/alerts/components/AlertSignup";
-import { TrafficPanel } from "@/features/traffic/components/TrafficPanel";
 import { useVisitTracker } from "@/features/traffic/hooks/useVisitTracker";
-import { MotionReveal } from "@/components/MotionReveal";
 import { IndustryCarousel } from "@/features/home/components/IndustryCarousel";
 import { IntelligenceSection } from "@/components/IntelligenceSection";
 import { getErrorMessage } from "@/shared/errors";
@@ -24,7 +21,7 @@ const DESCRIPTION =
   "Live tracker of global bioenergy and biofuel policy: ethanol, biodiesel, renewable diesel and SAF mandates by region, country and fuel type.";
 
 export const Route = createFileRoute("/")({
-  loader: () => loadFeed(),
+  loader: ({ context }) => loadNavigationFeed(context.queryClient),
   head: () => ({
     meta: [
       { title: TITLE },
@@ -67,56 +64,6 @@ function Index() {
   return <Dashboard />;
 }
 
-function SectionHeading({
-  icon: Icon,
-  title,
-  subtitle,
-  tone,
-  kicker,
-  singleLine,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  subtitle: string;
-  tone: string;
-  kicker: string;
-  singleLine?: boolean;
-}) {
-  return (
-    <div
-      className={`ink-bar ribbon-sheen mb-4 border-l-4 px-4 py-3 sm:px-5 ${
-        singleLine
-          ? "overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          : "overflow-hidden"
-      }`}
-      style={{
-        ["--tone" as string]: `color-mix(in oklab, ${tone} 62%, white)`,
-        borderLeftColor: "var(--tone)",
-      }}
-    >
-      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
-        <span
-          className="kicker inline-flex shrink-0 items-center gap-1.5"
-          style={{ color: "var(--tone)" }}
-        >
-          <Icon className="size-3" />
-          {kicker}
-        </span>
-        <h2 className="min-w-0 font-display text-lg leading-tight font-extrabold tracking-tight text-ink-foreground sm:text-2xl">
-          {title}
-        </h2>
-      </div>
-      <p
-        className={`mt-1 w-full text-xs/relaxed text-ink-muted sm:text-sm/relaxed ${
-          singleLine ? "whitespace-nowrap" : "max-w-3xl"
-        }`}
-      >
-        {subtitle}
-      </p>
-    </div>
-  );
-}
-
 function Dashboard() {
   useVisitTracker();
   const { feed: initialFeed } = Route.useLoaderData();
@@ -142,7 +89,7 @@ function Dashboard() {
     [data.updates],
   );
 
-  const topFive = data.updates.slice(0, 5);
+  const topFive = useMemo(() => data.updates.slice(0, 5), [data.updates]);
 
   return (
     <div>
@@ -157,75 +104,13 @@ function Dashboard() {
 
       <PolicyMapSection counts={counts} />
 
-      <div className="mx-auto max-w-[80rem] px-5 py-8 lg:px-8 lg:py-10">
-        <main className="space-y-8">
-          {data.error && (
-            <p className="glass-panel border-l-4 border-l-destructive p-4 text-sm text-muted-foreground">
-              Live scan issue: {data.error}
-            </p>
-          )}
-
-          <MotionReveal className="pt-4">
-            <section id="alerts">
-              <SectionHeading
-                tone="var(--chart-4)"
-                kicker="Email alerts"
-                icon={BellRing}
-                title="News alerts by email"
-                subtitle="Daily email digest of new bioenergy policy updates, filtered to the fuels you follow."
-              />
-              <AlertSignup />
-            </section>
-          </MotionReveal>
-
-          <MotionReveal>
-            <TrafficPanel />
-          </MotionReveal>
-
-          <MotionReveal as="section" id="disclaimer">
-            <SectionHeading
-              tone="var(--chart-8)"
-              kicker="Editorial standards"
-              icon={AlertTriangle}
-              title="Methodology & AI disclosure"
-              subtitle="How this desk sources, classifies and summarises every item you read here."
-            />
-            <div className="grid gap-4 md:grid-cols-3">
-              {[
-                {
-                  h: "Sourcing",
-                  tone: "var(--chart-2)",
-                  b: "Items are collected from official government and regulatory portals, intergovernmental agencies, and established energy trade and financial press. Sources outside that set are excluded.",
-                },
-                {
-                  h: "AI processing",
-                  tone: "var(--chart-4)",
-                  b: "An automated language model classifies each item by jurisdiction, fuel type and category, and drafts the summary shown. Summaries are generated, not editorially reviewed line by line.",
-                },
-                {
-                  h: "Limitations & use",
-                  tone: "var(--chart-8)",
-                  b: "Automated summaries can contain errors, omissions or outdated figures. Always verify against the original source and the governing legislation before relying on an item for compliance, trading or investment decisions.",
-                },
-              ].map((c) => (
-                <div
-                  key={c.h}
-                  className="glass-panel card-motion border-t-4 p-5"
-                  style={{
-                    borderTopColor: c.tone,
-                    background: `color-mix(in oklab, ${c.tone} 7%, white)`,
-                  }}
-                >
-                  <h3 className="font-display text-base font-bold" style={{ color: c.tone }}>
-                    {c.h}
-                  </h3>
-                  <p className="mt-2 text-sm/relaxed text-muted-foreground">{c.b}</p>
-                </div>
-              ))}
-            </div>
-          </MotionReveal>
-        </main>
-      </div>
+      {data.error && (
+        <div className="mx-auto max-w-[80rem] px-5 py-8 lg:px-8 lg:py-10">
+          <p className="glass-panel border-l-4 border-l-destructive p-4 text-sm text-muted-foreground">
+            Live scan issue: {data.error}
+          </p>
+        </div>
+      )}
       <IndustryCarousel />
       <IntelligenceSection />
     </div>

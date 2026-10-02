@@ -27,10 +27,10 @@ export function MotionReveal({
     <Element
       {...props}
       initial={false}
-      animate={entered && !reduced ? { opacity: [0, 1], y: [26, 0] } : { opacity: 1, y: 0 }}
+      animate={entered && !reduced ? { opacity: 1, y: [10, 0] } : { opacity: 1, y: 0 }}
       transition={{
-        duration: reduced ? 0 : 0.8,
-        delay: reduced ? 0 : delay,
+        duration: reduced ? 0 : 0.35,
+        delay: reduced ? 0 : Math.min(delay, 0.15),
         ease: [0.2, 0.7, 0.2, 1],
       }}
       viewport={{ once: true, amount: 0.08 }}

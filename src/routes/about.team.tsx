@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Users, Linkedin } from "lucide-react";
-import { PageShell, PageHeading } from "@/components/PageShell";
+import { InformationPage } from "@/components/InformationPage";
 
 import founderAsset from "@/assets/syed-asiful-alam.jpg.asset.json";
 import okoloAsset from "@/assets/chukwuemeka-okolo.jpg.asset.json";
@@ -27,15 +27,11 @@ function Avatar({
         alt={alt}
         loading="lazy"
         onError={() => setFailed(true)}
-        className="size-16 rounded-full border border-border object-cover"
+        className="information-avatar"
       />
     );
   }
-  return (
-    <div className="flex size-16 items-center justify-center rounded-full bg-foreground font-display text-lg font-extrabold text-background">
-      {initials}
-    </div>
-  );
+  return <div className="information-avatar information-avatar-fallback">{initials}</div>;
 }
 
 const TITLE = "Team Members — Global Bioenergy Watch";
@@ -62,52 +58,47 @@ export const Route = createFileRoute("/about/team")({
 
 function TeamPage() {
   return (
-    <PageShell>
-      <PageHeading
-        icon={Users}
-        title="Team members"
-        subtitle="The people who build, curate, and verify the Global Bioenergy Watch desk."
-      />
-
-      <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        <article className="rounded-lg border border-border bg-white p-6 shadow-sm">
+    <InformationPage
+      active="team"
+      icon={Users}
+      title="Team members"
+      subtitle="The people who build, curate, and verify the Global Bioenergy Watch desk."
+    >
+      <section className="information-team-grid">
+        <article className="information-card information-member">
           <Avatar src={founderPhoto} alt="Syed Asiful Alam, PhD" initials="SA" />
-          <h2 className="mt-4 font-display text-lg font-extrabold tracking-tight text-foreground">
-            Syed Asiful Alam, PhD
-          </h2>
-          <p className="kicker mt-1 text-muted-foreground">Founder &amp; Editor</p>
-          <p className="mt-3 text-sm/relaxed text-muted-foreground">
+          <h2 className="information-card-title">Syed Asiful Alam, PhD</h2>
+          <p className="information-member-role">Founder &amp; Editor</p>
+          <p className="information-description">
             Syed brings a wealth of experience in GHG sustainability, GIS &amp; Remote Sensing, and
-            cradle to gate life cycle analysis of renewable fuels and feedstock materials. Throughout
-            his career, he has been at the forefront of environmental sustainability, specializing in
-            greenhouse gas emissions reduction and management. His proficiency in GIS &amp; Remote
-            Sensing technologies has allowed him to analyze spatial data with precision,
-            facilitating informed decision-making in environmental conservation. In the realm of LCA
-            practices, Syed conducted thorough assessments of fuel production processes, carbon
-            balances and materials statement. His career journey reflects a passion for integrating
-            technological innovations with environmental stewardship. Whether it's developing
-            strategies for GHG reduction or utilizing GIS &amp; Remote Sensing for spatial analysis,
-            he is dedicated to making impactful contributions to the field of environmental
-            sustainability.
+            cradle to gate life cycle analysis of renewable fuels and feedstock materials.
+            Throughout his career, he has been at the forefront of environmental sustainability,
+            specializing in greenhouse gas emissions reduction and management. His proficiency in
+            GIS &amp; Remote Sensing technologies has allowed him to analyze spatial data with
+            precision, facilitating informed decision-making in environmental conservation. In the
+            realm of LCA practices, Syed conducted thorough assessments of fuel production
+            processes, carbon balances and materials statement. His career journey reflects a
+            passion for integrating technological innovations with environmental stewardship.
+            Whether it's developing strategies for GHG reduction or utilizing GIS &amp; Remote
+            Sensing for spatial analysis, he is dedicated to making impactful contributions to the
+            field of environmental sustainability.
           </p>
           <a
             href={FOUNDER_LINKEDIN}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-[#0A66C2]/10 px-2.5 py-1.5 text-sm font-bold text-[#0A66C2] transition-colors hover:bg-[#0A66C2]/15"
+            className="information-profile-link"
           >
             <Linkedin className="size-4 fill-current" />
             LinkedIn profile
           </a>
         </article>
 
-        <article className="rounded-lg border border-border bg-white p-6 shadow-sm">
+        <article className="information-card information-member">
           <Avatar src={okoloPhoto} alt="Chukwuemeka Valentine Okolo" initials="CVO" />
-          <h2 className="mt-4 font-display text-lg font-extrabold tracking-tight text-foreground">
-            Chukwuemeka Valentine Okolo
-          </h2>
-          <p className="kicker mt-1 text-muted-foreground">Contributor</p>
-          <p className="mt-3 text-sm/relaxed text-muted-foreground">
+          <h2 className="information-card-title">Chukwuemeka Valentine Okolo</h2>
+          <p className="information-member-role">Contributor</p>
+          <p className="information-description">
             Supports policy scanning and market research across global bioenergy jurisdictions,
             helping verify sources and keep the tracker current.
           </p>
@@ -115,25 +106,23 @@ function TeamPage() {
             href="https://www.linkedin.com/in/chukwuemeka-valentine-okolo-9332a2a7/"
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-[#0A66C2]/10 px-2.5 py-1.5 text-sm font-bold text-[#0A66C2] transition-colors hover:bg-[#0A66C2]/15"
+            className="information-profile-link"
           >
             <Linkedin className="size-4 fill-current" />
             LinkedIn profile
           </a>
         </article>
 
-        <article className="flex flex-col justify-center rounded-lg border border-dashed border-border bg-muted/30 p-6">
-          <h2 className="font-display text-lg font-extrabold tracking-tight text-foreground">
-            More members coming soon
-          </h2>
-          <p className="mt-3 text-sm/relaxed text-muted-foreground">
+        <article className="information-card information-team-invite">
+          <h2 className="information-card-title">More members coming soon</h2>
+          <p className="information-description">
             We are growing the desk. If you work in bioenergy research, policy analysis, or energy
             journalism and want to contribute, reach out via our{" "}
             <a
               href="https://www.linkedin.com/company/global-bioenergy-watch/"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-bold text-foreground underline underline-offset-4"
+              className="information-inline-link"
             >
               LinkedIn page
             </a>
@@ -141,6 +130,6 @@ function TeamPage() {
           </p>
         </article>
       </section>
-    </PageShell>
+    </InformationPage>
   );
 }

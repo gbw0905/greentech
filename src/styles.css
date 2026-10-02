@@ -1147,7 +1147,7 @@ input.chart-select {
   --benchmark-line: #d6e1ea;
   background: #fff;
   border-top: 1px solid var(--benchmark-line);
-  padding: 96px 32px 104px;
+  padding: 64px 32px 104px;
   color: var(--benchmark-ink);
   font-family: "Instrument Sans", sans-serif;
   scroll-margin-top: 88px;
@@ -1711,7 +1711,7 @@ input.chart-select {
 }
 @media (max-width: 760px) {
   .benchmark-section {
-    padding: 64px 20px 72px;
+    padding: 40px 20px 72px;
   }
   .benchmark-meta {
     align-items: flex-start;
@@ -1784,7 +1784,7 @@ input.chart-select {
   --map-line: #d6e1ea;
   --map-ink: #0e2a43;
   --map-muted: #6c8195;
-  padding: 96px 32px 104px;
+  padding: 64px 32px 104px;
   border-top: 1px solid var(--map-line);
   background: radial-gradient(ellipse at 85% 0%, rgb(23 138 107 / 5%), transparent 50%), #edf4f8;
   color: var(--map-ink);
@@ -2192,7 +2192,7 @@ input.chart-select {
 }
 @media (max-width: 760px) {
   .jurisdiction-section {
-    padding: 64px 20px 72px;
+    padding: 40px 20px 72px;
   }
   .jurisdiction-heading p {
     font-size: 14px;
@@ -2588,6 +2588,111 @@ input.chart-select {
   .industry-navigation button, .industry-thumbnails button, .industry-dots button, .supply-card-art > img { transition: none; }
   .industry-navigation button:hover, .supply-directory-card:hover .supply-card-art > img { transform: none; }
 }
+
+/* Informational pages share the homepage palette without altering other PageShell consumers. */
+.information-page { background: radial-gradient(ellipse at top right, #e0efed 0, #edf4f8 55%); color: #0e2a43; font-family: "Instrument Sans", sans-serif; }
+.information-main { max-width: 1240px; margin: auto; padding: 0 32px 80px; }
+.information-hero { display: grid; grid-template-columns: minmax(0, 1fr) 240px; align-items: center; gap: 56px; padding: 60px 0 42px; }
+.information-eyebrow { display: inline-flex; align-items: center; gap: 8px; border: 1px solid #d6e4e8; border-radius: 99px; background: #ffffffd9; padding: 8px 12px; color: #4c6278; font-size: 12px; }
+.information-eyebrow svg { color: #178a6b; }
+.information-hero h1 { font-family: "Bricolage Grotesque", sans-serif; font-weight: 600; font-size: clamp(40px, 5.1vw, 62px); line-height: 1.08; letter-spacing: -2.5px; margin: 22px 0 20px; max-width: 780px; }
+.information-hero-copy > p { color: #4c6278; font-size: 16px; line-height: 1.75; max-width: 690px; }
+.information-emblem { width: 220px; height: 220px; position: relative; justify-self: center; border-radius: 50%; border: 1px solid #b8d8d0; background: radial-gradient(circle, #bfdfd538, #d9ece633 60%, transparent 72%); }
+.information-emblem-ring { position: absolute; inset: 23px; border-radius: 50%; border: 1px dashed #9bc6ba; }
+.information-emblem::before, .information-emblem::after { content: ""; position: absolute; background: #b8d8d080; }
+.information-emblem::before { height: 1px; width: 100%; top: 50%; }
+.information-emblem::after { width: 1px; height: 100%; left: 50%; }
+.information-emblem-core { position: absolute; inset: 54px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, #fafffc, #d6eae2); border: 1px solid #9ecbbc; box-shadow: 0 12px 24px #0e2a4310; z-index: 1; }
+.information-emblem-core svg { width: 50px; height: 50px; color: #178a6b; stroke-width: 1; }
+.information-emblem-dot { position: absolute; width: 9px; height: 9px; border-radius: 50%; background: #178a6b; box-shadow: 0 0 0 5px #178a6b15; z-index: 1; }
+.information-emblem-dot-one { top: 16px; left: 41px; }
+.information-emblem-dot-two { bottom: 31px; right: 27px; }
+.information-emblem-dot-three { top: 80px; right: 23px; width: 6px; height: 6px; background: #76b7a3; }
+.information-nav { display: flex; gap: 8px; flex-wrap: wrap; padding: 8px; border: 1px solid #d6e1ea; border-radius: 14px; background: #ffffffa3; margin-bottom: 32px; }
+.information-nav a { padding: 11px 18px; border-radius: 8px; color: #4c6278; font-size: 13px; font-weight: 600; transition: background .2s, color .2s; }
+.information-nav a:hover { background: #edf4f8; color: #0e2a43; }
+.information-nav a.is-current { background: #e1f2ec; color: #178a6b; }
+.information-content { display: grid; gap: 24px; }
+.information-card { min-width: 0; border: 1px solid #d6e1ea; background: #fff; border-radius: 18px; padding: 32px; box-shadow: 0 8px 24px #0e2a4305; }
+.information-card-title { font-family: "Bricolage Grotesque", sans-serif; color: #0e2a43; font-size: 27px; font-weight: 600; line-height: 1.2; letter-spacing: -.8px; }
+.information-prose { margin-top: 22px; color: #4c6278; font-size: 15px; line-height: 1.85; }
+.information-prose p + p { margin-top: 18px; }
+.information-description { color: #4c6278; font-size: 15px; line-height: 1.8; margin-top: 14px; }
+.information-link-grid, .information-mission-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.information-link-card { display: block; text-decoration: none; transition: border-color .2s, transform .2s, box-shadow .2s; }
+.information-link-card:hover { transform: translateY(-3px); border-color: #9fcdbc; box-shadow: 0 12px 28px #0e2a430a; }
+.information-link-icon, .information-icon { background: #e3f2ec; border: 1px solid #cee6dc; color: #178a6b; border-radius: 12px; }
+.information-link-icon { width: 48px; height: 48px; padding: 12px; margin-bottom: 24px; }
+.information-text-link { display: inline-flex; align-items: center; gap: 8px; margin-top: 24px; color: #178a6b; font-size: 14px; font-weight: 600; }
+.information-card-heading { display: flex; gap: 16px; align-items: center; }
+.information-icon { display: inline-flex; width: 48px; height: 48px; justify-content: center; align-items: center; flex-shrink: 0; }
+.information-principles { counter-reset: coverage; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 28px; margin-top: 24px; }
+.information-principle { position: relative; counter-increment: coverage; padding: 24px 0 24px 44px; border-top: 1px solid #e0e9ef; font-size: 14px; line-height: 1.85; color: #4c6278; }
+.information-principle::before { content: "0" counter(coverage); position: absolute; top: 25px; left: 0; font-size: 11px; font-weight: 600; color: #178a6b; }
+.information-principle-title { display: block; font-weight: 600; color: #0e2a43; font-size: 16px; margin-bottom: 7px; }
+.information-team-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 24px; }
+.information-member:first-child { grid-row: span 2; }
+.information-member .information-card-title { margin-top: 24px; }
+.information-avatar { width: 76px; height: 76px; border-radius: 50%; border: 1px solid #c6ddd5; object-fit: cover; box-shadow: 0 0 0 7px #f0f7f3; }
+.information-avatar-fallback { display: flex; align-items: center; justify-content: center; background: #e1f2ec; color: #178a6b; font-family: "Bricolage Grotesque", sans-serif; font-size: 24px; font-weight: 600; }
+.information-member-role { margin-top: 10px; color: #178a6b; font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; }
+.information-member .information-description { margin-top: 24px; }
+.information-profile-link { display: inline-flex; align-items: center; gap: 8px; color: #0e2a43; border: 1px solid #d6e1ea; border-radius: 9px; padding: 11px 14px; margin-top: 24px; font-size: 13px; font-weight: 600; transition: border-color .2s, background .2s; }
+.information-profile-link svg { color: #0a66c2; }
+.information-profile-link:hover { border-color: #9fcdbc; background: #f1f8f5; }
+.information-team-invite { display: flex; flex-direction: column; justify-content: center; background: #e3f1eb; border-color: #c6ded3; }
+.information-inline-link { color: #178a6b; text-decoration: underline; text-underline-offset: 4px; font-weight: 600; }
+.information-contact-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 24px; align-items: stretch; }
+.information-company-link { display: flex; align-items: center; gap: 16px; margin-top: 28px; padding: 20px; border: 1px solid #d6e1ea; border-radius: 12px; background: #f2f7fa; transition: border-color .2s, background .2s; }
+.information-company-link:hover { background: #eaf4f0; border-color: #9fcdbc; }
+.information-linkedin-mark { display: grid; place-items: center; width: 48px; height: 48px; flex-shrink: 0; border-radius: 10px; color: white; background: #0a66c2; }
+.information-company-name { font-family: "Bricolage Grotesque", sans-serif; font-weight: 600; font-size: 19px; line-height: 1.3; letter-spacing: -.3px; }
+.information-company-url { font-size: 12px; line-height: 1.6; color: #4c6278; margin-top: 5px; overflow-wrap: anywhere; }
+.information-contact-button { display: flex; align-items: center; justify-content: center; gap: 10px; background: #0e2a43; color: white; border-radius: 9px; padding: 15px 20px; margin-top: 20px; font-size: 14px; font-weight: 600; transition: background .2s; }
+.information-contact-button:hover { background: #17405c; }
+.information-contact-note { background: #0e2a43; border-color: #0e2a43; display: flex; flex-direction: column; justify-content: center; }
+.information-contact-note .information-card-title { color: #ecf4f8; font-size: 24px; }
+.information-contact-note .information-description { color: #afc4d3; }
+.information-contact-note-icon { color: #63c9aa; margin-bottom: 28px; }
+.information-contact-note-icon svg { width: 32px; height: 32px; stroke-width: 1.4; }
+.information-page a:focus-visible { outline: 2px solid #178a6b; outline-offset: 4px; }
+@media (max-width: 900px) {
+  .information-hero { grid-template-columns: minmax(0, 1fr) 170px; gap: 32px; }
+  .information-emblem { width: 160px; height: 160px; }
+  .information-emblem-ring { inset: 16px; }
+  .information-emblem-core { inset: 38px; }
+  .information-emblem-core svg { width: 40px; height: 40px; }
+  .information-emblem-dot-one { top: 7px; left: 37px; }
+  .information-emblem-dot-two { bottom: 15px; right: 25px; }
+  .information-emblem-dot-three { top: 58px; right: 16px; }
+  .information-card { padding: 26px; }
+  .information-contact-grid { grid-template-columns: 1fr; }
+  .information-contact-note { padding: 28px; }
+}
+@media (max-width: 640px) {
+  .information-main { padding: 0 20px 48px; }
+  .information-hero { display: block; padding: 38px 0 28px; }
+  .information-hero h1 { font-size: 40px; letter-spacing: -1.7px; margin: 20px 0 16px; }
+  .information-hero-copy > p { font-size: 14px; line-height: 1.75; }
+  .information-emblem { display: none; }
+  .information-nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-bottom: 24px; padding: 6px; }
+  .information-nav a { font-size: 12px; text-align: center; padding: 11px 7px; }
+  .information-content, .information-link-grid, .information-mission-grid, .information-team-grid, .information-contact-grid { gap: 18px; }
+  .information-link-grid, .information-mission-grid, .information-team-grid { grid-template-columns: 1fr; }
+  .information-member:first-child { grid-row: auto; }
+  .information-card { padding: 24px; border-radius: 14px; }
+  .information-card-title { font-size: 24px; letter-spacing: -.6px; }
+  .information-prose, .information-description { font-size: 14px; }
+  .information-principles { grid-template-columns: 1fr; margin-top: 18px; }
+  .information-principle:last-child { padding-bottom: 0; }
+  .information-company-link { padding: 16px; gap: 12px; align-items: flex-start; }
+  .information-linkedin-mark { width: 40px; height: 40px; }
+  .information-company-name { font-size: 17px; }
+  .information-company-url { font-size: 11px; }
+  .information-card-heading { gap: 12px; }
+  .information-icon { width: 42px; height: 42px; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .information-page a, .information-link-card svg { transition: none; } .information-link-card:hover { transform: none; } }
 
 /* Careers desk: shared site chrome, existing searches and hiring feed. */
 .jobs-page {

@@ -1,6 +1,7 @@
 import { MotionReveal } from "@/components/MotionReveal";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useInView, useReducedMotion } from "motion/react";
 import type { PolicyUpdate } from "@/features/policy/contracts";
 import { formatDate } from "@/features/policy/components/UpdateCard";
 import { DottedPolicyGlobe } from "./DottedPolicyGlobe";
@@ -17,16 +18,40 @@ export function HomeHero({
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
   const [cycle, setCycle] = useState(0);
+  const [pageVisible, setPageVisible] = useState(true);
+  const hero = useRef<HTMLElement>(null);
+  const elapsed = useRef(0);
+  const inView = useInView(hero, { amount: 0.1 });
+  const reduced = useReducedMotion();
+  const running = inView && pageVisible && !paused && !reduced;
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (paused || updates.length < 2) return;
-    const timer = window.setTimeout(() => {
-      setActive((current) => (current + 1) % updates.length);
-      setCycle((current) => current + 1);
-    }, ROTATION_MS);
-    return () => window.clearTimeout(timer);
-  }, [active, cycle, paused, updates.length]);
+    const updateVisibility = () => setPageVisible(!document.hidden);
+    updateVisibility();
+    document.addEventListener("visibilitychange", updateVisibility);
+    return () => document.removeEventListener("visibilitychange", updateVisibility);
+  }, []);
+
+  useEffect(() => {
+    elapsed.current = 0;
+  }, [active, cycle]);
+
+  useEffect(() => {
+    if (!running || updates.length < 2) return;
+    const started = performance.now();
+    const timer = window.setTimeout(
+      () => {
+        setActive((current) => (current + 1) % updates.length);
+        setCycle((current) => current + 1);
+      },
+      Math.max(0, ROTATION_MS - elapsed.current),
+    );
+    return () => {
+      window.clearTimeout(timer);
+      elapsed.current = Math.min(ROTATION_MS, elapsed.current + performance.now() - started);
+    };
+  }, [active, cycle, running, updates.length]);
 
   useEffect(() => {
     if (active >= updates.length) setActive(0);
@@ -35,7 +60,10 @@ export function HomeHero({
   const current = updates[active % Math.max(updates.length, 1)] ?? null;
 
   return (
-    <section className="overflow-hidden bg-[#eef3f7] font-['Instrument_Sans'] text-[#0e2a43]">
+    <section
+      ref={hero}
+      className="overflow-hidden bg-[#eef3f7] font-['Instrument_Sans'] text-[#0e2a43]"
+    >
       <div className="mx-auto grid max-w-[1240px] items-center gap-6 px-5 pt-11 min-[621px]:px-8 min-[961px]:grid-cols-[minmax(0,1fr)_minmax(0,1.02fr)] min-[961px]:gap-10 min-[961px]:pt-16">
         <MotionReveal className="max-w-[560px]">
           <div className="home-live-pill inline-flex items-center gap-[9px] rounded-full border border-[#d6e1ea] bg-white py-1.5 pr-3.5 pl-3 text-[13px] font-medium text-[#4c6278] before:size-[7px] before:rounded-full before:bg-[#178a6b]">
@@ -164,7 +192,7 @@ export function HomeHero({
                 <span
                   key={`${current.id}-${cycle}`}
                   className="home-hero-progress block h-full w-full origin-left bg-[#9fdcc9]"
-                  style={{ animationPlayState: paused ? "paused" : "running" }}
+                  style={{ animationPlayState: running ? "running" : "paused" }}
                 />
               </div>
             </aside>

@@ -1,16 +1,17 @@
+import { loadNavigationFeed } from "@/features/policy/navigation-feed";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { MotionReveal } from "@/components/MotionReveal";
 import { LiveMarquee } from "@/features/markets/components/LiveMarquee";
 import { SupplyDirectory } from "@/features/supply/components/SupplyDirectory";
-import { feedQueryWithInitial, loadFeed } from "@/features/policy/feed-query";
+import { feedQueryWithInitial } from "@/features/policy/feed-query";
 
 const TITLE = "Global Biofuel Suppliers and Users";
 const DESCRIPTION =
   "Track the companies, producers, and users driving the bioenergy value chain — from feedstock and fuel stations to blending, shipping, and bioproducts.";
 
 export const Route = createFileRoute("/supply/")({
-  loader: () => loadFeed(),
+  loader: ({ context }) => loadNavigationFeed(context.queryClient),
   head: () => ({
     meta: [
       { title: `${TITLE} | Global Bioenergy Watch` },

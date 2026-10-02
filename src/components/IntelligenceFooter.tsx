@@ -39,7 +39,11 @@ export function IntelligenceFooter() {
               {lastScan ? `Last scan ${lastScan}` : "Policy · Markets · Sustainability"}
             </span>
           </div>
-          <section className="intelligence-footer-brief" aria-labelledby="daily-brief-title">
+          <section
+            id="alerts"
+            className="intelligence-footer-brief scroll-mt-[88px]"
+            aria-labelledby="daily-brief-title"
+          >
             <h2 id="daily-brief-title">Get the daily brief</h2>
             <p>
               AI-summarised policy and market updates from around the world, delivered once a day.
@@ -50,11 +54,17 @@ export function IntelligenceFooter() {
         <nav className="intelligence-footer-columns" aria-label="Footer">
           <div>
             <h2>Platform</h2>
-            <a href="/#markets">Live markets</a>
-            <a href="/#map">Jurisdiction map</a>
+            <Link to="/" hash="markets">
+              Live markets
+            </Link>
+            <Link to="/" hash="map">
+              Jurisdiction map
+            </Link>
             <Link to="/supply">Supply and producers</Link>
-            <a href="/jobs">Bioenergy careers</a>
-            <a href="/#alerts">Email alerts</a>
+            <Link to="/jobs">Bioenergy careers</Link>
+            <Link to="/" hash="alerts">
+              Email alerts
+            </Link>
           </div>
           <div>
             <h2>Coverage</h2>
@@ -69,7 +79,9 @@ export function IntelligenceFooter() {
             <Link to="/about">About us</Link>
             <Link to="/about/mission-vision">Mission &amp; vision</Link>
             <Link to="/about/team">Team members</Link>
-            <a href="/#disclaimer">Method and disclaimer</a>
+            <Link to="/" hash="disclaimer">
+              What we do
+            </Link>
           </div>
           <div>
             <h2>Contact</h2>

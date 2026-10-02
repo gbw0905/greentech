@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { TrendingDown, TrendingUp } from "lucide-react";
 import { getOilPricesFn } from "@/features/markets/oil-server-functions";
 import { fetchTrafficStats } from "@/features/traffic/client";
-import { getPolicyFeed } from "@/features/policy/server-functions";
+import { feedQuery } from "@/features/policy/feed-query";
 import type { PolicyUpdate } from "@/features/policy/contracts";
 
 function PricePill({
@@ -57,8 +57,7 @@ export function LiveMarquee() {
   });
 
   const { data: feedData } = useQuery({
-    queryKey: ["policy-feed"],
-    queryFn: () => getPolicyFeed(),
+    ...feedQuery,
     refetchInterval: 60_000,
   });
 

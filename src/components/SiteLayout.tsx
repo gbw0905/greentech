@@ -23,8 +23,6 @@ export function SiteLayout({ children }: { children: ReactNode }) {
   return (
     <div id="top" className="flex min-h-screen flex-col">
       <SiteHeader
-        key={pathname}
-        home={pathname === "/"}
         activeSection={
           pathname.startsWith("/supply")
             ? "supply"

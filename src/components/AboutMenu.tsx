@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 const ITEMS = [
-  { href: "#disclaimer", label: "Method and disclaimer" },
+  { href: "#disclaimer", label: "What we do" },
   { to: "/ci-calculator", label: "CI calculator" },
   { to: "/videos", label: "Videos" },
   { to: "/about", label: "About us" },
@@ -17,7 +17,7 @@ const ITEMS = [
  * portal with fixed positioning so the nav's horizontal scroll container
  * (overflow-x-auto) cannot clip it.
  */
-export function AboutMenu({ home = false }: { home?: boolean }) {
+export function AboutMenu() {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState({ top: 0, left: 0, width: 0 });
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -82,15 +82,16 @@ export function AboutMenu({ home = false }: { home?: boolean }) {
 
               if ("href" in item) {
                 return (
-                  <a
+                  <Link
                     key={item.href}
-                    href={home ? item.href : `/${item.href}`}
+                    to="/"
+                    hash={item.href.slice(1)}
                     role="menuitem"
                     onClick={() => setOpen(false)}
                     className={itemClass}
                   >
                     {item.label}
-                  </a>
+                  </Link>
                 );
               }
 
