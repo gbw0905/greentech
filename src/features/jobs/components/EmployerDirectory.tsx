@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ArrowUpRight, Building2, MapPin, Search } from "lucide-react";
 import { EMPLOYERS } from "@/features/jobs/data";
-import { MotionReveal } from "@/components/MotionReveal";
+import { JobsReveal } from "./JobsReveal";
 
 const COUNTRIES = [...new Set(EMPLOYERS.map((employer) => employer.hq))].sort();
 const FUELS = [...new Set(EMPLOYERS.flatMap((employer) => employer.focus))].sort();
@@ -23,7 +23,7 @@ export function EmployerDirectory() {
 
   return (
     <section className="jobs-section" aria-labelledby="jobs-employers-title">
-      <MotionReveal className="jobs-section-heading">
+      <JobsReveal className="jobs-section-heading">
         <div>
           <span className="jobs-section-kicker">Explore the sector</span>
           <h2 id="jobs-employers-title">Meet the bioenergy employers</h2>
@@ -32,7 +32,7 @@ export function EmployerDirectory() {
         <span className="jobs-count" aria-live="polite">
           {employers.length} employers
         </span>
-      </MotionReveal>
+      </JobsReveal>
       <div className="jobs-employer-filters">
         <label className="jobs-search-input">
           <Search size={17} aria-hidden="true" />
@@ -83,32 +83,33 @@ export function EmployerDirectory() {
       </div>
       <div id="jobs-employer-grid" className="jobs-employer-grid">
         {(expanded ? employers : employers.slice(0, 8)).map((employer) => (
-          <a
-            key={employer.name}
-            className="jobs-employer-card"
-            href={employer.careers}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <div className="jobs-employer-card-top">
-              <span className="jobs-source-icon">
-                <Building2 size={20} />
+          <JobsReveal as="article" key={employer.name}>
+            <a
+              className="jobs-employer-card"
+              href={employer.careers}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <div className="jobs-employer-card-top">
+                <span className="jobs-source-icon">
+                  <Building2 size={20} />
+                </span>
+                <ArrowUpRight size={17} aria-hidden="true" />
+              </div>
+              <h3>{employer.name}</h3>
+              <p>
+                <MapPin size={13} aria-hidden="true" /> {employer.hq}
+              </p>
+              <div className="jobs-fuel-tags">
+                {employer.focus.map((focus) => (
+                  <span key={focus}>{focus}</span>
+                ))}
+              </div>
+              <span className="jobs-careers-link">
+                Visit careers page <ArrowUpRight size={14} aria-hidden="true" />
               </span>
-              <ArrowUpRight size={17} aria-hidden="true" />
-            </div>
-            <h3>{employer.name}</h3>
-            <p>
-              <MapPin size={13} aria-hidden="true" /> {employer.hq}
-            </p>
-            <div className="jobs-fuel-tags">
-              {employer.focus.map((focus) => (
-                <span key={focus}>{focus}</span>
-              ))}
-            </div>
-            <span className="jobs-careers-link">
-              Visit careers page <ArrowUpRight size={14} aria-hidden="true" />
-            </span>
-          </a>
+            </a>
+          </JobsReveal>
         ))}
       </div>
       {!employers.length && (

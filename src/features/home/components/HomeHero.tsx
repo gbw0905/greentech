@@ -62,15 +62,15 @@ export function HomeHero({
   return (
     <section
       ref={hero}
-      className="overflow-hidden bg-[#eef3f7] font-['Instrument_Sans'] text-[#0e2a43]"
+      className="home-hero overflow-hidden bg-[#eef3f7] font-['Instrument_Sans'] text-[#0e2a43]"
     >
-      <div className="mx-auto grid max-w-[1240px] items-center gap-6 px-5 pt-11 min-[621px]:px-8 min-[961px]:grid-cols-[minmax(0,1fr)_minmax(0,1.02fr)] min-[961px]:gap-10 min-[961px]:pt-16">
+      <div className="home-hero-layout mx-auto grid max-w-[1240px] items-center gap-6 px-5 pt-11 min-[621px]:px-8 min-[961px]:grid-cols-[minmax(0,1fr)_minmax(0,1.02fr)] min-[961px]:gap-10 min-[961px]:pt-16">
         <MotionReveal className="max-w-[560px]">
           <div className="home-live-pill inline-flex items-center gap-[9px] rounded-full border border-[#d6e1ea] bg-white py-1.5 pr-3.5 pl-3 text-[13px] font-medium text-[#4c6278] before:size-[7px] before:rounded-full before:bg-[#178a6b]">
             Live policy and market intelligence
           </div>
 
-          <h1 className="my-[22px] font-['Bricolage_Grotesque'] text-[clamp(2.4rem,4.6vw,4rem)] leading-[1.04] font-semibold tracking-[-0.03em] text-balance">
+          <h1 className="my-4 font-['Bricolage_Grotesque'] text-[clamp(2.4rem,4vw,3.35rem)] leading-[1.04] font-semibold tracking-[-0.03em] text-balance">
             <span className="block">Bioenergy policy</span>
             <span className="block">and markets, tracked</span>
             <span className="block">in every jurisdiction.</span>
@@ -82,7 +82,7 @@ export function HomeHero({
             update. Click any country on the globe to open its full policy profile.
           </p>
 
-          <div className="mt-[26px] flex flex-wrap gap-3">
+          <div className="mt-5 flex flex-wrap gap-3">
             <a
               href="#map"
               className="inline-flex h-[46px] items-center justify-center rounded-[10px] bg-[#0e2a43] px-[22px] text-[15px] font-semibold text-white no-underline transition-colors hover:bg-[#173d5d]"
@@ -97,7 +97,7 @@ export function HomeHero({
             </a>
           </div>
 
-          <div className="mt-[34px] flex flex-wrap gap-2 pb-2">
+          <div className="mt-5 flex flex-wrap gap-2 pb-2">
             <Link to="/timeline" className="hero-topic-chip">
               Ethanol
             </Link>
@@ -201,7 +201,7 @@ export function HomeHero({
       </div>
 
       <div className="mx-auto max-w-[1240px] px-5 min-[621px]:px-8">
-        <dl className="mt-12 grid border-t border-[#d6e1ea] min-[701px]:grid-cols-3 min-[961px]:mt-14">
+        <dl className="home-hero-stats mt-6 grid border-t border-[#d6e1ea] min-[701px]:grid-cols-3 min-[961px]:mt-6">
           {[
             {
               value: stats.total,

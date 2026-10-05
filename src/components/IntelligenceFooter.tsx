@@ -2,7 +2,6 @@ import { MotionReveal } from "@/components/MotionReveal";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowUp, Linkedin } from "lucide-react";
-import { AlertSignup } from "@/features/alerts/components/AlertSignup";
 import { feedQuery } from "@/features/policy/feed-query";
 import siteLogo from "@/assets/logo.png";
 
@@ -39,17 +38,6 @@ export function IntelligenceFooter() {
               {lastScan ? `Last scan ${lastScan}` : "Policy · Markets · Sustainability"}
             </span>
           </div>
-          <section
-            id="alerts"
-            className="intelligence-footer-brief scroll-mt-[88px]"
-            aria-labelledby="daily-brief-title"
-          >
-            <h2 id="daily-brief-title">Get the daily brief</h2>
-            <p>
-              AI-summarised policy and market updates from around the world, delivered once a day.
-            </p>
-            <AlertSignup appearance="footer" />
-          </section>
         </MotionReveal>
         <nav className="intelligence-footer-columns" aria-label="Footer">
           <div>
@@ -62,9 +50,6 @@ export function IntelligenceFooter() {
             </Link>
             <Link to="/supply">Supply and producers</Link>
             <Link to="/jobs">Bioenergy careers</Link>
-            <Link to="/" hash="alerts">
-              Email alerts
-            </Link>
           </div>
           <div>
             <h2>Coverage</h2>
