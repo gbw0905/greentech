@@ -1,10 +1,10 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Loader2, LogIn } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
-import { PageShell } from "@/components/PageShell";
+import { MotionReveal } from "@/components/MotionReveal";
 
 export function AuthPage() {
   const { user, loading } = useAuthSession();
@@ -15,6 +15,15 @@ export function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  function changeMode(nextMode: "signin" | "signup") {
+    if (busy || mode === nextMode) return;
+    setMode(nextMode);
+    setError("");
+    setNotice("");
+    setShowPassword(false);
+  }
 
   useEffect(() => {
     if (!loading && user) navigate({ to: "/", replace: true });
@@ -70,97 +79,162 @@ export function AuthPage() {
   }
 
   return (
-    <PageShell>
-      <div className="mx-auto w-full max-w-md">
-        <div className="ink-bar mb-4 px-4 py-3">
-          <h1 className="font-display text-xl font-extrabold tracking-tight">
-            {mode === "signin" ? "Sign in" : "Create your account"}
-          </h1>
-        </div>
-
-        <div className="rounded-sm border border-border bg-card p-4">
-          <div className="mb-4 space-y-2">
+    <main className="auth-page">
+      <MotionReveal className="auth-page-content">
+        <section className="auth-card" aria-labelledby="auth-title">
+          <div className="auth-mode-switch" role="group" aria-label="Account access">
             <button
               type="button"
-              onClick={google}
-              className="inline-flex w-full items-center justify-center gap-2 border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground transition-opacity hover:opacity-85"
+              aria-pressed={mode === "signin"}
+              disabled={busy}
+              onClick={() => changeMode("signin")}
             >
+              Login
+            </button>
+            <button
+              type="button"
+              aria-pressed={mode === "signup"}
+              disabled={busy}
+              onClick={() => changeMode("signup")}
+            >
+              Register
+            </button>
+          </div>
+
+          <header className="auth-card-heading">
+            <h1 id="auth-title">{mode === "signin" ? "Sign in" : "Create your account"}</h1>
+            <p>
+              {mode === "signin"
+                ? "Access your chart exports and bioenergy analyst summaries."
+                : "Join Global Bioenergy Watch for chart exports and analyst summaries."}
+            </p>
+          </header>
+
+          <div className="auth-social-buttons">
+            <button type="button" onClick={google} disabled={busy} className="auth-social-button">
+              <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20">
+                <path
+                  fill="#4285F4"
+                  d="M21.6 12.23c0-.71-.06-1.39-.18-2.05H12v3.88h5.38a4.6 4.6 0 0 1-1.99 3.02v2.51h3.23c1.89-1.74 2.98-4.31 2.98-7.36Z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 22c2.7 0 4.96-.9 6.62-2.41l-3.23-2.51c-.9.6-2.04.97-3.39.97-2.61 0-4.82-1.76-5.61-4.12H3.05v2.59A10 10 0 0 0 12 22Z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M6.39 13.93a6 6 0 0 1 0-3.86V7.48H3.05a10 10 0 0 0 0 9.04l3.34-2.59Z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 5.95c1.47 0 2.79.5 3.83 1.5l2.87-2.87A9.64 9.64 0 0 0 12 2a10 10 0 0 0-8.95 5.48l3.34 2.59C7.18 7.71 9.39 5.95 12 5.95Z"
+                />
+              </svg>
               Continue with Google
             </button>
             <button
               type="button"
               onClick={microsoft}
-              className="inline-flex w-full items-center justify-center gap-2 border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground transition-opacity hover:opacity-85"
+              disabled={busy}
+              className="auth-social-button"
             >
+              <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20">
+                <path fill="#F25022" d="M2 2h9v9H2z" />
+                <path fill="#7FBA00" d="M13 2h9v9h-9z" />
+                <path fill="#00A4EF" d="M2 13h9v9H2z" />
+                <path fill="#FFB900" d="M13 13h9v9h-9z" />
+              </svg>
               Continue with Microsoft
             </button>
           </div>
 
-          <div className="mb-4 flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="h-px flex-1 bg-border" />
-            or use email
-            <span className="h-px flex-1 bg-border" />
+          <div className="auth-divider">
+            <span>or use email</span>
           </div>
 
-          <form onSubmit={submit} className="space-y-3">
-            <div>
-              <label htmlFor="auth-email" className="label-mono block text-muted-foreground">
-                Email
-              </label>
+          <form onSubmit={submit} className="auth-form" aria-busy={busy}>
+            <div className="auth-field">
+              <label htmlFor="auth-email">Email address</label>
               <input
                 id="auth-email"
+                name="email"
                 type="email"
                 required
                 autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="chart-select mt-1 w-full"
+                disabled={busy}
                 placeholder="you@company.com"
               />
             </div>
-            <div>
-              <label htmlFor="auth-password" className="label-mono block text-muted-foreground">
-                Password
-              </label>
-              <input
-                id="auth-password"
-                type="password"
-                required
-                minLength={8}
-                autoComplete={mode === "signin" ? "current-password" : "new-password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="chart-select mt-1 w-full"
-                placeholder="At least 8 characters"
-              />
+            <div className="auth-field">
+              <label htmlFor="auth-password">Password</label>
+              <div className="auth-password-field">
+                <input
+                  id="auth-password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  minLength={8}
+                  autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={busy}
+                  placeholder="At least 8 characters"
+                  aria-describedby={mode === "signup" ? "auth-password-hint" : undefined}
+                />
+                <button
+                  type="button"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-controls="auth-password"
+                  aria-pressed={showPassword}
+                  disabled={busy}
+                  onClick={() => setShowPassword((shown) => !shown)}
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+              {mode === "signup" ? <p id="auth-password-hint">Use at least 8 characters.</p> : null}
             </div>
 
-            <button
-              type="submit"
-              disabled={busy}
-              className="inline-flex w-full items-center justify-center gap-2 border border-ink bg-ink px-3 py-2 text-sm font-semibold text-ink-foreground transition-opacity hover:opacity-85 disabled:opacity-40"
-            >
-              {busy ? <Loader2 className="size-4 animate-spin" /> : <LogIn className="size-4" />}
-              {mode === "signin" ? "Sign in" : "Create account"}
+            {error ? (
+              <p className="auth-message auth-error" role="alert">
+                {error}
+              </p>
+            ) : null}
+            {notice ? (
+              <p className="auth-message auth-notice" role="status">
+                {notice}
+              </p>
+            ) : null}
+
+            <button type="submit" disabled={busy} className="auth-submit">
+              {busy ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : null}
+              {busy
+                ? mode === "signin"
+                  ? "Signing in…"
+                  : "Creating account…"
+                : mode === "signin"
+                  ? "Sign in"
+                  : "Create account"}
             </button>
           </form>
 
-          {error ? <p className="mt-3 text-sm font-semibold text-destructive">{error}</p> : null}
-          {notice ? <p className="mt-3 text-sm font-semibold text-foreground">{notice}</p> : null}
-
-          <button
-            type="button"
-            onClick={() => {
-              setMode(mode === "signin" ? "signup" : "signin");
-              setError("");
-              setNotice("");
-            }}
-            className="mt-4 text-xs font-semibold text-foreground underline underline-offset-4"
-          >
-            {mode === "signin" ? "No account yet? Create one" : "Already have an account? Sign in"}
-          </button>
-        </div>
-      </div>
-    </PageShell>
+          <p className="auth-mode-prompt">
+            {mode === "signin" ? "No account yet?" : "Already have an account?"}
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => changeMode(mode === "signin" ? "signup" : "signin")}
+            >
+              {mode === "signin" ? "Create one" : "Sign in"}
+            </button>
+          </p>
+        </section>
+        <p className="auth-page-caption">
+          Global Bioenergy Watch <span aria-hidden="true">·</span> Independent monitoring
+        </p>
+      </MotionReveal>
+    </main>
   );
 }
