@@ -1,674 +1,439 @@
-import { geoContains, geoOrthographic } from "d3-geo";
-import { useEffect, useMemo, useRef } from "react";
-import { feature } from "topojson-client";
-import type { PolicyUpdate } from "@/features/policy/contracts";
-import { COUNTRIES, countryBySlug } from "@/features/policy/taxonomy";
+import { useEffect, useRef, useState } from "react";
+import { Pause, Play } from "lucide-react";
 import globeGeometry from "../data/globe-points.json";
-import globePlaceholder from "../data/globe-placeholder.svg";
+import styles from "./DottedPolicyGlobe.module.css";
 
-type LandFeature = {
-  type: "Feature";
-  properties?: { name?: string };
-  geometry: unknown;
-};
-
-type Marker = {
-  slug: string;
-  name: string;
-  longitude: number;
-  latitude: number;
-  point: [number, number, number];
-};
-
-type ProjectedPoint = { x: number; y: number; depth: number };
-type PointerStart = { x: number; y: number; dragging: boolean; pointerType: string };
-type GlobeRoute = [number, number, number][];
-
-const HUB_SLUGS = [
-  "united-arab-emirates",
-  "united-states",
-  "united-kingdom",
-  "brazil",
-  "india",
-  "indonesia",
-  "european-union",
-  "canada",
-  "argentina",
-  "south-africa",
-  "australia",
-  "japan",
-  "kenya",
-  "singapore",
+type Vector = readonly [number, number, number];
+type Layer = "policy" | "markets" | "prices";
+type Layers = Record<Layer, boolean>;
+const KEYS: Layer[] = ["policy", "markets", "prices"];
+const PHASES: Layers[] = [
+  { policy: true, markets: false, prices: false },
+  { policy: true, markets: true, prices: false },
+  { policy: true, markets: true, prices: true },
 ];
-const CENTROIDS = globeGeometry.centroids as unknown as Record<string, [number, number]>;
-const CENTROID_OVERRIDES: Record<string, [number, number]> = {
-  "United Arab Emirates": [54, 24],
-  "United States of America": [-98, 39],
-  "United Kingdom": [-1.5, 53],
-  Brazil: [-51, -14],
-  India: [78, 21],
-  Indonesia: [113, -2],
-  Canada: [-106, 56],
-  Argentina: [-64, -34],
-  "South Africa": [24, -29],
-  Australia: [134, -25],
-  Japan: [138, 36],
-  Kenya: [38, 0],
-  Singapore: [103.82, 1.35],
-  "European Union": [9, 50],
-};
-const RADIANS = Math.PI / 180;
-const FALLBACK_LOCATION: [number, number] = [54.38, 24.45];
-const ROUTE_STEPS = 56;
-const ROUTE_DURATION_MS = 1400;
-const DRIFT_DEGREES_PER_MS = 0.00155;
-// A tilted orbit, with its far half drawn behind the sphere.
-const ORBIT_POINTS = Array.from({ length: 181 }, (_, index) =>
-  orbitPoint((index / 180) * Math.PI * 2),
-);
-const COUNTRY_BY_MAP_NAME = new Map(
-  COUNTRIES.filter((country) => country.mapName).map((country) => [country.mapName, country]),
-);
-
-function unitVector(longitude: number, latitude: number): [number, number, number] {
-  const lon = longitude * RADIANS;
-  const lat = latitude * RADIANS;
-  return [Math.cos(lat) * Math.cos(lon), Math.cos(lat) * Math.sin(lon), Math.sin(lat)];
-}
-
-function projectPoint(
-  point: readonly number[],
-  cosRotation: number,
-  sinRotation: number,
-  cosTilt: number,
-  sinTilt: number,
-  centreX: number,
-  centreY: number,
-  radius: number,
-): ProjectedPoint {
-  const longitudeX = point[0]! * cosRotation - point[1]! * sinRotation;
-  const longitudeY = point[1]! * cosRotation + point[0]! * sinRotation;
-  return {
-    x: centreX + radius * longitudeY,
-    y: centreY - radius * (point[2]! * cosTilt + longitudeX * sinTilt),
-    depth: longitudeX * cosTilt - point[2]! * sinTilt,
-  };
-}
-
-function markerForSlug(slug: string): Marker | null {
-  const country = countryBySlug(slug);
-  const coordinate = country
-    ? (CENTROID_OVERRIDES[country.mapName || country.name] ?? CENTROIDS[country.mapName])
-    : null;
-  if (!country || !coordinate) return null;
-  return {
-    slug,
-    name: country.name,
-    longitude: coordinate[0],
-    latitude: coordinate[1],
-    point: unitVector(coordinate[0], coordinate[1]),
-  };
-}
-
-function focusTilt(latitude: number) {
-  return -Math.max(-0.1, Math.min(0.65, latitude * RADIANS * 0.55 + 0.18)) / RADIANS;
-}
-
-function orbitPoint(angle: number) {
-  const x = Math.cos(angle) * 1.34;
-  const z = Math.sin(angle) * 1.34;
-  const y = -z * Math.sin(1.12);
-  return {
-    x: x * Math.cos(-0.32) - y * Math.sin(-0.32),
-    y: x * Math.sin(-0.32) + y * Math.cos(-0.32),
-    depth: z * Math.cos(1.12),
-  };
-}
-
-function routesFrom(active: Marker, markers: Marker[]): GlobeRoute[] {
-  const hubs = HUB_SLUGS.map((slug) => markers.find((marker) => marker.slug === slug)).filter(
-    (marker): marker is Marker => Boolean(marker),
-  );
-  const activeIndex = hubs.findIndex((marker) => marker.slug === active.slug);
-  const targets =
-    activeIndex >= 0
-      ? [3, 6, 9].map((offset) => hubs[(activeIndex + offset) % hubs.length]!)
-      : [2, 3, 10].map((index) => hubs[index]!);
-
-  return targets
-    .filter((target) => target && target.slug !== active.slug)
-    .map((target) => {
-      const from = active.point;
-      const to = target.point;
-      const angle = Math.acos(
-        Math.max(-1, Math.min(1, from[0] * to[0] + from[1] * to[1] + from[2] * to[2])),
-      );
-      const sine = Math.sin(angle);
-      return Array.from({ length: ROUTE_STEPS + 1 }, (_, index) => {
-        const t = index / ROUTE_STEPS;
-        const a = sine > 0.00001 ? Math.sin((1 - t) * angle) / sine : 1 - t;
-        const b = sine > 0.00001 ? Math.sin(t * angle) / sine : t;
-        const lift = 1 + 0.24 * Math.sin(Math.PI * t);
-        return [
-          (from[0] * a + to[0] * b) * lift,
-          (from[1] * a + to[1] * b) * lift,
-          (from[2] * a + to[2] * b) * lift,
-        ];
-      });
-    });
-}
-
-export function DottedPolicyGlobe({
-  focusKey,
-  countrySlug,
-  countryName,
-  updates,
-  onSelectCountry,
-}: {
-  focusKey: string | null;
-  countrySlug: string | null;
-  countryName: string | null;
-  updates: PolicyUpdate[];
-  onSelectCountry: (slug: string) => void;
-}) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const featuresRef = useRef<LandFeature[]>([]);
-  const markersRef = useRef<Marker[]>([]);
-  const activeRef = useRef<{ slug: string | null; name: string | null }>({
-    slug: countrySlug,
-    name: countryName,
+const RAD = Math.PI / 180;
+const COLORS = { policy: "180,35,60", markets: "37,99,168", prices: "23,138,107" };
+const NAMES = { policy: "Policy", markets: "Markets", prices: "Prices" };
+const vector = (longitude: number, latitude: number): Vector => [
+  Math.cos(latitude * RAD) * Math.cos(longitude * RAD),
+  Math.cos(latitude * RAD) * Math.sin(longitude * RAD),
+  Math.sin(latitude * RAD),
+];
+// Illustrative locations only: these are animation geometry, not country data.
+const PINS = [
+  [54, 24],
+  [-98, 39],
+  [-1.5, 53],
+  [-51, -14],
+  [78, 21],
+  [113, -2],
+  [9, 50],
+  [-106, 56],
+  [-64, -34],
+  [24, -29],
+  [134, -25],
+  [138, 36],
+  [38, 0],
+].map(([lon, lat]) => vector(lon!, lat!));
+const COLUMNS = [
+  [-98, 39, 0.2],
+  [-51, -14, 0.22],
+  [78, 21, 0.16],
+  [113, -2, 0.14],
+  [10, 50, 0.18],
+  [104, 35, 0.2],
+  [-64, -34, 0.1],
+  [101, 15, 0.1],
+].map(([lon, lat, height]) => ({ point: vector(lon!, lat!), height: height! }));
+const ARCS = [
+  [
+    [-95.3, 29.7],
+    [4.5, 51.9],
+  ],
+  [
+    [-46, -23],
+    [4.5, 51.9],
+  ],
+  [
+    [103.8, 1.3],
+    [73, 19],
+  ],
+  [
+    [-95.3, 29.7],
+    [121, 31],
+  ],
+  [
+    [-46, -23],
+    [-95.3, 29.7],
+  ],
+  [
+    [4.5, 51.9],
+    [55, 25],
+  ],
+].map(([start, end]) => {
+  const a = vector(start![0]!, start![1]!);
+  const b = vector(end![0]!, end![1]!);
+  return Array.from({ length: 49 }, (_, index): Vector => {
+    const t = index / 48;
+    const point = a.map((v, axis) => v * (1 - t) + b[axis]! * t);
+    const length = Math.hypot(...point);
+    const lift = 1 + 0.25 * Math.sin(Math.PI * t);
+    return [(point[0]! / length) * lift, (point[1]! / length) * lift, (point[2]! / length) * lift];
   });
-  const focusKeyRef = useRef(focusKey);
-  const selectRef = useRef(onSelectCountry);
-  const requestRenderRef = useRef<(() => void) | null>(null);
+});
+const GRID: Vector[][] = [];
+for (let lat = -60; lat <= 60; lat += 30) {
+  GRID.push(Array.from({ length: 121 }, (_, i) => vector(i * 3, lat)));
+}
+for (let lon = 0; lon < 360; lon += 30) {
+  GRID.push(Array.from({ length: 61 }, (_, i) => vector(lon, -90 + i * 3)));
+}
 
-  const markers = useMemo(() => {
-    const slugs = new Set(HUB_SLUGS);
-    for (const update of updates) if (update.countrySlug) slugs.add(update.countrySlug);
-    return [...slugs].map(markerForSlug).filter((marker): marker is Marker => marker !== null);
-  }, [updates]);
+export function DottedPolicyGlobe() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [layers, setLayers] = useState<Layers>(PHASES[0]!);
+  const [paused, setPaused] = useState(false);
+  const controls = useRef({ layers, paused, manualUntil: 0, time: 0 });
+  const renderRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    markersRef.current = markers;
-    focusKeyRef.current = focusKey;
-    activeRef.current = { slug: countrySlug, name: countryName };
-    selectRef.current = onSelectCountry;
-    requestRenderRef.current?.();
-  }, [markers, focusKey, countrySlug, countryName, onSelectCountry]);
+    controls.current.layers = layers;
+    controls.current.paused = paused;
+    renderRef.current?.();
+  }, [layers, paused]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const context = canvas?.getContext("2d");
-    if (!canvas || !context) return;
-
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     let disposed = false;
-    fetch("/world-110m.json")
-      .then((response) => response.json())
-      .then((topology) => {
-        if (disposed) return;
-        featuresRef.current = (
-          feature(topology, topology.objects.countries) as unknown as { features: LandFeature[] }
-        ).features;
-      })
-      .catch(() => {
-        featuresRef.current = [];
-      });
-
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let inView = true;
     let frame = 0;
-    let visible = true;
+    let previous = 0;
     let width = 0;
     let height = 0;
     let radius = 0;
+    let rotation = -78 * RAD;
+    let tilt = -20 * RAD;
+    let velocity = 0.00021;
+    let phase = 0;
+    let pointer: { id: number; x: number; y: number; type: string; dragging: boolean } | null =
+      null;
     let ocean: CanvasGradient;
     let glow: CanvasGradient;
-    let shade: CanvasGradient;
-    let rotation = -FALLBACK_LOCATION[0];
-    let tilt = focusTilt(FALLBACK_LOCATION[1]);
-    let holdUntil = 0;
-    let lastFrameAt = 0;
-    let pointer: PointerStart | null = null;
-    let hoverPoint: { x: number; y: number } | null = null;
-    let focusedSlug = activeRef.current.slug;
-    let focusedKey = focusKeyRef.current;
-    let arcStartedAt = performance.now();
-    let animationTime = 0;
-
-    const initialMarker = markersRef.current.find(
-      (marker) => marker.slug === activeRef.current.slug,
-    );
-    if (initialMarker) {
-      rotation = -initialMarker.longitude;
-      tilt = focusTilt(initialMarker.latitude);
+    const opacity = { policy: 1, markets: 0, prices: 0 };
+    const active = () => !controls.current.paused && !motion.matches;
+    const rgba = (layer: Layer, alpha: number) => `rgba(${COLORS[layer]},${alpha})`;
+    const circle = (x: number, y: number, size: number) => {
+      ctx.beginPath();
+      ctx.arc(x, y, size, 0, Math.PI * 2);
+    };
+    function requestRender() {
+      if (!disposed && inView && !document.hidden && !frame) frame = requestAnimationFrame(draw);
     }
-    let targetRotation = rotation;
-    let targetTilt = tilt;
-    let routes = initialMarker ? routesFrom(initialMarker, markersRef.current) : [];
-
-    const resize = () => {
-      const bounds = canvas.getBoundingClientRect();
-      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-      width = bounds.width;
-      height = bounds.height;
-      radius = Math.min(width, height) * 0.36;
-      canvas.width = Math.round(width * dpr);
-      canvas.height = Math.round(height * dpr);
-      context.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ocean = context.createRadialGradient(
-        width / 2 - radius * 0.3,
-        height / 2 - radius * 0.35,
-        radius * 0.08,
-        width / 2,
-        height / 2,
-        radius,
-      );
-      ocean.addColorStop(0, "#ffffff");
-      ocean.addColorStop(1, "#dbe8f1");
-      glow = context.createRadialGradient(
-        width / 2,
-        height / 2,
-        radius * 0.98,
-        width / 2,
-        height / 2,
-        radius * 1.3,
-      );
-      glow.addColorStop(0, "rgba(23,138,107,.13)");
-      glow.addColorStop(1, "rgba(23,138,107,0)");
-      shade = context.createRadialGradient(
-        width / 2 - radius * 0.3,
-        height / 2 - radius * 0.35,
-        radius * 0.4,
-        width / 2,
-        height / 2,
-        radius * 1.02,
-      );
-      shade.addColorStop(0, "rgba(14,42,67,0)");
-      shade.addColorStop(1, "rgba(14,42,67,.13)");
-      draw(performance.now());
-    };
-
-    const drawOrbit = (front: boolean, centreX: number, centreY: number) => {
-      context.lineWidth = 1;
-      context.strokeStyle = front ? "rgba(14,42,67,.20)" : "rgba(14,42,67,.09)";
-      context.beginPath();
-      let pen = false;
-      for (const point of ORBIT_POINTS) {
-        if (point.depth >= 0 === front) {
-          const x = centreX + radius * point.x;
-          const y = centreY - radius * point.y;
-          if (pen) context.lineTo(x, y);
-          else context.moveTo(x, y);
-          pen = true;
-        } else pen = false;
-      }
-      context.stroke();
-      const dot = orbitPoint(animationTime * 0.00022);
-      if (dot.depth >= 0 !== front) return;
-      context.fillStyle = "rgba(23,138,107,.18)";
-      context.beginPath();
-      context.arc(
-        centreX + radius * dot.x,
-        centreY - radius * dot.y,
-        front ? 8 : 6,
-        0,
-        Math.PI * 2,
-      );
-      context.fill();
-      context.fillStyle = "#178a6b";
-      context.beginPath();
-      context.arc(
-        centreX + radius * dot.x,
-        centreY - radius * dot.y,
-        front ? 3.4 : 2.6,
-        0,
-        Math.PI * 2,
-      );
-      context.fill();
-    };
-
     const draw = (now: number) => {
       frame = 0;
-      if (!visible || document.hidden || !width || !height) return;
-      if (!reducedMotion && now - lastFrameAt < 30) {
+      if (!inView || document.hidden || !width || !height) return;
+      // Limit drawing to 30 fps. Rotation uses elapsed time, so it stays smooth.
+      if (active() && previous && now - previous < 30) {
         requestRender();
         return;
       }
-      const delta = lastFrameAt ? Math.min(now - lastFrameAt, 50) : 16;
-      lastFrameAt = now;
-      if (!reducedMotion) animationTime += delta;
-
-      const active = markersRef.current.find((marker) => marker.slug === activeRef.current.slug);
-      if (focusedSlug !== activeRef.current.slug || focusedKey !== focusKeyRef.current) {
-        focusedSlug = activeRef.current.slug;
-        focusedKey = focusKeyRef.current;
-        if (active) {
-          targetRotation = rotation + ((((-active.longitude - rotation) % 360) + 540) % 360) - 180;
-          targetTilt = focusTilt(active.latitude);
+      const delta = previous ? Math.min(now - previous, 64) : 33;
+      previous = now;
+      const state = controls.current;
+      if (active()) {
+        state.time += delta;
+        if (!pointer?.dragging) {
+          velocity += (0.00021 - velocity) * (1 - Math.exp(-delta / 900));
+          rotation += velocity * delta;
         }
-        routes = active ? routesFrom(active, markersRef.current) : [];
-        arcStartedAt = now;
-        holdUntil = 0;
+        const nextPhase = Math.floor(state.time / 5500) % PHASES.length;
+        if (state.time >= state.manualUntil && (nextPhase !== phase || state.manualUntil > 0)) {
+          phase = nextPhase;
+          state.manualUntil = 0;
+          state.layers = PHASES[phase]!;
+          setLayers(state.layers);
+        }
       }
-      if (!pointer?.dragging && now > holdUntil) {
-        if (!reducedMotion) targetRotation += delta * DRIFT_DEGREES_PER_MS;
-        const shortestTurn = ((((targetRotation - rotation) % 360) + 540) % 360) - 180;
-        const ease = reducedMotion ? 1 : 1 - Math.exp(-delta / 460);
-        rotation += shortestTurn * ease;
-        tilt += (targetTilt - tilt) * ease;
+      let transitioning = false;
+      for (const key of KEYS) {
+        const target = state.layers[key] ? 1 : 0;
+        opacity[key] += (target - opacity[key]) * (motion.matches ? 1 : 1 - Math.exp(-delta / 220));
+        if (Math.abs(target - opacity[key]) < 0.005) opacity[key] = target;
+        else transitioning = true;
       }
-
-      const centreX = width / 2;
-      const centreY = height / 2;
-      const cosRotation = Math.cos(rotation * RADIANS);
-      const sinRotation = Math.sin(rotation * RADIANS);
-      const cosTilt = Math.cos(tilt * RADIANS);
-      const sinTilt = Math.sin(tilt * RADIANS);
-      const project = (point: readonly number[]) =>
-        projectPoint(point, cosRotation, sinRotation, cosTilt, sinTilt, centreX, centreY, radius);
-
-      context.clearRect(0, 0, width, height);
-      context.fillStyle = glow;
-      context.beginPath();
-      context.arc(centreX, centreY, radius * 1.3, 0, Math.PI * 2);
-      context.fill();
-      drawOrbit(false, centreX, centreY);
-
-      context.fillStyle = ocean;
-      context.beginPath();
-      context.arc(centreX, centreY, radius, 0, Math.PI * 2);
-      context.fill();
-      context.strokeStyle = "rgba(14,42,67,.10)";
-      context.lineWidth = 1;
-      context.stroke();
-
-      context.fillStyle = "rgba(20,68,98,.85)";
-      context.beginPath();
-      for (const point of globeGeometry.dots) {
-        const pointX = point[0]!;
-        const pointY = point[1]!;
-        const pointZ = point[2]!;
-        const longitudeX = pointX * cosRotation - pointY * sinRotation;
-        const depth = longitudeX * cosTilt - pointZ * sinTilt;
-        if (depth <= 0.025) continue;
-        const longitudeY = pointY * cosRotation + pointX * sinRotation;
-        const x = centreX + radius * longitudeY;
-        const y = centreY - radius * (pointZ * cosTilt + longitudeX * sinTilt);
-        const size = (0.9 + depth) * (radius / 210) * 1.25;
-        context.moveTo(x + size, y);
-        context.arc(x, y, size, 0, Math.PI * 2);
-      }
-      context.fill();
-      context.fillStyle = shade;
-      context.beginPath();
-      context.arc(centreX, centreY, radius, 0, Math.PI * 2);
-      context.fill();
-
-      const visibleMarkers = markersRef.current
-        .map((marker) => ({ marker, position: project(marker.point) }))
-        .filter(({ position }) => position.depth > 0.12);
-      const activePosition = visibleMarkers.find(
-        ({ marker }) => marker.slug === active?.slug,
-      )?.position;
-
-      const routeProgress = reducedMotion
-        ? 1
-        : Math.min(1, (now - arcStartedAt) / ROUTE_DURATION_MS);
-      const routeEase = 1 - (1 - routeProgress) ** 3;
-      routes.forEach((route, index) => {
-        const progress = Math.min(1, Math.max(0, routeEase * 1.25 - index * 0.12));
-        if (!progress) return;
-        context.strokeStyle = "rgba(23,138,107,.55)";
-        context.lineWidth = 1.3;
-        context.beginPath();
+      const cx = width / 2;
+      const cy = height / 2 + (active() ? Math.sin(state.time * 0.0007) * radius * 0.009 : 0);
+      const cr = Math.cos(rotation),
+        sr = Math.sin(rotation),
+        ct = Math.cos(tilt),
+        st = Math.sin(tilt);
+      const project = (point: readonly number[], scale = 1) => {
+        const x = point[0]! * cr - point[1]! * sr;
+        const y = point[1]! * cr + point[0]! * sr;
+        return {
+          x: cx + radius * y * scale,
+          y: cy - radius * (point[2]! * ct + x * st) * scale,
+          depth: x * ct - point[2]! * st,
+        };
+      };
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = glow;
+      circle(cx, cy, radius * 1.15);
+      ctx.fill();
+      ctx.fillStyle = ocean;
+      circle(cx, cy, radius);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(125,181,172,.17)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      const path = (points: readonly Vector[], progress = 1) => {
+        ctx.beginPath();
         let pen = false;
-        let end: ProjectedPoint | null = null;
-        for (let step = 0; step <= Math.floor(ROUTE_STEPS * progress); step++) {
-          const point = project(route[step]!);
-          const outsideSphere = Math.hypot(point.x - centreX, point.y - centreY) > radius;
-          if ((point.depth > 0 || outsideSphere) && point.depth > -0.05) {
-            if (pen) context.lineTo(point.x, point.y);
-            else context.moveTo(point.x, point.y);
+        for (let i = 0; i <= Math.floor((points.length - 1) * progress); i++) {
+          const p = project(points[i]!);
+          if (p.depth > 0.015) {
+            if (pen) ctx.lineTo(p.x, p.y);
+            else ctx.moveTo(p.x, p.y);
             pen = true;
-            end = point;
           } else pen = false;
         }
-        context.stroke();
-        if (end && progress < 1) {
-          context.fillStyle = "#178a6b";
-          context.beginPath();
-          context.arc(end.x, end.y, 2.6, 0, Math.PI * 2);
-          context.fill();
-        }
-      });
-
-      for (const { marker, position } of visibleMarkers) {
-        const selected = marker.slug === active?.slug;
-        const size = (selected ? 5.5 : 3.6) * (0.75 + 0.25 * position.depth);
-        if (!reducedMotion) {
-          const pulse = (animationTime * 0.0007 + marker.longitude / 360 + 1) % 1;
-          context.strokeStyle = `rgba(23,138,107,${0.45 * (1 - pulse)})`;
-          context.lineWidth = 1.2;
-          context.beginPath();
-          context.arc(position.x, position.y, size + pulse * (selected ? 17 : 11), 0, Math.PI * 2);
-          context.stroke();
-        }
-        context.fillStyle = "#178a6b";
-        context.beginPath();
-        context.arc(position.x, position.y, size, 0, Math.PI * 2);
-        context.fill();
-        context.strokeStyle = "rgba(255,255,255,.96)";
-        context.lineWidth = 1.6;
-        context.stroke();
+        ctx.stroke();
+      };
+      ctx.strokeStyle = "rgba(157,187,204,.25)";
+      ctx.lineWidth = 0.65;
+      GRID.forEach((points) => path(points));
+      ctx.fillStyle = "rgba(29,65,90,.75)";
+      ctx.beginPath();
+      for (const point of globeGeometry.dots) {
+        const p = project(point);
+        if (p.depth <= 0.015) continue;
+        const size = ((0.55 + p.depth * 0.35) * radius) / 200;
+        ctx.moveTo(p.x + size, p.y);
+        ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
       }
-
-      const hovered =
-        !pointer?.dragging && hoverPoint
-          ? visibleMarkers.find(
-              ({ position }) =>
-                Math.hypot(position.x - hoverPoint!.x, position.y - hoverPoint!.y) < 16,
-            )
-          : null;
-      const labelPosition = hovered?.position ?? activePosition;
-      const labelMarker = hovered?.marker ?? active;
-      if (labelPosition && labelMarker) {
-        const label = hovered ? hovered.marker.name : activeRef.current.name || labelMarker.name;
-        context.font = '600 13px "Instrument Sans", sans-serif';
-        const labelWidth = context.measureText(label).width + 22;
-        const labelX = Math.max(8, Math.min(width - labelWidth - 8, labelPosition.x + 15));
-        const labelY = Math.max(8, Math.min(height - 36, labelPosition.y - 34));
-        context.fillStyle = "rgba(255,255,255,.96)";
-        context.beginPath();
-        context.roundRect(labelX, labelY, labelWidth, 28, 14);
-        context.fill();
-        context.strokeStyle = "rgba(214,225,234,.95)";
-        context.lineWidth = 1;
-        context.stroke();
-        context.fillStyle = "#0e2a43";
-        context.textBaseline = "middle";
-        context.fillText(label, labelX + 11, labelY + 14);
-      }
-
-      drawOrbit(true, centreX, centreY);
-
+      ctx.fill();
+      if (opacity.policy > 0)
+        PINS.forEach((point, i) => {
+          const p = project(point);
+          if (p.depth <= 0.04) return;
+          const size = radius * 0.016 * (0.65 + 0.35 * p.depth);
+          const pulse = motion.matches ? 0.25 : (state.time * 0.0006 + i * 0.37) % 1;
+          const halo = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, size * 3.2);
+          halo.addColorStop(0, rgba("policy", 0.32 * opacity.policy));
+          halo.addColorStop(1, rgba("policy", 0));
+          ctx.fillStyle = halo;
+          circle(p.x, p.y, size * 3.2);
+          ctx.fill();
+          ctx.strokeStyle = rgba("policy", (1 - pulse) * 0.55 * opacity.policy);
+          ctx.lineWidth = Math.max(1, radius * 0.007);
+          circle(p.x, p.y, size * (1.3 + pulse * 2.4));
+          ctx.stroke();
+          ctx.fillStyle = rgba("policy", opacity.policy);
+          circle(p.x, p.y, size);
+          ctx.fill();
+        });
+      if (opacity.markets > 0)
+        COLUMNS.forEach(({ point, height: columnHeight }, i) => {
+          const base = project(point);
+          if (base.depth <= 0.04) return;
+          const growth = Math.max(0, Math.min(1, opacity.markets * 1.5 - i * 0.07));
+          const top = project(point, 1 + columnHeight * (1 - (1 - growth) ** 3));
+          const gradient = ctx.createLinearGradient(base.x, base.y, top.x + 0.01, top.y + 0.01);
+          gradient.addColorStop(0, `rgba(156,192,234,${opacity.markets})`);
+          gradient.addColorStop(1, rgba("markets", opacity.markets));
+          ctx.strokeStyle = gradient;
+          ctx.lineWidth = radius * 0.033;
+          ctx.lineCap = "butt";
+          ctx.beginPath();
+          ctx.moveTo(base.x, base.y);
+          ctx.lineTo(top.x, top.y);
+          ctx.stroke();
+        });
+      if (opacity.prices > 0)
+        ARCS.forEach((points, i) => {
+          ctx.lineWidth = 1.2;
+          ctx.strokeStyle = rgba("prices", 0.65 * opacity.prices);
+          path(points, 1 - (1 - opacity.prices) ** 3);
+          const progress = motion.matches ? 0.5 : (state.time * 0.00022 + i * 0.17) % 1;
+          for (let tail = 2; tail >= 0; tail--) {
+            const p = project(points[Math.max(0, Math.floor(progress * 48) - tail * 2)]!);
+            if (p.depth <= 0.015) continue;
+            ctx.fillStyle = rgba("prices", opacity.prices * (1 - tail * 0.3));
+            circle(p.x, p.y, radius * (0.012 - tail * 0.002));
+            ctx.fill();
+          }
+        });
       canvas.dataset["ready"] = "true";
-      if (!reducedMotion) requestRender();
+      if (active() || transitioning) requestRender();
     };
-
-    function requestRender() {
-      if (!disposed && visible && !document.hidden && !frame) {
-        frame = requestAnimationFrame(draw);
-      }
-    }
-    requestRenderRef.current = requestRender;
-
-    const onPointerDown = (event: PointerEvent) => {
-      if (event.button !== 0) return;
+    const resize = () => {
+      const bounds = canvas.getBoundingClientRect();
+      width = bounds.width;
+      height = bounds.height;
+      if (!width || !height) return;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      radius = Math.min(width, height) * 0.405;
+      ocean = ctx.createRadialGradient(
+        width * 0.36,
+        height * 0.32,
+        radius * 0.05,
+        width / 2,
+        height / 2,
+        radius * 1.15,
+      );
+      ocean.addColorStop(0, "#faffff");
+      ocean.addColorStop(0.7, "#e5eff6");
+      ocean.addColorStop(1, "#b6d9de");
+      glow = ctx.createRadialGradient(
+        width / 2,
+        height / 2,
+        radius * 0.94,
+        width / 2,
+        height / 2,
+        radius * 1.15,
+      );
+      glow.addColorStop(0, "rgba(23,138,107,.24)");
+      glow.addColorStop(1, "rgba(23,138,107,0)");
+      requestRender();
+    };
+    const down = (e: PointerEvent) => {
+      if (e.button !== 0) return;
       pointer = {
-        x: event.clientX,
-        y: event.clientY,
+        id: e.pointerId,
+        x: e.clientX,
+        y: e.clientY,
+        type: e.pointerType,
         dragging: false,
-        pointerType: event.pointerType,
       };
     };
-    const onPointerMove = (event: PointerEvent) => {
-      const bounds = canvas.getBoundingClientRect();
-      hoverPoint = { x: event.clientX - bounds.left, y: event.clientY - bounds.top };
-      if (!pointer) {
-        const distance = Math.hypot(
-          event.clientX - bounds.left - width / 2,
-          event.clientY - bounds.top - height / 2,
-        );
-        canvas.style.cursor = distance <= radius ? "pointer" : "grab";
-        requestRender();
-        return;
-      }
-      const dx = event.clientX - pointer.x;
-      const dy = event.clientY - pointer.y;
+    const move = (e: PointerEvent) => {
+      if (!pointer || pointer.id !== e.pointerId) return;
+      const dx = e.clientX - pointer.x,
+        dy = e.clientY - pointer.y;
       if (!pointer.dragging) {
-        if (Math.abs(dx) + Math.abs(dy) < 6) return;
-        if (pointer.pointerType === "touch" && Math.abs(dy) > Math.abs(dx)) return;
+        if (Math.abs(dx) + Math.abs(dy) < 4) return;
+        // Leave vertical touch gestures available for scrolling the page.
+        if (pointer.type === "touch" && Math.abs(dy) > Math.abs(dx)) return;
+        canvas.setPointerCapture(e.pointerId);
         pointer.dragging = true;
-        canvas.setPointerCapture(event.pointerId);
-        canvas.style.cursor = "grabbing";
+        canvas.dataset["dragging"] = "true";
       }
-      rotation += dx * 0.28;
-      tilt = Math.max(-55, Math.min(55, tilt - dy * 0.2));
-      pointer.x = event.clientX;
-      pointer.y = event.clientY;
+      rotation += dx * 0.005;
+      tilt = Math.max(-0.9, Math.min(0.6, tilt - dy * 0.004));
+      velocity = Math.max(-0.001, Math.min(0.001, dx * 0.00016));
+      pointer.x = e.clientX;
+      pointer.y = e.clientY;
       requestRender();
     };
-    const onPointerUp = (event: PointerEvent) => {
-      if (!pointer) return;
-      const wasDragging = pointer.dragging;
+    const release = (e: PointerEvent) => {
+      if (pointer?.id !== e.pointerId) return;
       pointer = null;
-      canvas.style.cursor = "grab";
-      if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
-      if (wasDragging) {
-        holdUntil = performance.now() + 7000;
-        return;
-      }
-      const bounds = canvas.getBoundingClientRect();
-      const x = event.clientX - bounds.left;
-      const y = event.clientY - bounds.top;
-      const nearest = markersRef.current
-        .map((marker) => ({
-          marker,
-          projected: projectPoint(
-            marker.point,
-            Math.cos(rotation * RADIANS),
-            Math.sin(rotation * RADIANS),
-            Math.cos(tilt * RADIANS),
-            Math.sin(tilt * RADIANS),
-            width / 2,
-            height / 2,
-            radius,
-          ),
-        }))
-        .find(
-          ({ projected }) =>
-            projected.depth > 0 && Math.hypot(projected.x - x, projected.y - y) < 14,
-        );
-      if (nearest) {
-        selectRef.current(nearest.marker.slug);
-        return;
-      }
-      if (Math.hypot(x - width / 2, y - height / 2) > radius || !featuresRef.current.length) {
-        return;
-      }
-      const coordinates = geoOrthographic()
-        .translate([width / 2, height / 2])
-        .scale(radius)
-        .rotate([rotation, tilt])
-        .invert?.([x, y]);
-      if (!coordinates) return;
-      const country = featuresRef.current.find((item) => geoContains(item as never, coordinates));
-      const slug = country?.properties?.name
-        ? COUNTRY_BY_MAP_NAME.get(country.properties.name)?.slug
-        : null;
-      if (slug) selectRef.current(slug);
-    };
-    const onPointerCancel = () => {
-      pointer = null;
-      hoverPoint = null;
-      canvas.style.cursor = "grab";
-    };
-    const onPointerLeave = () => {
-      hoverPoint = null;
-      if (pointer && !pointer.dragging) pointer = null;
+      canvas.dataset["dragging"] = "false";
+      if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
       requestRender();
     };
-    const onVisibilityChange = () => {
-      if (document.hidden && frame) {
+    const keydown = (e: KeyboardEvent) => {
+      if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) return;
+      e.preventDefault();
+      rotation += e.key === "ArrowLeft" ? -0.15 : e.key === "ArrowRight" ? 0.15 : 0;
+      tilt = Math.max(
+        -0.9,
+        Math.min(0.6, tilt + (e.key === "ArrowUp" ? -0.1 : e.key === "ArrowDown" ? 0.1 : 0)),
+      );
+      requestRender();
+    };
+    const visibility = () => {
+      previous = 0;
+      if (document.hidden) {
         cancelAnimationFrame(frame);
         frame = 0;
-      } else {
-        requestRender();
-      }
+      } else requestRender();
     };
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        visible = Boolean(entry?.isIntersecting);
-        if (visible) requestRender();
-        else if (frame) {
-          cancelAnimationFrame(frame);
-          frame = 0;
-        }
-      },
-      { rootMargin: "80px" },
-    );
-
+    const motionChange = () => {
+      previous = 0;
+      requestRender();
+    };
+    const observer = new ResizeObserver(resize);
+    const intersection = new IntersectionObserver(([entry]) => {
+      inView = entry?.isIntersecting ?? false;
+      previous = 0;
+      if (!inView) {
+        cancelAnimationFrame(frame);
+        frame = 0;
+      } else requestRender();
+    });
     observer.observe(canvas);
-    window.addEventListener("resize", resize);
-    document.addEventListener("visibilitychange", onVisibilityChange);
-    canvas.addEventListener("pointerdown", onPointerDown);
-    canvas.addEventListener("pointermove", onPointerMove);
-    canvas.addEventListener("pointerup", onPointerUp);
-    canvas.addEventListener("pointercancel", onPointerCancel);
-    canvas.addEventListener("pointerleave", onPointerLeave);
+    intersection.observe(canvas);
+    document.addEventListener("visibilitychange", visibility);
+    motion.addEventListener("change", motionChange);
+    canvas.addEventListener("pointerdown", down);
+    canvas.addEventListener("pointermove", move);
+    canvas.addEventListener("pointerup", release);
+    canvas.addEventListener("pointercancel", release);
+    canvas.addEventListener("lostpointercapture", release);
+    canvas.addEventListener("keydown", keydown);
+    renderRef.current = requestRender;
     resize();
-
     return () => {
       disposed = true;
-      if (frame) cancelAnimationFrame(frame);
-      requestRenderRef.current = null;
+      cancelAnimationFrame(frame);
       observer.disconnect();
-      window.removeEventListener("resize", resize);
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-      canvas.removeEventListener("pointerdown", onPointerDown);
-      canvas.removeEventListener("pointermove", onPointerMove);
-      canvas.removeEventListener("pointerup", onPointerUp);
-      canvas.removeEventListener("pointercancel", onPointerCancel);
-      canvas.removeEventListener("pointerleave", onPointerLeave);
+      intersection.disconnect();
+      renderRef.current = null;
+      document.removeEventListener("visibilitychange", visibility);
+      motion.removeEventListener("change", motionChange);
+      canvas.removeEventListener("pointerdown", down);
+      canvas.removeEventListener("pointermove", move);
+      canvas.removeEventListener("pointerup", release);
+      canvas.removeEventListener("pointercancel", release);
+      canvas.removeEventListener("lostpointercapture", release);
+      canvas.removeEventListener("keydown", keydown);
     };
   }, []);
 
   return (
-    <>
+    <div className={styles["stage"]}>
       <canvas
         ref={canvasRef}
-        className="home-policy-globe absolute inset-0 size-full touch-pan-y"
-        role="button"
+        className={styles["canvas"]}
         tabIndex={0}
-        aria-label={
-          countrySlug
-            ? `Interactive policy globe focused on ${countryName ?? "selected country"}. Press Enter to open its profile.`
-            : "Interactive policy globe. Drag to explore countries."
-        }
-        onKeyDown={(event) => {
-          if (countrySlug && (event.key === "Enter" || event.key === " ")) {
-            event.preventDefault();
-            onSelectCountry(countrySlug);
-          }
-        }}
-      />
-      <img
-        src={globePlaceholder}
-        alt=""
-        aria-hidden="true"
-        width={600}
-        height={600}
-        className="home-globe-placeholder pointer-events-none absolute inset-0 size-full"
-      />
-    </>
+        role="img"
+        aria-label="Illustrative rotating globe. Use arrow keys or drag to rotate."
+      >
+        Illustrative globe showing policy, markets and prices.
+      </canvas>
+      <div className={styles["layers"]} role="group" aria-label="Globe animation layers">
+        {KEYS.map((key) => (
+          <button
+            key={key}
+            type="button"
+            data-layer={key}
+            aria-pressed={layers[key]}
+            onClick={() => {
+              controls.current.manualUntil = controls.current.time + 8000;
+              setLayers((current) => ({ ...current, [key]: !current[key] }));
+            }}
+          >
+            {NAMES[key]}
+          </button>
+        ))}
+      </div>
+      <button
+        type="button"
+        className={styles["pause"]}
+        aria-label={paused ? "Resume globe animation" : "Pause globe animation"}
+        aria-pressed={paused}
+        onClick={() => setPaused((current) => !current)}
+      >
+        {paused ? <Play size={13} aria-hidden="true" /> : <Pause size={13} aria-hidden="true" />}
+      </button>
+    </div>
   );
 }

@@ -1,13 +1,13 @@
+import { IntelligencePipeline } from "@/components/IntelligencePipeline";
 import { MotionReveal } from "@/components/MotionReveal";
-import { motion, useReducedMotion } from "motion/react";
-import { useState } from "react";
+import { motion, useInView, useReducedMotion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowRight,
   BriefcaseBusiness,
   ChevronDown,
   FileText,
-  Globe2,
   Newspaper,
   ShieldCheck,
   Sparkles,
@@ -76,68 +76,23 @@ const CAPABILITIES = [
 
 const AUDIENCES = ["Analysts", "Researchers", "Investors", "Policymakers", "Journalists"];
 
-function IntelligenceNetwork({ active }: { active: number }) {
-  const capability = CAPABILITIES[active] ?? CAPABILITIES[0];
-  return (
-    <div className="intelligence-network">
-      <div className="intelligence-network-top">
-        <span>Intelligence network</span>
-        <span>{String(active + 1).padStart(2, "0")} / 06</span>
-      </div>
-      <div className="intelligence-network-art" aria-hidden="true">
-        <svg viewBox="0 0 540 500" fill="none">
-          <circle cx="270" cy="250" r="232" stroke="currentColor" opacity=".15" />
-          <circle cx="270" cy="250" r="168" stroke="#53bba9" strokeDasharray="2 3" opacity=".25" />
-          <circle cx="270" cy="250" r="103" stroke="#53bba9" opacity=".2" />
-          <circle cx="270" cy="250" r="84" stroke="#53bba9" opacity=".2" />
-          <path
-            d="M130 111L311 240M171 210L285 110M163 405L367 302M163 302L316 343"
-            stroke="#55c5ac"
-            opacity=".65"
-          />
-          <path
-            d="M76 98L130 111M426 80L428 91M69 414L141 419M435 409L480 349"
-            stroke="currentColor"
-            opacity=".18"
-          />
-        </svg>
-        <div className="intelligence-orbit">
-          <i />
-          <i />
-          <i />
-          <i />
-        </div>
-        <div className="intelligence-network-core">
-          <Globe2 size={30} strokeWidth={1.6} />
-          <strong>GBW</strong>
-          <span>Live intelligence</span>
-        </div>
-        <span className="intelligence-node intelligence-node-policy">Policy</span>
-        <span className="intelligence-node intelligence-node-markets">Markets</span>
-        <span className="intelligence-node intelligence-node-careers">Careers</span>
-        <span className="intelligence-node intelligence-node-companies">Companies</span>
-      </div>
-      <div className="intelligence-network-bottom">
-        <div>
-          <span>Tracking</span>
-          <p>{capability.tracking}</p>
-        </div>
-        <Link
-          to={capability.to}
-          hash={"hash" in capability ? capability.hash : ""}
-          aria-label={`Explore ${capability.title}`}
-        >
-          <ArrowRight size={18} />
-        </Link>
-      </div>
-    </div>
-  );
-}
-
 export function IntelligenceSection() {
   const reduced = useReducedMotion();
   const [open, setOpen] = useState<number | null>(0);
   const [active, setActive] = useState(0);
+  const capability = CAPABILITIES[active] ?? CAPABILITIES[0];
+  const [automatic, setAutomatic] = useState(true);
+  const visualRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(visualRef, { amount: 0.35 });
+  useEffect(() => {
+    if (reduced || !inView || !automatic) return;
+    const timer = setInterval(() => {
+      if (document.hidden) return;
+      setActive((current) => (current + 1) % CAPABILITIES.length);
+      setOpen((current) => ((current ?? 0) + 1) % CAPABILITIES.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [automatic, inView, reduced]);
   return (
     <div className="intelligence-surface">
       <section
@@ -167,7 +122,22 @@ export function IntelligenceSection() {
         </MotionReveal>
         <div className="intelligence-grid">
           <MotionReveal delay={0.09}>
-            <IntelligenceNetwork active={active} />
+            <div ref={visualRef} className="intelligence-pipeline-container">
+              <IntelligencePipeline active={active} running={inView && !reduced} />
+              <div className="intelligence-network-bottom">
+                <div>
+                  <span>Now showing</span>
+                  <p>{capability.title}</p>
+                </div>
+                <Link
+                  to={capability.to}
+                  hash={"hash" in capability ? capability.hash : ""}
+                  aria-label={`Explore ${capability.title}`}
+                >
+                  <ArrowRight size={18} />
+                </Link>
+              </div>
+            </div>
           </MotionReveal>
           <div className="intelligence-accordion">
             {CAPABILITIES.map((item, index) => {
@@ -187,6 +157,7 @@ export function IntelligenceSection() {
                       aria-expanded={expanded}
                       aria-controls={`intelligence-panel-${index}`}
                       onClick={() => {
+                        setAutomatic(false);
                         setOpen(expanded ? null : index);
                         setActive(index);
                       }}

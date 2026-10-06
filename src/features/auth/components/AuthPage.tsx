@@ -6,10 +6,10 @@ import { lovable } from "@/integrations/lovable";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { MotionReveal } from "@/components/MotionReveal";
 
-export function AuthPage() {
+export function AuthPage({ initialMode = "signin" }: { initialMode?: "signin" | "signup" }) {
   const { user, loading } = useAuthSession();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);

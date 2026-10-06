@@ -1,5 +1,6 @@
 import { MotionReveal } from "@/components/MotionReveal";
 import { useNavigate } from "@tanstack/react-router";
+import styles from "./PolicyMap.module.css";
 import { WorldPolicyMap } from "./WorldPolicyMap";
 
 export function PolicyMapSection({ counts }: { counts: Record<string, number> }) {
@@ -21,7 +22,7 @@ export function PolicyMapSection({ counts }: { counts: Record<string, number> })
             developing their frameworks. Click any country to open its full profile.
           </p>
         </MotionReveal>
-        <div className="jurisdiction-map-frame">
+        <div className={`jurisdiction-map-frame ${styles["frame"]}`}>
           <div className="jurisdiction-map-header">
             <h3>Jurisdiction map</h3>
             <span>Click a country to open its profile</span>

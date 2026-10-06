@@ -1,0 +1,37 @@
+.frame {
+  border-radius: 6px;
+  box-shadow: none;
+}
+.frame :global(.jurisdiction-map-header) {
+  background: #edf4f8;
+  padding: 14px 18px;
+  font-weight: 600;
+}
+.frame :global(.jurisdiction-map-header > span) {
+  color: #7b91a5;
+}
+.frame :global(.jurisdiction-map-canvas) {
+  background: #f4f7fa;
+  border-radius: 4px;
+  max-width: none;
+  min-height: 0;
+  aspect-ratio: 2;
+  height: auto;
+}
+.frame :global(.jurisdiction-sphere) {
+  fill: white;
+  stroke: #b9c7d4;
+  stroke-width: 1;
+}
+.frame :global(.jurisdiction-graticule) {
+  stroke: #e3ecf3;
+  stroke-width: 0.7;
+}
+.frame :global(.jurisdiction-map-legend) {
+  background: #fff;
+}
+@media (max-width: 760px) {
+  .frame :global(.jurisdiction-map-canvas) {
+    min-height: 260px;
+  }
+}

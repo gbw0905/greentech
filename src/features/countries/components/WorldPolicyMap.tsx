@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { geoEquirectangular, geoPath, geoGraticule10 } from "d3-geo";
+import { geoNaturalEarth1, geoPath, geoGraticule10 } from "d3-geo";
 import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { feature } from "topojson-client";
 import { Minus, Plus, Maximize2 } from "lucide-react";
@@ -190,10 +190,20 @@ export function WorldPolicyMap({
     return () => controller.abort();
   }, []);
 
-  const { path, graticule } = useMemo(() => {
-    const projection = geoEquirectangular().fitSize([WIDTH, HEIGHT], { type: "Sphere" });
+  const { path, graticule, sphere } = useMemo(() => {
+    const projection = geoNaturalEarth1().fitExtent(
+      [
+        [18, 6],
+        [WIDTH - 18, HEIGHT - 6],
+      ],
+      { type: "Sphere" },
+    );
     const path = geoPath(projection);
-    return { path, graticule: path(geoGraticule10()) ?? "" };
+    return {
+      path,
+      graticule: path(geoGraticule10()) ?? "",
+      sphere: path({ type: "Sphere" }) ?? "",
+    };
   }, []);
   const byMapName = useMemo(
     () =>
@@ -213,7 +223,7 @@ export function WorldPolicyMap({
           path: path(geo as never) ?? "",
           country,
           color: MAP_STATUS_COLORS[policyStatusFor(country)],
-          opacity: country ? (count > 0 ? Math.min(0.7 + count * 0.04, 0.95) : 0.55) : 1,
+          opacity: country ? (count > 0 ? Math.min(0.72 + count * 0.04, 1) : 0.62) : 1,
         };
       }),
     [features, byMapName, path, counts],
@@ -411,6 +421,7 @@ export function WorldPolicyMap({
             aria-label="World map of biofuel policy activity"
           >
             <g transform={"translate(" + view.x + "," + view.y + ") scale(" + view.z + ")"}>
+              <path d={sphere} className="jurisdiction-sphere" vectorEffect="non-scaling-stroke" />
               <path
                 d={graticule}
                 className="jurisdiction-graticule"

@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ChevronDown, RefreshCw, Menu, X } from "lucide-react";
+import { ChevronDown, Menu, X } from "lucide-react";
 import { AuthButton } from "@/features/auth/components/AuthButton";
 import {
   DropdownMenu,
@@ -13,7 +13,15 @@ import siteLogo from "@/assets/logo.png";
 // Every item points to an existing route; reference placeholders are not carried over.
 const NAV_GROUPS = [
   {
-    label: "Policy",
+    label: "Benchmarks",
+    items: [
+      { to: "/", hash: "markets", label: "WTI Crude", description: "US crude oil, $ per barrel" },
+      { to: "/", hash: "markets", label: "S&P 500", description: "US equity index level" },
+      { to: "/", hash: "markets", label: "Natural Gas", description: "Henry Hub gas, $ per MMBtu" },
+    ],
+  },
+  {
+    label: "Global Markets",
     items: [
       {
         to: "/",
@@ -39,15 +47,22 @@ const NAV_GROUPS = [
     ],
   },
   {
-    label: "Benchmarks",
+    label: "Datasets",
     items: [
-      { to: "/", hash: "markets", label: "WTI Crude", description: "US crude oil, $ per barrel" },
-      { to: "/", hash: "markets", label: "S&P 500", description: "US equity index level" },
-      { to: "/", hash: "markets", label: "Natural Gas", description: "Henry Hub gas, $ per MMBtu" },
+      {
+        to: "/supply",
+        label: "Suppliers & producers",
+        description: "Explore suppliers and users across the value chain",
+      },
+      {
+        to: "/data-sources",
+        label: "Data sources",
+        description: "The evidence behind the tracker",
+      },
     ],
   },
   {
-    label: "Tools",
+    label: "Products",
     items: [
       {
         to: "/ci-calculator",
@@ -65,46 +80,40 @@ const NAV_GROUPS = [
         description: "Model manure-to-fuel carbon intensity",
       },
       {
-        to: "/supply",
-        label: "Datasets · supply and producers",
-        description: "Explore suppliers and users across the value chain",
-      },
-      {
         to: "/document-analyzer",
-        label: "Document analyzer",
+        label: "Policy Document Analyzer",
         description: "Read and analyse policy documents",
       },
     ],
   },
   {
-    label: "Resources",
+    label: "Bioenergy Jobs",
     items: [
-      { to: "/videos", label: "Videos", description: "Explainers on bioenergy policy and markets" },
-      { to: "/jobs", label: "Jobs", description: "Roles across the bioenergy sector" },
       {
-        to: "/",
-        hash: "disclaimer",
-        label: "Method and disclaimer",
-        description: "How we collect, classify and summarise",
-      },
-      {
-        to: "/data-sources",
-        label: "Data sources",
-        description: "The evidence behind the tracker",
+        to: "/jobs",
+        label: "Open roles",
+        description: "Find opportunities across the bioenergy sector",
       },
     ],
   },
   {
-    label: "About",
+    label: "About Us",
     items: [
-      { to: "/about", label: "About us", description: "Who we are and how the desk works" },
+      { to: "/about", label: "What we do", description: "Who we are and how the desk works" },
       {
         to: "/about/mission-vision",
         label: "Mission & vision",
         description: "Why this desk exists and where it is heading",
       },
       { to: "/about/team", label: "Team members", description: "The people behind the tracker" },
-      { to: "/contact", label: "Contact", description: "General and press enquiries" },
+      { to: "/contact", label: "Contact us", description: "General and press enquiries" },
+      { to: "/videos", label: "Videos", description: "Explainers on bioenergy policy and markets" },
+      {
+        to: "/",
+        hash: "disclaimer",
+        label: "Method and disclaimer",
+        description: "How we collect, classify and summarise",
+      },
       { to: "/contact", label: "Submit a tip", description: "Send us a policy or market lead" },
     ],
   },
@@ -112,12 +121,8 @@ const NAV_GROUPS = [
 
 export function SiteHeader({
   activeSection = null,
-  busy = false,
-  onRescan,
 }: {
   activeSection?: "markets" | "supply" | "jobs" | null;
-  busy?: boolean;
-  onRescan: () => void;
 }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [mobileOpenGroup, setMobileOpenGroup] = useState<string | null>(null);
@@ -131,24 +136,26 @@ export function SiteHeader({
     setOpenGroup(null);
   }, [locationHref]);
   const groupActive = (label: string) => {
-    const [pathname, locationHash] = locationHref.split("#");
+    const [pathAndSearch, locationHash] = locationHref.split("#");
+    const pathname = pathAndSearch!.split("?")[0]!;
     // URL fragments are unavailable to the server during the initial render.
     const hash = hydrated ? locationHash : undefined;
-    if (label === "Policy")
-      return hash === "map" || /^\/(countries|profiles|mandates|timeline)(\/|$)/.test(pathname!);
+    if (label === "Global Markets")
+      return (
+        hash === "map" ||
+        hash === "updates" ||
+        /^\/(countries|profiles|mandates|timeline)(\/|$)/.test(pathname)
+      );
     if (label === "Benchmarks") return hash === "markets";
-    if (label === "Tools")
-      return (
-        activeSection === "supply" ||
-        /^\/(ci-calculator|dairy-rng-calculator|my-results|document-analyzer)(\/|$)/.test(pathname!)
+    if (label === "Datasets") return activeSection === "supply" || pathname === "/data-sources";
+    if (label === "Products")
+      return /^\/(ci-calculator|dairy-rng-calculator|my-results|document-analyzer)(\/|$)/.test(
+        pathname,
       );
-    if (label === "Resources")
-      return (
-        activeSection === "jobs" ||
-        hash === "disclaimer" ||
-        /^\/(videos|data-sources)(\/|$)/.test(pathname!)
-      );
-    return /^\/(about|contact)(\/|$)/.test(pathname!);
+    if (label === "Bioenergy Jobs") return activeSection === "jobs";
+    if (label === "About Us")
+      return hash === "disclaimer" || /^\/(about|contact|videos)(\/|$)/.test(pathname);
+    return false;
   };
 
   return (
@@ -177,7 +184,7 @@ export function SiteHeader({
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
-                align="start"
+                align={group.label === "About Us" ? "end" : "start"}
                 sideOffset={8}
                 className="gbw-nav-menu"
                 aria-label={group.label}
@@ -200,18 +207,8 @@ export function SiteHeader({
           ))}
         </nav>
         <div className="gbw-header-actions">
-          <button
-            type="button"
-            className="gbw-rescan"
-            aria-label="Rescan feeds"
-            onClick={onRescan}
-            disabled={busy}
-          >
-            <RefreshCw size={14} className={busy ? "animate-spin" : ""} aria-hidden="true" />
-            <span>Rescan</span>
-          </button>
           <div className="gbw-auth">
-            <AuthButton />
+            <AuthButton entryMode="signup" />
           </div>
           <button
             type="button"
