@@ -60,8 +60,7 @@ const CAPABILITIES = [
     description:
       "AI-powered summaries turn dense regulatory filings into readable briefings delivered by email on demand. Verify generated summaries against their original sources.",
     tags: ["AI summaries", "Daily digest", "Email alerts"],
-    to: "/",
-    hash: "alerts",
+    to: "/get-alerts",
     tracking: "Policy and market briefings",
   },
   {

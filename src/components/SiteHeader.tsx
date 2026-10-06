@@ -1,17 +1,113 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { RefreshCw, Menu, X } from "lucide-react";
+import { ChevronDown, RefreshCw, Menu, X } from "lucide-react";
 import { AuthButton } from "@/features/auth/components/AuthButton";
-import { AboutMenu } from "@/components/AboutMenu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import siteLogo from "@/assets/logo.png";
 
-const SECTIONS = [
-  { to: "/", hash: "markets", label: "Markets" },
-  { to: "/", hash: "map", label: "Jurisdiction map" },
-  { to: "/supply", label: "Supply and producers" },
-  { to: "/jobs", label: "Jobs" },
-  { to: "/", hash: "alerts", label: "Email alerts" },
-  { to: "/", hash: "disclaimer", label: "What we do" },
+// Every item points to an existing route; reference placeholders are not carried over.
+const NAV_GROUPS = [
+  {
+    label: "Policy",
+    items: [
+      {
+        to: "/",
+        hash: "map",
+        label: "Jurisdiction map",
+        description: "Mandates and frameworks, country by country",
+      },
+      {
+        to: "/timeline",
+        label: "Latest policy updates",
+        description: "New notices and market developments",
+      },
+      {
+        to: "/mandates",
+        label: "Mandate tracker",
+        description: "Published obligations and policy targets",
+      },
+      {
+        to: "/profiles",
+        label: "Country profiles",
+        description: "Explore every tracked jurisdiction",
+      },
+    ],
+  },
+  {
+    label: "Benchmarks",
+    items: [
+      { to: "/", hash: "markets", label: "WTI Crude", description: "US crude oil, $ per barrel" },
+      { to: "/", hash: "markets", label: "S&P 500", description: "US equity index level" },
+      { to: "/", hash: "markets", label: "Natural Gas", description: "Henry Hub gas, $ per MMBtu" },
+    ],
+  },
+  {
+    label: "Tools",
+    items: [
+      {
+        to: "/ci-calculator",
+        label: "CI calculator",
+        description: "Estimate the carbon intensity of a fuel pathway",
+      },
+      {
+        to: "/my-results",
+        label: "CI WorkSpace",
+        description: "Save, compare and revisit your CI scenarios",
+      },
+      {
+        to: "/dairy-rng-calculator",
+        label: "Dairy RNG calculator",
+        description: "Model manure-to-fuel carbon intensity",
+      },
+      {
+        to: "/supply",
+        label: "Datasets · supply and producers",
+        description: "Explore suppliers and users across the value chain",
+      },
+      {
+        to: "/document-analyzer",
+        label: "Document analyzer",
+        description: "Read and analyse policy documents",
+      },
+    ],
+  },
+  {
+    label: "Resources",
+    items: [
+      { to: "/videos", label: "Videos", description: "Explainers on bioenergy policy and markets" },
+      { to: "/jobs", label: "Jobs", description: "Roles across the bioenergy sector" },
+      {
+        to: "/",
+        hash: "disclaimer",
+        label: "Method and disclaimer",
+        description: "How we collect, classify and summarise",
+      },
+      {
+        to: "/data-sources",
+        label: "Data sources",
+        description: "The evidence behind the tracker",
+      },
+    ],
+  },
+  {
+    label: "About",
+    items: [
+      { to: "/about", label: "About us", description: "Who we are and how the desk works" },
+      {
+        to: "/about/mission-vision",
+        label: "Mission & vision",
+        description: "Why this desk exists and where it is heading",
+      },
+      { to: "/about/team", label: "Team members", description: "The people behind the tracker" },
+      { to: "/contact", label: "Contact", description: "General and press enquiries" },
+      { to: "/contact", label: "Submit a tip", description: "Send us a policy or market lead" },
+    ],
+  },
 ] as const;
 
 export function SiteHeader({
@@ -24,156 +120,147 @@ export function SiteHeader({
   onRescan: () => void;
 }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [mobileOpenGroup, setMobileOpenGroup] = useState<string | null>(null);
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const [hydrated, setHydrated] = useState(false);
   const locationHref = useRouterState({ select: (state) => state.location.href });
-  useEffect(() => setMobileNavOpen(false), [locationHref]);
+  useEffect(() => setHydrated(true), []);
+  useEffect(() => {
+    setMobileNavOpen(false);
+    setMobileOpenGroup(null);
+    setOpenGroup(null);
+  }, [locationHref]);
+  const groupActive = (label: string) => {
+    const [pathname, locationHash] = locationHref.split("#");
+    // URL fragments are unavailable to the server during the initial render.
+    const hash = hydrated ? locationHash : undefined;
+    if (label === "Policy")
+      return hash === "map" || /^\/(countries|profiles|mandates|timeline)(\/|$)/.test(pathname!);
+    if (label === "Benchmarks") return hash === "markets";
+    if (label === "Tools")
+      return (
+        activeSection === "supply" ||
+        /^\/(ci-calculator|dairy-rng-calculator|my-results|document-analyzer)(\/|$)/.test(pathname!)
+      );
+    if (label === "Resources")
+      return (
+        activeSection === "jobs" ||
+        hash === "disclaimer" ||
+        /^\/(videos|data-sources)(\/|$)/.test(pathname!)
+      );
+    return /^\/(about|contact)(\/|$)/.test(pathname!);
+  };
+
   return (
-    <header className="sticky top-0 z-50 border-b border-[#d6e1ea] bg-white/[.88] font-['Instrument_Sans'] text-[#0e2a43] backdrop-blur-[14px] backdrop-saturate-[1.4]">
-      <div className="mx-auto flex h-16 max-w-[1240px] items-center gap-3 px-5 min-[621px]:px-8 min-[1160px]:gap-7">
-        <div className="flex min-w-0 items-center gap-3">
-          <Link to="/" aria-label="Home" className="shrink-0">
-            <img
-              src={siteLogo}
-              alt="Global Bioenergy Watch logo: a globe with a leaf and rising data line"
-              width={1024}
-              height={1024}
-              className="size-9 shrink-0 object-contain"
-            />
-          </Link>
-          <div className="min-w-0">
-            <a
-              href="https://www.linkedin.com/company/global-bioenergy-watch/?viewAsMember=true"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block truncate font-['Bricolage_Grotesque'] text-[1.05rem] leading-[1.15] font-semibold tracking-[-0.01em] text-[#0e2a43] no-underline"
+    <header className="gbw-header">
+      <div className="gbw-header-inner">
+        <Link to="/" aria-label="Global Bioenergy Watch home" className="gbw-brand">
+          <img src={siteLogo} alt="Global Bioenergy Watch logo" width={1024} height={1024} />
+          <span>Global Bioenergy Watch</span>
+        </Link>
+        <nav aria-label="Primary" className="gbw-desktop-nav">
+          {NAV_GROUPS.map((group) => (
+            <DropdownMenu
+              key={group.label}
+              modal={false}
+              open={openGroup === group.label}
+              onOpenChange={(open) => setOpenGroup(open ? group.label : null)}
             >
-              Global Bioenergy Watch
-            </a>
-            <div className="hidden text-xs leading-[1.25] text-[#7b8ea0] min-[1160px]:block">
-              Policy, Markets, Sustainability
-            </div>
-          </div>
-        </div>
-
-        <nav aria-label="Page sections" className="hidden min-[1160px]:block">
-          <div className="flex items-center gap-0.5">
-            {SECTIONS.slice(0, 5).map((section, index) => (
-              <Link
-                key={section.label}
-                to={section.to}
-                hash={"hash" in section ? section.hash : ""}
-                className={`inline-flex h-9 items-center rounded-lg px-3 text-sm font-medium whitespace-nowrap transition-colors ${
-                  index ===
-                  (activeSection === "supply"
-                    ? 2
-                    : activeSection === "markets"
-                      ? 0
-                      : activeSection === "jobs"
-                        ? 3
-                        : -1)
-                    ? "bg-[#e3f4ee] text-[#178a6b]"
-                    : "text-[#4c6278] hover:bg-[#eef3f7] hover:text-[#0e2a43]"
-                }`}
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="gbw-nav-trigger"
+                  data-active={groupActive(group.label) || undefined}
+                >
+                  {group.label}
+                  <ChevronDown size={13} aria-hidden="true" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="start"
+                sideOffset={8}
+                className="gbw-nav-menu"
+                aria-label={group.label}
               >
-                {section.label}
-              </Link>
-            ))}
-            <AboutMenu />
-          </div>
+                {group.items.map((item) => (
+                  <DropdownMenuItem asChild key={item.label}>
+                    <Link
+                      to={item.to}
+                      hash={"hash" in item ? item.hash : ""}
+                      className="gbw-nav-item"
+                      onClick={() => setOpenGroup(null)}
+                    >
+                      <strong>{item.label}</strong>
+                      <span>{item.description}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ))}
         </nav>
-
-        <div className="ml-auto flex shrink-0 items-center gap-3">
+        <div className="gbw-header-actions">
           <button
             type="button"
-            onClick={() => onRescan()}
-            disabled={busy}
+            className="gbw-rescan"
             aria-label="Rescan feeds"
-            className="hidden h-9 items-center justify-center gap-2 rounded-[9px] border border-[#d6e1ea] bg-white px-3 text-sm font-semibold text-[#0e2a43] transition-colors hover:border-[#178a6b] disabled:opacity-60 min-[561px]:inline-flex min-[621px]:px-3.5 min-[1160px]:min-w-[120px]"
+            onClick={onRescan}
+            disabled={busy}
           >
-            <RefreshCw className={`size-3.5 ${busy ? "animate-spin" : ""}`} />
-            <span className="hidden min-[621px]:inline">Rescan</span>
+            <RefreshCw size={14} className={busy ? "animate-spin" : ""} aria-hidden="true" />
+            <span>Rescan</span>
           </button>
-          <div className="[&_a]:grid [&_a]:size-10 [&_a]:place-items-center [&_a]:rounded-full [&_a]:border [&_a]:border-[#d6e1ea] [&_a]:bg-[#e3f4ee] [&_a]:p-0 [&_a]:text-[#178a6b] [&_a]:shadow-none [&_a]:hover:border-[#178a6b] [&_a_.auth-label]:sr-only [&_a_svg]:size-4 [&_button]:grid [&_button]:size-10 [&_button]:place-items-center [&_button]:rounded-full [&_button]:border [&_button]:border-[#d6e1ea] [&_button]:bg-[#e3f4ee] [&_button]:p-0 [&_button]:text-[#178a6b] [&_button]:shadow-none [&_button]:hover:border-[#178a6b] [&_button_span]:hidden [&>div>span]:hidden">
+          <div className="gbw-auth">
             <AuthButton />
           </div>
           <button
             type="button"
+            className="gbw-burger"
             aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileNavOpen}
+            aria-controls="gbw-mobile-nav"
             onClick={() => setMobileNavOpen((open) => !open)}
-            className="grid size-10 place-items-center rounded-[10px] border border-[#d6e1ea] bg-white text-[#0e2a43] min-[1160px]:hidden"
           >
-            {mobileNavOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+            {mobileNavOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </div>
-
-      <nav
-        aria-label="Mobile page sections"
-        className={`absolute top-full right-0 left-0 z-50 border-b border-[#d6e1ea] bg-white px-5 pt-2 pb-4 shadow-[0_24px_40px_-28px_rgba(14,42,67,.5)] transition-all duration-200 min-[1160px]:hidden ${
-          mobileNavOpen
-            ? "visible translate-y-0 opacity-100"
-            : "invisible pointer-events-none -translate-y-2 opacity-0"
-        }`}
-      >
-        {SECTIONS.map((section, index) => (
-          <Link
-            key={section.label}
-            to={section.to}
-            hash={"hash" in section ? section.hash : ""}
-            onClick={() => setMobileNavOpen(false)}
-            className={`block border-b border-[#d6e1ea] px-1 py-3 font-medium no-underline ${index === (activeSection === "supply" ? 2 : activeSection === "markets" ? 0 : activeSection === "jobs" ? 3 : -1) ? "text-[#178a6b]" : "text-[#0e2a43]"}`}
-          >
-            {section.label}
-          </Link>
-        ))}
-        <Link
-          to="/ci-calculator"
-          onClick={() => setMobileNavOpen(false)}
-          className="block border-b border-[#d6e1ea] px-1 py-3 font-medium text-[#0e2a43] no-underline"
-        >
-          CI calculator
-        </Link>
-        <Link
-          to="/videos"
-          onClick={() => setMobileNavOpen(false)}
-          className="block border-b border-[#d6e1ea] px-1 py-3 font-medium text-[#0e2a43] no-underline"
-        >
-          Videos
-        </Link>
-        <Link
-          to="/about"
-          onClick={() => setMobileNavOpen(false)}
-          className="block border-b border-[#d6e1ea] px-1 py-3 font-medium text-[#0e2a43] no-underline"
-        >
-          About us
-        </Link>
-        <Link
-          to="/about/mission-vision"
-          onClick={() => setMobileNavOpen(false)}
-          className="block border-b border-[#d6e1ea] px-1 py-3 font-medium text-[#0e2a43] no-underline"
-        >
-          Mission &amp; vision
-        </Link>
-        <Link
-          to="/about/team"
-          onClick={() => setMobileNavOpen(false)}
-          className="block border-b border-[#d6e1ea] px-1 py-3 font-medium text-[#0e2a43] no-underline"
-        >
-          Team members
-        </Link>
-        <button
-          type="button"
-          onClick={() => {
-            setMobileNavOpen(false);
-            onRescan();
+      {mobileNavOpen && (
+        <nav
+          id="gbw-mobile-nav"
+          aria-label="Mobile primary"
+          className="gbw-mobile-nav"
+          onKeyDown={(event) => {
+            if (event.key === "Escape") setMobileNavOpen(false);
           }}
-          disabled={busy}
-          className="mt-2 hidden w-full items-center justify-center gap-2 rounded-[9px] border border-[#d6e1ea] bg-white px-3 py-2.5 text-sm font-medium text-[#4c6278] disabled:opacity-60 max-[560px]:flex"
         >
-          <RefreshCw className={`size-3.5 ${busy ? "animate-spin" : ""}`} />
-          Rescan sources
-        </button>
-      </nav>
+          {NAV_GROUPS.map((group) => (
+            <details key={group.label} open={mobileOpenGroup === group.label}>
+              <summary
+                onClick={(event) => {
+                  event.preventDefault();
+                  setMobileOpenGroup((current) => (current === group.label ? null : group.label));
+                }}
+              >
+                {group.label}
+                <ChevronDown size={15} aria-hidden="true" />
+              </summary>
+              <div>
+                {group.items.map((item) => (
+                  <Link
+                    key={item.label}
+                    to={item.to}
+                    hash={"hash" in item ? item.hash : ""}
+                    onClick={() => setMobileNavOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </details>
+          ))}
+        </nav>
+      )}
     </header>
   );
 }

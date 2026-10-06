@@ -24,7 +24,7 @@ import {
 import type { JobCategory, Seniority } from "@/features/jobs/contracts";
 import { getHiringNewsFn } from "@/features/jobs/server-functions";
 import { logoForDomain } from "@/features/markets/entity-logos";
-import { MotionReveal } from "@/components/MotionReveal";
+import { JobsReveal } from "./JobsReveal";
 import { EmployerDirectory } from "./EmployerDirectory";
 
 /** Light pastel tones per filter group — active picks up the group's tint. */
@@ -418,7 +418,7 @@ export function JobsPanel() {
         )}
       </section>
 
-      <MotionReveal className="jobs-stats" aria-label="Career directory coverage">
+      <JobsReveal className="jobs-stats" aria-label="Career directory coverage">
         {[
           [EMPLOYERS.length, "Bioenergy employers"],
           [JOB_REGIONS.length - 1, "Regional searches"],
@@ -430,10 +430,10 @@ export function JobsPanel() {
             <span>{label}</span>
           </div>
         ))}
-      </MotionReveal>
+      </JobsReveal>
 
       <section id="job-sources" className="jobs-section" aria-labelledby="jobs-sources-title">
-        <MotionReveal className="jobs-section-heading">
+        <JobsReveal className="jobs-section-heading">
           <div>
             <h2 id="jobs-sources-title">Browse job sources</h2>
             <p>Explore opportunities on trusted job boards, using your selected filters.</p>
@@ -441,10 +441,10 @@ export function JobsPanel() {
           <span className="jobs-count">
             {JOB_BOARDS.length} sources · {region.name}
           </span>
-        </MotionReveal>
+        </JobsReveal>
         <div className="jobs-source-grid">
           {JOB_BOARDS.map((board, index) => (
-            <MotionReveal as="article" key={board.name} delay={Math.min(index * 0.04, 0.2)}>
+            <JobsReveal as="article" key={board.name} delay={Math.min(index * 0.04, 0.2)}>
               <a
                 href={board.url({ keywords: query, location: region.location })}
                 target="_blank"
@@ -461,13 +461,13 @@ export function JobsPanel() {
                   Search opportunities <ExternalLink size={12} aria-hidden="true" />
                 </span>
               </a>
-            </MotionReveal>
+            </JobsReveal>
           ))}
         </div>
       </section>
 
       <section className="jobs-section jobs-hiring-section" aria-labelledby="jobs-hiring-title">
-        <MotionReveal className="jobs-section-heading">
+        <JobsReveal className="jobs-section-heading">
           <div>
             <span className="jobs-section-kicker">Workforce intelligence</span>
             <h2 id="jobs-hiring-title">Hiring signals</h2>
@@ -476,7 +476,7 @@ export function JobsPanel() {
           <span className="jobs-count" aria-live="polite">
             {news.isFetching ? "Updating…" : `${news.data?.items.length ?? 0} items`}
           </span>
-        </MotionReveal>
+        </JobsReveal>
         <div className="jobs-news-list" aria-busy={news.isFetching}>
           {news.isLoading && (
             <p className="jobs-empty" role="status">
@@ -501,28 +501,29 @@ export function JobsPanel() {
             const validDate =
               date && Number.isFinite(date.getTime()) ? date.toISOString().slice(0, 10) : null;
             return (
-              <a
-                key={item.url}
-                href={item.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="jobs-news-card"
-              >
-                <div>
-                  <h3>{item.title}</h3>
-                  <p>
-                    {item.source}
-                    {validDate && (
-                      <>
-                        {" "}
-                        · <time dateTime={validDate}>{validDate}</time>
-                      </>
-                    )}
-                  </p>
-                </div>
-                <span className="jobs-news-category">Hiring news</span>
-                <ArrowUpRight size={18} aria-hidden="true" />
-              </a>
+              <JobsReveal as="article" key={item.url}>
+                <a
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="jobs-news-card"
+                >
+                  <div>
+                    <h3>{item.title}</h3>
+                    <p>
+                      {item.source}
+                      {validDate && (
+                        <>
+                          {" "}
+                          · <time dateTime={validDate}>{validDate}</time>
+                        </>
+                      )}
+                    </p>
+                  </div>
+                  <span className="jobs-news-category">Hiring news</span>
+                  <ArrowUpRight size={18} aria-hidden="true" />
+                </a>
+              </JobsReveal>
             );
           })}
         </div>
@@ -530,7 +531,7 @@ export function JobsPanel() {
 
       <EmployerDirectory />
 
-      <MotionReveal className="jobs-endnote">
+      <JobsReveal className="jobs-endnote">
         <div>
           <CheckCircle2 size={22} aria-hidden="true" />
           <div>
@@ -544,7 +545,7 @@ export function JobsPanel() {
         <Link className="jobs-button" to="/contact">
           Contact the careers desk <ArrowUpRight size={16} />
         </Link>
-      </MotionReveal>
+      </JobsReveal>
     </div>
   );
 }

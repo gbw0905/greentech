@@ -35,7 +35,7 @@ function FeaturedUpdate({ update }: { update: PolicyUpdate }) {
       href={update.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group relative flex min-h-[560px] overflow-hidden rounded-[18px] border border-[#c8d6e1] bg-[#0e2a43] text-white no-underline min-[1101px]:min-h-[672px]"
+      className="group relative flex min-h-[480px] overflow-hidden rounded-[18px] border border-[#c8d6e1] bg-[#0e2a43] text-white no-underline min-[1101px]:min-h-[480px]"
     >
       <img
         src={image.src}
@@ -52,7 +52,7 @@ function FeaturedUpdate({ update }: { update: PolicyUpdate }) {
         <h3 className="mt-4 font-['Bricolage_Grotesque'] text-[clamp(1.55rem,2vw,1.85rem)]/[1.18] font-semibold tracking-[-0.02em]">
           {update.title}
         </h3>
-        <div className="mt-7 flex items-center justify-between gap-3 text-xs text-white/65">
+        <div className="mt-4 flex items-center justify-between gap-3 text-xs text-white/65">
           <span className="rounded-full bg-white/10 px-2.5 py-1 text-white">
             {update.fuels[0] ?? (update.category === "market" ? "Markets" : "Policy")}
           </span>
@@ -70,9 +70,9 @@ function UpdateTile({ update }: { update: PolicyUpdate }) {
       href={update.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group flex min-h-[300px] flex-col overflow-hidden rounded-[18px] border border-[#d6e1ea] bg-white text-[#0e2a43] no-underline min-[1101px]:min-h-[326px]"
+      className="group flex min-h-[232px] flex-col overflow-hidden rounded-[18px] border border-[#d6e1ea] bg-white text-[#0e2a43] no-underline min-[1101px]:min-h-[232px]"
     >
-      <div className="h-[47%] min-h-[142px] overflow-hidden bg-[#e3f4ee]">
+      <div className="h-[84px] shrink-0 overflow-hidden bg-[#e3f4ee]">
         <img
           src={image.src}
           alt={image.alt}
@@ -82,12 +82,12 @@ function UpdateTile({ update }: { update: PolicyUpdate }) {
           className="size-full object-cover transition-transform duration-700 group-hover:scale-[1.035]"
         />
       </div>
-      <div className="flex min-h-0 flex-1 flex-col p-4">
+      <div className="flex min-h-0 flex-1 flex-col p-3">
         <UpdateMeta update={update} />
-        <h3 className="mt-3 line-clamp-3 font-['Bricolage_Grotesque'] text-[1.02rem]/[1.3] font-semibold tracking-[-0.01em]">
+        <h3 className="mt-2 line-clamp-2 font-['Bricolage_Grotesque'] text-[1.02rem]/[1.3] font-semibold tracking-[-0.01em]">
           {update.title}
         </h3>
-        <div className="mt-auto flex items-center justify-between gap-2 pt-4 text-xs text-[#7b8ea0]">
+        <div className="mt-auto flex items-center justify-between gap-2 pt-2 text-xs text-[#7b8ea0]">
           <span className="rounded-full bg-[#eef3f7] px-2.5 py-1 text-[#4c6278]">
             {update.fuels[0] ?? (update.category === "market" ? "Markets" : "Policy")}
           </span>
@@ -116,18 +116,14 @@ export function LatestUpdatesSection({ updates }: { updates: PolicyUpdate[] }) {
   return (
     <section
       id="updates"
-      className="scroll-mt-[106px] border-t border-[#d6e1ea] bg-[#eef3f7] py-16 font-['Instrument_Sans'] text-[#0e2a43] min-[961px]:py-20"
+      className="scroll-mt-[106px] border-t border-[#d6e1ea] bg-[#eef3f7] py-8 font-['Instrument_Sans'] text-[#0e2a43] min-[961px]:py-9"
     >
       <div className="mx-auto max-w-[1240px] px-5 min-[621px]:px-8">
-        <MotionReveal className="flex flex-col justify-between gap-6 min-[821px]:flex-row min-[821px]:items-end">
+        <MotionReveal className="flex flex-col justify-between gap-4 min-[821px]:flex-row min-[821px]:items-end">
           <div>
             <h2 className="font-['Bricolage_Grotesque'] text-[clamp(2rem,3.4vw,2.75rem)]/[1.05] font-semibold tracking-[-0.03em]">
               Latest updates
             </h2>
-            <p className="mt-2 max-w-[58ch] text-[15px]/[1.55] text-[#4c6278]">
-              New policy notices and market stories from around the world, sorted by our AI as they
-              are published.
-            </p>
           </div>
 
           <div
@@ -159,17 +155,17 @@ export function LatestUpdatesSection({ updates }: { updates: PolicyUpdate[] }) {
           </div>
         </MotionReveal>
 
-        <p className="mt-7 text-xs font-medium text-[#7b8ea0]">
+        <p className="mt-3 text-xs font-medium text-[#7b8ea0]">
           Showing {visibleUpdates.length} {visibleUpdates.length === 1 ? "update" : "updates"}
         </p>
 
         {visibleUpdates.length > 0 ? (
-          <div className="mt-4 grid gap-5 min-[901px]:grid-cols-[1.05fr_1fr]">
+          <div className="mt-3 grid gap-4 min-[901px]:grid-cols-[1.05fr_1fr]">
             <MotionReveal className="flex [&>a]:w-full">
               <FeaturedUpdate update={visibleUpdates[0]!} />
             </MotionReveal>
             {visibleUpdates.length > 1 && (
-              <div className="grid gap-5 min-[541px]:grid-cols-2">
+              <div className="grid gap-4 min-[541px]:grid-cols-2">
                 {visibleUpdates.slice(1).map((update, index) => (
                   <MotionReveal
                     key={update.id}
@@ -188,7 +184,7 @@ export function LatestUpdatesSection({ updates }: { updates: PolicyUpdate[] }) {
           </div>
         )}
 
-        <div className="mt-10 flex justify-center">
+        <div className="mt-5 flex justify-center">
           <Link
             to="/timeline"
             className="inline-flex h-[46px] items-center gap-3 rounded-[10px] border border-[#d6e1ea] bg-white px-[22px] text-[15px] font-semibold text-[#0e2a43] no-underline transition-colors hover:border-[#178a6b]"
