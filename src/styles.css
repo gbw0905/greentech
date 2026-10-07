@@ -2734,6 +2734,7 @@ input.chart-select {
   .benchmark-stat { padding: 10px 12px; }
 }
 .jurisdiction-tooltip-details {
+  width: 100%; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   margin-top: 12px; padding: 8px 12px; border-radius: 7px;
   background: #0e2a43; color: white; font-size: 13px; font-weight: 600;
@@ -3034,3 +3035,17 @@ input.chart-select {
 .intelligence-pipeline-container { height: 100%; display: flex; flex-direction: column; overflow: hidden; background: #0e2a43; color: #a9c3d4; border: 1px solid #27475d; border-radius: 20px; }
 .intelligence-pipeline-container .intelligence-network-top { flex-shrink: 0; }
 .intelligence-pipeline-container .intelligence-network-bottom { flex-shrink: 0; }
+
+/* Both sides share the same grid row, including every accordion state. */
+.intelligence-visual { min-width: 0; min-height: 0; }
+.intelligence-accordion { min-height: 0; justify-content: space-between; }
+.intelligence-item { display: flex; flex-direction: column; }
+.intelligence-item.is-open { flex-grow: 1; }
+.intelligence-item.is-open .intelligence-panel-motion { margin-block: auto; }
+@media (min-width: 701px) {
+  .intelligence-item h3 button { min-height: 58px; }
+}
+.sources-methodology { margin-top: 32px; }
+
+.intelligence-accordion[data-expanded="false"] .intelligence-item { flex: 1; }
+.intelligence-accordion[data-expanded="false"] .intelligence-item h3 { display: flex; flex: 1; }

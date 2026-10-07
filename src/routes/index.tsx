@@ -92,7 +92,7 @@ function Dashboard() {
   const topFive = useMemo(() => data.updates.slice(0, 5), [data.updates]);
 
   return (
-    <div>
+    <main>
       <LiveMarquee />
 
       <HomeHero stats={stats} />
@@ -114,6 +114,6 @@ function Dashboard() {
       )}
       <IndustryCarousel />
       <IntelligenceSection />
-    </div>
+    </main>
   );
 }

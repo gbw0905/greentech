@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Pause, Play } from "lucide-react";
 import globeGeometry from "../data/globe-points.json";
 import styles from "./DottedPolicyGlobe.module.css";
+import { HeroFlow } from "./HeroFlow";
 
 type Vector = readonly [number, number, number];
 type Layer = "policy" | "markets" | "prices";
@@ -12,6 +13,7 @@ const PHASES: Layers[] = [
   { policy: true, markets: true, prices: false },
   { policy: true, markets: true, prices: true },
 ];
+const ROTATION_SPEED = 0.00029;
 const RAD = Math.PI / 180;
 const COLORS = { policy: "180,35,60", markets: "37,99,168", prices: "23,138,107" };
 const NAMES = { policy: "Policy", markets: "Markets", prices: "Prices" };
@@ -74,11 +76,12 @@ const ARCS = [
 ].map(([start, end]) => {
   const a = vector(start![0]!, start![1]!);
   const b = vector(end![0]!, end![1]!);
+  const arcHeight = Math.min(0.35, 0.08 + 0.1 * Math.hypot(...a.map((v, axis) => v - b[axis]!)));
   return Array.from({ length: 49 }, (_, index): Vector => {
     const t = index / 48;
     const point = a.map((v, axis) => v * (1 - t) + b[axis]! * t);
     const length = Math.hypot(...point);
-    const lift = 1 + 0.25 * Math.sin(Math.PI * t);
+    const lift = 1 + arcHeight * Math.sin(Math.PI * t);
     return [(point[0]! / length) * lift, (point[1]! / length) * lift, (point[2]! / length) * lift];
   });
 });
@@ -94,6 +97,7 @@ export function DottedPolicyGlobe() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [layers, setLayers] = useState<Layers>(PHASES[0]!);
   const [paused, setPaused] = useState(false);
+  const [ready, setReady] = useState(false);
   const controls = useRef({ layers, paused, manualUntil: 0, time: 0 });
   const renderRef = useRef<(() => void) | null>(null);
 
@@ -109,6 +113,8 @@ export function DottedPolicyGlobe() {
     if (!canvas || !ctx) return;
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     let disposed = false;
+    let hasDrawn = false;
+    let introTimer: ReturnType<typeof setTimeout> | undefined;
     let inView = true;
     let frame = 0;
     let previous = 0;
@@ -117,7 +123,7 @@ export function DottedPolicyGlobe() {
     let radius = 0;
     let rotation = -78 * RAD;
     let tilt = -20 * RAD;
-    let velocity = 0.00021;
+    let velocity = ROTATION_SPEED;
     let phase = 0;
     let pointer: { id: number; x: number; y: number; type: string; dragging: boolean } | null =
       null;
@@ -147,10 +153,10 @@ export function DottedPolicyGlobe() {
       if (active()) {
         state.time += delta;
         if (!pointer?.dragging) {
-          velocity += (0.00021 - velocity) * (1 - Math.exp(-delta / 900));
+          velocity += (ROTATION_SPEED - velocity) * (1 - Math.exp(-delta / 900));
           rotation += velocity * delta;
         }
-        const nextPhase = Math.floor(state.time / 5500) % PHASES.length;
+        const nextPhase = Math.floor(state.time / 4600) % PHASES.length;
         if (state.time >= state.manualUntil && (nextPhase !== phase || state.manualUntil > 0)) {
           phase = nextPhase;
           state.manualUntil = 0;
@@ -255,19 +261,50 @@ export function DottedPolicyGlobe() {
         });
       if (opacity.prices > 0)
         ARCS.forEach((points, i) => {
-          ctx.lineWidth = 1.2;
-          ctx.strokeStyle = rgba("prices", 0.65 * opacity.prices);
-          path(points, 1 - (1 - opacity.prices) ** 3);
-          const progress = motion.matches ? 0.5 : (state.time * 0.00022 + i * 0.17) % 1;
+          const visible = (p: ReturnType<typeof project>) =>
+            p.depth > 0 || Math.hypot(p.x - cx, p.y - cy) > radius * 1.005;
+          const progress = 1 - (1 - opacity.prices) ** 3;
+          const end = Math.floor((points.length - 1) * progress);
+          // Short gradient segments reproduce the mint-to-green 3D trade routes.
+          ctx.lineWidth = Math.max(1, radius * 0.005);
+          ctx.lineCap = "round";
+          for (let j = 1; j <= end; j++) {
+            const a = project(points[j - 1]!);
+            const b = project(points[j]!);
+            // Raised arcs behind the sphere remain visible outside its silhouette.
+            if (!visible(a) || !visible(b)) continue;
+            const t = j / (points.length - 1);
+            ctx.strokeStyle = `rgba(${Math.round(168 - 145 * t)},${Math.round(220 - 82 * t)},${Math.round(200 - 93 * t)},${0.85 * opacity.prices})`;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          }
+          const comet = motion.matches ? 0.5 : (state.time * 0.00028 + i * 0.17) % 1;
           for (let tail = 2; tail >= 0; tail--) {
-            const p = project(points[Math.max(0, Math.floor(progress * 48) - tail * 2)]!);
-            if (p.depth <= 0.015) continue;
-            ctx.fillStyle = rgba("prices", opacity.prices * (1 - tail * 0.3));
-            circle(p.x, p.y, radius * (0.012 - tail * 0.002));
+            const index = Math.max(0, Math.floor(comet * 48) - tail * 2);
+            if (index > end) continue;
+            const p = project(points[index]!);
+            if (!visible(p)) continue;
+            const size = radius * (0.026 - tail * 0.006);
+            const halo = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, size);
+            halo.addColorStop(0, rgba("prices", opacity.prices * (0.95 - tail * 0.25)));
+            halo.addColorStop(0.35, rgba("prices", opacity.prices * (0.45 - tail * 0.12)));
+            halo.addColorStop(1, rgba("prices", 0));
+            ctx.fillStyle = halo;
+            circle(p.x, p.y, size);
             ctx.fill();
           }
         });
-      canvas.dataset["ready"] = "true";
+      if (!hasDrawn) {
+        hasDrawn = true;
+        // Crossfade only after a valid frame; never expose an empty canvas.
+        if (motion.matches) setReady(true);
+        else
+          introTimer = setTimeout(() => {
+            if (!disposed) setReady(true);
+          }, 650);
+      }
       if (active() || transitioning) requestRender();
     };
     const resize = () => {
@@ -357,6 +394,10 @@ export function DottedPolicyGlobe() {
       } else requestRender();
     };
     const motionChange = () => {
+      if (motion.matches && hasDrawn) {
+        clearTimeout(introTimer);
+        setReady(true);
+      }
       previous = 0;
       requestRender();
     };
@@ -383,6 +424,7 @@ export function DottedPolicyGlobe() {
     resize();
     return () => {
       disposed = true;
+      clearTimeout(introTimer);
       cancelAnimationFrame(frame);
       observer.disconnect();
       intersection.disconnect();
@@ -399,11 +441,12 @@ export function DottedPolicyGlobe() {
   }, []);
 
   return (
-    <div className={styles["stage"]}>
+    <div className={styles["stage"]} data-ready={ready} data-paused={paused}>
+      <HeroFlow />
       <canvas
         ref={canvasRef}
         className={styles["canvas"]}
-        tabIndex={0}
+        tabIndex={ready ? 0 : -1}
         role="img"
         aria-label="Illustrative rotating globe. Use arrow keys or drag to rotate."
       >
@@ -415,6 +458,7 @@ export function DottedPolicyGlobe() {
             key={key}
             type="button"
             data-layer={key}
+            disabled={!ready}
             aria-pressed={layers[key]}
             onClick={() => {
               controls.current.manualUntil = controls.current.time + 8000;

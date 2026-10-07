@@ -18,6 +18,11 @@ const DESCRIPTION =
 const URL = "https://globalbioenergywatch.org/mandates";
 
 export const Route = createFileRoute("/mandates")({
+  validateSearch: (search: Record<string, unknown>): { fuel?: MandateFuel | "all" } => ({
+    fuel: MANDATE_FUELS.includes(search["fuel"] as MandateFuel)
+      ? (search["fuel"] as MandateFuel)
+      : "all",
+  }),
   head: () => ({
     meta: [
       { title: TITLE },
@@ -68,7 +73,11 @@ export const Route = createFileRoute("/mandates")({
 });
 
 function MandatesPage() {
-  const [fuel, setFuel] = useState<MandateFuel | "all">("all");
+  const { fuel = "all" } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const setFuel = (value: MandateFuel | "all") => {
+    void navigate({ search: { fuel: value }, replace: true, resetScroll: false });
+  };
   const [status, setStatus] = useState<MandateStatus | "all">("all");
   const [query, setQuery] = useState("");
 

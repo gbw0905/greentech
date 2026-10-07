@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { useMatches, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { PageMotion } from "@/components/PageMotion";
 import { SiteHeader } from "@/components/SiteHeader";
 import { IntelligenceFooter } from "@/components/IntelligenceFooter";
 import { feedQueryWithInitial } from "@/features/policy/feed-query";
@@ -27,7 +28,7 @@ export function SiteLayout({ children }: { children: ReactNode }) {
                 : null
         }
       />
-      <div className="flex-1">{children}</div>
+      <PageMotion pathname={pathname}>{children}</PageMotion>
       <IntelligenceFooter />
     </div>
   );

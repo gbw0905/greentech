@@ -184,7 +184,7 @@ export function LatestUpdatesSection({ updates }: { updates: PolicyUpdate[] }) {
           </div>
         )}
 
-        <div className="mt-5 flex justify-center">
+        <MotionReveal delay={0.09} className="mt-5 flex justify-center">
           <Link
             to="/timeline"
             className="inline-flex h-[46px] items-center gap-3 rounded-[10px] border border-[#d6e1ea] bg-white px-[22px] text-[15px] font-semibold text-[#0e2a43] no-underline transition-colors hover:border-[#178a6b]"
@@ -192,7 +192,7 @@ export function LatestUpdatesSection({ updates }: { updates: PolicyUpdate[] }) {
             View all updates
             <ArrowRight className="size-4" />
           </Link>
-        </div>
+        </MotionReveal>
       </div>
     </section>
   );

@@ -35,3 +35,42 @@
     min-height: 260px;
   }
 }
+
+/* Budget for the sticky navbar, section heading, controls and legend. */
+@media (min-width: 761px) {
+  .section {
+    padding: 16px 32px 20px;
+  }
+  .section :global(.jurisdiction-heading) {
+    margin-bottom: 12px;
+  }
+  .section :global(.jurisdiction-kicker) {
+    padding: 5px 12px;
+    font-size: 12px;
+  }
+  .section :global(.jurisdiction-heading h2) {
+    margin: 10px 0 0;
+    font-size: clamp(28px, 2.8vw, 38px);
+    line-height: 1.12;
+  }
+  .section :global(.jurisdiction-heading p) {
+    max-width: none;
+    margin-top: 7px;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .frame :global(.jurisdiction-map-header) {
+    padding: 10px 16px;
+  }
+  .frame :global(.jurisdiction-map-padding) {
+    padding: 10px 14px;
+  }
+  .frame :global(.jurisdiction-map-canvas) {
+    height: clamp(300px, calc(100svh - 350px), 620px);
+    aspect-ratio: auto;
+  }
+  .frame :global(.jurisdiction-map-legend) {
+    padding: 10px 16px;
+    gap: 8px 14px;
+  }
+}

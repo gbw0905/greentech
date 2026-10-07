@@ -1,5 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Compass, Target, Telescope } from "lucide-react";
+import {
+  Compass,
+  Target,
+  Telescope,
+  ArrowRight,
+  FileCheck2,
+  ChartNoAxesCombined,
+  Globe2,
+  Sparkles,
+} from "lucide-react";
 import { InformationPage } from "@/components/InformationPage";
 
 const TITLE = "Mission & Vision — Global Bioenergy Watch";
@@ -30,15 +39,19 @@ function MissionVisionPage() {
       title="Mission & vision"
       subtitle="Why Global Bioenergy Watch exists — and the standard we hold ourselves to every day."
     >
-      <section className="information-mission-grid">
-        <div className="information-card">
-          <div className="information-card-heading">
-            <span className="information-icon">
+      <section className="even">
+        <div className="card">
+          <div className="head-ic">
+            <span className="icon">
               <Target className="size-5" />
             </span>
-            <h2 className="information-card-title">Our mission</h2>
+            <h2>Our mission</h2>
           </div>
-          <div className="information-prose">
+          <blockquote className="quote">
+            Make global bioenergy policy and market intelligence transparent, timely, and accessible
+            to everyone.
+          </blockquote>
+          <div className="prose">
             <p>
               To make global bioenergy policy and market intelligence transparent, timely, and
               accessible to everyone — not just those who can afford expensive terminal
@@ -53,14 +66,17 @@ function MissionVisionPage() {
           </div>
         </div>
 
-        <div className="information-card">
-          <div className="information-card-heading">
-            <span className="information-icon">
+        <div className="card">
+          <div className="head-ic">
+            <span className="icon">
               <Telescope className="size-5" />
             </span>
-            <h2 className="information-card-title">Our vision</h2>
+            <h2>Our vision</h2>
           </div>
-          <div className="information-prose">
+          <blockquote className="quote">
+            Be the first place professionals check when a mandate changes.
+          </blockquote>
+          <div className="prose">
             <p>
               To become the reference desk for the biofuel dimension of the global energy transition
               — the first place professionals check when a mandate changes, a feedstock market
@@ -74,27 +90,50 @@ function MissionVisionPage() {
         </div>
       </section>
 
-      <section className="information-card">
-        <h2 className="information-card-title">What guides our coverage</h2>
-        <ul className="information-principles">
-          <li className="information-principle">
-            <strong className="information-principle-title">Sources first.</strong> Government acts
-            and regulator filings lead; media coverage adds context. Every item links to its source.
-          </li>
-          <li className="information-principle">
-            <strong className="information-principle-title">Policy and markets together.</strong>{" "}
-            Mandates move markets and markets test mandates — we track both side by side.
-          </li>
-          <li className="information-principle">
-            <strong className="information-principle-title">Global by default.</strong> From
-            Washington's 45Z credits to Indonesia's B40 blend, no jurisdiction is too small to
-            matter.
-          </li>
-          <li className="information-principle">
-            <strong className="information-principle-title">Honest about AI.</strong> Summaries are
-            machine-assisted and clearly labeled — always cross-verify against primary legislation.
-          </li>
-        </ul>
+      <section className="card">
+        <p className="k">Principles</p>
+        <h2>What guides our coverage</h2>
+        <div className="princ">
+          {[
+            {
+              icon: FileCheck2,
+              title: "Sources first",
+              text: "Government acts and regulator filings lead; media coverage adds context. Every item links to its source.",
+            },
+            {
+              icon: ChartNoAxesCombined,
+              title: "Policy and markets together",
+              text: "Mandates move markets and markets test mandates — we track both side by side.",
+            },
+            {
+              icon: Globe2,
+              title: "Global by default",
+              text: "From Washington’s 45Z credits to Indonesia’s B40 blend, no jurisdiction is too small to matter.",
+            },
+            {
+              icon: Sparkles,
+              title: "Honest about AI",
+              text: "Summaries are machine-assisted and clearly labeled — always cross-verify against primary legislation.",
+            },
+          ].map(({ icon: Icon, title, text }) => (
+            <article className="pr" key={title}>
+              <h3>
+                <Icon size={18} />
+                {title}
+              </h3>
+              <p>{text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="cta">
+        <div>
+          <h2>Follow the sector, one brief a day</h2>
+          <p>AI-assisted policy and market summaries, delivered once a day.</p>
+        </div>
+        <a className="btn" href="#brief">
+          Get the daily brief <ArrowRight size={17} />
+        </a>
       </section>
     </InformationPage>
   );

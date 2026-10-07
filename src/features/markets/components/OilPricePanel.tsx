@@ -318,6 +318,7 @@ function MarketChart({ q, comparison }: { q: OilQuote; comparison: OilQuote | un
             })}
             {points.length > 1 && !comparison && (
               <path
+                className="benchmark-area"
                 d={line + " L" + right + "," + bottom + " L" + left + "," + bottom + " Z"}
                 fill={"url(#" + fillId + ")"}
               />
@@ -361,8 +362,10 @@ function MarketChart({ q, comparison }: { q: OilQuote; comparison: OilQuote | un
                 strokeWidth={2.5}
               />
             )}
-            <circle cx={point[0]} cy={point[1]} r={10} fill="var(--market-color)" opacity=".14" />
-            <circle cx={point[0]} cy={point[1]} r={5} className="benchmark-point" />
+            <g className="benchmark-end">
+              <circle cx={point[0]} cy={point[1]} r={10} fill="var(--market-color)" opacity=".14" />
+              <circle cx={point[0]} cy={point[1]} r={5} className="benchmark-point" />
+            </g>
           </svg>
         ) : (
           <p className="benchmark-history-empty">
@@ -622,168 +625,173 @@ export function OilPricePanel() {
       )}
       <div className="benchmark-layout">
         <div className="benchmark-cards" role="group" aria-label="Choose a benchmark">
-          {BENCHMARKS.map((benchmark) => {
+          {BENCHMARKS.map((benchmark, index) => {
             const quote = quotes.find((item) => item.symbol === benchmark.symbol);
-            return quote ? (
-              <MarketCard
-                key={quote.symbol}
-                q={quote}
-                active={q?.symbol === quote.symbol}
-                onSelect={() => {
-                  if (q?.symbol !== quote.symbol) {
-                    setSelected(quote.symbol);
-                    setCompareSymbol(null);
-                    setOutlookOpen(false);
-                  }
-                }}
-              />
-            ) : (
-              <UnavailableMarketCard
+            return (
+              <MotionReveal
                 key={benchmark.symbol}
-                benchmark={benchmark}
-                loading={isLoading}
-              />
+                delay={(index + 1) * 0.09}
+                className="benchmark-card-reveal"
+              >
+                {quote ? (
+                  <MarketCard
+                    q={quote}
+                    active={q?.symbol === quote.symbol}
+                    onSelect={() => {
+                      if (q?.symbol !== quote.symbol) {
+                        setSelected(quote.symbol);
+                        setCompareSymbol(null);
+                        setOutlookOpen(false);
+                      }
+                    }}
+                  />
+                ) : (
+                  <UnavailableMarketCard benchmark={benchmark} loading={isLoading} />
+                )}
+              </MotionReveal>
             );
           })}
         </div>
         {q && (
-          <article
-            className="benchmark-panel"
-            id="benchmark-detail"
-            aria-label={q.label + " market details"}
-            style={marketStyle(q.symbol)}
-          >
-            <div className="benchmark-body" key={q.symbol}>
-              <div className="benchmark-panel-top">
-                <div className="benchmark-id">
-                  <h3>{q.label}</h3>
-                  <span className="benchmark-symbol">{q.symbol}</span>
-                </div>
-                <span
-                  className={
-                    "benchmark-trend " + (trend !== null && trend < 0 ? "negative" : "positive")
-                  }
-                >
-                  {trend === null ? "—" : percent(trend)} · 30-day history
-                </span>
-              </div>
-              <div className="benchmark-price-row">
-                <div className="benchmark-price">
-                  {price(q, q.price)}
-                  <small>{q.unit}</small>
-                </div>
-                <DailyBadge q={q} />
-                <span className="benchmark-daily">
-                  1D change{" "}
-                  <b className={q.change >= 0 ? "positive" : "negative"}>
-                    {q.change >= 0 ? "+" : ""}
-                    {number(q.change)}
-                  </b>
-                </span>
-              </div>
-              <div
-                className="benchmark-compare"
-                role="group"
-                aria-label="Compare with another benchmark"
-              >
-                <span>Compare with</span>
-                {BENCHMARKS.filter((benchmark) => benchmark.symbol !== q.symbol).map(
-                  (benchmark) => {
-                    const quote = quotes.find((item) => item.symbol === benchmark.symbol);
-                    return (
-                      <button
-                        type="button"
-                        key={benchmark.symbol}
-                        disabled={!quote}
-                        title={!quote ? "Price data unavailable" : undefined}
-                        aria-pressed={comparison?.symbol === benchmark.symbol}
-                        style={marketStyle(benchmark.symbol)}
-                        onClick={() =>
-                          setCompareSymbol((current) =>
-                            current === benchmark.symbol ? null : benchmark.symbol,
-                          )
-                        }
-                      >
-                        <i aria-hidden="true" />
-                        {benchmark.label}
-                      </button>
-                    );
-                  },
-                )}
-              </div>
-              {comparison && (
-                <div className="benchmark-comparison-legend" aria-live="polite">
-                  <span style={marketStyle(q.symbol)}>
-                    <i />
-                    {q.label}
-                  </span>
-                  <span style={marketStyle(comparison.symbol)}>
-                    <i />
-                    {comparison.label}
-                  </span>
-                </div>
-              )}
-              <MarketChart key={comparison?.symbol ?? "price"} q={q} comparison={comparison} />
-              <MarketStats q={q} />
-            </div>
-            <p className="benchmark-why">
-              <b>Why it matters:</b>{" "}
-              {q.symbol === "CL=F"
-                ? "Crude oil prices help explain the relative economics of biodiesel, renewable diesel and ethanol blending."
-                : q.symbol === "^GSPC"
-                  ? "US equity benchmarks provide context for investment conditions across listed energy companies and biofuel producers."
-                  : "Natural gas is an operating cost for biofuel plants and a benchmark for renewable natural gas markets."}
-            </p>
-            <div className="benchmark-outlook">
-              <button
-                type="button"
-                className="benchmark-ai"
-                aria-expanded={outlookOpen}
-                aria-controls={outlookId}
-                onClick={() => {
-                  setOutlookOpen(!outlookOpen);
-                  if (!outlookOpen && !selectedOutlook?.text) void requestOutlook(q);
-                }}
-              >
-                <Sparkles size={16} aria-hidden="true" />
-                AI market outlook
-                <ChevronDown size={14} aria-hidden="true" />
-              </button>
-              <div id={outlookId} hidden={!outlookOpen} className="benchmark-ai-content">
-                <div className="benchmark-ai-actions">
-                  <span>{q.label}</span>
-                  <button
-                    type="button"
-                    onClick={() => void requestOutlook(q)}
-                    disabled={selectedOutlook?.loading}
+          <MotionReveal delay={0.18} className="benchmark-panel-reveal">
+            <article
+              className="benchmark-panel"
+              id="benchmark-detail"
+              aria-label={q.label + " market details"}
+              style={marketStyle(q.symbol)}
+            >
+              <div className="benchmark-body" key={q.symbol}>
+                <div className="benchmark-panel-top">
+                  <div className="benchmark-id">
+                    <h3>{q.label}</h3>
+                    <span className="benchmark-symbol">{q.symbol}</span>
+                  </div>
+                  <span
+                    className={
+                      "benchmark-trend " + (trend !== null && trend < 0 ? "negative" : "positive")
+                    }
                   >
-                    <RefreshCw size={13} aria-hidden="true" />
-                    Regenerate
-                  </button>
-                  <button type="button" onClick={() => setOutlookOpen(false)}>
-                    <X size={13} aria-hidden="true" />
-                    Close
-                  </button>
+                    {trend === null ? "—" : percent(trend)} · 30-day history
+                  </span>
                 </div>
-                <p aria-live="polite">
-                  {selectedOutlook?.loading ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin" aria-hidden="true" />
-                      Writing an outlook from the latest price action…
-                    </>
-                  ) : (
-                    selectedOutlook?.error ||
-                    selectedOutlook?.text ||
-                    "Generate an outlook from this market’s current price series."
+                <div className="benchmark-price-row">
+                  <div className="benchmark-price">
+                    {price(q, q.price)}
+                    <small>{q.unit}</small>
+                  </div>
+                  <DailyBadge q={q} />
+                  <span className="benchmark-daily">
+                    1D change{" "}
+                    <b className={q.change >= 0 ? "positive" : "negative"}>
+                      {q.change >= 0 ? "+" : ""}
+                      {number(q.change)}
+                    </b>
+                  </span>
+                </div>
+                <div
+                  className="benchmark-compare"
+                  role="group"
+                  aria-label="Compare with another benchmark"
+                >
+                  <span>Compare with</span>
+                  {BENCHMARKS.filter((benchmark) => benchmark.symbol !== q.symbol).map(
+                    (benchmark) => {
+                      const quote = quotes.find((item) => item.symbol === benchmark.symbol);
+                      return (
+                        <button
+                          type="button"
+                          key={benchmark.symbol}
+                          disabled={!quote}
+                          title={!quote ? "Price data unavailable" : undefined}
+                          aria-pressed={comparison?.symbol === benchmark.symbol}
+                          style={marketStyle(benchmark.symbol)}
+                          onClick={() =>
+                            setCompareSymbol((current) =>
+                              current === benchmark.symbol ? null : benchmark.symbol,
+                            )
+                          }
+                        >
+                          <i aria-hidden="true" />
+                          {benchmark.label}
+                        </button>
+                      );
+                    },
                   )}
-                </p>
-                <small>
-                  AI-generated from the 30-day price series shown above. May contain errors — always
-                  cross-verify before acting.
-                </small>
+                </div>
+                {comparison && (
+                  <div className="benchmark-comparison-legend" aria-live="polite">
+                    <span style={marketStyle(q.symbol)}>
+                      <i />
+                      {q.label}
+                    </span>
+                    <span style={marketStyle(comparison.symbol)}>
+                      <i />
+                      {comparison.label}
+                    </span>
+                  </div>
+                )}
+                <MarketChart key={comparison?.symbol ?? "price"} q={q} comparison={comparison} />
+                <MarketStats q={q} />
               </div>
-            </div>
-          </article>
+              <p className="benchmark-why">
+                <b>Why it matters:</b>{" "}
+                {q.symbol === "CL=F"
+                  ? "Crude oil prices help explain the relative economics of biodiesel, renewable diesel and ethanol blending."
+                  : q.symbol === "^GSPC"
+                    ? "US equity benchmarks provide context for investment conditions across listed energy companies and biofuel producers."
+                    : "Natural gas is an operating cost for biofuel plants and a benchmark for renewable natural gas markets."}
+              </p>
+              <div className="benchmark-outlook">
+                <button
+                  type="button"
+                  className="benchmark-ai"
+                  aria-expanded={outlookOpen}
+                  aria-controls={outlookId}
+                  onClick={() => {
+                    setOutlookOpen(!outlookOpen);
+                    if (!outlookOpen && !selectedOutlook?.text) void requestOutlook(q);
+                  }}
+                >
+                  <Sparkles size={16} aria-hidden="true" />
+                  AI market outlook
+                  <ChevronDown size={14} aria-hidden="true" />
+                </button>
+                <div id={outlookId} hidden={!outlookOpen} className="benchmark-ai-content">
+                  <div className="benchmark-ai-actions">
+                    <span>{q.label}</span>
+                    <button
+                      type="button"
+                      onClick={() => void requestOutlook(q)}
+                      disabled={selectedOutlook?.loading}
+                    >
+                      <RefreshCw size={13} aria-hidden="true" />
+                      Regenerate
+                    </button>
+                    <button type="button" onClick={() => setOutlookOpen(false)}>
+                      <X size={13} aria-hidden="true" />
+                      Close
+                    </button>
+                  </div>
+                  <p aria-live="polite">
+                    {selectedOutlook?.loading ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+                        Writing an outlook from the latest price action…
+                      </>
+                    ) : (
+                      selectedOutlook?.error ||
+                      selectedOutlook?.text ||
+                      "Generate an outlook from this market’s current price series."
+                    )}
+                  </p>
+                  <small>
+                    AI-generated from the 30-day price series shown above. May contain errors —
+                    always cross-verify before acting.
+                  </small>
+                </div>
+              </div>
+            </article>
+          </MotionReveal>
         )}
       </div>
     </div>

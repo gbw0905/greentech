@@ -106,15 +106,7 @@ const NAV_GROUPS = [
         description: "Why this desk exists and where it is heading",
       },
       { to: "/about/team", label: "Team members", description: "The people behind the tracker" },
-      { to: "/contact", label: "Contact us", description: "General and press enquiries" },
       { to: "/videos", label: "Videos", description: "Explainers on bioenergy policy and markets" },
-      {
-        to: "/",
-        hash: "disclaimer",
-        label: "Method and disclaimer",
-        description: "How we collect, classify and summarise",
-      },
-      { to: "/contact", label: "Submit a tip", description: "Send us a policy or market lead" },
     ],
   },
 ] as const;

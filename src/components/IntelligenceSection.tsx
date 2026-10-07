@@ -100,7 +100,7 @@ export function IntelligenceSection() {
         className="intelligence-section scroll-mt-[88px]"
         aria-labelledby="intelligence-title"
       >
-        <MotionReveal as="header" className="intelligence-heading">
+        <MotionReveal as="header" blur={0} className="intelligence-heading">
           <div>
             <p className="intelligence-eyebrow">The global bioenergy intelligence desk</p>
             <h2 id="intelligence-title">
@@ -121,7 +121,7 @@ export function IntelligenceSection() {
           </div>
         </MotionReveal>
         <div className="intelligence-grid">
-          <MotionReveal delay={0.09}>
+          <MotionReveal delay={0.09} blur={0} className="intelligence-visual">
             <div ref={visualRef} className="intelligence-pipeline-container">
               <IntelligencePipeline active={active} running={inView && !reduced} />
               <div className="intelligence-network-bottom">
@@ -139,14 +139,15 @@ export function IntelligenceSection() {
               </div>
             </div>
           </MotionReveal>
-          <div className="intelligence-accordion">
+          <div className="intelligence-accordion" data-expanded={open !== null}>
             {CAPABILITIES.map((item, index) => {
               const Icon = item.icon;
               const expanded = open === index;
               return (
                 <MotionReveal
                   as="article"
-                  delay={(index + 1) * 0.08}
+                  delay={0.08 + index * 0.07}
+                  distance={28}
                   key={item.title}
                   className={`intelligence-item ${expanded ? "is-open" : ""}`}
                 >
@@ -202,7 +203,7 @@ export function IntelligenceSection() {
             })}
           </div>
         </div>
-        <MotionReveal className="intelligence-audience">
+        <MotionReveal blur={0} className="intelligence-audience">
           <p>Built for people who move the sector forward</p>
           <div>
             {AUDIENCES.map((audience) => (

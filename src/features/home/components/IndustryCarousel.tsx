@@ -214,7 +214,7 @@ export function IndustryCarousel() {
             </button>
           </div>
         </MotionReveal>
-        <MotionReveal>
+        <MotionReveal delay={0.09}>
           <div
             className="industry-carousel"
             role="region"

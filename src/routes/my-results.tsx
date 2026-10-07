@@ -77,7 +77,8 @@ function MyResultsPage() {
         <Notice
           title="Saved results are a premium feature"
           body="Premium members can save calculator scenarios and track them against the regulatory benchmarks over time."
-          to="/contact"
+          to="/"
+          hash="footer-contact"
           cta="Request premium access"
         />
       ) : isLoading ? (
@@ -129,11 +130,13 @@ function Notice({
   title,
   body,
   to,
+  hash = "",
   cta,
 }: {
   title: string;
   body: string;
   to: string;
+  hash?: string;
   cta: string;
 }) {
   return (
@@ -142,6 +145,7 @@ function Notice({
       <p className="mt-1 text-sm text-muted-foreground">{body}</p>
       <Link
         to={to}
+        hash={hash}
         className="mt-3 inline-flex items-center gap-1.5 border border-ink bg-ink px-2.5 py-1.5 text-xs font-semibold text-ink-foreground transition-opacity hover:opacity-85"
       >
         {cta}

@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
-  ArrowDown,
   BookOpen,
   CalendarDays,
   ChevronDown,
@@ -185,14 +184,6 @@ function DataSourcesPage() {
               One section per dataset: what it measures, where every figure comes from, how entities
               are selected, and what the data cannot tell you.
             </p>
-            <div className="sources-hero-actions">
-              <a href="#dataset-library" className="sources-primary-link">
-                Browse datasets <ArrowDown aria-hidden="true" />
-              </a>
-              <a href="#methodology" className="sources-method-link">
-                How we compile the panels
-              </a>
-            </div>
           </div>
           <div className="sources-hero-stats" aria-label="Dataset registry overview">
             <div>
@@ -214,34 +205,6 @@ function DataSourcesPage() {
               </span>
             </div>
           </div>
-        </MotionReveal>
-
-        <MotionReveal
-          as="section"
-          className="sources-methodology"
-          id="methodology"
-          aria-labelledby="sources-methodology-title"
-        >
-          <div className="sources-section-heading">
-            <span className="sources-heading-icon">
-              <ShieldCheck aria-hidden="true" />
-            </span>
-            <div>
-              <p className="sources-kicker">Our approach</p>
-              <h2 id="sources-methodology-title">How we compile the panels</h2>
-            </div>
-          </div>
-          <ol className="sources-principles">
-            {COMPILATION_NOTES.map((note, index) => (
-              <li key={note.title}>
-                <span className="sources-principle-number" aria-hidden="true">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <h3>{note.title}</h3>
-                <p>{note.text}</p>
-              </li>
-            ))}
-          </ol>
         </MotionReveal>
 
         <div className="sources-library-heading" id="dataset-library">
@@ -280,6 +243,34 @@ function DataSourcesPage() {
             ))}
           </div>
         </div>
+
+        <MotionReveal
+          as="section"
+          className="sources-methodology"
+          id="methodology"
+          aria-labelledby="sources-methodology-title"
+        >
+          <div className="sources-section-heading">
+            <span className="sources-heading-icon">
+              <ShieldCheck aria-hidden="true" />
+            </span>
+            <div>
+              <p className="sources-kicker">Our approach</p>
+              <h2 id="sources-methodology-title">How we compile the panels</h2>
+            </div>
+          </div>
+          <ol className="sources-principles">
+            {COMPILATION_NOTES.map((note, index) => (
+              <li key={note.title}>
+                <span className="sources-principle-number" aria-hidden="true">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <h3>{note.title}</h3>
+                <p>{note.text}</p>
+              </li>
+            ))}
+          </ol>
+        </MotionReveal>
 
         <section className="sources-reference-note" aria-label="Reference note">
           <Info aria-hidden="true" />

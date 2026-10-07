@@ -72,7 +72,7 @@ export function ChartFilterBar({
         return (
           <label
             key={s.label}
-            className="order-1 flex min-w-0 flex-col gap-1.5 sm:min-w-40 sm:flex-1 xl:w-auto xl:flex-none"
+            className="dataset-field order-1 flex min-w-0 flex-col gap-1.5 sm:min-w-40 sm:flex-1 xl:w-auto xl:flex-none"
           >
             <span className="label-mono text-muted-foreground">{s.label}</span>
             <select
@@ -104,7 +104,7 @@ export function ChartFilterBar({
         );
       })}
 
-      <span className="order-5 flex h-10 min-w-20 flex-col justify-center border-l border-border pl-3">
+      <span className="dataset-results order-5 flex h-10 min-w-20 flex-col justify-center border-l border-border pl-3">
         <span className="label-mono text-muted-foreground">Results</span>
         <strong className="text-sm font-bold tabular-nums text-foreground">
           {typeof matched === "number" && matched !== shown
@@ -120,7 +120,7 @@ export function ChartFilterBar({
             onQueryChange("");
             selects.forEach((s) => s.onChange(""));
           }}
-          className="order-6 inline-flex h-10 shrink-0 items-center gap-1.5 px-2 text-xs font-semibold text-primary transition-colors hover:text-foreground"
+          className="dataset-clear order-6 inline-flex h-10 shrink-0 items-center gap-1.5 px-2 text-xs font-semibold text-primary transition-colors hover:text-foreground"
         >
           <X className="size-3" />
           Clear
