@@ -1,13 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { JobsPanel } from "@/features/jobs/components/JobsPanel";
-import { EMPLOYERS } from "@/features/jobs/data";
+import { JOB_BOARDS } from "@/features/jobs/data";
 import { JobsHero } from "@/features/jobs/components/JobsHero";
 import { LiveMarquee } from "@/features/markets/components/LiveMarquee";
 import { useVisitTracker } from "@/features/traffic/hooks/useVisitTracker";
 
 const TITLE = "Biofuel & bioenergy jobs | Global Bioenergy Watch";
 const DESCRIPTION =
-  "Bioenergy careers desk: live job searches by fuel and function, major biofuel employers hiring worldwide, and workforce news across ethanol, biodiesel, renewable diesel, SAF and biogas.";
+  "Bioenergy careers desk: search trusted job boards by function, seniority and region for opportunities across ethanol, biodiesel, renewable diesel, SAF and biogas.";
 const URL = "https://globalbioenergywatch.org/jobs";
 
 export const Route = createFileRoute("/jobs")({
@@ -38,16 +38,15 @@ export const Route = createFileRoute("/jobs")({
           },
           mainEntity: {
             "@type": "ItemList",
-            name: "Biofuel and bioenergy employers hiring worldwide",
-            numberOfItems: EMPLOYERS.length,
-            itemListElement: EMPLOYERS.map((e, i) => ({
+            name: "Trusted biofuel and bioenergy job sources",
+            numberOfItems: JOB_BOARDS.length,
+            itemListElement: JOB_BOARDS.map((board, i) => ({
               "@type": "ListItem",
               position: i + 1,
               item: {
                 "@type": "Organization",
-                name: e.name,
-                url: e.careers,
-                address: { "@type": "PostalAddress", addressCountry: e.hq },
+                name: board.name,
+                url: `https://${board.domain}`,
               },
             })),
           },

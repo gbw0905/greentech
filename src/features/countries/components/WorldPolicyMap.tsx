@@ -1,5 +1,4 @@
-import { Link } from "@tanstack/react-router";
-import { geoEquirectangular, geoPath, geoGraticule10 } from "d3-geo";
+import { geoNaturalEarth1, geoPath, geoGraticule10 } from "d3-geo";
 import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { feature } from "topojson-client";
 import { Minus, Plus, Maximize2 } from "lucide-react";
@@ -71,14 +70,15 @@ const CountryShape = memo(function CountryShape({
       data-selected={active || undefined}
       data-hovered={hovered || undefined}
       tabIndex={shape.country ? 0 : undefined}
-      role={shape.country ? "link" : undefined}
-      aria-label={shape.country ? "Open " + shape.country.name + " details" : undefined}
+      role={shape.country ? "button" : undefined}
+      aria-haspopup={shape.country ? "dialog" : undefined}
+      aria-label={shape.country ? "Open " + shape.country.name + " summary" : undefined}
       onFocus={(event) =>
         onHover(shape.country?.slug ?? null, event.currentTarget.getBoundingClientRect())
       }
       onBlur={() => onHover(null)}
       onKeyDown={(event) => {
-        if (event.key === "Enter" && shape.country) {
+        if ((event.key === "Enter" || event.key === " ") && shape.country) {
           event.preventDefault();
           onSelect(shape.country.slug, true);
         }
@@ -190,10 +190,20 @@ export function WorldPolicyMap({
     return () => controller.abort();
   }, []);
 
-  const { path, graticule } = useMemo(() => {
-    const projection = geoEquirectangular().fitSize([WIDTH, HEIGHT], { type: "Sphere" });
+  const { path, graticule, sphere } = useMemo(() => {
+    const projection = geoNaturalEarth1().fitExtent(
+      [
+        [18, 6],
+        [WIDTH - 18, HEIGHT - 6],
+      ],
+      { type: "Sphere" },
+    );
     const path = geoPath(projection);
-    return { path, graticule: path(geoGraticule10()) ?? "" };
+    return {
+      path,
+      graticule: path(geoGraticule10()) ?? "",
+      sphere: path({ type: "Sphere" }) ?? "",
+    };
   }, []);
   const byMapName = useMemo(
     () =>
@@ -213,7 +223,7 @@ export function WorldPolicyMap({
           path: path(geo as never) ?? "",
           country,
           color: MAP_STATUS_COLORS[policyStatusFor(country)],
-          opacity: country ? (count > 0 ? Math.min(0.7 + count * 0.04, 0.95) : 0.55) : 1,
+          opacity: country ? (count > 0 ? Math.min(0.72 + count * 0.04, 1) : 0.62) : 1,
         };
       }),
     [features, byMapName, path, counts],
@@ -282,7 +292,11 @@ export function WorldPolicyMap({
   );
   const handleSelect = useCallback(
     (slug: string, keyboard = false) => {
-      if (keyboard || !moved.current) onSelect(slug);
+      if (keyboard || !moved.current) {
+        setHover(null);
+        setTip(null);
+        onSelect(slug);
+      }
     },
     [onSelect],
   );
@@ -411,6 +425,7 @@ export function WorldPolicyMap({
             aria-label="World map of biofuel policy activity"
           >
             <g transform={"translate(" + view.x + "," + view.y + ") scale(" + view.z + ")"}>
+              <path d={sphere} className="jurisdiction-sphere" vectorEffect="non-scaling-stroke" />
               <path
                 d={graticule}
                 className="jurisdiction-graticule"
@@ -426,9 +441,9 @@ export function WorldPolicyMap({
             </g>
           </svg>
           {hovered && tip && (
-            <Link
-              to="/countries/$slug"
-              params={{ slug: hovered.slug }}
+            <button
+              type="button"
+              onClick={() => handleSelect(hovered.slug, true)}
               tabIndex={-1}
               aria-hidden="true"
               className="jurisdiction-tooltip-bridge"
@@ -518,14 +533,14 @@ export function WorldPolicyMap({
                   <dd>{hovered.region}</dd>
                 </div>
               </dl>
-              <Link
-                to="/countries/$slug"
-                params={{ slug: hovered.slug }}
+              <button
+                type="button"
+                onClick={() => handleSelect(hovered.slug, true)}
                 className="jurisdiction-tooltip-details"
-                aria-label={"View " + hovered.name + " details"}
+                aria-label={"Open " + hovered.name + " summary"}
               >
-                Details
-              </Link>
+                Summary
+              </button>
             </div>
           )}
           <div
@@ -580,7 +595,7 @@ export function WorldPolicyMap({
             </span>
           ))}
         </div>
-        <p>Scroll to zoom · drag to pan · click a country to open its details</p>
+        <p>Scroll to zoom · drag to pan · click for a country summary</p>
       </footer>
     </>
   );

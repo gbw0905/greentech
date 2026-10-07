@@ -42,7 +42,12 @@ import {
 } from "@/features/calculators/rng-dairy-lcfs";
 import { ExportExcelButton } from "@/components/ExportExcelButton";
 import { SaveCiRunButton } from "@/features/calculators/components/SaveCiRunButton";
-import type { SheetRow, SheetSection, WorkbookChart, WorkbookExport } from "@/shared/export/excel-workbook";
+import type {
+  SheetRow,
+  SheetSection,
+  WorkbookChart,
+  WorkbookExport,
+} from "@/shared/export/excel-workbook";
 import { Link } from "@tanstack/react-router";
 import { Lock } from "lucide-react";
 import { usePremium } from "@/features/premium/hooks/usePremium";
@@ -75,7 +80,8 @@ function PremiumLocked({ signedIn }: { signedIn: boolean }) {
               </Link>
             )}
             <Link
-              to="/contact"
+              to="/"
+              hash="footer-contact"
               className="inline-flex items-center gap-2 border border-border px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-foreground"
             >
               Request premium access

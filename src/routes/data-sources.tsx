@@ -1,7 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { BookOpen, ExternalLink } from "lucide-react";
-import { PageHeading, PageShell } from "@/components/PageShell";
-import { DATASETS } from "@/shared/data/provenance";
+import {
+  BookOpen,
+  CalendarDays,
+  ChevronDown,
+  Database,
+  ExternalLink,
+  FileText,
+  Info,
+  Layers3,
+  ListChecks,
+  ShieldCheck,
+} from "lucide-react";
+import { MotionReveal } from "@/components/MotionReveal";
+import { DATASETS, type DatasetMeta } from "@/shared/data/provenance";
 import { REFERENCE_NOTE } from "@/shared/data/data-sources";
 
 const TITLE = "Data sources & methodology — Global Bioenergy Watch";
@@ -24,121 +35,248 @@ export const Route = createFileRoute("/data-sources")({
   component: DataSourcesPage,
 });
 
+const COMPILATION_NOTES = [
+  {
+    title: "Primary documents",
+    text: "Entity figures are taken from primary public documents — annual reports, regulatory filings, national obligation registers and statistical agencies — never from unattributed aggregations.",
+  },
+  {
+    title: "Transparent estimates",
+    text: "Where a company does not publish a figure directly, the value is derived from a published total and clearly marked as an estimate in the metric notes below.",
+  },
+  {
+    title: "Reporting periods",
+    text: "Each dataset states the reporting year its figures refer to and the date it was last reviewed against its sources.",
+  },
+  {
+    title: "Market quotes",
+    text: "Share prices and 1-day changes are live delayed exchange quotes and are not part of the curated datasets.",
+  },
+];
+
+const METRIC_COUNT = DATASETS.reduce((count, dataset) => count + dataset.metrics.length, 0);
+const CITATION_COUNT = DATASETS.reduce((count, dataset) => count + dataset.sources.length, 0);
+
+function DatasetLinks() {
+  return (
+    <ol className="sources-index-list">
+      {DATASETS.map((dataset, index) => (
+        <li key={dataset.id}>
+          <a href={`#${dataset.id}`}>
+            <span className="sources-index-number" aria-hidden="true">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+            <span>{dataset.panel}</span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function DatasetCard({ dataset, index }: { dataset: DatasetMeta; index: number }) {
+  return (
+    <section className="sources-dataset" id={dataset.id} aria-labelledby={`${dataset.id}-title`}>
+      <header className="sources-dataset-heading">
+        <div className="sources-dataset-eyebrow">
+          <span>Dataset {String(index + 1).padStart(2, "0")}</span>
+          <span>{dataset.sources.length} source citations</span>
+        </div>
+        <h2 id={`${dataset.id}-title`}>{dataset.panel}</h2>
+        <p>{dataset.description}</p>
+        <div className="sources-dataset-dates">
+          <span>
+            <CalendarDays aria-hidden="true" /> Figures as reported for{" "}
+            <strong>{dataset.reportingYear}</strong>
+          </span>
+          <span>
+            Last reviewed <time dateTime={dataset.lastReviewed}>{dataset.lastReviewed}</time>
+          </span>
+        </div>
+      </header>
+
+      <div className="sources-dataset-body">
+        <div className="sources-evidence-grid">
+          <div className="sources-metrics">
+            <h3 className="sources-group-title">
+              <ListChecks aria-hidden="true" /> Metrics
+            </h3>
+            <ul className="sources-metric-list">
+              {dataset.metrics.map((metric) => (
+                <li key={metric.label}>
+                  <div className="sources-metric-heading">
+                    <h4>{metric.label}</h4>
+                    {metric.estimated ? <span className="sources-estimate">Estimate</span> : null}
+                  </div>
+                  <p className="sources-metric-unit">{metric.unit}</p>
+                  <p className="sources-metric-basis">{metric.basis}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="sources-documents">
+            <h3 className="sources-group-title">
+              <FileText aria-hidden="true" /> Sources
+            </h3>
+            <ul className="sources-document-list">
+              {dataset.sources.map((source) => (
+                <li key={`${source.org}-${source.title}`}>
+                  <a
+                    href={source.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="sources-document-link"
+                  >
+                    <div className="sources-document-meta">
+                      <span>{source.org}</span>
+                      <span className="sources-document-year">{source.year}</span>
+                    </div>
+                    <div className="sources-document-title">
+                      <span>{source.title}</span>
+                      <ExternalLink aria-hidden="true" />
+                    </div>
+                    <span className="sources-document-action">
+                      View source <span className="sr-only">(opens in a new tab)</span>
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="sources-scope-grid">
+          <section className="sources-coverage" aria-labelledby={`${dataset.id}-coverage`}>
+            <h3 id={`${dataset.id}-coverage`} className="sources-group-title">
+              <ShieldCheck aria-hidden="true" /> Coverage
+            </h3>
+            <p>{dataset.coverage}</p>
+          </section>
+          <section className="sources-limitations" aria-labelledby={`${dataset.id}-limitations`}>
+            <h3 id={`${dataset.id}-limitations`} className="sources-group-title">
+              <Info aria-hidden="true" /> Known limitations
+            </h3>
+            <ul>
+              {dataset.limitations.map((limitation) => (
+                <li key={limitation}>{limitation}</li>
+              ))}
+            </ul>
+          </section>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function DataSourcesPage() {
   return (
-    <PageShell>
-      <PageHeading
-        icon={BookOpen}
-        title="Data sources & methodology"
-        subtitle="One section per dataset: what it measures, where every figure comes from, how entities are selected, and what the data cannot tell you."
-      />
-
-      <section className="rounded-lg border border-border bg-white p-5 shadow-sm sm:p-6">
-        <h2 className="font-display text-xl font-extrabold tracking-tight">How we compile the panels</h2>
-        <ul className="mt-3 list-disc space-y-2 pl-5 text-sm/relaxed text-muted-foreground">
-          <li>
-            Entity figures are taken from primary public documents — annual reports, regulatory
-            filings, national obligation registers and statistical agencies — never from unattributed
-            aggregations.
-          </li>
-          <li>
-            Where a company does not publish a figure directly, the value is derived from a published
-            total and clearly marked as an estimate in the metric notes below.
-          </li>
-          <li>
-            Each dataset states the reporting year its figures refer to and the date it was last
-            reviewed against its sources.
-          </li>
-          <li>
-            Share prices and 1-day changes are live delayed exchange quotes and are not part of the
-            curated datasets.
-          </li>
-        </ul>
-      </section>
-
-      <nav aria-label="Datasets" className="flex flex-wrap gap-2">
-        {DATASETS.map((d) => (
-          <a
-            key={d.id}
-            href={`#${d.id}`}
-            className="label-mono border border-border bg-white px-3 py-1.5 text-xs font-bold text-foreground transition-colors hover:border-foreground hover:bg-muted"
-          >
-            {d.panel}
-          </a>
-        ))}
-      </nav>
-
-      {DATASETS.map((d) => (
-        <section
-          key={d.id}
-          id={d.id}
-          className="scroll-mt-24 rounded-lg border border-border bg-white p-5 shadow-sm sm:p-6"
-        >
-          <header className="border-b border-border pb-3">
-            <h2 className="font-display text-xl font-extrabold tracking-tight sm:text-2xl">{d.panel}</h2>
-            <p className="mt-1.5 text-sm/relaxed text-muted-foreground">{d.description}</p>
-            <p className="label-mono mt-2 text-xs text-muted-foreground">
-              Figures as reported for {d.reportingYear} · Last reviewed {d.lastReviewed}
+    <div className="sources-page">
+      <main className="sources-main">
+        <MotionReveal as="header" className="sources-hero">
+          <div className="sources-hero-copy">
+            <span className="information-eyebrow">
+              <BookOpen className="size-3.5" aria-hidden="true" /> Data & provenance
+            </span>
+            <h1>
+              Data sources <span>& methodology</span>
+            </h1>
+            <p>
+              One section per dataset: what it measures, where every figure comes from, how entities
+              are selected, and what the data cannot tell you.
             </p>
-          </header>
-
-          <div className="mt-4 grid gap-5 lg:grid-cols-2">
+          </div>
+          <div className="sources-hero-stats" aria-label="Dataset registry overview">
             <div>
-              <h3 className="label-mono text-foreground">Metrics</h3>
-              <ul className="mt-2 space-y-2.5">
-                {d.metrics.map((m) => (
-                  <li key={m.label} className="text-sm">
-                    <span className="font-semibold text-foreground">{m.label}</span>{" "}
-                    <span className="text-muted-foreground">({m.unit})</span>
-                    {m.estimated ? (
-                      <span className="ml-2 border border-accent px-1.5 py-0.5 text-[0.65rem] font-bold tracking-wide text-accent uppercase">
-                        Estimate
-                      </span>
-                    ) : null}
-                    <p className="mt-1 text-sm/relaxed text-muted-foreground">{m.basis}</p>
-                  </li>
-                ))}
-              </ul>
-
-              <h3 className="label-mono mt-5 text-foreground">Coverage</h3>
-              <p className="mt-2 text-sm/relaxed text-muted-foreground">{d.coverage}</p>
-
-              <h3 className="label-mono mt-5 text-foreground">Known limitations</h3>
-              <ul className="mt-2 list-disc space-y-1.5 pl-5 text-sm/relaxed text-muted-foreground">
-                {d.limitations.map((l) => (
-                  <li key={l}>{l}</li>
-                ))}
-              </ul>
+              <Database aria-hidden="true" />
+              <span>
+                <strong>{DATASETS.length}</strong>Documented datasets
+              </span>
             </div>
-
             <div>
-              <h3 className="label-mono text-foreground">Sources</h3>
-              <ul className="mt-2 space-y-3">
-                {d.sources.map((s) => (
-                  <li key={`${s.org}-${s.title}`} className="text-sm">
-                    <div className="font-semibold text-foreground">{s.org}</div>
-                    <a
-                      href={s.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-start gap-1.5 text-sm/relaxed text-primary underline underline-offset-4 hover:opacity-80"
-                    >
-                      <span>
-                        {s.title} ({s.year})
-                      </span>
-                      <ExternalLink className="mt-0.5 size-3.5 shrink-0" />
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              <Layers3 aria-hidden="true" />
+              <span>
+                <strong>{METRIC_COUNT}</strong>Defined metrics
+              </span>
+            </div>
+            <div>
+              <FileText aria-hidden="true" />
+              <span>
+                <strong>{CITATION_COUNT}</strong>Source citations
+              </span>
             </div>
           </div>
-        </section>
-      ))}
+        </MotionReveal>
 
-      <section className="rounded-lg border border-border bg-muted p-5 text-sm/relaxed text-muted-foreground">
-        {REFERENCE_NOTE}
-      </section>
-    </PageShell>
+        <div className="sources-library-heading" id="dataset-library">
+          <div>
+            <p className="sources-kicker">The source registry</p>
+            <h2>Explore the datasets</h2>
+          </div>
+          <span>{DATASETS.length} datasets</span>
+        </div>
+        <div className="sources-library-layout">
+          <aside className="sources-sidebar">
+            <nav className="sources-desktop-index" aria-label="Datasets">
+              <div className="sources-index-heading">
+                <BookOpen aria-hidden="true" />
+                <h3>Browse datasets</h3>
+              </div>
+              <DatasetLinks />
+            </nav>
+            <details className="sources-mobile-index">
+              <summary>
+                Browse datasets <span>{DATASETS.length}</span>
+                <ChevronDown aria-hidden="true" />
+              </summary>
+              <nav aria-label="Datasets">
+                <DatasetLinks />
+              </nav>
+            </details>
+            <p className="sources-sidebar-note">
+              <Info aria-hidden="true" />
+              <span>Reporting years refer to the figures, not the date you view them.</span>
+            </p>
+          </aside>
+          <div className="sources-dataset-list">
+            {DATASETS.map((dataset, index) => (
+              <DatasetCard key={dataset.id} dataset={dataset} index={index} />
+            ))}
+          </div>
+        </div>
+
+        <MotionReveal
+          as="section"
+          className="sources-methodology"
+          id="methodology"
+          aria-labelledby="sources-methodology-title"
+        >
+          <div className="sources-section-heading">
+            <span className="sources-heading-icon">
+              <ShieldCheck aria-hidden="true" />
+            </span>
+            <div>
+              <p className="sources-kicker">Our approach</p>
+              <h2 id="sources-methodology-title">How we compile the panels</h2>
+            </div>
+          </div>
+          <ol className="sources-principles">
+            {COMPILATION_NOTES.map((note, index) => (
+              <li key={note.title}>
+                <span className="sources-principle-number" aria-hidden="true">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <h3>{note.title}</h3>
+                <p>{note.text}</p>
+              </li>
+            ))}
+          </ol>
+        </MotionReveal>
+
+        <section className="sources-reference-note" aria-label="Reference note">
+          <Info aria-hidden="true" />
+          <p>{REFERENCE_NOTE}</p>
+        </section>
+      </main>
+    </div>
   );
 }

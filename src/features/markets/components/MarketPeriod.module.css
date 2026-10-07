@@ -1,0 +1,240 @@
+.card {
+  margin-top: 10px;
+  overflow: hidden;
+  padding: 10px 14px;
+  border: 1px solid #d6e1ea;
+  border-radius: 9px;
+  background: #fff;
+  color: #0e2a43;
+  font-family: "Instrument Sans", sans-serif;
+}
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.heading label {
+  color: #4c6278;
+  font-size: 12px;
+  font-weight: 500;
+}
+.days {
+  padding: 3px 8px;
+  border-radius: 7px;
+  background: #edf3f7;
+  color: #0e2a43;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(130px, 0.55fr);
+  align-items: center;
+  gap: 16px;
+}
+.control {
+  min-width: 0;
+}
+.slider {
+  display: block;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 26px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  accent-color: #0e2a43;
+}
+.slider::-webkit-slider-runnable-track {
+  height: 5px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    #0e2a43 var(--period-progress),
+    #d6e1ea var(--period-progress)
+  );
+}
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 18px;
+  width: 18px;
+  margin-top: -6.5px;
+  border: 3px solid #0e2a43;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 4px #edf3f7;
+}
+.slider::-moz-range-track {
+  height: 5px;
+  border-radius: 999px;
+  background: #d6e1ea;
+}
+.slider::-moz-range-progress {
+  height: 5px;
+  border-radius: 999px;
+  background: #0e2a43;
+}
+.slider::-moz-range-thumb {
+  height: 12px;
+  width: 12px;
+  border: 3px solid #0e2a43;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 4px #edf3f7;
+}
+.slider:focus-visible {
+  outline: 2px solid #14846b;
+  outline-offset: 4px;
+  border-radius: 5px;
+}
+.slider:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.ends {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 1px;
+  color: #53697d;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.result {
+  --change-color: #53697d;
+  --change-bg: #edf3f7;
+  padding-left: 16px;
+  border-left: 1px solid #e3ebf1;
+  animation: result-in 0.2s ease-out;
+}
+.result[data-direction="positive"] {
+  --change-color: #14846b;
+  --change-bg: #e3f3ee;
+}
+.result[data-direction="negative"] {
+  --change-color: #c13f60;
+  --change-bg: #fbedf1;
+}
+.resultTop {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.resultTop strong {
+  color: var(--change-color);
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-size: 24px;
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 7px;
+  border-radius: 5px;
+  color: var(--change-color);
+  background: var(--change-bg);
+  font-size: 11px;
+  font-weight: 500;
+}
+.trend svg {
+  flex-shrink: 0;
+}
+.prices {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+.priceArrow {
+  color: #6c8195;
+}
+.dates {
+  margin: 3px 0 0;
+  color: #53697d;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.note {
+  margin: 7px 0 0;
+  color: #53697d;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.closes {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0 0 0 16px;
+  border-left: 1px solid #e3ebf1;
+}
+.closes > div {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.closes dt {
+  color: #53697d;
+  font-size: 11px;
+}
+.closes dd {
+  margin: 0;
+  color: #0e2a43;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+@keyframes result-in {
+  from {
+    opacity: 0.4;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (max-width: 700px) {
+  .card {
+    padding: 12px;
+  }
+  .main {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .result {
+    padding: 12px 0 0;
+    border-left: 0;
+    border-top: 1px solid #e3ebf1;
+  }
+  .resultTop strong {
+    font-size: 24px;
+  }
+  .closes {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 10px 0 0;
+    gap: 10px 24px;
+    border-left: 0;
+    border-top: 1px solid #e3ebf1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .result {
+    animation: none;
+  }
+}

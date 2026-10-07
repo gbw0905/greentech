@@ -49,7 +49,9 @@ export function PanelActions({
   return (
     <>
       {isValidElement(children)
-        ? cloneElement(children as ReactElement<any>, { portalTarget })
+        ? cloneElement(children as ReactElement<{ portalTarget?: HTMLElement | null }>, {
+            portalTarget: portalTarget ?? null,
+          })
         : children}
       <ChartSummaryAssistant
         build={summaryBuild}
@@ -194,11 +196,21 @@ export function ChartBars({
                 key={item.key}
                 role={target ? "button" : undefined}
                 tabIndex={target ? 0 : -1}
-                onClick={target ? () => onSelect?.(target) : undefined}
+                onClick={
+                  target
+                    ? (event) => {
+                        event.currentTarget.focus({ preventScroll: true });
+                        onSelect?.(target);
+                      }
+                    : undefined
+                }
                 onKeyDown={
                   target
                     ? (e) => {
-                        if (e.key === "Enter" || e.key === " ") onSelect?.(target);
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          onSelect?.(target);
+                        }
                       }
                     : undefined
                 }
@@ -431,7 +443,7 @@ export function ChartTable({
   complianceHeader?: string;
 }) {
   return (
-    <div className="overflow-x-auto">
+    <div className="chart-data-table overflow-x-auto">
       <table className="w-full min-w-[46rem] border-collapse text-left">
         <caption className="chart-axis pb-2 text-left">
           {measureLabel} — {unitLabel}
@@ -461,7 +473,25 @@ export function ChartTable({
             return (
               <tr
                 key={item.key}
-                onClick={target ? () => onSelect?.(target) : undefined}
+                tabIndex={target ? 0 : undefined}
+                onKeyDown={
+                  target
+                    ? (event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          onSelect?.(target);
+                        }
+                      }
+                    : undefined
+                }
+                onClick={
+                  target
+                    ? (event) => {
+                        event.currentTarget.focus({ preventScroll: true });
+                        onSelect?.(target);
+                      }
+                    : undefined
+                }
                 className={`border-b border-border/50 transition-colors hover:bg-foreground/[0.04] ${
                   target ? "cursor-pointer" : ""
                 }`}
@@ -650,20 +680,20 @@ export function ChartHeat({
   return (
     <div>
       {moves.length ? (
-        <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-sm border border-border/60 bg-card p-2.5">
+        <div className="chart-index-strip mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-sm border border-border/60 bg-card p-2.5">
           <span className="chart-sub uppercase tracking-wide text-muted-foreground">
             {indexLabel ? `${indexLabel} · 1-day` : "Market trend (1-day)"}
           </span>
           <span
-            className={`chart-value ${avg >= 0 ? "text-primary" : "text-destructive"}`}
+            className={`chart-index-change chart-value ${avg >= 0 ? "text-primary" : "text-destructive"}`}
             title="Average 1-day share price move across the listed entities shown"
           >
             {avg >= 0 ? "▲" : "▼"} {pct(avg)} avg
           </span>
           <span className="chart-sub text-muted-foreground">
-            <span className="text-primary">▲ {up} advancing</span>
+            <span className="chart-index-up text-primary">{up} advancing</span>
             {" · "}
-            <span className="text-destructive">▼ {down} declining</span>
+            <span className="chart-index-down text-destructive">{down} declining</span>
             {" · "}
             {moves.length} listed
           </span>
@@ -675,7 +705,7 @@ export function ChartHeat({
           ) : null}
         </div>
       ) : null}
-      <div className="mb-3 rounded-sm border border-border/60 bg-muted/40 p-2.5">
+      <div className="chart-measure-note mb-3 rounded-sm border border-border/60 bg-muted/40 p-2.5">
         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
           <span className="chart-sub uppercase tracking-wide text-muted-foreground">
             Measure shown
@@ -692,7 +722,7 @@ export function ChartHeat({
         </p>
       </div>
       <div
-        className="relative h-[28rem] w-full overflow-hidden rounded-sm border border-border/60 bg-border/40 sm:h-[30rem]"
+        className="chart-heat-map relative h-[28rem] w-full overflow-hidden rounded-sm border border-border/60 bg-border/40 sm:h-[30rem]"
         onMouseLeave={() => setHover(null)}
       >
         {tiles.map((tile) => {
@@ -708,11 +738,21 @@ export function ChartHeat({
               key={tile.key}
               role={target ? "button" : undefined}
               tabIndex={target ? 0 : -1}
-              onClick={target ? () => onSelect?.(target) : undefined}
+              onClick={
+                target
+                  ? (event) => {
+                      event.currentTarget.focus({ preventScroll: true });
+                      onSelect?.(target);
+                    }
+                  : undefined
+              }
               onKeyDown={
                 target
                   ? (e) => {
-                      if (e.key === "Enter" || e.key === " ") onSelect?.(target);
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        onSelect?.(target);
+                      }
                     }
                   : undefined
               }
@@ -722,7 +762,7 @@ export function ChartHeat({
                 const box = e.currentTarget.parentElement!.getBoundingClientRect();
                 setHover({ key: tile.key, x: e.clientX - box.left, y: e.clientY - box.top });
               }}
-              className={`absolute flex flex-col justify-between overflow-hidden p-1.5 text-white outline-hidden ring-inset transition-[filter] hover:brightness-110 focus-visible:ring-2 focus-visible:ring-white ${
+              className={`chart-heat-tile absolute flex flex-col justify-between overflow-hidden p-1.5 text-white outline-hidden ring-inset transition-[filter] hover:brightness-110 focus-visible:ring-2 focus-visible:ring-white ${
                 target ? "cursor-pointer" : ""
               }`}
               style={{
@@ -778,7 +818,7 @@ export function ChartHeat({
 
         {hover && hovered ? (
           <div
-            className="pointer-events-none absolute z-20 w-64 max-w-[85%] rounded-sm border border-border bg-card p-3 shadow-lg"
+            className="chart-heat-tooltip pointer-events-none absolute z-20 w-64 max-w-[85%] rounded-sm border border-border bg-card p-3 shadow-lg"
             style={{
               left: `min(${hover.x + 14}px, calc(100% - 17rem))`,
               top: `min(${hover.y + 14}px, calc(100% - 9rem))`,
@@ -822,7 +862,7 @@ export function ChartHeat({
         ) : null}
       </div>
 
-      <div className="chart-axis mt-3 flex flex-wrap items-center gap-2">
+      <div className="chart-heat-legend chart-axis mt-3 flex flex-wrap items-center gap-2">
         <span>{format(min)}</span>
         <span
           className="h-2 w-28 rounded-sm border border-border/60"
@@ -955,9 +995,15 @@ export function ChartScatter({
   const avgMove = moves.length ? moves.reduce((s, c) => s + c, 0) / moves.length : 0;
   const pct = (n: number) => `${n >= 0 ? "+" : ""}${n.toFixed(2)}%`;
 
-  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
-    if (!active || !payload?.length) return null;
-    const p = payload[0].payload as ScatterPoint;
+  const CustomTooltip = ({
+    active,
+    payload,
+  }: {
+    active?: boolean;
+    payload?: { payload?: ScatterPoint }[];
+  }) => {
+    const p = payload?.[0]?.payload;
+    if (!active || !p) return null;
     return (
       <div className="rounded-sm border border-border bg-card p-3 shadow-lg">
         <div className="chart-label text-foreground">{p.label}</div>
@@ -992,7 +1038,7 @@ export function ChartScatter({
   return (
     <div>
       {moves.length ? (
-        <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-sm border border-border/60 bg-card p-2.5">
+        <div className="chart-index-strip mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-sm border border-border/60 bg-card p-2.5">
           <span className="chart-sub uppercase tracking-wide text-muted-foreground">
             {indexLabel ? `${indexLabel} · 1-day` : "Market trend (1-day)"}
           </span>
@@ -1194,28 +1240,28 @@ export function ChartPanel({
 }) {
   const [panelNode, setPanelNode] = useState<HTMLDivElement | null>(null);
   return (
-    <div className="glass-panel rise flex h-full flex-col p-5">
-      <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+    <div className="dataset-chart-panel glass-panel rise flex h-full flex-col p-5">
+      <div className="dataset-panel-heading mb-3 flex flex-wrap items-start justify-between gap-3">
         <div className="max-w-3xl">
-          <h3 className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-foreground">
+          <h2 className="dataset-panel-title flex items-center gap-2 font-display text-lg font-bold tracking-tight text-foreground">
             <Icon className="size-5 text-primary" />
             {title}
-          </h3>
+          </h2>
           <p className="mt-1.5 text-sm text-muted-foreground">{blurb}</p>
         </div>
         {status ? <span className="label-mono text-muted-foreground">{status}</span> : null}
       </div>
 
       {metricOptions || limitOptions || viewOptions || actions || filters ? (
-        <div className="mb-3 flex flex-col gap-3 rounded-md border border-border bg-surface-2/60 p-3">
-          <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-2 xl:flex xl:flex-wrap">
+        <div className="dataset-toolbar mb-3 flex flex-col gap-3 rounded-md border border-border bg-surface-2/60 p-3">
+          <div className="dataset-filter-row grid grid-cols-1 items-end gap-3 sm:grid-cols-2 xl:flex xl:flex-wrap">
             {filters
               ? isValidElement(filters)
-                ? cloneElement(filters as ReactElement<any>, { bare: true })
+                ? cloneElement(filters as ReactElement<{ bare?: boolean }>, { bare: true })
                 : filters
               : null}
             {viewOptions ? (
-              <label className="order-2 flex min-w-0 flex-col gap-1.5 sm:min-w-40 sm:flex-1 xl:w-auto xl:flex-none">
+              <label className="dataset-field order-2 flex min-w-0 flex-col gap-1.5 sm:min-w-40 sm:flex-1 xl:w-auto xl:flex-none">
                 <span className="label-mono text-muted-foreground">{viewLabel}</span>
                 <select
                   className="chart-select h-10 w-full min-w-0 xl:w-44"
@@ -1232,7 +1278,7 @@ export function ChartPanel({
               </label>
             ) : null}
             {metricOptions ? (
-              <label className="order-3 flex min-w-0 flex-col gap-1.5 sm:min-w-40 sm:flex-1 xl:w-auto xl:flex-none">
+              <label className="dataset-field order-3 flex min-w-0 flex-col gap-1.5 sm:min-w-40 sm:flex-1 xl:w-auto xl:flex-none">
                 <span className="label-mono text-muted-foreground">{metricLabel}</span>
                 <select
                   className="chart-select h-10 w-full min-w-0 xl:min-w-52"
@@ -1249,7 +1295,7 @@ export function ChartPanel({
               </label>
             ) : null}
             {limitOptions ? (
-              <label className="order-4 flex min-w-0 flex-col gap-1.5 sm:min-w-40 sm:flex-1 xl:w-auto xl:flex-none">
+              <label className="dataset-field order-4 flex min-w-0 flex-col gap-1.5 sm:min-w-40 sm:flex-1 xl:w-auto xl:flex-none">
                 <span className="label-mono text-muted-foreground">Show</span>
                 <select
                   className="chart-select h-10 w-full min-w-0 xl:w-40"
@@ -1267,13 +1313,15 @@ export function ChartPanel({
             ) : null}
           </div>
           {actions ? (
-            <div className="grid grid-cols-2 items-center gap-2 border-t border-border/70 pt-3 sm:flex sm:justify-end [&>button]:h-10 [&>button]:w-full [&>button]:justify-center sm:[&>button]:w-auto">
+            <div className="dataset-actions grid grid-cols-2 items-center gap-2 border-t border-border/70 pt-3 sm:flex sm:justify-end [&>button]:h-10 [&>button]:w-full [&>button]:justify-center sm:[&>button]:w-auto">
               <span className="label-mono col-span-2 mr-auto text-muted-foreground">
                 Download &amp; share
               </span>
               {actions
                 ? isValidElement(actions)
-                  ? cloneElement(actions as ReactElement<any>, { portalTarget: panelNode })
+                  ? cloneElement(actions as ReactElement<{ portalTarget?: HTMLElement | null }>, {
+                      portalTarget: panelNode,
+                    })
                   : actions
                 : null}
             </div>
@@ -1281,7 +1329,7 @@ export function ChartPanel({
         </div>
       ) : null}
 
-      <div ref={setPanelNode} className="relative" />
+      <div ref={setPanelNode} className="dataset-action-feedback relative" />
 
       <div className="min-h-0 flex-1">
         <div key={viewValue ?? "default"} className="view-swap h-full">
@@ -1290,13 +1338,15 @@ export function ChartPanel({
       </div>
 
       {footnote ? (
-        <p className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">{footnote}</p>
+        <p className="dataset-footnote mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
+          {footnote}
+        </p>
       ) : null}
 
       {title ? (
         <>
           {datasetFor(title) ? (
-            <p className="label-mono mt-2 text-xs text-muted-foreground">
+            <p className="dataset-provenance label-mono mt-2 text-xs text-muted-foreground">
               Figures as reported for {datasetFor(title)!.reportingYear} · last reviewed{" "}
               {datasetFor(title)!.lastReviewed} ·{" "}
               <Link
@@ -1308,7 +1358,7 @@ export function ChartPanel({
               </Link>
             </p>
           ) : null}
-          <details className="mt-2 text-xs text-muted-foreground">
+          <details className="dataset-sources mt-2 text-xs text-muted-foreground">
             <summary className="label-mono cursor-pointer text-foreground">
               Data sources &amp; references
             </summary>

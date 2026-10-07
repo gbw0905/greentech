@@ -1,5 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Globe2, ArrowRight, Compass, Users } from "lucide-react";
+import {
+  Globe2,
+  ArrowRight,
+  Compass,
+  Users,
+  BarChart3,
+  GraduationCap,
+  BriefcaseBusiness,
+  Landmark,
+  Newspaper,
+} from "lucide-react";
 import { InformationPage } from "@/components/InformationPage";
 
 const TITLE = "About Us — Global Bioenergy Watch";
@@ -30,45 +40,86 @@ function AboutPage() {
       title="About Global Bioenergy Watch"
       subtitle="An independent policy and market intelligence desk for the global bioenergy sector — tracking what governments mandate and what markets do, in one place."
     >
-      <section className="information-card information-about-copy">
-        <h2 className="information-card-title">What we do</h2>
-        <div className="information-prose">
-          <p>
-            Global Bioenergy Watch continuously scans government agencies, regulators, and highly
-            credible media outlets worldwide for bioenergy developments — ethanol, biodiesel,
-            renewable diesel, sustainable aviation fuel (SAF), and emerging feedstocks such as used
-            cooking oil (UCO). Every verified policy act and market move is classified by
-            jurisdiction and fuel type, then published to a live tracker with source citations.
-          </p>
-          <p>
-            Beyond the news feed, the platform maps policy mandates by country, benchmarks crude
-            oil, equities and natural gas, profiles the companies moving the sector — oil majors,
-            SAF airlines, fuel retailers, marine suppliers, and UCO traders — and connects readers
-            to bioenergy careers. AI-powered summaries turn dense regulatory filings into readable
-            briefings delivered by email on demand.
-          </p>
-          <p>
-            The desk is built for analysts, researchers, investors, policymakers, and journalists
-            who need one trustworthy place to follow a fast-moving global sector.
-          </p>
+      <section className="two">
+        <article className="card">
+          <p className="k">Who we are</p>
+          <h2>What we do</h2>
+          <div className="prose">
+            <p>
+              Global Bioenergy Watch continuously scans government agencies, regulators, and highly
+              credible media outlets worldwide for bioenergy developments — ethanol, biodiesel,
+              renewable diesel, sustainable aviation fuel (SAF), and emerging feedstocks such as
+              used cooking oil (UCO). Every verified policy act and market move is classified by
+              jurisdiction and fuel type, then published to a live tracker with source citations.
+            </p>
+            <p>
+              Beyond the news feed, the platform maps policy mandates by country, benchmarks crude
+              oil, equities and natural gas, profiles the companies moving the sector — oil majors,
+              SAF airlines, fuel retailers, marine suppliers, and UCO traders — and connects readers
+              to bioenergy careers. AI-powered summaries turn dense regulatory filings into readable
+              briefings delivered by email on demand.
+            </p>
+            <p>
+              The desk is built for analysts, researchers, investors, policymakers, and journalists
+              who need one trustworthy place to follow a fast-moving global sector.
+            </p>
+          </div>
+        </article>
+        <article className="card">
+          <p className="k">Method</p>
+          <h2>How the desk works</h2>
+          <ol className="steps">
+            {[
+              ["Scan", "Regulators, agencies and credible media, worldwide."],
+              ["Classify", "By jurisdiction and fuel type."],
+              ["Publish", "To the live tracker, with source citations."],
+              ["Brief", "AI-assisted summaries delivered by email."],
+            ].map(([label, detail]) => (
+              <li key={label}>
+                <b>{label}</b>
+                <span>{detail}</span>
+              </li>
+            ))}
+          </ol>
+        </article>
+      </section>
+      <section className="card">
+        <p className="k">Audience</p>
+        <h2>Built for people who follow the sector</h2>
+        <div className="aud">
+          {[
+            { icon: BarChart3, label: "Analysts" },
+            { icon: GraduationCap, label: "Researchers" },
+            { icon: BriefcaseBusiness, label: "Investors" },
+            { icon: Landmark, label: "Policymakers" },
+            { icon: Newspaper, label: "Journalists" },
+          ].map(({ icon: Icon, label }) => (
+            <span key={label}>
+              <Icon size={17} />
+              {label}
+            </span>
+          ))}
         </div>
       </section>
-
-      <section className="information-link-grid">
-        <Link to="/about/mission-vision" className="information-card information-link-card group">
-          <Compass className="information-link-icon" />
-          <h3 className="information-card-title">Mission &amp; vision</h3>
-          <p className="information-description">Why this desk exists and where it is heading.</p>
-          <span className="information-text-link">
+      <section className="even">
+        <Link to="/about/mission-vision" className="link-card group">
+          <span className="icon">
+            <Compass />
+          </span>
+          <h3>Mission &amp; vision</h3>
+          <p>Why this desk exists and where it is heading.</p>
+          <span className="go">
             Read more
             <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
           </span>
         </Link>
-        <Link to="/about/team" className="information-card information-link-card group">
-          <Users className="information-link-icon" />
-          <h3 className="information-card-title">Team members</h3>
-          <p className="information-description">The people behind the tracker.</p>
-          <span className="information-text-link">
+        <Link to="/about/team" className="link-card group">
+          <span className="icon">
+            <Users />
+          </span>
+          <h3>Team members</h3>
+          <p>The people behind the tracker.</p>
+          <span className="go">
             Meet the team
             <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
           </span>
