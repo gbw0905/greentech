@@ -25,17 +25,23 @@
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 6px;
+  gap: 3px;
+  padding: 4px;
+  border: 1px solid #d6e1ea;
+  border-radius: 12px;
+  background: rgb(255 255 255 / 95%);
+  box-shadow: 0 5px 18px -10px rgb(14 42 67 / 25%);
 }
 .layers button {
   --layer-color: #178a6b;
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 6px 12px;
-  border: 1px solid #dce6ee;
-  border-radius: 999px;
-  background: #ffffffd9;
+  min-height: 34px;
+  padding: 7px 11px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
   color: #4c6278;
   font:
     500 13px "Instrument Sans",
@@ -60,26 +66,12 @@
   background: var(--layer-color);
 }
 .layers button[aria-pressed="true"] {
-  border-color: var(--layer-color);
-  color: #0e2a43;
-  background: #fff;
+  color: var(--layer-color);
+  background: color-mix(in srgb, var(--layer-color) 10%, white);
+  box-shadow: inset 0 -2px var(--layer-color);
 }
 .layers button:hover {
-  background: #fff;
-}
-.pause {
-  position: absolute;
-  right: 3%;
-  bottom: 1%;
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  border: 1px solid #dce6ee;
-  border-radius: 50%;
-  color: #4c6278;
-  background: #ffffffb3;
-  cursor: pointer;
+  background: color-mix(in srgb, var(--layer-color) 7%, white);
 }
 .stage button:focus-visible {
   outline: 2px solid #178a6b;
@@ -92,11 +84,6 @@
   .layers button {
     padding: 6px 9px;
     font-size: 12px;
-  }
-  .pause {
-    right: 0;
-    width: 26px;
-    height: 26px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -199,13 +186,12 @@
   opacity: 0;
   animation: flowWord 12s var(--delay) infinite;
 }
-.layers,
-.pause {
+.layers {
   opacity: 0;
   visibility: hidden;
   transition: opacity 600ms ease;
 }
-.stage[data-ready="true"] :is(.layers, .pause) {
+.stage[data-ready="true"] .layers {
   opacity: 1;
   visibility: visible;
 }
@@ -258,8 +244,7 @@
 @media (prefers-reduced-motion: reduce) {
   .canvas,
   .flow,
-  .layers,
-  .pause {
+  .layers {
     transition: none;
   }
   .flow * {
@@ -274,11 +259,6 @@
   }
 }
 
-.stage[data-ready="true"] .flow *,
-.stage[data-paused="true"] .flow * {
+.stage[data-ready="true"] .flow * {
   animation-play-state: paused;
-}
-.pause {
-  opacity: 1;
-  visibility: visible;
 }

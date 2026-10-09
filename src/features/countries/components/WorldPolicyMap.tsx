@@ -37,6 +37,7 @@ const WIDTH = 900;
 const HEIGHT = 450;
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 8;
+const INITIAL_VIEW: View = { z: 1.2, x: -WIDTH * 0.1, y: -8 };
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 const constrain = (view: View): View => ({
   ...view,
@@ -133,7 +134,7 @@ export function WorldPolicyMap({
   const [hover, setHover] = useState<string | null>(null);
   const [hoverBounds, setHoverBounds] = useState<{ left: number; right: number } | null>(null);
   const [tip, setTip] = useState<Point | null>(null);
-  const [view, setView] = useState<View>({ z: 1, x: 0, y: 0 });
+  const [view, setView] = useState<View>(INITIAL_VIEW);
   const [tooltipSize, setTooltipSize] = useState({ width: 248, height: 222 });
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -569,7 +570,7 @@ export function WorldPolicyMap({
                 type="button"
                 aria-label="Reset view"
                 onClick={() => {
-                  setView({ z: 1, x: 0, y: 0 });
+                  setView(INITIAL_VIEW);
                   setHover(null);
                   setTip(null);
                 }}

@@ -1,5 +1,5 @@
 import { useEffect, useRef, type ReactNode } from "react";
-import { animate, motion, useReducedMotion, type AnimationPlaybackControls } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 
 /** Route entrances and once-per-visit section reveals, with visible server HTML. */
 export function PageMotion({ pathname, children }: { pathname: string; children: ReactNode }) {
@@ -8,22 +8,28 @@ export function PageMotion({ pathname, children }: { pathname: string; children:
 
   useEffect(() => {
     const node = root.current;
-    if (!node || reduced || !window.IntersectionObserver) return;
+    if (!node || reduced || !window.IntersectionObserver || !node.animate) return;
     const seen = new WeakSet<Element>();
-    const controls = new Set<AnimationPlaybackControls>();
+    const controls = new Set<Animation>();
     let frame = 0;
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
           if (!entry.isIntersecting) continue;
           observer.unobserve(entry.target);
-          const control = animate(
-            entry.target as HTMLElement,
-            { opacity: [0, 1], y: [26, 0] },
-            { duration: 0.8, ease: [0.2, 0.7, 0.2, 1] },
+          // Native animation preserves React-owned attributes while lazy route HTML hydrates.
+          const control = (entry.target as HTMLElement).animate(
+            [
+              { opacity: 0, transform: "translateY(26px)" },
+              { opacity: 1, transform: "none" },
+            ],
+            { duration: 800, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
           );
           controls.add(control);
-          void control.then(() => controls.delete(control));
+          void control.finished.then(
+            () => controls.delete(control),
+            () => controls.delete(control),
+          );
         }
       },
       { threshold: 0.14, rootMargin: "0px 0px -8% 0px" },
@@ -52,7 +58,7 @@ export function PageMotion({ pathname, children }: { pathname: string; children:
       observer.disconnect();
       mutations.disconnect();
       cancelAnimationFrame(frame);
-      controls.forEach((control) => control.complete());
+      controls.forEach((control) => control.finish());
     };
   }, [pathname, reduced]);
 

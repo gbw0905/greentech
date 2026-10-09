@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { Pause, Play } from "lucide-react";
 import globeGeometry from "../data/globe-points.json";
 import styles from "./DottedPolicyGlobe.module.css";
 import { HeroFlow } from "./HeroFlow";
@@ -96,16 +95,14 @@ for (let lon = 0; lon < 360; lon += 30) {
 export function DottedPolicyGlobe() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [layers, setLayers] = useState<Layers>(PHASES[0]!);
-  const [paused, setPaused] = useState(false);
   const [ready, setReady] = useState(false);
-  const controls = useRef({ layers, paused, manualUntil: 0, time: 0 });
+  const controls = useRef({ layers, manualUntil: 0, time: 0 });
   const renderRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     controls.current.layers = layers;
-    controls.current.paused = paused;
     renderRef.current?.();
-  }, [layers, paused]);
+  }, [layers]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -130,7 +127,7 @@ export function DottedPolicyGlobe() {
     let ocean: CanvasGradient;
     let glow: CanvasGradient;
     const opacity = { policy: 1, markets: 0, prices: 0 };
-    const active = () => !controls.current.paused && !motion.matches;
+    const active = () => !motion.matches;
     const rgba = (layer: Layer, alpha: number) => `rgba(${COLORS[layer]},${alpha})`;
     const circle = (x: number, y: number, size: number) => {
       ctx.beginPath();
@@ -441,7 +438,7 @@ export function DottedPolicyGlobe() {
   }, []);
 
   return (
-    <div className={styles["stage"]} data-ready={ready} data-paused={paused}>
+    <div className={styles["stage"]} data-ready={ready}>
       <HeroFlow />
       <canvas
         ref={canvasRef}
@@ -469,15 +466,6 @@ export function DottedPolicyGlobe() {
           </button>
         ))}
       </div>
-      <button
-        type="button"
-        className={styles["pause"]}
-        aria-label={paused ? "Resume globe animation" : "Pause globe animation"}
-        aria-pressed={paused}
-        onClick={() => setPaused((current) => !current)}
-      >
-        {paused ? <Play size={13} aria-hidden="true" /> : <Pause size={13} aria-hidden="true" />}
-      </button>
     </div>
   );
 }

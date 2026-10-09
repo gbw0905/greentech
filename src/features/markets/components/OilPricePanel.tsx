@@ -1,3 +1,4 @@
+import { MARKET_BENCHMARKS as BENCHMARKS } from "@/features/markets/benchmarks";
 import { MotionReveal } from "@/components/MotionReveal";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
@@ -19,13 +20,6 @@ import { compareCloses } from "@/features/markets/lib/comparison";
 import benchmarkStyles from "./BenchmarkPanel.module.css";
 import periodStyles from "./MarketPeriod.module.css";
 
-const BENCHMARKS = [
-  { symbol: "CL=F", label: "WTI Crude", unit: "/bbl", color: "#0e2a43" },
-  { symbol: "BZ=F", label: "Brent Crude", unit: "/bbl", color: "#ba2849" },
-  { symbol: "^GSPC", label: "S&P 500", unit: "index", color: "#178a6b" },
-  { symbol: "^NYA", label: "NYSE Composite", unit: "index", color: "#2765a6" },
-  { symbol: "NG=F", label: "Natural Gas", unit: "/MMBtu", color: "#8262b5" },
-] as const;
 const assetColor = (symbol: string) =>
   BENCHMARKS.find((benchmark) => benchmark.symbol === symbol)?.color ?? "#0e2a43";
 const number = (value: number) =>
@@ -735,9 +729,9 @@ export function OilPricePanel() {
               </div>
               <p className="benchmark-why">
                 <b>Why it matters:</b>{" "}
-                {q.symbol === "CL=F"
+                {q.symbol === "CL=F" || q.symbol === "BZ=F"
                   ? "Crude oil prices help explain the relative economics of biodiesel, renewable diesel and ethanol blending."
-                  : q.symbol === "^GSPC"
+                  : q.symbol === "^GSPC" || q.symbol === "^NYA"
                     ? "US equity benchmarks provide context for investment conditions across listed energy companies and biofuel producers."
                     : "Natural gas is an operating cost for biofuel plants and a benchmark for renewable natural gas markets."}
               </p>

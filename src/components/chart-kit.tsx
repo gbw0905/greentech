@@ -1,3 +1,9 @@
+import {
+  COMPANY_PLACEHOLDER,
+  companyNameLogo,
+  domainForName,
+  domainIcon,
+} from "@/features/markets/entity-logos";
 import { cloneElement, isValidElement, useMemo, useState } from "react";
 import type { ReactElement } from "react";
 import { Link } from "@tanstack/react-router";
@@ -112,14 +118,30 @@ export type ChartItem = {
 
 /** Small brand mark rendered inside a heat-map tile. */
 function TileLogo({ src, alt, size }: { src: string; alt: string; size: number }) {
-  const [failed, setFailed] = useState(false);
-  if (failed) return null;
+  const [failedSources, setFailedSources] = useState<string[]>([]);
+  const domain = domainForName(alt);
+  const candidates = [
+    src,
+    companyNameLogo(alt),
+    domain ? domainIcon(domain) : undefined,
+    COMPANY_PLACEHOLDER,
+  ];
+  const current =
+    candidates.find(
+      (candidate): candidate is string => !!candidate && !failedSources.includes(candidate),
+    ) ?? COMPANY_PLACEHOLDER;
+  const placeholder = current === COMPANY_PLACEHOLDER;
   return (
     <img
-      src={src}
-      alt={`${alt} logo`}
+      src={current}
+      alt={placeholder ? `${alt}: logo unavailable` : `${alt} logo`}
+      title={alt}
       loading="lazy"
-      onError={() => setFailed(true)}
+      onError={() =>
+        setFailedSources((previous) =>
+          previous.includes(current) ? previous : [...previous, current],
+        )
+      }
       className="shrink-0 rounded-sm bg-white/90 object-contain p-0.5 shadow-sm"
       style={{ width: size, height: size }}
     />

@@ -1,3 +1,4 @@
+import "@/features/home/HomePage.css";
 import { loadNavigationFeed } from "@/features/policy/navigation-feed";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";

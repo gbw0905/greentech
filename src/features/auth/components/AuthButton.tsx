@@ -20,7 +20,7 @@ export function AuthButton({ entryMode = "signin" }: { entryMode?: "signin" | "s
         className="label-mono pill-motion inline-flex shrink-0 items-center gap-2 border border-menubar-fg/40 bg-menubar-nav px-2.5 py-1.5 font-bold text-menubar-fg hover:border-menubar-fg hover:bg-menubar-fg/10 sm:px-3.5 sm:py-2"
       >
         {entryMode === "signin" && <LogIn className="size-3.5" />}
-        <span className="auth-label">{entryMode === "signup" ? "Sign up" : "Sign in"}</span>
+        <span className="auth-label">{entryMode === "signup" ? "Sign up" : "Sign In"}</span>
       </Link>
     );
   }

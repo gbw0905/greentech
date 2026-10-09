@@ -9,8 +9,12 @@ export function HomeHero({
   stats: { total: number; countries: number; policy: number };
 }) {
   return (
-    <section className={styles["hero"]} aria-labelledby="home-hero-title" data-motion-owned="true">
-      <div className={styles["layout"]}>
+    <section
+      className={`${styles["hero"]} home-hero`}
+      aria-labelledby="home-hero-title"
+      data-motion-owned="true"
+    >
+      <div className={`${styles["layout"]} home-container`}>
         <div className={styles["copy"]}>
           <div className={styles["live"]}>Live policy and market intelligence</div>
           <h1 id="home-hero-title" className={styles["title"]}>
@@ -46,7 +50,7 @@ export function HomeHero({
           <DottedPolicyGlobe />
         </div>
       </div>
-      <dl className={styles["stats"]}>
+      <dl className={`${styles["stats"]} home-container`}>
         {[
           {
             value: stats.total,
@@ -63,10 +67,23 @@ export function HomeHero({
             label: "Policy items",
             note: "Mandates, incentives and rules you can filter by fuel type.",
           },
+          {
+            value: 132.7,
+            prefix: "$",
+            suffix: "B",
+            decimals: 1,
+            label: "Market value",
+            note: "2026 global biofuels estimate.",
+          },
         ].map((stat) => (
           <div key={stat.label} className={styles["stat"]}>
             <dd>
-              <HeroStat value={stat.value} />
+              <HeroStat
+                value={stat.value}
+                prefix={stat.prefix ?? ""}
+                suffix={stat.suffix ?? ""}
+                decimals={stat.decimals ?? 0}
+              />
             </dd>
             <dt>{stat.label}</dt>
             <p>{stat.note}</p>
@@ -77,39 +94,70 @@ export function HomeHero({
   );
 }
 
-function HeroStat({ value }: { value: number }) {
+function HeroStat({
+  value,
+  prefix = "",
+  suffix = "",
+  decimals = 0,
+}: {
+  value: number;
+  prefix?: string;
+  suffix?: string;
+  decimals?: number;
+}) {
   const numberRef = useRef<HTMLSpanElement>(null);
   const animated = useRef(false);
+  const formatted = `${prefix}${value.toLocaleString("en-US", { maximumFractionDigits: decimals })}${suffix}`;
   useEffect(() => {
     const element = numberRef.current;
     if (!element) return;
-    if (
-      animated.current ||
-      value <= 0 ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
-      element.textContent = value.toLocaleString("en-US");
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (animated.current || value <= 0 || media.matches) {
+      element.textContent = formatted;
       return;
     }
     let frame = 0;
-    const started = performance.now() + 1100;
+    let started: number | null = null;
     const draw = (now: number) => {
-      const progress = Math.max(0, Math.min(1, (now - started) / 1500));
-      element.textContent = Math.round(value * (1 - (1 - progress) ** 3)).toLocaleString("en-US");
+      started ??= now;
+      const progress = Math.min(1, (now - started) / 1800);
+      const count = value * (1 - (1 - progress) ** 3);
+      element.textContent = `${prefix}${count.toLocaleString("en-US", { maximumFractionDigits: decimals })}${suffix}`;
       if (progress < 1) frame = requestAnimationFrame(draw);
-      else animated.current = true;
+      else {
+        element.textContent = formatted;
+        animated.current = true;
+      }
     };
-    frame = requestAnimationFrame(draw);
-    return () => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return;
+        observer.disconnect();
+        frame = requestAnimationFrame(draw);
+      },
+      { threshold: 0.5 },
+    );
+    const finish = () => {
+      if (!media.matches) return;
+      observer.disconnect();
       cancelAnimationFrame(frame);
+      element.textContent = formatted;
+      animated.current = true;
     };
-  }, [value]);
+    observer.observe(element);
+    media.addEventListener("change", finish);
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(frame);
+      media.removeEventListener("change", finish);
+    };
+  }, [value, prefix, suffix, decimals, formatted]);
   return (
     <>
       <span aria-hidden="true" ref={numberRef}>
-        {value.toLocaleString("en-US")}
+        {formatted}
       </span>
-      <span className="sr-only">{value.toLocaleString("en-US")}</span>
+      <span className="sr-only">{formatted}</span>
     </>
   );
 }

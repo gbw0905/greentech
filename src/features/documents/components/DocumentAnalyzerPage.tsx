@@ -6,15 +6,18 @@ import {
   Search,
   ShieldCheck,
   Upload,
+  X,
+  CheckCircle2,
 } from "lucide-react";
 import { useRef, useState, type FormEvent } from "react";
-import { PageHeading, PageShell } from "@/components/PageShell";
+import { IntelligencePage } from "@/components/IntelligencePage";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { DocumentAnalysis } from "@/features/documents/contracts";
 
 export function DocumentAnalyzerPage() {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [dragging, setDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -29,6 +32,23 @@ export function DocumentAnalyzerPage() {
         .map((keyword) => [keyword.toLocaleLowerCase(), keyword]),
     ).values(),
   ];
+
+  const chooseFile = (next: File | null) => {
+    setAnalysis(null);
+    setError("");
+    if (
+      next &&
+      (!/\.(pdf|docx|xlsx|xls|csv|txt|md)$/i.test(next.name) ||
+        next.size > 15 * 1024 * 1024 ||
+        next.size === 0)
+    ) {
+      setFile(null);
+      setError("Choose a non-empty PDF, Word, Excel, CSV or text file up to 15 MB.");
+      if (inputRef.current) inputRef.current.value = "";
+      return;
+    }
+    setFile(next);
+  };
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -55,18 +75,15 @@ export function DocumentAnalyzerPage() {
   }
 
   return (
-    <PageShell>
-      <PageHeading
-        icon={FileSearch}
-        title="Document analyzer"
-        subtitle="Upload a document, enter the topic you care about, and receive a short answer grounded only in relevant passages from that file."
-      />
-
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,.95fr)]">
-        <form
-          onSubmit={submit}
-          className="rounded-lg border border-border bg-white p-5 shadow-sm sm:p-6"
-        >
+    <IntelligencePage
+      icon={FileSearch}
+      eyebrow="Products / Policy research"
+      title="Policy document analyzer"
+      subtitle="Add a document and at least five topics to get a briefing backed by its source passages."
+      className="intelligence-analyzer"
+    >
+      <div className="analyzer-workspace">
+        <form onSubmit={submit} className="analyzer-input-card">
           <div className="flex items-center gap-2">
             <Upload className="size-4 text-primary" />
             <h2 className="font-display text-lg font-extrabold">1. Add a document</h2>
@@ -75,27 +92,61 @@ export function DocumentAnalyzerPage() {
             ref={inputRef}
             type="file"
             className="sr-only"
+            aria-label="Upload a document"
+            disabled={loading}
             accept=".pdf,.docx,.xlsx,.xls,.csv,.txt,.md"
-            onChange={(event) => {
-              setFile(event.target.files?.[0] ?? null);
-              setAnalysis(null);
-              setError("");
-            }}
+            onChange={(event) => chooseFile(event.target.files?.[0] ?? null)}
           />
           <button
             type="button"
+            disabled={loading}
+            data-dragging={dragging || undefined}
+            data-selected={!!file || undefined}
+            onDragOver={(event) => {
+              event.preventDefault();
+              if (!loading) setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={(event) => {
+              event.preventDefault();
+              setDragging(false);
+              if (!loading) chooseFile(event.dataTransfer.files[0] ?? null);
+            }}
             onClick={() => inputRef.current?.click()}
-            className="mt-4 flex min-h-36 w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/40 px-5 text-center transition-colors hover:border-primary hover:bg-muted"
+            className="analyzer-dropzone"
           >
-            <FileText className="size-8 text-primary" />
+            <span className="analyzer-upload-icon">
+              {file ? <CheckCircle2 size={30} /> : <Upload size={30} />}
+            </span>
             <span className="mt-2 text-sm font-bold text-foreground">
-              {file ? file.name : "Choose PDF, Word, Excel, CSV, or text"}
+              {file ? file.name : "Drop your document here"}
             </span>
             <span className="mt-1 text-xs text-muted-foreground">
-              {file ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : "Maximum file size: 15 MB"}
+              {file
+                ? `${(file.size / 1024 / 1024).toFixed(2)} MB · Click to replace`
+                : "or click to browse · up to 15 MB"}
             </span>
           </button>
 
+          <div className="analyzer-file-formats">
+            <span>PDF</span>
+            <span>Word</span>
+            <span>Excel</span>
+            <span>CSV</span>
+            <span>Text</span>
+            {file && (
+              <button
+                disabled={loading}
+                type="button"
+                onClick={() => {
+                  chooseFile(null);
+                  if (inputRef.current) inputRef.current.value = "";
+                }}
+              >
+                Remove file <X size={13} />
+              </button>
+            )}
+          </div>
           <div className="mt-6 flex items-center gap-2">
             <Search className="size-4 text-primary" />
             <label htmlFor="analysis-query" className="font-display text-lg font-extrabold">
@@ -104,13 +155,18 @@ export function DocumentAnalyzerPage() {
           </div>
           <Textarea
             id="analysis-query"
+            disabled={loading}
+            aria-describedby="analysis-query-help"
             value={query}
             maxLength={1500}
             onChange={(event) => setQuery(event.target.value)}
             className="mt-3 min-h-28 resize-y"
             placeholder="Example: sustainable aviation fuel, blending target, deadline, penalties, obligated parties, compliance"
           />
-          <div className="mt-2 flex justify-between gap-3 text-xs text-muted-foreground">
+          <div
+            id="analysis-query-help"
+            className="mt-2 flex justify-between gap-3 text-xs text-muted-foreground"
+          >
             <span>Separate keywords or short phrases with commas. Use 5–25 relevant terms.</span>
             <span
               className={
@@ -161,16 +217,22 @@ export function DocumentAnalyzerPage() {
           </p>
         </form>
 
-        <section
-          aria-live="polite"
-          className="min-h-96 rounded-lg border border-border bg-white p-5 shadow-sm sm:p-6"
-        >
-          <h2 className="font-display text-lg font-extrabold">Evidence-based result</h2>
+        <section aria-live="polite" className="analyzer-result-card" aria-busy={loading}>
+          <div className="analyzer-result-heading">
+            <span>
+              <FileSearch size={19} />
+              <h2>Evidence-based result</h2>
+            </span>
+            <small>
+              {analysis ? "Ready to review" : loading ? "Analyzing" : "Awaiting your source"}
+            </small>
+          </div>
           {!analysis && !loading ? (
             <div className="flex min-h-72 flex-col items-center justify-center text-center text-muted-foreground">
               <FileSearch className="size-10 opacity-40" />
               <p className="mt-3 max-w-sm text-sm/relaxed">
-                Your answer, key points, and document references will appear here.
+                Your briefing starts with your source. Add a document and five topics to see a
+                focused answer, key points and supporting references.
               </p>
             </div>
           ) : null}
@@ -300,6 +362,6 @@ export function DocumentAnalyzerPage() {
           ) : null}
         </section>
       </div>
-    </PageShell>
+    </IntelligencePage>
   );
 }

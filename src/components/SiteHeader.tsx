@@ -2,23 +2,15 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { AuthButton } from "@/features/auth/components/AuthButton";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import siteLogo from "@/assets/logo.png";
+import "./SiteHeader.css";
 
 // Every item points to an existing route; reference placeholders are not carried over.
 const NAV_GROUPS = [
   {
     label: "Benchmarks",
-    items: [
-      { to: "/", hash: "markets", label: "WTI Crude", description: "US crude oil, $ per barrel" },
-      { to: "/", hash: "markets", label: "S&P 500", description: "US equity index level" },
-      { to: "/", hash: "markets", label: "Natural Gas", description: "Henry Hub gas, $ per MMBtu" },
-    ],
+    items: [],
   },
   {
     label: "Global Markets",
@@ -27,23 +19,16 @@ const NAV_GROUPS = [
         to: "/",
         hash: "map",
         label: "Jurisdiction map",
-        description: "Mandates and frameworks, country by country",
       },
       {
         to: "/timeline",
         label: "Latest policy updates",
-        description: "New notices and market developments",
       },
       {
         to: "/mandates",
         label: "Mandate tracker",
-        description: "Published obligations and policy targets",
       },
-      {
-        to: "/profiles",
-        label: "Country profiles",
-        description: "Explore every tracked jurisdiction",
-      },
+      { to: "/videos", label: "Videos" },
     ],
   },
   {
@@ -52,12 +37,10 @@ const NAV_GROUPS = [
       {
         to: "/supply",
         label: "Suppliers & producers",
-        description: "Explore suppliers and users across the value chain",
       },
       {
         to: "/data-sources",
         label: "Data sources",
-        description: "The evidence behind the tracker",
       },
     ],
   },
@@ -67,22 +50,18 @@ const NAV_GROUPS = [
       {
         to: "/ci-calculator",
         label: "CI calculator",
-        description: "Estimate the carbon intensity of a fuel pathway",
       },
       {
         to: "/my-results",
         label: "CI WorkSpace",
-        description: "Save, compare and revisit your CI scenarios",
       },
       {
         to: "/dairy-rng-calculator",
         label: "Dairy RNG calculator",
-        description: "Model manure-to-fuel carbon intensity",
       },
       {
         to: "/document-analyzer",
         label: "Policy Document Analyzer",
-        description: "Read and analyse policy documents",
       },
     ],
   },
@@ -92,21 +71,18 @@ const NAV_GROUPS = [
       {
         to: "/jobs",
         label: "Open roles",
-        description: "Find opportunities across the bioenergy sector",
       },
     ],
   },
   {
     label: "About Us",
     items: [
-      { to: "/about", label: "What we do", description: "Who we are and how the desk works" },
+      { to: "/about", label: "What we do" },
       {
         to: "/about/mission-vision",
         label: "Mission & vision",
-        description: "Why this desk exists and where it is heading",
       },
-      { to: "/about/team", label: "Team members", description: "The people behind the tracker" },
-      { to: "/videos", label: "Videos", description: "Explainers on bioenergy policy and markets" },
+      { to: "/about/team", label: "Team members" },
     ],
   },
 ] as const;
@@ -121,6 +97,7 @@ export function SiteHeader({
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const locationHref = useRouterState({ select: (state) => state.location.href });
+  const isHome = locationHref.split(/[?#]/)[0] === "/";
   useEffect(() => setHydrated(true), []);
   useEffect(() => {
     setMobileNavOpen(false);
@@ -136,7 +113,7 @@ export function SiteHeader({
       return (
         hash === "map" ||
         hash === "updates" ||
-        /^\/(countries|profiles|mandates|timeline)(\/|$)/.test(pathname)
+        /^\/(countries|mandates|timeline|videos)(\/|$)/.test(pathname)
       );
     if (label === "Benchmarks") return hash === "markets";
     if (label === "Datasets") return activeSection === "supply" || pathname === "/data-sources";
@@ -144,9 +121,8 @@ export function SiteHeader({
       return /^\/(ci-calculator|dairy-rng-calculator|my-results|document-analyzer)(\/|$)/.test(
         pathname,
       );
-    if (label === "Bioenergy Jobs") return activeSection === "jobs";
-    if (label === "About Us")
-      return hash === "disclaimer" || /^\/(about|contact|videos)(\/|$)/.test(pathname);
+    if (label === "Bioenergy Jobs") return activeSection === "jobs" || pathname === "/jobs";
+    if (label === "About Us") return /^\/about(\/|$)/.test(pathname);
     return false;
   };
 
@@ -157,50 +133,69 @@ export function SiteHeader({
           <img src={siteLogo} alt="Global Bioenergy Watch logo" width={1024} height={1024} />
           <span>Global Bioenergy Watch</span>
         </Link>
-        <nav aria-label="Primary" className="gbw-desktop-nav">
-          {NAV_GROUPS.map((group) => (
-            <DropdownMenu
-              key={group.label}
-              modal={false}
-              open={openGroup === group.label}
-              onOpenChange={(open) => setOpenGroup(open ? group.label : null)}
-            >
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className="gbw-nav-trigger"
-                  data-active={groupActive(group.label) || undefined}
+        <NavigationMenu.Root
+          asChild
+          value={openGroup ?? ""}
+          onValueChange={(value) => setOpenGroup(value || null)}
+          delayDuration={80}
+          skipDelayDuration={250}
+        >
+          <nav aria-label="Primary" className="gbw-desktop-nav">
+            <NavigationMenu.List className="gbw-nav-list">
+              {NAV_GROUPS.map((group) => (
+                <NavigationMenu.Item
+                  key={group.label}
+                  value={group.label}
+                  className="gbw-nav-group"
                 >
-                  {group.label}
-                  <ChevronDown size={13} aria-hidden="true" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align={group.label === "About Us" ? "end" : "start"}
-                sideOffset={8}
-                className="gbw-nav-menu"
-                aria-label={group.label}
-              >
-                {group.items.map((item) => (
-                  <DropdownMenuItem asChild key={item.label}>
-                    <Link
-                      to={item.to}
-                      hash={"hash" in item ? item.hash : ""}
-                      className="gbw-nav-item"
-                      onClick={() => setOpenGroup(null)}
-                    >
-                      <strong>{item.label}</strong>
-                      <span>{item.description}</span>
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ))}
-        </nav>
+                  {group.label === "Bioenergy Jobs" || group.label === "Benchmarks" ? (
+                    <NavigationMenu.Link asChild>
+                      <Link
+                        to={group.label === "Benchmarks" ? "/" : "/jobs"}
+                        hash={group.label === "Benchmarks" ? "markets" : ""}
+                        className="gbw-nav-trigger"
+                        data-active={groupActive(group.label) || undefined}
+                        onPointerEnter={() => setOpenGroup(null)}
+                      >
+                        {group.label}
+                      </Link>
+                    </NavigationMenu.Link>
+                  ) : (
+                    <>
+                      <NavigationMenu.Trigger
+                        className="gbw-nav-trigger"
+                        data-active={groupActive(group.label) || undefined}
+                      >
+                        {group.label}
+                        <ChevronDown size={13} aria-hidden />
+                      </NavigationMenu.Trigger>
+                      <NavigationMenu.Content
+                        className="gbw-nav-menu"
+                        data-align={group.label === "About Us" ? "end" : "start"}
+                      >
+                        {group.items.map((item) => (
+                          <NavigationMenu.Link asChild key={item.label}>
+                            <Link
+                              to={item.to}
+                              hash={"hash" in item ? item.hash : ""}
+                              className="gbw-nav-item"
+                              onClick={() => setOpenGroup(null)}
+                            >
+                              <strong>{item.label}</strong>
+                            </Link>
+                          </NavigationMenu.Link>
+                        ))}
+                      </NavigationMenu.Content>
+                    </>
+                  )}
+                </NavigationMenu.Item>
+              ))}
+            </NavigationMenu.List>
+          </nav>
+        </NavigationMenu.Root>
         <div className="gbw-header-actions">
           <div className="gbw-auth">
-            <AuthButton entryMode="signup" />
+            <AuthButton entryMode={isHome ? "signin" : "signup"} />
           </div>
           <button
             type="button"
@@ -223,31 +218,43 @@ export function SiteHeader({
             if (event.key === "Escape") setMobileNavOpen(false);
           }}
         >
-          {NAV_GROUPS.map((group) => (
-            <details key={group.label} open={mobileOpenGroup === group.label}>
-              <summary
-                onClick={(event) => {
-                  event.preventDefault();
-                  setMobileOpenGroup((current) => (current === group.label ? null : group.label));
-                }}
+          {NAV_GROUPS.map((group) =>
+            group.label === "Bioenergy Jobs" || group.label === "Benchmarks" ? (
+              <Link
+                key={group.label}
+                to={group.label === "Benchmarks" ? "/" : "/jobs"}
+                hash={group.label === "Benchmarks" ? "markets" : ""}
+                className="gbw-mobile-direct"
+                onClick={() => setMobileNavOpen(false)}
               >
                 {group.label}
-                <ChevronDown size={15} aria-hidden="true" />
-              </summary>
-              <div>
-                {group.items.map((item) => (
-                  <Link
-                    key={item.label}
-                    to={item.to}
-                    hash={"hash" in item ? item.hash : ""}
-                    onClick={() => setMobileNavOpen(false)}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-            </details>
-          ))}
+              </Link>
+            ) : (
+              <details key={group.label} open={mobileOpenGroup === group.label}>
+                <summary
+                  onClick={(event) => {
+                    event.preventDefault();
+                    setMobileOpenGroup((current) => (current === group.label ? null : group.label));
+                  }}
+                >
+                  {group.label}
+                  <ChevronDown size={15} aria-hidden="true" />
+                </summary>
+                <div>
+                  {group.items.map((item) => (
+                    <Link
+                      key={item.label}
+                      to={item.to}
+                      hash={"hash" in item ? item.hash : ""}
+                      onClick={() => setMobileNavOpen(false)}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </details>
+            ),
+          )}
         </nav>
       )}
     </header>
