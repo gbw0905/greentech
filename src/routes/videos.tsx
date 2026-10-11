@@ -1,28 +1,27 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { useRef, useState } from "react";
-import { useReducedMotion } from "motion/react";
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FUEL_TYPES, type FuelType, type Region } from "@/features/policy/taxonomy";
 import { LiveMediaFeed } from "@/features/videos/components/LiveMediaFeed";
 import { VideoLibrary } from "@/features/videos/components/VideoLibrary";
-import { VideoHero } from "@/features/videos/components/VideoHero";
+import { VideoWatchView } from "@/features/videos/components/VideoWatchView";
+import { VideoHistory } from "@/features/videos/components/VideoHistory";
+import { useWatchHistory } from "@/features/videos/hooks/useWatchHistory";
+import { History } from "lucide-react";
 import { VideoFilters } from "@/features/videos/components/VideoFilters";
-import { LiveMarquee } from "@/features/markets/components/LiveMarquee";
 import "@/features/videos/videos.css";
 import { useVisitTracker } from "@/features/traffic/hooks/useVisitTracker";
 import type { LiveVideo } from "@/features/videos/contracts";
 
 const TITLE = "Video briefing room | Global Bioenergy Watch";
 const DESCRIPTION =
-  "Watch our explainer and curated YouTube channels and official video hubs on biofuel policy, linked to the countries and fuel types they cover.";
-
-const EXPLAINER = {
-  url: "https://globalbioenergywatch.org/videos/explainer.mp4",
-  poster: "https://globalbioenergywatch.org/videos/explainer-poster.jpg",
-  uploadDate: "2026-09-03",
-  duration: "PT23S",
-};
+  "Browse bioenergy videos from YouTube and official publishers, filter by country and fuel, and watch selected videos and revisit your watch history.";
 
 export const Route = createFileRoute("/videos")({
+  validateSearch: (search: Record<string, unknown>): { watch?: string; view?: "history" } => {
+    if (typeof search["watch"] === "string" && /^[\w-]{11}$/.test(search["watch"]))
+      return { watch: search["watch"] };
+    return search["view"] === "history" ? { view: "history" } : {};
+  },
   head: () => ({
     meta: [
       { title: TITLE },
@@ -34,23 +33,6 @@ export const Route = createFileRoute("/videos")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: "https://globalbioenergywatch.org/videos" }],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "VideoObject",
-          name: "Global Bioenergy Watch — explainer",
-          description:
-            "A 23-second explainer: how Global Bioenergy Watch tracks worldwide biofuel policy, markets, supply datasets and jobs in one live dashboard.",
-          thumbnailUrl: EXPLAINER.poster,
-          uploadDate: EXPLAINER.uploadDate,
-          duration: EXPLAINER.duration,
-          contentUrl: EXPLAINER.url,
-          embedUrl: "https://globalbioenergywatch.org/videos",
-        }),
-      },
-    ],
   }),
   component: VideosPage,
 });
@@ -61,16 +43,62 @@ function VideosPage() {
   const [country, setCountry] = useState<string | null>(null);
   const [regions, setRegions] = useState<Region[]>([]);
   const [policies, setPolicies] = useState<string[]>([]);
-  const [selectedVideo, setSelectedVideo] = useState<LiveVideo | null>(null);
-  const playerRef = useRef<HTMLDivElement>(null);
-  const reducedMotion = useReducedMotion();
+  const { watch, view } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const [openedVideo, setOpenedVideo] = useState<LiveVideo | null>(null);
+  const [availableVideos, setAvailableVideos] = useState<LiveVideo[]>([]);
+  const { history, record, remove, clear } = useWatchHistory();
+  const lastVideoTrigger = useRef<HTMLElement | null>(null);
+  const listingScroll = useRef(0);
+  const lastRecorded = useRef<string | null>(null);
+  const selectedVideo = useMemo(
+    () =>
+      watch
+        ? (availableVideos.find((video) => video.id === watch) ??
+          history.find((video) => video.id === watch) ??
+          (openedVideo?.id === watch ? openedVideo : null) ?? {
+            id: watch,
+            title: "Bioenergy video",
+            channel: "",
+            published: "",
+            duration: "",
+            keyword: "",
+            thumbnail: `https://i.ytimg.com/vi/${watch}/hqdefault.jpg`,
+            url: `https://www.youtube.com/watch?v=${watch}`,
+            kind: "youtube" as const,
+          })
+        : null,
+    [watch, availableVideos, history, openedVideo],
+  );
+  useEffect(() => {
+    if (!selectedVideo) {
+      lastRecorded.current = null;
+      return;
+    }
+    if (!selectedVideo.channel || lastRecorded.current === selectedVideo.id) return;
+    lastRecorded.current = selectedVideo.id;
+    record(selectedVideo);
+  }, [selectedVideo, record]);
+  useEffect(() => {
+    if (watch || view === "history" || !lastVideoTrigger.current?.isConnected) return;
+    lastVideoTrigger.current.focus({ preventScroll: true });
+    window.scrollTo({ top: listingScroll.current, behavior: "instant" });
+  }, [watch, view]);
   const playVideo = (video: LiveVideo) => {
-    setSelectedVideo(video);
-    playerRef.current?.focus({ preventScroll: true });
-    playerRef.current?.scrollIntoView({
-      behavior: reducedMotion ? "instant" : "smooth",
-      block: "start",
-    });
+    if (!/^[\w-]{11}$/.test(video.id)) return;
+    if (!watch && view !== "history") {
+      lastVideoTrigger.current =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      listingScroll.current = window.scrollY;
+    }
+    setOpenedVideo(video);
+    void navigate({ search: { watch: video.id }, resetScroll: true });
+  };
+  const showHistory = () => {
+    void navigate({ search: { view: "history" }, resetScroll: true });
+  };
+  const showListing = () => {
+    void navigate({ search: {}, resetScroll: false });
   };
   const toggleFuel = (f: FuelType) =>
     setFuels((list) => (list.includes(f) ? list.filter((v) => v !== f) : [...list, f]));
@@ -86,22 +114,33 @@ function VideosPage() {
   };
   return (
     <div className="videos-page">
-      <LiveMarquee />
-      <main className="videos-shell">
-        <nav className="videos-breadcrumb" aria-label="Breadcrumb">
-          <Link to="/">Global Bioenergy Watch</Link>
-          <span>/</span>
-          <Link to="/" hash="markets">
-            Markets
-          </Link>
-          <span>/</span>
-          <span aria-current="page">Video briefing room</span>
-        </nav>
-        <VideoHero
-          selectedVideo={selectedVideo}
-          playerRef={playerRef}
-          onShowExplainer={() => setSelectedVideo(null)}
+      {selectedVideo && (
+        <VideoWatchView
+          video={selectedVideo}
+          related={availableVideos.length ? availableVideos : history}
+          onPlay={playVideo}
+          onBack={showListing}
+          onHistory={showHistory}
         />
+      )}
+      {view === "history" && (
+        <VideoHistory
+          history={history}
+          onPlay={playVideo}
+          onRemove={remove}
+          onClear={clear}
+          onBack={showListing}
+        />
+      )}
+      <main className="videos-shell" hidden={!!watch || view === "history"}>
+        <h1 id="video-page-title" className="sr-only">
+          Bioenergy videos
+        </h1>
+        <div className="videos-browse-toolbar">
+          <button type="button" onClick={showHistory}>
+            <History size={17} aria-hidden="true" /> History
+          </button>
+        </div>
         <div className="videos-fuel-bar" role="group" aria-label="Filter videos by fuel type">
           <span>Fuel type</span>
           {FUEL_TYPES.map((f, index) => (
@@ -131,8 +170,9 @@ function VideosPage() {
           <LiveMediaFeed
             fuels={fuels}
             country={country}
-            selectedVideoId={selectedVideo?.id ?? null}
+            selectedVideoId={watch ?? null}
             onPlayVideo={playVideo}
+            onVideosChange={setAvailableVideos}
           />
         </div>
         <VideoLibrary

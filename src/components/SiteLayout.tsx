@@ -16,7 +16,11 @@ export function SiteLayout({ children }: { children: ReactNode }) {
   useQuery(feedQueryWithInitial(loader?.feed ?? null));
 
   return (
-    <div id="top" className="flex min-h-screen flex-col">
+    <div
+      data-home={pathname === "/" ? "true" : undefined}
+      id="top"
+      className="flex min-h-screen flex-col"
+    >
       <SiteHeader
         activeSection={
           pathname.startsWith("/supply")

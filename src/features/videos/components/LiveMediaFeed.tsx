@@ -53,7 +53,7 @@ function VideoResults({
             rel="noopener noreferrer"
             className={`videos-live-card${selectedVideoId === v.id ? " is-selected" : ""}`}
             aria-current={selectedVideoId === v.id ? "true" : undefined}
-            aria-label={onPlayVideo ? `Play ${v.title} in the video player` : undefined}
+            aria-label={onPlayVideo ? `Watch ${v.title}` : undefined}
             onClick={(event) => {
               if (
                 !onPlayVideo ||
@@ -66,6 +66,7 @@ function VideoResults({
               )
                 return;
               event.preventDefault();
+              event.currentTarget.focus({ preventScroll: true });
               onPlayVideo(v);
             }}
             initial={false}
@@ -122,11 +123,13 @@ export function LiveMediaFeed({
   country,
   selectedVideoId = null,
   onPlayVideo,
+  onVideosChange,
 }: {
   fuels: FuelType[];
   country: string | null;
   selectedVideoId?: string | null;
   onPlayVideo?: (video: LiveVideo) => void;
+  onVideosChange?: (videos: LiveVideo[]) => void;
 }) {
   const keywords = useMemo(() => {
     const topics = fuels.length ? fuels.map((f) => FUEL_KEYWORD[f]) : BASE_KEYWORDS;
@@ -139,6 +142,9 @@ export function LiveMediaFeed({
     queryFn: () => fetchMedia({ data: { keywords } }),
     staleTime: 15 * 60_000,
   });
+  useEffect(() => {
+    if (data?.videos) onVideosChange?.(data.videos);
+  }, [data?.videos, onVideosChange]);
   const videos = data?.videos ?? [];
   const articles = data?.articles ?? [];
   const reduced = useReducedMotion();
@@ -146,7 +152,9 @@ export function LiveMediaFeed({
     <section className="videos-feed" aria-labelledby="video-live-title" aria-busy={isFetching}>
       <header className="videos-section-head">
         <div>
-          <h2 id="video-live-title">Live search — YouTube &amp; web</h2>
+          <h2 id="video-live-title" tabIndex={-1}>
+            Live search — YouTube &amp; web
+          </h2>
           <p>Fresh results for: {keywords.join(" · ")}</p>
         </div>
         <button

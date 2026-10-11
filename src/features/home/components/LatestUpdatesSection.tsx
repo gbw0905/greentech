@@ -118,7 +118,7 @@ export function LatestUpdatesSection({ updates }: { updates: PolicyUpdate[] }) {
       id="updates"
       className="scroll-mt-[106px] border-t border-[#d6e1ea] bg-[#eef3f7] py-8 font-['Instrument_Sans'] text-[#0e2a43] min-[961px]:py-9"
     >
-      <div className="mx-auto max-w-[1240px] px-5 min-[621px]:px-8">
+      <div className="home-container">
         <MotionReveal className="flex flex-col justify-between gap-4 min-[821px]:flex-row min-[821px]:items-end">
           <div>
             <h2 className="font-['Bricolage_Grotesque'] text-[clamp(2rem,3.4vw,2.75rem)]/[1.05] font-semibold tracking-[-0.03em]">

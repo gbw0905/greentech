@@ -18,20 +18,23 @@ interface YouTubeVideoRenderer {
   lengthText?: YouTubeText;
 }
 
-function walk(node: unknown, out: LiveVideo[], keyword: string) {
+export function collectYouTubeVideos(node: unknown, out: LiveVideo[], keyword: string) {
   if (!node || typeof node !== "object") return;
   if (Array.isArray(node)) {
-    for (const n of node) walk(n, out, keyword);
+    for (const n of node) collectYouTubeVideos(n, out, keyword);
     return;
   }
   const rec = node as Record<string, unknown>;
   const vr = rec["videoRenderer"] as YouTubeVideoRenderer | undefined;
-  if (vr && vr.videoId) {
+  if (vr && typeof vr.videoId === "string" && /^[A-Za-z0-9_-]{11}$/.test(vr.videoId)) {
     const id = String(vr.videoId);
     if (!out.some((v) => v.id === id)) {
       out.push({
         id,
-        title: vr.title?.runs?.[0]?.text ?? "Untitled",
+        title:
+          vr.title?.simpleText ??
+          vr.title?.runs?.map((run) => run.text ?? "").join("") ??
+          "Untitled",
         channel: vr.ownerText?.runs?.[0]?.text ?? vr.longBylineText?.runs?.[0]?.text ?? "YouTube",
         published: vr.publishedTimeText?.simpleText ?? "",
         duration: vr.lengthText?.simpleText ?? "",
@@ -42,7 +45,7 @@ function walk(node: unknown, out: LiveVideo[], keyword: string) {
       });
     }
   }
-  for (const key of Object.keys(rec)) walk(rec[key], out, keyword);
+  for (const key of Object.keys(rec)) collectYouTubeVideos(rec[key], out, keyword);
 }
 
 async function searchYouTube(keyword: string, limit: number): Promise<LiveVideo[]> {
@@ -64,7 +67,7 @@ async function searchYouTube(keyword: string, limit: number): Promise<LiveVideo[
     return [];
   }
   const out: LiveVideo[] = [];
-  walk(data, out, keyword);
+  collectYouTubeVideos(data, out, keyword);
   return out.slice(0, limit);
 }
 

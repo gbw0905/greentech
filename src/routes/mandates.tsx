@@ -1,7 +1,16 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CheckCircle2, Circle, ExternalLink, Scale, Search } from "lucide-react";
-import { PageHeading, PageShell } from "@/components/PageShell";
+import {
+  CheckCircle2,
+  Circle,
+  ExternalLink,
+  Scale,
+  Search,
+  ArrowUpRight,
+  ChevronDown,
+  X,
+} from "lucide-react";
+import { IntelligencePage } from "@/components/IntelligencePage";
 import { CountryFlag } from "@/features/countries/components/CountryFlag";
 import {
   MANDATES,
@@ -102,34 +111,50 @@ function MandatesPage() {
   }, []);
 
   return (
-    <PageShell>
-      <PageHeading
-        icon={Scale}
-        title="Biofuel mandate tracker"
-        subtitle="Every active blending, greenhouse-gas and renewable-fuel obligation we track — with its phase-in timeline, legal requirements, compliance mechanism and the primary document behind it."
-      />
-
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <IntelligencePage
+      icon={Scale}
+      eyebrow="Global markets / Obligations & targets"
+      title="Biofuel mandate tracker"
+      subtitle="Understand what is required, where it applies and what comes next. Explore blending obligations, phase-in timelines and the primary sources behind each policy."
+      className="intelligence-mandates"
+      aside={
+        <>
+          <strong>{MANDATES.length}</strong>
+          <span>Tracked mandates</span>
+          <small>Source-linked policy records</small>
+        </>
+      }
+    >
+      <section className="mandate-status-grid" aria-label="Filter by mandate status">
         {MANDATE_STATUSES.map((s) => (
-          <div key={s} className={`rounded-lg border p-4 shadow-sm ${mandateStatusTone(s)}`}>
+          <button
+            type="button"
+            key={s}
+            className="mandate-status-card"
+            data-status={s}
+            aria-pressed={status === s}
+            onClick={() => setStatus((value) => (value === s ? "all" : s))}
+          >
             <div className="label-mono text-xs font-bold">{s}</div>
             <div className="font-display mt-1 text-2xl font-extrabold tracking-tight">
               {counts.get(s) ?? 0}
             </div>
-          </div>
+          </button>
         ))}
       </section>
 
-      <section className="rounded-lg border border-border bg-white p-4 shadow-sm sm:p-5">
+      <section
+        className="intelligence-filter-panel mandate-filters"
+        aria-label="Search and filter mandates"
+      >
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <label className="relative flex w-full items-center lg:max-w-sm">
-            <Search className="pointer-events-none absolute left-3 size-4 text-muted-foreground" />
+          <label className="intelligence-search">
+            <Search size={18} aria-hidden />
             <span className="sr-only">Search mandates</span>
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search jurisdiction or instrument"
-              className="w-full rounded-md border border-border bg-white py-2 pr-3 pl-9 text-sm outline-none focus:border-foreground"
             />
           </label>
 
@@ -139,7 +164,6 @@ function MandatesPage() {
               value={fuel}
               options={MANDATE_FUELS}
               onChange={(v) => setFuel(v as MandateFuel | "all")}
-              tone="bg-sky-50 border-sky-200 text-sky-900"
             />
           </div>
         </div>
@@ -150,7 +174,6 @@ function MandatesPage() {
             value={status}
             options={MANDATE_STATUSES}
             onChange={(v) => setStatus(v as MandateStatus | "all")}
-            tone="bg-emerald-50 border-emerald-200 text-emerald-900"
           />
         </div>
 
@@ -161,22 +184,36 @@ function MandatesPage() {
         </p>
       </section>
 
+      <div className="intelligence-results-heading">
+        <h2>Mandate directory</h2>
+        <span role="status">
+          {filtered.length} policy records{" "}
+          {(fuel !== "all" || status !== "all" || query) && (
+            <button
+              type="button"
+              className="intelligence-reset"
+              onClick={() => {
+                setFuel("all");
+                setStatus("all");
+                setQuery("");
+              }}
+            >
+              Clear filters <X size={13} />
+            </button>
+          )}
+        </span>
+      </div>
       {filtered.length === 0 ? (
         <p className="rounded-lg border border-border bg-white p-6 text-sm text-muted-foreground shadow-sm">
           No mandate matches these filters.
         </p>
       ) : (
-        <div className="space-y-5">
-          {filtered.map((m) => (
-            <article
-              key={m.id}
-              className="card-motion rounded-lg border border-border bg-white p-5 shadow-sm sm:p-6"
-            >
-              <header className="border-b border-border pb-4">
+        <div className="mandate-directory">
+          {filtered.map((m, index) => (
+            <article key={m.id} className="mandate-directory-card">
+              <header className="mandate-card-header">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span
-                    className={`label-mono rounded-sm border px-2 py-0.5 text-[0.65rem] font-bold ${mandateStatusTone(m.status)}`}
-                  >
+                  <span className="intelligence-status" data-status={m.status}>
                     {m.status}
                   </span>
                   {m.fuels.map((f) => (
@@ -198,81 +235,86 @@ function MandatesPage() {
                   <Link
                     to="/countries/$slug"
                     params={{ slug: m.countrySlug }}
-                    className="label-mono mt-2 inline-block text-xs font-bold text-primary underline underline-offset-4"
+                    className="mandate-profile-link"
                   >
-                    Open jurisdiction profile
+                    Open jurisdiction profile <ArrowUpRight size={15} aria-hidden />
                   </Link>
                 ) : null}
               </header>
 
-              <div className="grid gap-5 pt-4 lg:grid-cols-3">
-                <div>
-                  <h3 className="label-mono text-xs font-bold text-muted-foreground">Timeline</h3>
-                  <ol className="mt-3 space-y-3">
-                    {m.timeline.map((t) => (
-                      <li key={`${m.id}-${t.period}`} className="flex gap-2.5">
-                        {t.reached ? (
-                          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600" />
-                        ) : (
-                          <Circle className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-                        )}
-                        <div className="min-w-0">
-                          <div className="label-mono text-xs font-bold text-foreground">
-                            {t.period}
+              <details className="mandate-record-details" open={index === 0 ? true : undefined}>
+                <summary>
+                  Timeline, requirements & compliance <ChevronDown size={17} aria-hidden />
+                </summary>
+                <div className="mandate-detail-columns">
+                  <div>
+                    <h3 className="label-mono text-xs font-bold text-muted-foreground">Timeline</h3>
+                    <ol className="mt-3 space-y-3">
+                      {m.timeline.map((t) => (
+                        <li key={`${m.id}-${t.period}`} className="flex gap-2.5">
+                          {t.reached ? (
+                            <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600" />
+                          ) : (
+                            <Circle className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                          )}
+                          <div className="min-w-0">
+                            <div className="label-mono text-xs font-bold text-foreground">
+                              {t.period}
+                            </div>
+                            <p className="text-xs/relaxed text-muted-foreground">{t.target}</p>
                           </div>
-                          <p className="text-xs/relaxed text-muted-foreground">{t.target}</p>
-                        </div>
-                      </li>
-                    ))}
-                  </ol>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+
+                  <div>
+                    <h3 className="label-mono text-xs font-bold text-muted-foreground">
+                      Requirements
+                    </h3>
+                    <ul className="mt-3 list-disc space-y-2 pl-4 text-xs/relaxed text-muted-foreground">
+                      {m.requirements.map((r) => (
+                        <li key={r}>{r}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="label-mono text-xs font-bold text-muted-foreground">
+                      Compliance status &amp; enforcement
+                    </h3>
+                    <dl className="mt-3 space-y-2 text-xs/relaxed">
+                      <Row label="Administrator" value={m.compliance.administrator} />
+                      <Row label="How compliance is shown" value={m.compliance.mechanism} />
+                      <Row label="Penalty for shortfall" value={m.compliance.penalty} />
+                      <Row
+                        label="Tradable unit"
+                        value={m.compliance.unit ?? "None — physical blend obligation"}
+                      />
+                    </dl>
+                  </div>
                 </div>
 
-                <div>
-                  <h3 className="label-mono text-xs font-bold text-muted-foreground">
-                    Requirements
-                  </h3>
-                  <ul className="mt-3 list-disc space-y-2 pl-4 text-xs/relaxed text-muted-foreground">
-                    {m.requirements.map((r) => (
-                      <li key={r}>{r}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div>
-                  <h3 className="label-mono text-xs font-bold text-muted-foreground">
-                    Compliance status &amp; enforcement
-                  </h3>
-                  <dl className="mt-3 space-y-2 text-xs/relaxed">
-                    <Row label="Administrator" value={m.compliance.administrator} />
-                    <Row label="How compliance is shown" value={m.compliance.mechanism} />
-                    <Row label="Penalty for shortfall" value={m.compliance.penalty} />
-                    <Row
-                      label="Tradable unit"
-                      value={m.compliance.unit ?? "None — physical blend obligation"}
-                    />
-                  </dl>
-                </div>
-              </div>
-
-              <footer className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
-                <a
-                  href={m.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="label-mono inline-flex items-center gap-1.5 text-xs font-bold text-primary underline underline-offset-4"
-                >
-                  {m.sourceName}
-                  <ExternalLink className="size-3.5" />
-                </a>
-                <span className="label-mono text-[0.65rem] text-muted-foreground">
-                  Last reviewed {m.lastReviewed}
-                </span>
-              </footer>
+                <footer className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
+                  <a
+                    href={m.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="label-mono inline-flex items-center gap-1.5 text-xs font-bold text-primary underline underline-offset-4"
+                  >
+                    {m.sourceName}
+                    <ExternalLink className="size-3.5" />
+                  </a>
+                  <span className="label-mono text-[0.65rem] text-muted-foreground">
+                    Last reviewed {m.lastReviewed}
+                  </span>
+                </footer>
+              </details>
             </article>
           ))}
         </div>
       )}
-    </PageShell>
+    </IntelligencePage>
   );
 }
 
@@ -290,31 +332,19 @@ function FilterPills({
   value,
   options,
   onChange,
-  tone,
 }: {
   label: string;
   value: string;
   options: readonly string[];
   onChange: (v: string) => void;
-  tone: string;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
+    <div className="intelligence-filter-chips">
       <span className="label-mono text-[0.65rem] font-bold text-muted-foreground">{label}</span>
       {["all", ...options].map((opt) => {
         const active = value === opt;
         return (
-          <button
-            key={opt}
-            type="button"
-            onClick={() => onChange(opt)}
-            aria-pressed={active}
-            className={`label-mono rounded-full border px-2.5 py-1 text-[0.65rem] font-bold transition-colors ${
-              active
-                ? "border-foreground bg-foreground text-background"
-                : `${tone} hover:border-foreground`
-            }`}
-          >
+          <button key={opt} type="button" onClick={() => onChange(opt)} aria-pressed={active}>
             {opt === "all" ? "All" : opt}
           </button>
         );

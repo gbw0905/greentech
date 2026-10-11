@@ -1,0 +1,38 @@
+/* One content edge for every homepage section and its footer. */
+[data-home="true"] {
+  --home-content-width: 1176px;
+  --home-gutter: 32px;
+  --home-container-width: min(var(--home-content-width), calc(100% - 2 * var(--home-gutter)));
+}
+[data-home="true"] .home-hero,
+[data-home="true"] .benchmark-section,
+[data-home="true"] .jurisdiction-section {
+  padding-inline: 0;
+}
+[data-home="true"] .home-container,
+[data-home="true"] main .benchmark-inner,
+[data-home="true"] .jurisdiction-inner,
+[data-home="true"] .industry-inner,
+[data-home="true"] .intelligence-section,
+[data-home="true"] .gbw-footer .footer-inner {
+  width: var(--home-container-width);
+  max-width: var(--home-content-width);
+  margin-inline: auto;
+  padding-inline: 0;
+}
+[data-home="true"] .benchmark-section {
+  padding-block: 32px;
+}
+[data-home="true"] .industry-section {
+  padding-block: 36px;
+}
+@media (max-width: 1000px) {
+  [data-home="true"] {
+    --home-gutter: 24px;
+  }
+}
+@media (max-width: 620px) {
+  [data-home="true"] {
+    --home-gutter: 20px;
+  }
+}
