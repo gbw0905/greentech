@@ -50,9 +50,11 @@ import { Route as ApiPublicDailyLinkedinDraftRouteImport } from './routes/api/pu
 import { Route as ApiPublicDailyTrafficEmailRouteImport } from './routes/api/public/daily-traffic-email'
 import { Route as ApiPublicFlyerImageRouteImport } from './routes/api/public/flyer-image'
 import { Route as ApiPublicIngestPolicyRouteImport } from './routes/api/public/ingest-policy'
+import { Route as ApiPublicIngestSupplyRouteImport } from './routes/api/public/ingest-supply'
 import { Route as ApiPublicInstantBriefAlertsRouteImport } from './routes/api/public/instant-brief-alerts'
 import { Route as ApiPublicLinkedinPublishRouteImport } from './routes/api/public/linkedin-publish'
 import { Route as ApiPublicPolicyAlertDigestRouteImport } from './routes/api/public/policy-alert-digest'
+import { Route as ApiPublicRefreshStaleSupplyRouteImport } from './routes/api/public/refresh-stale-supply'
 import { Route as CountriesSlugIndexRouteImport } from './routes/countries.$slug.index'
 import { Route as CountriesSlugMandatesRouteImport } from './routes/countries.$slug.mandates'
 import { Route as CountriesSlugUpdatesRouteImport } from './routes/countries.$slug.updates'
@@ -271,6 +273,11 @@ const ApiPublicIngestPolicyRoute = ApiPublicIngestPolicyRouteImport.update({
   path: '/api/public/ingest-policy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicIngestSupplyRoute = ApiPublicIngestSupplyRouteImport.update({
+  id: '/api/public/ingest-supply',
+  path: '/api/public/ingest-supply',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicInstantBriefAlertsRoute =
   ApiPublicInstantBriefAlertsRouteImport.update({
     id: '/api/public/instant-brief-alerts',
@@ -287,6 +294,12 @@ const ApiPublicPolicyAlertDigestRoute =
   ApiPublicPolicyAlertDigestRouteImport.update({
     id: '/api/public/policy-alert-digest',
     path: '/api/public/policy-alert-digest',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicRefreshStaleSupplyRoute =
+  ApiPublicRefreshStaleSupplyRouteImport.update({
+    id: '/api/public/refresh-stale-supply',
+    path: '/api/public/refresh-stale-supply',
     getParentRoute: () => rootRouteImport,
   } as any)
 const CountriesSlugIndexRoute = CountriesSlugIndexRouteImport.update({
@@ -359,9 +372,11 @@ export interface FileRoutesByFullPath {
   '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
   '/api/public/flyer-image': typeof ApiPublicFlyerImageRoute
   '/api/public/ingest-policy': typeof ApiPublicIngestPolicyRoute
+  '/api/public/ingest-supply': typeof ApiPublicIngestSupplyRoute
   '/api/public/instant-brief-alerts': typeof ApiPublicInstantBriefAlertsRoute
   '/api/public/linkedin-publish': typeof ApiPublicLinkedinPublishRoute
   '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
+  '/api/public/refresh-stale-supply': typeof ApiPublicRefreshStaleSupplyRoute
   '/countries/$slug/mandates': typeof CountriesSlugMandatesRoute
   '/countries/$slug/updates': typeof CountriesSlugUpdatesRoute
   '/countries/$slug/': typeof CountriesSlugIndexRoute
@@ -408,9 +423,11 @@ export interface FileRoutesByTo {
   '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
   '/api/public/flyer-image': typeof ApiPublicFlyerImageRoute
   '/api/public/ingest-policy': typeof ApiPublicIngestPolicyRoute
+  '/api/public/ingest-supply': typeof ApiPublicIngestSupplyRoute
   '/api/public/instant-brief-alerts': typeof ApiPublicInstantBriefAlertsRoute
   '/api/public/linkedin-publish': typeof ApiPublicLinkedinPublishRoute
   '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
+  '/api/public/refresh-stale-supply': typeof ApiPublicRefreshStaleSupplyRoute
   '/countries/$slug/mandates': typeof CountriesSlugMandatesRoute
   '/countries/$slug/updates': typeof CountriesSlugUpdatesRoute
   '/countries/$slug': typeof CountriesSlugIndexRoute
@@ -460,9 +477,11 @@ export interface FileRoutesById {
   '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
   '/api/public/flyer-image': typeof ApiPublicFlyerImageRoute
   '/api/public/ingest-policy': typeof ApiPublicIngestPolicyRoute
+  '/api/public/ingest-supply': typeof ApiPublicIngestSupplyRoute
   '/api/public/instant-brief-alerts': typeof ApiPublicInstantBriefAlertsRoute
   '/api/public/linkedin-publish': typeof ApiPublicLinkedinPublishRoute
   '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
+  '/api/public/refresh-stale-supply': typeof ApiPublicRefreshStaleSupplyRoute
   '/countries/$slug/mandates': typeof CountriesSlugMandatesRoute
   '/countries/$slug/updates': typeof CountriesSlugUpdatesRoute
   '/countries/$slug/': typeof CountriesSlugIndexRoute
@@ -513,9 +532,11 @@ export interface FileRouteTypes {
     | '/api/public/daily-traffic-email'
     | '/api/public/flyer-image'
     | '/api/public/ingest-policy'
+    | '/api/public/ingest-supply'
     | '/api/public/instant-brief-alerts'
     | '/api/public/linkedin-publish'
     | '/api/public/policy-alert-digest'
+    | '/api/public/refresh-stale-supply'
     | '/countries/$slug/mandates'
     | '/countries/$slug/updates'
     | '/countries/$slug/'
@@ -562,9 +583,11 @@ export interface FileRouteTypes {
     | '/api/public/daily-traffic-email'
     | '/api/public/flyer-image'
     | '/api/public/ingest-policy'
+    | '/api/public/ingest-supply'
     | '/api/public/instant-brief-alerts'
     | '/api/public/linkedin-publish'
     | '/api/public/policy-alert-digest'
+    | '/api/public/refresh-stale-supply'
     | '/countries/$slug/mandates'
     | '/countries/$slug/updates'
     | '/countries/$slug'
@@ -613,9 +636,11 @@ export interface FileRouteTypes {
     | '/api/public/daily-traffic-email'
     | '/api/public/flyer-image'
     | '/api/public/ingest-policy'
+    | '/api/public/ingest-supply'
     | '/api/public/instant-brief-alerts'
     | '/api/public/linkedin-publish'
     | '/api/public/policy-alert-digest'
+    | '/api/public/refresh-stale-supply'
     | '/countries/$slug/mandates'
     | '/countries/$slug/updates'
     | '/countries/$slug/'
@@ -661,9 +686,11 @@ export interface RootRouteChildren {
   ApiPublicDailyTrafficEmailRoute: typeof ApiPublicDailyTrafficEmailRoute
   ApiPublicFlyerImageRoute: typeof ApiPublicFlyerImageRoute
   ApiPublicIngestPolicyRoute: typeof ApiPublicIngestPolicyRoute
+  ApiPublicIngestSupplyRoute: typeof ApiPublicIngestSupplyRoute
   ApiPublicInstantBriefAlertsRoute: typeof ApiPublicInstantBriefAlertsRoute
   ApiPublicLinkedinPublishRoute: typeof ApiPublicLinkedinPublishRoute
   ApiPublicPolicyAlertDigestRoute: typeof ApiPublicPolicyAlertDigestRoute
+  ApiPublicRefreshStaleSupplyRoute: typeof ApiPublicRefreshStaleSupplyRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   ApiPublicLinkedinOauthCallbackRoute: typeof ApiPublicLinkedinOauthCallbackRoute
 }
@@ -957,6 +984,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicIngestPolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/ingest-supply': {
+      id: '/api/public/ingest-supply'
+      path: '/api/public/ingest-supply'
+      fullPath: '/api/public/ingest-supply'
+      preLoaderRoute: typeof ApiPublicIngestSupplyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/instant-brief-alerts': {
       id: '/api/public/instant-brief-alerts'
       path: '/api/public/instant-brief-alerts'
@@ -976,6 +1010,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/policy-alert-digest'
       fullPath: '/api/public/policy-alert-digest'
       preLoaderRoute: typeof ApiPublicPolicyAlertDigestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/refresh-stale-supply': {
+      id: '/api/public/refresh-stale-supply'
+      path: '/api/public/refresh-stale-supply'
+      fullPath: '/api/public/refresh-stale-supply'
+      preLoaderRoute: typeof ApiPublicRefreshStaleSupplyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/countries/$slug/': {
@@ -1097,9 +1138,11 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicDailyTrafficEmailRoute: ApiPublicDailyTrafficEmailRoute,
   ApiPublicFlyerImageRoute: ApiPublicFlyerImageRoute,
   ApiPublicIngestPolicyRoute: ApiPublicIngestPolicyRoute,
+  ApiPublicIngestSupplyRoute: ApiPublicIngestSupplyRoute,
   ApiPublicInstantBriefAlertsRoute: ApiPublicInstantBriefAlertsRoute,
   ApiPublicLinkedinPublishRoute: ApiPublicLinkedinPublishRoute,
   ApiPublicPolicyAlertDigestRoute: ApiPublicPolicyAlertDigestRoute,
+  ApiPublicRefreshStaleSupplyRoute: ApiPublicRefreshStaleSupplyRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   ApiPublicLinkedinOauthCallbackRoute: ApiPublicLinkedinOauthCallbackRoute,
 }

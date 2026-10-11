@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { ChartMap } from "@/components/ChartMap";
 import { Trees } from "lucide-react";
 import {
@@ -28,6 +30,8 @@ import { entityLogoByName } from "@/features/markets/entity-logos";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/features/markets/market-caps";
 import { PELLET_TICKERS } from "@/features/markets/entity-tickers";
+import { getSupplyDatasetFn } from "@/features/supply/server-functions";
+import { SupplySourceFacts } from "./SupplySourceFacts";
 
 type Producer = {
   name: string;
@@ -668,12 +672,52 @@ function scatterAxes(metricKey: Metric) {
 
 const TITLE = "Global wood pellet producers";
 const NEWS_SUFFIX = "wood pellet biomass production";
+const DYNAMIC_DATASET_ID = "wood-pellets";
+
+function formatFreshnessDate(value: string | null): string {
+  if (!value) return "not recorded";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("en", {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+  }).format(date);
+}
+
+function reportingYearLabel(years: number[]): string {
+  if (years.length === 0) return "reporting year not recorded";
+  return years.length === 1 ? `reporting year ${years[0]}` : `reporting years ${years.join(", ")}`;
+}
+
+function freshnessLabel(stale: boolean | null): string {
+  if (stale === null) return "freshness pending";
+  return stale ? "refresh due" : "fresh";
+}
+
+function dynamicReportingYears(rows: { observations: { reportingYear: number | null }[] }[]): number[] {
+  return [
+    ...new Set(
+      rows
+        .flatMap((row) => row.observations)
+        .map((observation) => observation.reportingYear)
+        .filter((year): year is number => typeof year === "number"),
+    ),
+  ].sort((a, b) => b - a);
+}
 
 export function WoodPelletProducersPanel() {
   const [metricKey, setMetricKey] = useState<Metric>("capacity");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
   const { get } = useEntityQuotes();
+  const { data: dynamicPayload } = useQuery({
+    queryKey: ["supply-dataset", DYNAMIC_DATASET_ID],
+    queryFn: () => getSupplyDatasetFn({ data: { datasetId: DYNAMIC_DATASET_ID } }),
+    staleTime: 15 * 60 * 1000,
+  });
+  const dynamicRows = dynamicPayload?.rows ?? [];
+  const dynamicYears = dynamicReportingYears(dynamicRows);
   const metric = METRICS[metricKey];
   const valueOf = (p: Producer) =>
     metricKey === "price" ? (get(PELLET_TICKERS[p.name])?.price ?? 0) : metric.value(p);
@@ -852,7 +896,25 @@ export function WoodPelletProducersPanel() {
             matched={ranked.length}
           />
         }
-        footnote={`Indicative capacities from producer disclosures, FAOSTAT forest-products data, Bioenergy Europe and the Canadian and US pellet associations. Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
+        footnote={`${dynamicRows.length ? "WPAC producing-member listings are ingested as source-backed producer records; capacity and mill counts remain fallback data until a capacity-specific structured source is wired." : "Indicative capacities from producer disclosures, FAOSTAT forest-products data, Bioenergy Europe and the Canadian and US pellet associations."} Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
+        sourceMeta={
+          dynamicRows.length ? (
+            <p className="label-mono mt-2 text-xs text-muted-foreground">
+              WPAC producing members: {dynamicRows.length} listed entities ·{" "}
+              {reportingYearLabel(dynamicYears)} · ingested{" "}
+              {formatFreshnessDate(dynamicPayload?.latestIngest?.finishedAt ?? null)} ·{" "}
+              {freshnessLabel(dynamicPayload?.freshness?.stale ?? null)} · fallback rows reviewed{" "}
+              {dynamicPayload?.registry?.lastReviewed ?? "not recorded"} ·{" "}
+              <Link
+                to="/data-sources"
+                hash={DYNAMIC_DATASET_ID}
+                className="text-primary underline underline-offset-4"
+              >
+                Sources &amp; method
+              </Link>
+            </p>
+          ) : undefined
+        }
       >
         {ghgEmpty ? (
           <GhgEmptyNotice />
@@ -922,6 +984,7 @@ export function WoodPelletProducersPanel() {
           />
         )}
       </ChartPanel>
+      <SupplySourceFacts payload={dynamicPayload} />
     </>
   );
 }

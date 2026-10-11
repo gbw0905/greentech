@@ -44,7 +44,12 @@ export function DocumentAnalyzerPage() {
       form.set("file", file);
       form.set("query", query.trim());
       const response = await fetch("/api/document-analyze", { method: "POST", body: form });
-      const payload = (await response.json()) as DocumentAnalysis & { error?: string };
+      const contentType = response.headers.get("content-type") ?? "";
+      const payload = contentType.includes("application/json")
+        ? ((await response.json()) as DocumentAnalysis & { error?: string })
+        : ({
+            error: `Document analysis failed on the server (${response.status}). Check the Vercel function logs for /api/document-analyze.`,
+          } as DocumentAnalysis & { error?: string });
       if (!response.ok) throw new Error(payload.error || "Analysis failed.");
       setAnalysis(payload);
     } catch (cause) {

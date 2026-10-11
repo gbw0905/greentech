@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { ChartMap } from "@/components/ChartMap";
 import { Wheat } from "lucide-react";
 import {
@@ -28,6 +30,10 @@ import { ETHANOL_TICKERS } from "@/features/markets/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/features/markets/hooks/useEntityQuotes";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/features/markets/market-caps";
+import { COUNTRY_NAME_FLAG } from "@/features/policy/taxonomy";
+import { getSupplyDatasetFn } from "@/features/supply/server-functions";
+import type { SupplyDatasetPayload, SupplyEntityRow } from "@/features/supply/contracts";
+import { SupplySourceFacts } from "./SupplySourceFacts";
 
 type Producer = {
   name: string;
@@ -754,17 +760,130 @@ function scatterAxes(metricKey: Metric) {
 
 const TITLE = "Global ethanol production";
 const NEWS_SUFFIX = "ethanol production biofuel";
+const DYNAMIC_DATASET_ID = "ethanol";
+
+function observationValue(row: SupplyEntityRow, metricKey: string): number | null {
+  const value = row.observations.find((o) => o.metricKey === metricKey)?.value;
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function dynamicProducer(row: SupplyEntityRow): Producer | null {
+  const capacityMl = observationValue(row, "capacityMl");
+  const plants = observationValue(row, "plants");
+  if (capacityMl === null || plants === null) return null;
+
+  const country = row.country ?? String(row.metadata["country"] ?? "Unknown");
+  const states = Array.isArray(row.metadata["states"])
+    ? row.metadata["states"].map(String).filter(Boolean)
+    : [];
+  const feedstock =
+    typeof row.metadata["feedstock"] === "string" ? row.metadata["feedstock"] : "Unknown";
+  const stateLabel =
+    states.length > 1 ? `${states.length} states` : states.length === 1 ? states[0] : country;
+
+  return {
+    name: row.name,
+    country,
+    flag: COUNTRY_NAME_FLAG[country] ?? "🌐",
+    capacityMl,
+    plants,
+    feedstock,
+    note: `Source-backed EIA capacity across ${stateLabel}`,
+  };
+}
+
+function mergeDynamicProducers(payload: SupplyDatasetPayload | undefined): {
+  producers: Producer[];
+  dynamicCount: number;
+  sourceBacked: boolean;
+  reportingYears: number[];
+  latestObservedAt: string | null;
+  latestIngestFinishedAt: string | null;
+  stale: boolean | null;
+  sourceLabel: string | null;
+} {
+  const dynamic = (payload?.rows ?? []).map(dynamicProducer).filter((p): p is Producer => Boolean(p));
+  if (dynamic.length === 0) {
+    return {
+      producers: PRODUCERS,
+      dynamicCount: 0,
+      sourceBacked: false,
+      reportingYears: [],
+      latestObservedAt: null,
+      latestIngestFinishedAt: null,
+      stale: null,
+      sourceLabel: null,
+    };
+  }
+
+  const byName = new Map(PRODUCERS.map((producer) => [producer.name, producer]));
+  for (const producer of dynamic) byName.set(producer.name, producer);
+  const observations = (payload?.rows ?? []).flatMap((row) => row.observations);
+  const reportingYears = [
+    ...new Set(
+      observations
+        .map((observation) => observation.reportingYear)
+        .filter((year): year is number => typeof year === "number"),
+    ),
+  ].sort((a, b) => b - a);
+  const latestObservedAt =
+    observations
+      .map((observation) => observation.observedAt)
+      .filter(Boolean)
+      .sort()
+      .at(-1) ?? null;
+  const parsedSource = payload?.sources.find((source) => source.parserId === "ethanol-eia-capacity");
+
+  return {
+    producers: [...byName.values()],
+    dynamicCount: dynamic.length,
+    sourceBacked: true,
+    reportingYears,
+    latestObservedAt,
+    latestIngestFinishedAt: payload?.latestIngest?.finishedAt ?? latestObservedAt,
+    stale: payload?.freshness?.stale ?? null,
+    sourceLabel: parsedSource ? parsedSource.org : "source-backed",
+  };
+}
+
+function formatFreshnessDate(value: string | null): string {
+  if (!value) return "not recorded";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("en", {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+  }).format(date);
+}
+
+function reportingYearLabel(years: number[]): string {
+  if (years.length === 0) return "reporting year not recorded";
+  return years.length === 1 ? `reporting year ${years[0]}` : `reporting years ${years.join(", ")}`;
+}
+
+function freshnessLabel(stale: boolean | null): string {
+  if (stale === null) return "freshness pending";
+  return stale ? "refresh due" : "fresh";
+}
 
 export function EthanolProductionPanel() {
   const [metricKey, setMetricKey] = useState<Metric>("capacity");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
   const { get } = useEntityQuotes();
+  const { data: dynamicPayload } = useQuery({
+    queryKey: ["supply-dataset", DYNAMIC_DATASET_ID],
+    queryFn: () => getSupplyDatasetFn({ data: { datasetId: DYNAMIC_DATASET_ID } }),
+    staleTime: 15 * 60 * 1000,
+  });
+  const dynamic = useMemo(() => mergeDynamicProducers(dynamicPayload), [dynamicPayload]);
+  const producers = dynamic.producers;
   const metric = METRICS[metricKey];
   const valueOf = (p: Producer) =>
     metricKey === "price" ? (get(ETHANOL_TICKERS[p.name])?.price ?? 0) : metric.value(p);
 
-  const f = useChartFilter(PRODUCERS, {
+  const f = useChartFilter(producers, {
     text: (p) => `${p.name} ${p.country} ${p.feedstock} ${p.note}`,
     facetA: (p) => p.country,
     facetB: (p) => p.feedstock,
@@ -852,6 +971,11 @@ export function EthanolProductionPanel() {
         icon={Wheat}
         title={TITLE}
         blurb="Corn, sugarcane, wheat, cassava and cellulosic ethanol producers supplying blended gasoline, ETBE and alcohol-to-jet SAF."
+        status={
+          dynamic.sourceBacked
+            ? `${dynamic.dynamicCount} source-backed entities`
+            : "Curated fallback data"
+        }
         metricValue={metricKey}
         metricOptions={(Object.keys(METRICS) as Metric[]).map((m) => ({
           value: m,
@@ -920,24 +1044,40 @@ export function EthanolProductionPanel() {
               {
                 label: "Country",
                 value: f.a,
-                options: countryFilterOptions(PRODUCERS.map((p) => p.country)),
+                options: countryFilterOptions(producers.map((p) => p.country)),
                 onChange: f.setA,
                 allLabel: "All countries",
               },
               {
                 label: "Feedstock",
                 value: f.b,
-                options: countryFilterOptions(PRODUCERS.map((p) => p.feedstock)),
+                options: countryFilterOptions(producers.map((p) => p.feedstock)),
                 onChange: f.setB,
                 allLabel: "All feedstocks",
               },
             ]}
             shown={rows.length}
-            total={PRODUCERS.length}
+            total={producers.length}
             matched={ranked.length}
           />
         }
-        footnote={`Indicative ethanol capacities from producer reports, RFA/ePURE/UNICA statistics and national blending-programme filings. Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
+        footnote={`${dynamic.sourceBacked ? "U.S. producer rows use parsed EIA plant-capacity observations where available; remaining global rows stay on curated fallback data until their approved-source parsers are added." : "Indicative ethanol capacities from producer reports, RFA/ePURE/UNICA statistics and national blending-programme filings."} Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
+        sourceMeta={
+          dynamic.sourceBacked ? (
+            <p className="label-mono mt-2 text-xs text-muted-foreground">
+              {dynamic.sourceLabel} rows: {reportingYearLabel(dynamic.reportingYears)} · ingested{" "}
+              {formatFreshnessDate(dynamic.latestIngestFinishedAt)} · {freshnessLabel(dynamic.stale)} ·
+              fallback rows reviewed {dynamicPayload?.registry?.lastReviewed ?? "not recorded"} ·{" "}
+              <Link
+                to="/data-sources"
+                hash={DYNAMIC_DATASET_ID}
+                className="text-primary underline underline-offset-4"
+              >
+                Sources &amp; method
+              </Link>
+            </p>
+          ) : undefined
+        }
       >
         {ghgEmpty ? (
           <GhgEmptyNotice />
@@ -1007,6 +1147,7 @@ export function EthanolProductionPanel() {
           />
         )}
       </ChartPanel>
+      <SupplySourceFacts payload={dynamicPayload} />
     </>
   );
 }

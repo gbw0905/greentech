@@ -44,6 +44,11 @@ define or migrate that table itself.
 | `linkedin_drafts`          | Daily LinkedIn post drafts and publishing state | Service role only         |
 | `linkedin_settings`        | Singleton LinkedIn publishing configuration     | Service role only         |
 | `linkedin_org_connections` | Singleton LinkedIn OAuth credentials            | Service role only         |
+| `supply_datasets`          | Approved dynamic supply dataset registry        | Public read               |
+| `supply_sources`           | Approved scrape/fetch sources per supply dataset | Public read active rows   |
+| `supply_entities`          | Normalized companies/assets in supply datasets  | Public read               |
+| `supply_observations`      | Source-backed metric observations per entity    | Public read               |
+| `supply_ingest_runs`       | Supply scraper/parser run history               | Service role only         |
 
 ## Relationships
 
@@ -54,6 +59,10 @@ auth.users
   `--< ci_runs
 
 alert_subscribers --< brief_sends >-- policy_updates
+
+supply_datasets --< supply_sources
+       |        `--< supply_entities --< supply_observations >-- supply_sources
+       `--< supply_ingest_runs >-- supply_sources
 ```
 
 `chat_messages.user_id` and `chat_messages.thread_id` are both foreign keys,
@@ -320,6 +329,55 @@ granted access. Unlike the other LinkedIn tables, there is no explicit
 `REVOKE ... FROM anon, authenticated` migration or deny policy; RLS still
 prevents client rows from being exposed while it remains enabled.
 
+### Supply ingestion tables
+
+The supply ingestion foundation supports dynamic, source-backed replacements for
+the current static supply panel arrays. The approved source list is still
+authored in `src/shared/data/provenance.ts` and projected into a scrape registry
+by `src/features/supply/source-registry.ts`.
+
+#### `supply_datasets`
+
+One row per approved supply dataset. It mirrors the public methodology fields:
+panel title, description, reporting year, review date, metric definitions,
+coverage, and limitations.
+
+Primary key: `id` (`text`). Public `SELECT` is allowed.
+
+#### `supply_sources`
+
+Approved source documents or endpoints for a dataset. Each source records its
+organisation, title, URL, year, source type (`api`, `rss`, `csv`, `xlsx`,
+`pdf`, `html`, or `manual`), optional parser id, refresh cadence, priority, and
+active flag.
+
+Foreign key: `dataset_id` -> `supply_datasets.id`. Public `SELECT` is allowed
+only for active sources.
+
+#### `supply_entities`
+
+Normalized tracked entities such as companies, fuel-station networks, carriers,
+terminals, or plants. Entity names are unique inside a dataset.
+
+Foreign key: `dataset_id` -> `supply_datasets.id`. Public `SELECT` is allowed.
+
+#### `supply_observations`
+
+Metric values by entity, source, and reporting year. Rows include metric key,
+metric label, numeric value, unit, basis text, estimate flag, confidence
+(`reported`, `derived`, `estimated`, or `unknown`), observed timestamp, source
+URL, and raw parser metadata.
+
+Foreign keys: `dataset_id` -> `supply_datasets.id`, `entity_id` ->
+`supply_entities.id`, `source_id` -> `supply_sources.id`. Public `SELECT` is
+allowed.
+
+#### `supply_ingest_runs`
+
+Operational scraper/parser run log with parser id, status, timestamps, row
+counts, error text, and run metadata. Client roles are denied; service role has
+full access.
+
 ## Database functions
 
 ### `record_visit`
@@ -358,6 +416,7 @@ routes:
 | Job                       | Schedule (UTC)    | Endpoint / action                 |
 | ------------------------- | ----------------- | --------------------------------- |
 | `ingest-bioenergy-policy` | Minute 17, hourly | `/api/public/ingest-policy`       |
+| `refresh-stale-supply`    | Minute 17, hourly | `/api/public/refresh-stale-supply` |
 | `daily-policy-alerts`     | 08:00 daily       | `/api/public/policy-alert-digest` |
 | `daily-bioenergy-flyer`   | 06:30 daily       | `/api/public/daily-flyer-email`   |
 | `daily-gemini-flyer`      | 13:10 daily       | `/api/public/daily-gemini-flyer`  |

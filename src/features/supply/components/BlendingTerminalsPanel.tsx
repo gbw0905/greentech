@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ChartMap } from "@/components/ChartMap";
 import { Container } from "lucide-react";
 import {
@@ -28,6 +29,10 @@ import { TERMINAL_TICKERS } from "@/features/markets/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/features/markets/hooks/useEntityQuotes";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/features/markets/market-caps";
+import { getSupplyDatasetFn } from "@/features/supply/server-functions";
+import type { SupplyDatasetPayload } from "@/features/supply/contracts";
+import { SupplySourceFacts } from "./SupplySourceFacts";
+import { metaString, metricRows, metricValue } from "./dynamic-supply-rows";
 
 type Terminal = {
   name: string;
@@ -699,17 +704,47 @@ function scatterAxes(metricKey: Metric) {
 
 const TITLE = "Global blending terminals and capacity";
 const NEWS_SUFFIX = "biofuel blending terminal storage";
+const DYNAMIC_METRICS = ["capacityKm3", "blendingCapacityKm3", "throughputKm3"];
+
+function mergeDynamicTerminals(payload: SupplyDatasetPayload | undefined): Terminal[] {
+  const rows = metricRows(payload, DYNAMIC_METRICS);
+  if (rows.length === 0) return TERMINALS;
+  const byName = new Map(TERMINALS.map((terminal) => [terminal.name, terminal]));
+  for (const row of rows) {
+    const capacity = metricValue(row, DYNAMIC_METRICS);
+    if (capacity === null) continue;
+    const fallback = byName.get(row.name);
+    byName.set(row.name, {
+      name: row.name,
+      country: row.country ?? metaString(row.metadata["country"], fallback?.country ?? "Unknown"),
+      flag: fallback?.flag ?? "",
+      capacityKm3: capacity,
+      terminals:
+        metricValue(row, ["terminals", "terminalCount", "loadingRacks", "sites"]) ??
+        fallback?.terminals ??
+        1,
+      note: metaString(row.metadata["note"], fallback?.note ?? "Source-backed terminal row"),
+    });
+  }
+  return [...byName.values()];
+}
 
 export function BlendingTerminalsPanel() {
   const [metricKey, setMetricKey] = useState<Metric>("capacity");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
   const { get } = useEntityQuotes();
+  const { data: dynamicPayload } = useQuery({
+    queryKey: ["supply-dataset", "blending-terminals"],
+    queryFn: () => getSupplyDatasetFn({ data: { datasetId: "blending-terminals" } }),
+    staleTime: 15 * 60 * 1000,
+  });
+  const terminals = useMemo(() => mergeDynamicTerminals(dynamicPayload), [dynamicPayload]);
   const metric = METRICS[metricKey];
   const valueOf = (t: Terminal) =>
     metricKey === "price" ? (get(TERMINAL_TICKERS[t.name])?.price ?? 0) : metric.value(t);
 
-  const f = useChartFilter(TERMINALS, {
+  const f = useChartFilter(terminals, {
     text: (t) => `${t.name} ${t.country} ${t.note}`,
     facetA: (t) => t.country,
   });
@@ -858,17 +893,17 @@ export function BlendingTerminalsPanel() {
               {
                 label: "Country",
                 value: f.a,
-                options: countryFilterOptions(TERMINALS.map((t) => t.country)),
+                options: countryFilterOptions(terminals.map((t) => t.country)),
                 onChange: f.setA,
                 allLabel: "All countries",
               },
             ]}
             shown={rows.length}
-            total={TERMINALS.length}
+            total={terminals.length}
             matched={ranked.length}
           />
         }
-        footnote={`Indicative blending throughput and terminal counts from operator annual reports, terminal registries and national fuel-obligation filings. Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
+        footnote={`${dynamicPayload?.dynamic ? "Approved blending-terminal sources are connected to the scrape registry; EIA-backed U.S. bulk-terminal tankage rows appear where the storage workbook states them, and operator rows remain fallback data." : "Indicative blending throughput and terminal counts from operator annual reports, terminal registries and national fuel-obligation filings."} Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
       >
         {ghgEmpty ? (
           <GhgEmptyNotice />
@@ -938,6 +973,7 @@ export function BlendingTerminalsPanel() {
           />
         )}
       </ChartPanel>
+      <SupplySourceFacts payload={dynamicPayload} />
     </>
   );
 }

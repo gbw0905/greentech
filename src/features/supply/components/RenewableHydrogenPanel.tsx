@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ChartMap } from "@/components/ChartMap";
 import { Atom } from "lucide-react";
 import {
@@ -28,6 +29,10 @@ import { entityLogoByName } from "@/features/markets/entity-logos";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/features/markets/market-caps";
 import { HYDROGEN_TICKERS } from "@/features/markets/entity-tickers";
+import { getSupplyDatasetFn } from "@/features/supply/server-functions";
+import type { SupplyDatasetPayload } from "@/features/supply/contracts";
+import { SupplySourceFacts } from "./SupplySourceFacts";
+import { metaString, metricRows, metricValue } from "./dynamic-supply-rows";
 
 type Producer = {
   name: string;
@@ -715,17 +720,48 @@ function scatterAxes(metricKey: Metric) {
 
 const TITLE = "Global renewable hydrogen producers";
 const NEWS_SUFFIX = "green hydrogen electrolyser project";
+const DYNAMIC_DATASET_ID = "renewable-hydrogen";
+const DYNAMIC_METRICS = ["capacityKtY", "hydrogenOutputKtY", "outputKtY", "productionKtY"];
+
+function mergeDynamicProducers(payload: SupplyDatasetPayload | undefined): Producer[] {
+  const rows = metricRows(payload, DYNAMIC_METRICS);
+  if (rows.length === 0) return PRODUCERS;
+  const byName = new Map(PRODUCERS.map((producer) => [producer.name, producer]));
+  for (const row of rows) {
+    const capacity = metricValue(row, DYNAMIC_METRICS);
+    if (capacity === null) continue;
+    const fallback = byName.get(row.name);
+    byName.set(row.name, {
+      name: row.name,
+      country: row.country ?? metaString(row.metadata["country"], fallback?.country ?? "Unknown"),
+      flag: fallback?.flag ?? "",
+      capacityKtY: capacity,
+      electrolyserMw:
+        metricValue(row, ["electrolyserMw", "electrolyzerMw", "electrolyserCapacityMw"]) ??
+        fallback?.electrolyserMw ??
+        0,
+      route: metaString(row.metadata["route"], fallback?.route ?? "Renewable hydrogen"),
+      note: metaString(row.metadata["note"], fallback?.note ?? "Source-backed hydrogen project row"),
+    });
+  }
+  return [...byName.values()];
+}
 
 export function RenewableHydrogenPanel() {
   const [metricKey, setMetricKey] = useState<Metric>("capacity");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
   const { get } = useEntityQuotes();
+  const { data: dynamicPayload } = useQuery({
+    queryKey: ["supply-dataset", DYNAMIC_DATASET_ID],
+    queryFn: () => getSupplyDatasetFn({ data: { datasetId: DYNAMIC_DATASET_ID } }),
+  });
+  const producers = useMemo(() => mergeDynamicProducers(dynamicPayload), [dynamicPayload]);
   const metric = METRICS[metricKey];
   const valueOf = (p: Producer) =>
     metricKey === "price" ? (get(HYDROGEN_TICKERS[p.name])?.price ?? 0) : metric.value(p);
 
-  const f = useChartFilter(PRODUCERS, {
+  const f = useChartFilter(producers, {
     text: (p) => `${p.name} ${p.country} ${p.route} ${p.note}`,
     facetA: (p) => p.country,
     facetB: (p) => p.route,
@@ -882,24 +918,24 @@ export function RenewableHydrogenPanel() {
               {
                 label: "Country",
                 value: f.a,
-                options: countryFilterOptions(PRODUCERS.map((p) => p.country)),
+                options: countryFilterOptions(producers.map((p) => p.country)),
                 onChange: f.setA,
                 allLabel: "All countries",
               },
               {
                 label: "Route",
                 value: f.b,
-                options: countryFilterOptions(PRODUCERS.map((p) => p.route)),
+                options: countryFilterOptions(producers.map((p) => p.route)),
                 onChange: f.setB,
                 allLabel: "All routes",
               },
             ]}
             shown={rows.length}
-            total={PRODUCERS.length}
+            total={producers.length}
             matched={ranked.length}
           />
         }
-        footnote={`Indicative operating and sanctioned capacities compiled from company disclosures, the IEA Hydrogen Projects Database and national hydrogen strategies. Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
+        footnote={`${dynamicPayload?.dynamic ? "Approved renewable-hydrogen sources are connected to the scrape registry; chart capacities remain fallback data until a dedicated project-capacity parser is wired." : "Indicative operating and sanctioned capacities compiled from company disclosures, the IEA Hydrogen Projects Database and national hydrogen strategies."} Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
       >
         {ghgEmpty ? (
           <GhgEmptyNotice />
@@ -969,6 +1005,7 @@ export function RenewableHydrogenPanel() {
           />
         )}
       </ChartPanel>
+      <SupplySourceFacts payload={dynamicPayload} />
     </>
   );
 }

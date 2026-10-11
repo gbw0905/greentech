@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ChartMap } from "@/components/ChartMap";
 import { FlaskConical } from "lucide-react";
 import {
@@ -28,6 +29,10 @@ import { entityLogoByName } from "@/features/markets/entity-logos";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/features/markets/market-caps";
 import { METHANOL_TICKERS } from "@/features/markets/entity-tickers";
+import { getSupplyDatasetFn } from "@/features/supply/server-functions";
+import type { SupplyDatasetPayload } from "@/features/supply/contracts";
+import { SupplySourceFacts } from "./SupplySourceFacts";
+import { metaString, metricRows, metricValue } from "./dynamic-supply-rows";
 
 type Producer = {
   name: string;
@@ -532,17 +537,48 @@ function scatterAxes(metricKey: Metric) {
 
 const TITLE = "Global bio-methanol producers";
 const NEWS_SUFFIX = "bio-methanol green methanol plant";
+const DYNAMIC_DATASET_ID = "bio-methanol";
+const DYNAMIC_METRICS = ["capacityKtY", "methanolCapacityKtY", "renewableMethanolCapacityKtY"];
+
+function mergeDynamicProducers(payload: SupplyDatasetPayload | undefined): Producer[] {
+  const rows = metricRows(payload, DYNAMIC_METRICS);
+  if (rows.length === 0) return PRODUCERS;
+  const byName = new Map(PRODUCERS.map((producer) => [producer.name, producer]));
+  for (const row of rows) {
+    const capacity = metricValue(row, DYNAMIC_METRICS);
+    if (capacity === null) continue;
+    const fallback = byName.get(row.name);
+    byName.set(row.name, {
+      name: row.name,
+      country: row.country ?? metaString(row.metadata["country"], fallback?.country ?? "Unknown"),
+      flag: fallback?.flag ?? "",
+      capacityKtY: capacity,
+      co2AvoidedKtY:
+        metricValue(row, ["co2AvoidedKtY", "fossilCo2DisplacedKtY"]) ??
+        fallback?.co2AvoidedKtY ??
+        0,
+      route: metaString(row.metadata["route"], fallback?.route ?? "Renewable methanol"),
+      note: metaString(row.metadata["note"], fallback?.note ?? "Source-backed bio-methanol row"),
+    });
+  }
+  return [...byName.values()];
+}
 
 export function BioMethanolPanel() {
   const [metricKey, setMetricKey] = useState<Metric>("capacity");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
   const { get } = useEntityQuotes();
+  const { data: dynamicPayload } = useQuery({
+    queryKey: ["supply-dataset", DYNAMIC_DATASET_ID],
+    queryFn: () => getSupplyDatasetFn({ data: { datasetId: DYNAMIC_DATASET_ID } }),
+  });
+  const producers = useMemo(() => mergeDynamicProducers(dynamicPayload), [dynamicPayload]);
   const metric = METRICS[metricKey];
   const valueOf = (p: Producer) =>
     metricKey === "price" ? (get(METHANOL_TICKERS[p.name])?.price ?? 0) : metric.value(p);
 
-  const f = useChartFilter(PRODUCERS, {
+  const f = useChartFilter(producers, {
     text: (p) => `${p.name} ${p.country} ${p.route} ${p.note}`,
     facetA: (p) => p.country,
     facetB: (p) => p.route,
@@ -699,24 +735,24 @@ export function BioMethanolPanel() {
               {
                 label: "Country",
                 value: f.a,
-                options: countryFilterOptions(PRODUCERS.map((p) => p.country)),
+                options: countryFilterOptions(producers.map((p) => p.country)),
                 onChange: f.setA,
                 allLabel: "All countries",
               },
               {
                 label: "Route",
                 value: f.b,
-                options: countryFilterOptions(PRODUCERS.map((p) => p.route)),
+                options: countryFilterOptions(producers.map((p) => p.route)),
                 onChange: f.setB,
                 allLabel: "All routes",
               },
             ]}
             shown={rows.length}
-            total={PRODUCERS.length}
+            total={producers.length}
             matched={ranked.length}
           />
         }
-        footnote={`Indicative operating and sanctioned capacities from company disclosures, the Methanol Institute renewable methanol tracker and IRENA. Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
+        footnote={`${dynamicPayload?.dynamic ? "Approved bio-methanol sources are connected to the scrape registry; chart capacities are source-backed where the IRENA renewable-methanol outlook states plant figures, with remaining rows kept as fallback data." : "Indicative operating and sanctioned capacities from company disclosures, the Methanol Institute renewable methanol tracker and IRENA."} Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
       >
         {ghgEmpty ? (
           <GhgEmptyNotice />
@@ -786,6 +822,7 @@ export function BioMethanolPanel() {
           />
         )}
       </ChartPanel>
+      <SupplySourceFacts payload={dynamicPayload} />
     </>
   );
 }

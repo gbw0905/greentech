@@ -330,6 +330,7 @@ export const DATASETS: DatasetMeta[] = [
     coverage:
       "Global container lines, large road-freight fleets and national rail freight operators with a documented biofuel programme.",
     limitations: [
+      "Automated ingestion currently covers IMO DCS fleet aggregates; named carrier rows remain curated fallback data until operator-specific report parsers are wired.",
       "Green-freight products are sold on a book-and-claim basis, so an operator's biofuel volume is not tied to specific voyages or lanes.",
       "Road-freight fleets rarely split HVO from fossil diesel in public reporting; those figures are derived from purchase announcements.",
     ],
@@ -579,6 +580,12 @@ export const DATASETS: DatasetMeta[] = [
         year: 2025,
       },
       {
+        org: "US EPA",
+        title: "RFS RIN generation and renewable fuel volume by fuel type",
+        url: "https://www.epa.gov/fuels-registration-reporting-and-compliance-help/spreadsheet-rin-generation-and-renewable-fuel-0",
+        year: 2026,
+      },
+      {
         org: "Coalition for Renewable Natural Gas",
         title: "RNG production facility database",
         url: "https://www.rngcoalition.com/rng-production-facilities",
@@ -631,6 +638,12 @@ export const DATASETS: DatasetMeta[] = [
         title: "Certified producer register",
         url: "https://www.european-biochar.org/en",
         year: 2025,
+      },
+      {
+        org: "Biochar Europe",
+        title: "Member directory for biochar producers, plant operators and technology suppliers",
+        url: "https://www.biochareurope.eu/members",
+        year: 2026,
       },
       {
         org: "Puro.earth / Carbonfuture",
@@ -693,6 +706,141 @@ export const DATASETS: DatasetMeta[] = [
     limitations: [
       "Association aggregates are shown as a single entry where individual member capacities are not published.",
       "Capacity is nameplate; actual output varies with fibre supply and export demand.",
+    ],
+  },
+  {
+    id: "renewable-hydrogen",
+    panel: "Global renewable hydrogen producers",
+    description:
+      "Renewable and low-emissions hydrogen producers ranked by announced or operating output and electrolyser capacity.",
+    reportingYear: 2026,
+    lastReviewed: "2026-10-08",
+    metrics: [
+      {
+        label: "Renewable H2 output",
+        unit: "thousand tonnes per year",
+        basis:
+          "Operating, under-construction and sanctioned project output from public project databases and company disclosures.",
+        estimated: true,
+      },
+      {
+        label: "Electrolyser capacity",
+        unit: "megawatts",
+        basis:
+          "Installed or sanctioned electrolyser capacity disclosed for the producer's hydrogen projects.",
+        estimated: true,
+      },
+    ],
+    sources: [
+      {
+        org: "International Energy Agency",
+        title: "Hydrogen Production and Infrastructure Projects Database",
+        url: "https://www.iea.org/data-and-statistics/data-product/hydrogen-production-and-infrastructure-projects-database",
+        year: 2026,
+      },
+      {
+        org: "International Energy Agency",
+        title: "Hydrogen Tracker",
+        url: "https://www.iea.org/data-and-statistics/data-tools/hydrogen-tracker",
+        year: 2026,
+      },
+      ...MARKET_SOURCES,
+    ],
+    coverage:
+      "Commercial operators, developers and industrial groups with named renewable or low-emissions hydrogen projects linked to fuels, ammonia, refining or heavy transport.",
+    limitations: [
+      "Most announced hydrogen projects are not yet operating; chart values combine operating and sanctioned capacity where public sources do not separate them cleanly.",
+      "Producer attribution is difficult for joint ventures, technology suppliers and offtakers, so project capacity is assigned to the lead sponsor named in public disclosures.",
+    ],
+  },
+  {
+    id: "renewable-lpg",
+    panel: "Global renewable LPG suppliers",
+    description:
+      "BioLPG, renewable LPG and renewable DME producers and distributors ranked by production or delivered renewable liquid-gas volume.",
+    reportingYear: 2026,
+    lastReviewed: "2026-10-08",
+    metrics: [
+      {
+        label: "Renewable LPG supplied",
+        unit: "thousand tonnes per year",
+        basis:
+          "Delivered renewable LPG, bioLPG or rDME volumes reported by producers, distributors or industry associations.",
+        estimated: true,
+      },
+      {
+        label: "Production capacity",
+        unit: "thousand tonnes per year",
+        basis:
+          "Nameplate renewable LPG, bioLPG or rDME production capacity from facility disclosures and industry pathway reports.",
+        estimated: true,
+      },
+    ],
+    sources: [
+      {
+        org: "Liquid Gas Europe",
+        title: "Renewables",
+        url: "https://www.liquidgaseurope.eu/renewables/",
+        year: 2026,
+      },
+      {
+        org: "World Liquid Gas Association",
+        title: "Renewable Liquid Gas",
+        url: "https://www.worldliquidgas.org/key-focus-areas/renewable-liquid-gas/",
+        year: 2026,
+      },
+      ...MARKET_SOURCES,
+    ],
+    coverage:
+      "Named renewable LPG, bioLPG and rDME producers plus major distributors marketing renewable liquid gases for off-grid heating, cooking, autogas or industry.",
+    limitations: [
+      "Renewable LPG is often a co-product of HVO and SAF facilities, so product-level volumes are less frequently disclosed than total renewable-diesel capacity.",
+      "Distributor supply volumes can overlap with producer output and should not be summed into a global production total.",
+    ],
+  },
+  {
+    id: "bio-methanol",
+    panel: "Global bio-methanol producers",
+    description:
+      "Bio-methanol, renewable methanol and e-methanol projects ranked by operating or sanctioned capacity.",
+    reportingYear: 2026,
+    lastReviewed: "2026-10-08",
+    metrics: [
+      {
+        label: "Methanol capacity",
+        unit: "thousand tonnes per year",
+        basis:
+          "Operating or sanctioned renewable-methanol production capacity from project disclosures and methanol-sector trackers.",
+        estimated: true,
+      },
+      {
+        label: "Fossil CO2 displaced",
+        unit: "thousand tonnes CO2e per year",
+        basis:
+          "Estimated fossil methanol or marine-fuel displacement based on reported project output and typical emissions factors.",
+        estimated: true,
+      },
+    ],
+    sources: [
+      {
+        org: "Methanol Institute",
+        title: "Methanol publications and reports",
+        url: "https://methanol.org/knowledge-publications",
+        year: 2026,
+      },
+      {
+        org: "International Renewable Energy Agency",
+        title: "Renewable methanol",
+        url: "https://www.irena.org/Publications/2021/Jan/Innovation-Outlook-Renewable-Methanol",
+        year: 2021,
+      },
+      ...MARKET_SOURCES,
+    ],
+    coverage:
+      "Operating, sanctioned and late-stage bio-methanol, waste-to-methanol and e-methanol projects supplying shipping, chemicals or fuel blending.",
+    limitations: [
+      "Many projects are announced before final investment decision; capacity can change materially before commissioning.",
+      "Low-carbon, recycled-carbon, bio-based and e-methanol routes are grouped together because public project disclosures use overlapping terminology.",
     ],
   },
 ];

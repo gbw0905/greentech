@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ChartMap } from "@/components/ChartMap";
 import { Plane } from "lucide-react";
 import {
@@ -28,6 +29,10 @@ import { AIRLINE_TICKERS } from "@/features/markets/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/features/markets/hooks/useEntityQuotes";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/features/markets/market-caps";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
+import { getSupplyDatasetFn } from "@/features/supply/server-functions";
+import type { SupplyDatasetPayload } from "@/features/supply/contracts";
+import { SupplySourceFacts } from "./SupplySourceFacts";
+import { metaString, metricRows, metricValue } from "./dynamic-supply-rows";
 
 type Airline = {
   code: string;
@@ -603,15 +608,44 @@ function scatterAxes(metricKey: AirlineMetric) {
   };
 }
 
+const DYNAMIC_METRICS = ["safUpliftMl", "volume", "safVolumeMl"];
+
+function mergeDynamicAirlines(payload: SupplyDatasetPayload | undefined): Airline[] {
+  const rows = metricRows(payload, DYNAMIC_METRICS);
+  if (rows.length === 0) return AIRLINES;
+  const byName = new Map(AIRLINES.map((airline) => [airline.name, airline]));
+  for (const row of rows) {
+    const volume = metricValue(row, DYNAMIC_METRICS);
+    if (volume === null) continue;
+    const fallback = byName.get(row.name);
+    byName.set(row.name, {
+      code: metaString(row.metadata["code"], fallback?.code ?? row.name.slice(0, 3).toUpperCase()),
+      name: row.name,
+      country: row.country ?? metaString(row.metadata["country"], fallback?.country ?? "Unknown"),
+      flag: fallback?.flag ?? "",
+      volume,
+      share: metricValue(row, ["safSharePct", "share"]) ?? fallback?.share ?? 0,
+      note: metaString(row.metadata["note"], fallback?.note ?? "Source-backed SAF airline row"),
+    });
+  }
+  return [...byName.values()];
+}
+
 export function SafAirlinesPanel() {
   const [metricKey, setMetricKey] = useState<AirlineMetric>("volume");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
   const { get } = useEntityQuotes();
+  const { data: dynamicPayload } = useQuery({
+    queryKey: ["supply-dataset", "saf-airlines"],
+    queryFn: () => getSupplyDatasetFn({ data: { datasetId: "saf-airlines" } }),
+    staleTime: 15 * 60 * 1000,
+  });
+  const airlines = useMemo(() => mergeDynamicAirlines(dynamicPayload), [dynamicPayload]);
   const metric = AIRLINE_METRICS[metricKey];
   const valueOf = (a: Airline) =>
     metricKey === "price" ? (get(AIRLINE_TICKERS[a.code])?.price ?? 0) : metric.value(a);
-  const f = useChartFilter(AIRLINES, {
+  const f = useChartFilter(airlines, {
     text: (a) => `${a.name} ${a.code} ${a.country} ${a.note}`,
     facetA: (a) => a.country,
   });
@@ -768,13 +802,13 @@ export function SafAirlinesPanel() {
               {
                 label: "Country",
                 value: f.a,
-                options: countryFilterOptions(AIRLINES.map((a) => a.country)),
+                options: countryFilterOptions(airlines.map((a) => a.country)),
                 onChange: f.setA,
                 allLabel: "All countries",
               },
             ]}
             shown={sorted.length}
-            total={AIRLINES.length}
+            total={airlines.length}
             matched={ranked.length}
           />
         }
@@ -852,6 +886,7 @@ export function SafAirlinesPanel() {
           />
         )}
       </ChartPanel>
+      <SupplySourceFacts payload={dynamicPayload} />
     </>
   );
 }

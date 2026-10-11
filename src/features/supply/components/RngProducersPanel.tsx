@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { ChartMap } from "@/components/ChartMap";
 import { Flame } from "lucide-react";
 import {
@@ -28,6 +30,10 @@ import { entityLogoByName } from "@/features/markets/entity-logos";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/features/markets/market-caps";
 import { RNG_TICKERS } from "@/features/markets/entity-tickers";
+import { COUNTRY_NAME_FLAG } from "@/features/policy/taxonomy";
+import { getSupplyDatasetFn } from "@/features/supply/server-functions";
+import type { SupplyDatasetPayload, SupplyEntityRow } from "@/features/supply/contracts";
+import { SupplySourceFacts } from "./SupplySourceFacts";
 
 type Producer = {
   name: string;
@@ -37,6 +43,8 @@ type Producer = {
   outputMmbtu: number;
   /** Operating RNG production facilities */
   facilities: number;
+  facilitiesReported?: boolean;
+  sourceBacked?: boolean;
   feedstock: string;
   note: string;
 };
@@ -668,17 +676,113 @@ function scatterAxes(metricKey: Metric) {
 
 const TITLE = "Global renewable natural gas (RNG) producers";
 const NEWS_SUFFIX = "renewable natural gas biomethane";
+const DYNAMIC_DATASET_ID = "rng";
+
+function observationValue(row: SupplyEntityRow, metricKey: string): number | null {
+  const value = row.observations.find((o) => o.metricKey === metricKey)?.value;
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function dynamicProducer(row: SupplyEntityRow): Producer | null {
+  const outputMmbtu = observationValue(row, "outputMmbtu");
+  if (outputMmbtu === null) return null;
+
+  const country = row.country ?? String(row.metadata["country"] ?? "Unknown");
+  const feedstock =
+    typeof row.metadata["feedstock"] === "string" ? row.metadata["feedstock"] : "RNG";
+
+  return {
+    name: row.name,
+    country,
+    flag: COUNTRY_NAME_FLAG[country] ?? "Global",
+    outputMmbtu,
+    facilities: 0,
+    facilitiesReported: false,
+    sourceBacked: true,
+    feedstock,
+    note: "Source-backed EPA RFS aggregate volume; facility count is not reported in this CSV",
+  };
+}
+
+function mergeDynamicProducers(payload: SupplyDatasetPayload | undefined): {
+  producers: Producer[];
+  dynamicCount: number;
+  sourceBacked: boolean;
+  reportingYears: number[];
+  latestIngestFinishedAt: string | null;
+  stale: boolean | null;
+} {
+  const dynamic = (payload?.rows ?? []).map(dynamicProducer).filter((p): p is Producer => Boolean(p));
+  if (dynamic.length === 0) {
+    return {
+      producers: PRODUCERS,
+      dynamicCount: 0,
+      sourceBacked: false,
+      reportingYears: [],
+      latestIngestFinishedAt: null,
+      stale: payload?.freshness?.stale ?? null,
+    };
+  }
+
+  const byName = new Map(PRODUCERS.map((producer) => [producer.name, producer]));
+  for (const producer of dynamic) byName.set(producer.name, producer);
+  const reportingYears = [
+    ...new Set(
+      (payload?.rows ?? [])
+        .flatMap((row) => row.observations)
+        .map((observation) => observation.reportingYear)
+        .filter((year): year is number => typeof year === "number"),
+    ),
+  ].sort((a, b) => b - a);
+
+  return {
+    producers: [...byName.values()],
+    dynamicCount: dynamic.length,
+    sourceBacked: true,
+    reportingYears,
+    latestIngestFinishedAt: payload?.latestIngest?.finishedAt ?? null,
+    stale: payload?.freshness?.stale ?? null,
+  };
+}
+
+function formatFreshnessDate(value: string | null): string {
+  if (!value) return "not recorded";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("en", {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+  }).format(date);
+}
+
+function reportingYearLabel(years: number[]): string {
+  if (years.length === 0) return "reporting year not recorded";
+  return years.length === 1 ? `reporting year ${years[0]}` : `reporting years ${years.join(", ")}`;
+}
+
+function freshnessLabel(stale: boolean | null): string {
+  if (stale === null) return "freshness pending";
+  return stale ? "refresh due" : "fresh";
+}
 
 export function RngProducersPanel() {
   const [metricKey, setMetricKey] = useState<Metric>("output");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
   const { get } = useEntityQuotes();
+  const { data: dynamicPayload } = useQuery({
+    queryKey: ["supply-dataset", DYNAMIC_DATASET_ID],
+    queryFn: () => getSupplyDatasetFn({ data: { datasetId: DYNAMIC_DATASET_ID } }),
+    staleTime: 15 * 60 * 1000,
+  });
+  const dynamic = useMemo(() => mergeDynamicProducers(dynamicPayload), [dynamicPayload]);
+  const producers = dynamic.producers;
   const metric = METRICS[metricKey];
   const valueOf = (p: Producer) =>
     metricKey === "price" ? (get(RNG_TICKERS[p.name])?.price ?? 0) : metric.value(p);
 
-  const f = useChartFilter(PRODUCERS, {
+  const f = useChartFilter(producers, {
     text: (p) => `${p.name} ${p.country} ${p.feedstock} ${p.note}`,
     facetA: (p) => p.country,
     facetB: (p) => p.feedstock,
@@ -752,7 +856,10 @@ export function RngProducersPanel() {
           tone: detailTone(get(RNG_TICKERS[p.name])?.changePct),
         },
         { label: "RNG output", value: `${fmt(p.outputMmbtu, 1)} million MMBtu/yr` },
-        { label: "Production facilities", value: `${fmt(p.facilities, 0)} plants` },
+        {
+          label: "Production facilities",
+          value: p.facilitiesReported === false ? "Not reported by this source" : `${fmt(p.facilities, 0)} plants`,
+        },
         { label: "Feedstock", value: p.feedstock },
         {
           label: "Market cap (approx.)",
@@ -818,7 +925,7 @@ export function RngProducersPanel() {
                   p.country,
                   p.feedstock,
                   p.outputMmbtu,
-                  p.facilities,
+                  p.facilitiesReported === false ? "" : p.facilities,
                   marketCapValue(RNG_TICKERS[p.name]),
                   p.note,
                 ]),
@@ -835,24 +942,41 @@ export function RngProducersPanel() {
               {
                 label: "Country",
                 value: f.a,
-                options: countryFilterOptions(PRODUCERS.map((p) => p.country)),
+                options: countryFilterOptions(producers.map((p) => p.country)),
                 onChange: f.setA,
                 allLabel: "All countries",
               },
               {
                 label: "Feedstock",
                 value: f.b,
-                options: countryFilterOptions(PRODUCERS.map((p) => p.feedstock)),
+                options: countryFilterOptions(producers.map((p) => p.feedstock)),
                 onChange: f.setB,
                 allLabel: "All feedstocks",
               },
             ]}
             shown={rows.length}
-            total={PRODUCERS.length}
+            total={producers.length}
             matched={ranked.length}
           />
         }
-        footnote={`Indicative RNG volumes from company disclosures, US EPA RIN generation data, the Coalition for Renewable Natural Gas and the European Biogas Association. Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
+        footnote={`${dynamic.sourceBacked ? "EPA RFS fuel-type rows are ingested as source-backed U.S. market aggregate records; producer-level facility counts remain fallback data until a structured facility source is wired." : "Indicative RNG volumes from company disclosures, US EPA RIN generation data, the Coalition for Renewable Natural Gas and the European Biogas Association."} Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
+        sourceMeta={
+          dynamic.sourceBacked ? (
+            <p className="label-mono mt-2 text-xs text-muted-foreground">
+              EPA RFS aggregate rows: {dynamic.dynamicCount} market entity ·{" "}
+              {reportingYearLabel(dynamic.reportingYears)} · ingested{" "}
+              {formatFreshnessDate(dynamic.latestIngestFinishedAt)} · {freshnessLabel(dynamic.stale)} ·{" "}
+              fallback producer rows reviewed {dynamicPayload?.registry?.lastReviewed ?? "not recorded"} ·{" "}
+              <Link
+                to="/data-sources"
+                hash={DYNAMIC_DATASET_ID}
+                className="text-primary underline underline-offset-4"
+              >
+                Sources &amp; method
+              </Link>
+            </p>
+          ) : undefined
+        }
       >
         {ghgEmpty ? (
           <GhgEmptyNotice />
@@ -922,6 +1046,7 @@ export function RngProducersPanel() {
           />
         )}
       </ChartPanel>
+      <SupplySourceFacts payload={dynamicPayload} />
     </>
   );
 }

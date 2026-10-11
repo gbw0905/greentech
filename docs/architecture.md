@@ -69,7 +69,7 @@ client/server contracts.
 | `mcp`           | MCP server definition and MCP tools                               |
 | `policy`        | Policy feed, taxonomy, ingestion, sources and update cards        |
 | `premium`       | Premium-entitlement checks                                        |
-| `supply`        | Producer datasets, infrastructure panels and supply metadata      |
+| `supply`        | Producer datasets, source registry, ingestion contracts and supply panels |
 | `traffic`       | Visit tracking, traffic reporting and daily traffic email         |
 | `videos`        | Curated videos, live media and video search                       |
 
@@ -161,6 +161,8 @@ The frontend and backend share one deployable application, but server-only code
 is isolated by `.server.ts` files, `server/` directories and TanStack server
 functions. Supabase hosts the PostgreSQL database and authentication service.
 See [backend-tables.md](backend-tables.md) for the database schema inventory.
+The dynamic supply ingestion plan is documented in
+[supply-ingestion.md](supply-ingestion.md).
 
 ## Dependency direction
 
