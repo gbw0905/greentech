@@ -1,87 +1,97 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Flag, Layers, Newspaper, Radar } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { CountryFlag } from "./CountryFlag";
-import { policyStatusFor, type CountryProfile } from "@/features/policy/taxonomy";
-
-const TABS = [
-  { to: "/countries/$slug", label: "Overview", icon: Flag, exact: true },
-  { to: "/countries/$slug/mandates", label: "Mandates & targets", icon: Layers, exact: false },
-  { to: "/countries/$slug/updates", label: "Live updates", icon: Newspaper, exact: false },
-] as const;
+import {
+  policyStatusFor,
+  POLICY_STATUS_COLOR,
+  type CountryProfile,
+} from "@/features/policy/taxonomy";
+import type { CSSProperties } from "react";
 
 export function CountryProfileHeader({
   country,
-  compact = false,
+  section = "overview",
 }: {
   country: CountryProfile;
-  compact?: boolean;
+  section?: "overview" | "mandates" | "updates";
 }) {
   const status = policyStatusFor(country);
   return (
-    <header className="rise overflow-hidden rounded-lg border border-ink bg-ink text-ink-foreground shadow-[var(--shadow-lift)]">
-      <div
-        className="h-1.5 bg-gradient-to-r from-tracker-red via-tracker-green to-tracker-blue"
-        aria-hidden
-      />
-      <div className="px-4 pt-4 sm:px-6 sm:pt-5">
-        <Link
-          to="/"
-          className="label-mono inline-flex items-center gap-2 text-ink-muted transition-colors hover:text-ink-foreground"
-        >
-          <ArrowLeft className="size-3.5" /> Back to tracker
-        </Link>
-
-        <div className="mt-4 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-          <div className="flex min-w-0 items-center gap-4">
-            <span className="grid h-12 w-16 shrink-0 place-items-center rounded-md border border-ink-foreground/20 bg-ink-foreground/10 text-3xl sm:h-14 sm:w-20">
-              <CountryFlag slug={country.slug} />
-            </span>
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="label-mono text-ink-accent">{country.region}</span>
-                <span className="text-ink-muted" aria-hidden>
-                  /
-                </span>
-                <span className="label-mono text-ink-muted">Policy profile</span>
-              </div>
-              <h1
-                className={`mt-1 font-display font-extrabold ${compact ? "text-2xl sm:text-3xl" : "text-3xl sm:text-4xl"}`}
+    <header className="banner">
+      <div className="wrap">
+        <nav className="crumbs" aria-label="Breadcrumb">
+          <Link to="/">Home</Link>
+          <span aria-hidden="true">/</span>
+          <Link to="/" hash="map">
+            Jurisdiction map
+          </Link>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">{country.name}</span>
+        </nav>
+        <div className="hero-grid">
+          <div>
+            <div className="hero-top">
+              <span className="eyebrow">Policy profile</span>
+              <span
+                className="status"
+                style={{ "--status-color": POLICY_STATUS_COLOR[status] } as CSSProperties}
               >
-                {country.name}
-              </h1>
+                <i aria-hidden="true" />
+                {status}
+              </span>
+            </div>
+            <div className="hero-title">
+              <span className="flag">
+                <CountryFlag slug={country.slug} />
+              </span>
+              <h1>{country.name}</h1>
+            </div>
+            <p className="hero-lede">{country.blurb}</p>
+            <div className="chips">
+              {country.frameworks.map((f) => (
+                <span key={f}>{f}</span>
+              ))}
             </div>
           </div>
-          <div className="label-mono inline-flex w-fit items-center gap-2 rounded-md border border-ink-foreground/25 bg-ink-foreground/10 px-3 py-2 font-bold text-ink-foreground">
-            <Radar className="size-3.5" />
-            <span className="relative flex size-2">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-current opacity-30 motion-reduce:animate-none" />
-              <span className="relative inline-flex size-2 rounded-full bg-current" />
-            </span>
-            {status}
-          </div>
+          <aside className="snap" aria-label="Profile snapshot">
+            <p className="snap-h">Profile snapshot</p>
+            <dl>
+              {country.mandates.map((m) => (
+                <div className="r" key={m.label}>
+                  <dt>{m.label}</dt>
+                  <dd>{m.value}</dd>
+                </div>
+              ))}
+            </dl>
+            <Link
+              className="snap-link"
+              to="/countries/$slug"
+              params={{ slug: country.slug }}
+              hash="mandates"
+            >
+              View mandates &amp; targets <ArrowRight size={15} />
+            </Link>
+          </aside>
         </div>
+        <nav className="tabs" aria-label="Country profile sections">
+          {[
+            { id: "overview", label: "Overview" },
+            { id: "mandates", label: "Mandates & targets" },
+            { id: "updates", label: "Live updates" },
+          ].map((tab) => (
+            <Link
+              key={tab.id}
+              to="/countries/$slug"
+              params={{ slug: country.slug }}
+              hash={tab.id}
+              aria-current={section === tab.id ? "location" : undefined}
+              className={section === tab.id ? "is-cur" : undefined}
+            >
+              {tab.label}
+            </Link>
+          ))}
+        </nav>
       </div>
-
-      <nav
-        className="mt-5 flex gap-1 overflow-x-auto border-t border-ink-foreground/15 px-3 pt-1 sm:px-5"
-        aria-label="Country profile sections"
-      >
-        {TABS.map(({ to, label, icon: Icon, exact }) => (
-          <Link
-            key={to}
-            to={to}
-            params={{ slug: country.slug }}
-            activeOptions={{ exact }}
-            className="label-mono inline-flex shrink-0 items-center gap-1.5 border-b-2 border-transparent px-3 py-3 text-ink-muted transition-colors hover:text-ink-foreground"
-            activeProps={{
-              className:
-                "label-mono inline-flex shrink-0 items-center gap-1.5 border-b-2 border-ink-accent px-3 py-3 font-bold text-ink-foreground transition-colors",
-            }}
-          >
-            <Icon className="size-3.5" /> {label}
-          </Link>
-        ))}
-      </nav>
     </header>
   );
 }

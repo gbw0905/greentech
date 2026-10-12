@@ -1,0 +1,383 @@
+.presentation:global(.benchmark-inner) {
+  max-width: 1100px;
+  padding-block: 10px 4px;
+}
+.presentation :global(.benchmark-header) {
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.presentation :global(.benchmark-header h2) {
+  max-width: none;
+  font-size: clamp(30px, 2.6vw, 36px);
+  line-height: 1.12;
+  text-wrap: initial;
+}
+.presentation :global(.benchmark-header p) {
+  max-width: 65ch;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-top: 6px;
+}
+.presentation :global(.benchmark-meta) {
+  gap: 5px;
+  font-size: 11px;
+}
+.presentation :global(.benchmark-live) {
+  padding: 4px 10px;
+  font-size: 11px;
+}
+.presentation :global(.benchmark-layout) {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+}
+.presentation :global(.benchmark-cards) {
+  grid-template-rows: none;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+}
+.presentation :global(.benchmark-card-reveal) {
+  display: flex;
+  min-width: 0;
+}
+.presentation :global(.benchmark-card-reveal > .benchmark-card) {
+  width: 100%;
+}
+.presentation :global(.benchmark-panel-reveal) {
+  min-width: 0;
+}
+/* Start chart drawing at the scroll reveal, rather than while it is offscreen. */
+.presentation :global(.benchmark-spark-line),
+.presentation :global(.benchmark-line) {
+  animation: none;
+}
+.presentation :global([data-motion-state="entered"] .benchmark-spark-line) {
+  animation: drawLine 1.4s cubic-bezier(0.3, 0.7, 0.2, 1) both;
+}
+.presentation :global([data-motion-state="entered"] .benchmark-line) {
+  animation: drawLine 1.7s cubic-bezier(0.3, 0.7, 0.2, 1) both;
+}
+.presentation :global([data-motion-state="entered"] .benchmark-spark-area) {
+  animation: fillChart 0.8s 0.8s ease both;
+}
+.presentation :global([data-motion-state="entered"] .benchmark-area) {
+  animation: fillChart 0.9s 1s ease both;
+}
+.presentation :global([data-motion-state="entered"] .benchmark-end) {
+  animation: fillChart 0.5s 1.5s ease both;
+}
+@keyframes drawLine {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes fillChart {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .presentation :global([data-motion-state="entered"] .benchmark-spark-line),
+  .presentation :global([data-motion-state="entered"] .benchmark-line),
+  .presentation :global([data-motion-state="entered"] .benchmark-spark-area),
+  .presentation :global([data-motion-state="entered"] .benchmark-area),
+  .presentation :global([data-motion-state="entered"] .benchmark-end) {
+    animation: none;
+  }
+}
+.presentation :global(.benchmark-card) {
+  gap: 8px;
+  padding: 12px;
+  border-radius: 9px;
+}
+.presentation :global(.benchmark-card::before) {
+  inset: -1px 0 auto;
+  width: 100%;
+  height: 3px;
+  border-radius: 9px 9px 0 0;
+  transform: scaleX(0);
+}
+.presentation :global(.benchmark-card[aria-pressed="true"]::before),
+.presentation :global(.benchmark-card:hover::before) {
+  transform: scaleX(1);
+}
+.presentation :global(.benchmark-card:hover) {
+  transform: translateY(-3px);
+}
+.presentation :global(.benchmark-card-name) {
+  font-size: 13px;
+}
+.presentation :global(.benchmark-card-price) {
+  font-size: clamp(19px, 1.6vw, 23px);
+  line-height: 1.15;
+}
+.presentation :global(.benchmark-card-row) {
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.presentation :global(.benchmark-card .benchmark-symbol) {
+  font-size: 10px;
+  padding: 2px 6px;
+}
+.presentation :global(.benchmark-card-price small) {
+  font-size: 10px;
+}
+.presentation :global(.benchmark-card .benchmark-badge) {
+  font-size: 10px;
+  padding: 3px 5px;
+}
+.presentation :global(.benchmark-card .benchmark-badge svg) {
+  width: 11px;
+  height: 11px;
+}
+.presentation :global(.benchmark-card-foot) {
+  font-size: 10px;
+}
+.presentation :global(.benchmark-card-unavailable) {
+  cursor: default;
+}
+.presentation :global(.benchmark-card-unavailable:hover) {
+  transform: none;
+  box-shadow: none;
+  background: #f6f9fc;
+  border-color: var(--benchmark-line);
+}
+.presentation :global(.benchmark-card-unavailable:hover::before) {
+  transform: scaleX(0);
+}
+.presentation :global(.benchmark-missing-history) {
+  display: flex;
+  align-items: center;
+  height: 28px;
+  color: #6c8195;
+  font-size: 11px;
+}
+.presentation :global(.benchmark-spark) {
+  height: 28px;
+}
+.presentation :global(.benchmark-panel) {
+  padding: 16px 20px 14px;
+  border-radius: 12px;
+}
+.presentation :global(.benchmark-chart-wrap) {
+  height: clamp(120px, calc(100svh - 600px), 180px);
+  margin-top: 14px;
+}
+.presentation :global(.benchmark-id h3) {
+  font-size: 17px;
+}
+.presentation :global(.benchmark-price-row) {
+  margin-top: 8px;
+}
+.presentation :global(.benchmark-price) {
+  font-size: 32px;
+}
+.presentation :global(.benchmark-price small),
+.presentation :global(.benchmark-daily) {
+  font-size: 12px;
+}
+.presentation :global(.benchmark-caption) {
+  margin-top: 4px;
+  font-size: 10px;
+}
+.presentation :global(.benchmark-outlook) {
+  margin-top: 10px;
+  padding-top: 8px;
+}
+.presentation :global(.benchmark-ai) {
+  padding: 6px 9px;
+  font-size: 12px;
+  border-radius: 7px;
+}
+.presentation :global(.benchmark-trend) {
+  font-size: 11px;
+}
+.presentation :global(.benchmark-compare) {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+.presentation :global(.benchmark-compare > span) {
+  color: var(--benchmark-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  margin-right: 5px;
+}
+.presentation :global(.benchmark-compare button) {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--benchmark-line);
+  background: white;
+  border-radius: 5px;
+  padding: 5px 9px;
+  color: #4c6278;
+  font-size: 12px;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+.presentation :global(.benchmark-compare button[aria-pressed="true"]),
+.presentation :global(.benchmark-compare button:hover) {
+  border-color: var(--market-color);
+  background: color-mix(in srgb, var(--market-color) 7%, white);
+}
+.presentation :global(.benchmark-compare button:focus-visible) {
+  outline: 2px solid #178a6b;
+  outline-offset: 3px;
+}
+.presentation :global(.benchmark-compare button:disabled) {
+  opacity: 0.5;
+  cursor: default;
+}
+.presentation :global(.benchmark-compare button:disabled:hover) {
+  border-color: var(--benchmark-line);
+  background: white;
+}
+.presentation :global(.benchmark-compare i),
+.presentation :global(.benchmark-comparison-legend i) {
+  width: 8px;
+  height: 8px;
+  background: var(--market-color);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.presentation :global(.benchmark-comparison-legend) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 14px;
+  color: #4c6278;
+  font-size: 12px;
+}
+.presentation :global(.benchmark-comparison-legend span) {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.presentation :global(.benchmark-why) {
+  margin-top: 10px;
+  padding: 8px 0 0;
+  border-top: 1px solid var(--benchmark-line);
+  font-size: 11px;
+  line-height: 1.5;
+  color: #4c6278;
+}
+.presentation :global(.benchmark-why b) {
+  color: #0e2a43;
+}
+
+/* Use the horizontal space for metadata rather than adding more rows. */
+@media (min-width: 1051px) {
+  .presentation :global(.benchmark-body) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 24px;
+  }
+  .presentation :global(.benchmark-body) > * {
+    grid-column: 1 / -1;
+  }
+  .presentation :global(.benchmark-panel-top) {
+    grid-column: 1;
+    align-self: center;
+    justify-content: flex-start;
+    gap: 12px 18px;
+  }
+  .presentation :global(.benchmark-price-row) {
+    grid-column: 2;
+    align-self: center;
+    justify-content: flex-end;
+    margin-top: 0;
+  }
+  .presentation :global(.benchmark-panel) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 20px;
+  }
+  .presentation :global(.benchmark-body) {
+    grid-column: 1 / -1;
+  }
+  .presentation :global(.benchmark-why),
+  .presentation :global(.benchmark-outlook) {
+    margin-top: 12px;
+    padding-top: 10px;
+  }
+  .presentation :global(.benchmark-why) {
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    column-gap: 4px;
+  }
+  .presentation :global(.benchmark-outlook) {
+    align-self: stretch;
+  }
+  .presentation
+    :global(.benchmark-panel:has(.benchmark-ai[aria-expanded="true"]))
+    :global(.benchmark-why),
+  .presentation
+    :global(.benchmark-panel:has(.benchmark-ai[aria-expanded="true"]))
+    :global(.benchmark-outlook) {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 1050px) {
+  .presentation :global(.benchmark-card-row) {
+    flex-wrap: wrap;
+  }
+  .presentation :global(.benchmark-card) {
+    padding: 10px;
+  }
+  .presentation :global(.benchmark-card-price) {
+    font-size: 19px;
+  }
+}
+@media (max-width: 760px) {
+  .presentation :global(.benchmark-header) {
+    gap: 16px;
+  }
+  .presentation :global(.benchmark-header h2) {
+    font-size: 26px;
+  }
+  .presentation :global(.benchmark-cards) {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(180px, 62%);
+  }
+  .presentation :global(.benchmark-card) {
+    gap: 8px;
+  }
+  .presentation :global(.benchmark-panel) {
+    padding: 14px 12px 12px;
+  }
+  .presentation :global(.benchmark-panel-top) {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .presentation :global(.benchmark-trend) {
+    font-size: 11px;
+  }
+  .presentation :global(.benchmark-caption) {
+    flex-wrap: wrap;
+  }
+  .presentation :global(.benchmark-compare > span) {
+    flex-basis: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .presentation :global(.benchmark-compare button) {
+    transition: none;
+  }
+}

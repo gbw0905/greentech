@@ -1,0 +1,81 @@
+.dataset-entity-sheet {
+  --foreground: #0e2a43;
+  --muted-foreground: #6b7f92;
+  --primary: #178a6b;
+  --border: #d6e1ea;
+  width: min(100%, 400px);
+  max-width: 400px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 24px 20px;
+  border-color: #d6e1ea;
+  background: white;
+  color: #0e2a43;
+  font-family: "Instrument Sans", sans-serif;
+}
+.dataset-entity-sheet .dataset-entity-heading {
+  padding-right: 30px;
+}
+.dataset-entity-sheet .dataset-entity-heading img {
+  border-radius: 10px;
+  background: #eef3f7;
+}
+.dataset-entity-sheet h2 {
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.dataset-entity-sheet .label-mono,
+.dataset-entity-sheet .chart-sub,
+.dataset-entity-sheet .chart-value {
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+.dataset-entity-sheet .chart-value {
+  font-weight: 600;
+}
+.dataset-entity-sheet dl {
+  border: 1px solid #d6e1ea;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.dataset-entity-sheet dl > div {
+  align-items: flex-start;
+  padding: 10px 12px;
+}
+.dataset-entity-sheet dt,
+.dataset-entity-sheet dd {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.dataset-entity-sheet dd {
+  text-align: right;
+  flex: 0 1 55%;
+}
+.dataset-entity-sheet .dataset-entity-news-link {
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  padding: 12px;
+  background: #178a6b;
+  color: white;
+  line-height: 1.4;
+}
+.dataset-entity-sheet > button.absolute {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid #d6e1ea;
+  border-radius: 8px;
+  background: #eef3f7;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dataset-entity-sheet {
+    animation: none !important;
+    transition: none !important;
+  }
+}

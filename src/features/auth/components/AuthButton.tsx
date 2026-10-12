@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 
 /** Header sign-in / sign-out affordance, driven by the live session. */
-export function AuthButton() {
+export function AuthButton({ entryMode = "signin" }: { entryMode?: "signin" | "signup" }) {
   const { user, loading } = useAuthSession();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -16,10 +16,11 @@ export function AuthButton() {
     return (
       <Link
         to="/auth"
+        search={entryMode === "signup" ? { mode: "signup" } : {}}
         className="label-mono pill-motion inline-flex shrink-0 items-center gap-2 border border-menubar-fg/40 bg-menubar-nav px-2.5 py-1.5 font-bold text-menubar-fg hover:border-menubar-fg hover:bg-menubar-fg/10 sm:px-3.5 sm:py-2"
       >
-        <LogIn className="size-3.5" />
-        <span className="auth-label">Sign in</span>
+        {entryMode === "signin" && <LogIn className="size-3.5" />}
+        <span className="auth-label">{entryMode === "signup" ? "Sign up" : "Sign In"}</span>
       </Link>
     );
   }

@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AuthPage } from "@/features/auth/components/AuthPage";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (search: Record<string, unknown>): { mode?: "signup" } =>
+    search["mode"] === "signup" ? { mode: "signup" } : {},
   head: () => ({
     meta: [
       { title: "Sign in — Global Bioenergy Watch" },
@@ -19,5 +21,10 @@ export const Route = createFileRoute("/auth")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: AuthPage,
+  component: AuthRoute,
 });
+
+function AuthRoute() {
+  const { mode } = Route.useSearch();
+  return <AuthPage key={mode ?? "signin"} initialMode={mode ?? "signin"} />;
+}

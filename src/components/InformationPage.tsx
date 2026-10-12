@@ -1,16 +1,18 @@
 import type { ComponentType, ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { Globe2 } from "lucide-react";
-import { MotionReveal } from "@/components/MotionReveal";
+import "./PageDesign.css";
 
 const PAGES = [
   { to: "/about", label: "About us", key: "about" },
   { to: "/about/mission-vision", label: "Mission & vision", key: "mission" },
   { to: "/about/team", label: "Team members", key: "team" },
-  { to: "/contact", label: "Contact", key: "contact" },
 ] as const;
+const CHIPS = {
+  about: ["4 fuel streams tracked", "Regulators & credible media", "Daily AI-assisted briefs"],
+  mission: ["Independent", "Source-cited", "Updated daily"],
+  team: ["4 team members", "Editors & developers", "Open to contributors"],
+};
 
-/** Shared presentation for the desk's informational pages; site chrome lives in SiteLayout. */
 export function InformationPage({
   active,
   icon: Icon,
@@ -24,43 +26,52 @@ export function InformationPage({
   subtitle: string;
   children: ReactNode;
 }) {
+  const words = title.split(" ");
+  const accent = words.pop();
   return (
-    <div className={`information-page information-page-${active}`}>
-      <main className="information-main">
-        <MotionReveal as="header" className="information-hero">
-          <div className="information-hero-copy">
-            <span className="information-eyebrow">
-              <Icon className="size-3.5" />
-              {active === "contact" ? "Contact" : "Global Bioenergy Watch"}
-            </span>
-            <h1>{title}</h1>
-            <p>{subtitle}</p>
+    <main className="desk-design">
+      <header className="banner">
+        <div className="wrap">
+          <nav className="crumbs" aria-label="Breadcrumb">
+            <Link to="/">Home</Link>
+            <span aria-hidden="true">/</span>
+            {active !== "about" && (
+              <>
+                <Link to="/about">About us</Link>
+                <span aria-hidden="true">/</span>
+              </>
+            )}
+            <span aria-current="page">{PAGES.find((p) => p.key === active)?.label}</span>
+          </nav>
+          <span className="eyebrow">
+            <Icon className="size-3.5" />
+            Global Bioenergy Watch
+          </span>
+          <h1>
+            {words.join(" ")} <em>{accent}</em>
+          </h1>
+          <p className="hero-lede">{subtitle}</p>
+          <div className="chips">
+            {CHIPS[active].map((chip) => (
+              <span key={chip}>{chip}</span>
+            ))}
           </div>
-          <div className="information-emblem" aria-hidden="true">
-            <div className="information-emblem-ring" />
-            <div className="information-emblem-core">
-              <Globe2 />
-            </div>
-            <i className="information-emblem-dot information-emblem-dot-one" />
-            <i className="information-emblem-dot information-emblem-dot-two" />
-            <i className="information-emblem-dot information-emblem-dot-three" />
-          </div>
-        </MotionReveal>
-        <nav className="information-nav" aria-label="About the desk">
-          {PAGES.map((page) => (
-            <Link
-              key={page.key}
-              to={page.to}
-              activeOptions={{ exact: true }}
-              aria-current={active === page.key ? "page" : undefined}
-              className={active === page.key ? "is-current" : undefined}
-            >
-              {page.label}
-            </Link>
-          ))}
-        </nav>
-        <MotionReveal className="information-content">{children}</MotionReveal>
-      </main>
-    </div>
+          <nav className="tabs" aria-label="About the desk">
+            {PAGES.map((page) => (
+              <Link
+                key={page.key}
+                to={page.to}
+                activeOptions={{ exact: true }}
+                aria-current={active === page.key ? "page" : undefined}
+                className={active === page.key ? "is-cur" : undefined}
+              >
+                {page.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+      </header>
+      <div className="wrap content">{children}</div>
+    </main>
   );
 }

@@ -1,18 +1,15 @@
 import { loadNavigationFeed } from "@/features/policy/navigation-feed";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { Layers, X } from "lucide-react";
+import { Fragment, useMemo, useRef, useState } from "react";
+import { Radio, Search, CalendarDays, ArrowUpRight, X } from "lucide-react";
 import { feedQueryWithInitial } from "@/features/policy/feed-query";
-import {
-  COUNTRIES,
-  FUEL_TYPES,
-  FUEL_ACCENT,
-  flagFor,
-  type FuelType,
-} from "@/features/policy/taxonomy";
-import { UpdateCard } from "@/features/policy/components/UpdateCard";
-import { PageShell, PageHeading } from "@/components/PageShell";
+import { COUNTRIES, FUEL_TYPES, type FuelType } from "@/features/policy/taxonomy";
+import { formatDate } from "@/features/policy/components/UpdateCard";
+import { imageForUpdate } from "@/features/policy/update-images";
+import { CountryFlag } from "@/features/countries/components/CountryFlag";
+import { TimelinePagination } from "@/components/TimelinePagination";
+import { IntelligencePage } from "@/components/IntelligencePage";
 import { useVisitTracker } from "@/features/traffic/hooks/useVisitTracker";
 
 const TITLE = "Policy update timeline | Global Bioenergy Watch";
@@ -43,111 +40,235 @@ function TimelinePage() {
   const updates = useMemo(() => feed?.updates ?? [], [feed?.updates]);
   const [fuels, setFuels] = useState<FuelType[]>([]);
   const [country, setCountry] = useState<string | null>(null);
-
-  const fuelCounts = useMemo(() => {
-    const m = {} as Record<FuelType, number>;
-    for (const f of FUEL_TYPES) m[f] = updates.filter((u) => u.fuels.includes(f)).length;
-    return m;
-  }, [updates]);
-
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("all");
+  const [page, setPage] = useState(1);
+  const resultsRef = useRef<HTMLDivElement>(null);
+  const fuelCounts = useMemo(
+    () =>
+      Object.fromEntries(
+        FUEL_TYPES.map((f) => [f, updates.filter((u) => u.fuels.includes(f)).length]),
+      ),
+    [updates],
+  );
   const filtered = useMemo(
     () =>
       updates
         .filter(
           (u) =>
             (fuels.length === 0 || u.fuels.some((f) => fuels.includes(f))) &&
-            (!country || u.countrySlug === country),
+            (!country || u.countrySlug === country) &&
+            (category === "all" || u.category === category) &&
+            (!query.trim() ||
+              `${u.title} ${u.summary ?? ""} ${u.countryName ?? ""}`
+                .toLowerCase()
+                .includes(query.trim().toLowerCase())),
         )
-        .sort((a, b) => {
-          const aDate = a.publishedAt ?? a.createdAt;
-          const bDate = b.publishedAt ?? b.createdAt;
-          return new Date(bDate).getTime() - new Date(aDate).getTime();
-        }),
-    [updates, fuels, country],
+        .sort(
+          (a, b) =>
+            new Date(b.publishedAt ?? b.createdAt).getTime() -
+            new Date(a.publishedAt ?? a.createdAt).getTime(),
+        ),
+    [updates, fuels, country, query, category],
   );
-
-  const toggleFuel = (f: FuelType) =>
-    setFuels((list) => (list.includes(f) ? list.filter((v) => v !== f) : [...list, f]));
-
+  const pageSize = 24;
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const start = (currentPage - 1) * pageSize;
+  const changePage = (next: number) => {
+    setPage(Math.max(1, Math.min(next, totalPages)));
+    const results = resultsRef.current;
+    if (results) {
+      results.focus({ preventScroll: true });
+      window.scrollTo({
+        top: window.scrollY + results.getBoundingClientRect().top - 88,
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "instant"
+          : "smooth",
+      });
+    }
+  };
+  const clear = () => {
+    setPage(1);
+    setCountry(null);
+    setFuels([]);
+    setQuery("");
+    setCategory("all");
+  };
+  let lastDate = "";
   return (
-    <PageShell>
-      <PageHeading
-        icon={Layers}
-        title={`Policy update timeline · ${filtered.length} updates`}
-        subtitle="Newest mandates, obligations and regulatory decisions from the live scan."
-      />
-
-      <div className="glass-panel flex flex-wrap items-center gap-2 p-3">
-        <span className="label-mono mr-1 text-muted-foreground">Fuel type</span>
-        {FUEL_TYPES.map((f) => {
-          const active = fuels.includes(f);
-          const tint = FUEL_ACCENT[f];
-          return (
+    <IntelligencePage
+      icon={Radio}
+      eyebrow="Global markets / Latest intelligence"
+      title="Policy update timeline"
+      subtitle="Follow the decisions and market developments shaping global bioenergy. Filter the live feed by jurisdiction, fuel and the signals that matter to you."
+      className="intelligence-timeline"
+      aside={
+        <>
+          <strong>{updates.length.toLocaleString()}</strong>
+          <span>Updates tracked</span>
+          <small>
+            <i className="intelligence-live-dot" />{" "}
+            {isFetching ? "Refreshing feed" : "Latest available scan"}
+          </small>
+        </>
+      }
+    >
+      <section className="intelligence-filter-panel timeline-filters" aria-label="Filter updates">
+        <div className="timeline-filter-row">
+          <label className="intelligence-search">
+            <Search size={18} aria-hidden />
+            <span className="sr-only">Search updates</span>
+            <input
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Search headlines, countries or topics…"
+            />
+          </label>
+          <label className="intelligence-select">
+            <span>Jurisdiction</span>
+            <select
+              value={country ?? ""}
+              onChange={(e) => {
+                setCountry(e.target.value || null);
+                setPage(1);
+              }}
+            >
+              <option value="">All countries</option>
+              {COUNTRIES.map((c) => (
+                <option key={c.slug} value={c.slug}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <div className="intelligence-filter-chips" role="group" aria-label="Fuel type">
+          <span>Fuel type</span>
+          {FUEL_TYPES.map((f) => (
             <button
               key={f}
               type="button"
-              onClick={() => toggleFuel(f)}
-              aria-pressed={active}
-              className="label-mono inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-all hover:-translate-y-0.5"
-              style={
-                active
-                  ? { backgroundColor: tint, borderColor: tint, color: "var(--primary-foreground)" }
-                  : {
-                      backgroundColor: `color-mix(in oklab, ${tint} 12%, var(--surface))`,
-                      borderColor: `color-mix(in oklab, ${tint} 35%, transparent)`,
-                      color: tint,
-                    }
-              }
+              aria-pressed={fuels.includes(f)}
+              onClick={() => {
+                setFuels((list) => (list.includes(f) ? list.filter((v) => v !== f) : [...list, f]));
+                setPage(1);
+              }}
             >
               {f}
-              <span className="tabular-nums opacity-80">{fuelCounts[f]}</span>
+              <small>{fuelCounts[f]}</small>
             </button>
+          ))}
+        </div>
+      </section>
+      <div className="intelligence-results-heading" ref={resultsRef} tabIndex={-1}>
+        <div className="intelligence-tabs" role="group" aria-label="Update category">
+          {["all", "policy", "market"].map((value) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={category === value}
+              onClick={() => {
+                setCategory(value);
+                setPage(1);
+              }}
+            >
+              {value === "all" ? "All updates" : value === "policy" ? "Policy" : "Market"}
+            </button>
+          ))}
+        </div>
+        <span role="status">
+          {filtered.length.toLocaleString()} updates
+          {country || fuels.length || query || category !== "all" ? (
+            <button type="button" className="intelligence-reset" onClick={clear}>
+              Clear filters <X size={13} />
+            </button>
+          ) : null}
+        </span>
+      </div>
+      <div className="intelligence-timeline-list">
+        {filtered.slice(start, start + pageSize).map((u) => {
+          const date = formatDate(u.publishedAt ?? u.createdAt);
+          const heading = date !== lastDate;
+          lastDate = date;
+          const photo = imageForUpdate(u);
+          return (
+            <Fragment key={u.id}>
+              {heading && (
+                <h2 className="timeline-date">
+                  <CalendarDays size={16} aria-hidden />
+                  {date}
+                </h2>
+              )}
+              <article className="timeline-update-card">
+                <a
+                  className="timeline-update-image"
+                  href={u.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  tabIndex={-1}
+                  aria-hidden
+                >
+                  <img src={photo.src} alt="" loading="lazy" />
+                </a>
+                <div className="timeline-update-copy">
+                  <div className="timeline-update-meta">
+                    <span className="intelligence-category" data-category={u.category}>
+                      {u.category === "market" ? "Market" : "Policy"}
+                    </span>
+                    {u.countrySlug && u.countryName && (
+                      <Link to="/countries/$slug" params={{ slug: u.countrySlug }}>
+                        <CountryFlag slug={u.countrySlug} />
+                        {u.countryName}
+                      </Link>
+                    )}
+                    <time>{date}</time>
+                  </div>
+                  <h3>
+                    <a href={u.url} target="_blank" rel="noopener noreferrer">
+                      {u.title}
+                      <ArrowUpRight size={17} aria-hidden />
+                    </a>
+                  </h3>
+                  {u.summary && u.summary !== u.title && <p>{u.summary}</p>}
+                  <div className="timeline-update-bottom">
+                    <div>
+                      {u.fuels.map((f) => (
+                        <span key={f}>{f}</span>
+                      ))}
+                    </div>
+                    <a href={u.url} target="_blank" rel="noopener noreferrer">
+                      Read source <ArrowUpRight size={14} />
+                    </a>
+                  </div>
+                </div>
+              </article>
+            </Fragment>
           );
         })}
-        <select
-          value={country ?? ""}
-          onChange={(e) => setCountry(e.target.value || null)}
-          className="label-mono ml-auto rounded-full border border-border bg-surface-2 px-3 py-1.5 text-foreground"
-          aria-label="Filter by country"
-        >
-          <option value="">All countries</option>
-          {COUNTRIES.map((c) => (
-            <option key={c.slug} value={c.slug}>
-              {flagFor(c.slug)} {c.name}
-            </option>
-          ))}
-        </select>
-        {(country || fuels.length > 0) && (
-          <button
-            type="button"
-            onClick={() => {
-              setCountry(null);
-              setFuels([]);
-            }}
-            className="label-mono inline-flex items-center gap-1 text-primary hover:underline"
-          >
-            <X className="size-3" /> Clear
-          </button>
+        {!filtered.length && (
+          <div className="intelligence-empty">
+            <Search size={32} />
+            <h2>{isFetching && !feed ? "Loading updates…" : "No updates match these filters"}</h2>
+            <p>Try a broader topic, another jurisdiction or fewer fuel types.</p>
+            <button type="button" onClick={clear}>
+              Reset filters
+            </button>
+          </div>
         )}
       </div>
-
-      <div className="space-y-3">
-        {filtered.length === 0 &&
-          (isFetching && !feed ? (
-            <div className="space-y-3">
-              {[0, 1, 2].map((i) => (
-                <div key={i} className="scanning-bar h-28 rounded-[var(--radius)]" />
-              ))}
-            </div>
-          ) : (
-            <p className="glass-panel p-6 text-sm text-muted-foreground">
-              No updates match the current filters.
-            </p>
-          ))}
-        {filtered.map((u) => (
-          <UpdateCard key={u.id} update={u} />
-        ))}
-      </div>
-    </PageShell>
+      {filtered.length > 0 && (
+        <TimelinePagination
+          page={currentPage}
+          pages={totalPages}
+          total={filtered.length}
+          pageSize={pageSize}
+          onChange={changePage}
+        />
+      )}
+    </IntelligencePage>
   );
 }

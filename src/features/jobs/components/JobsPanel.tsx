@@ -1,16 +1,5 @@
-import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import {
-  ArrowUpRight,
-  CheckCircle2,
-  Check,
-  ChevronDown,
-  ExternalLink,
-  Search,
-  RotateCcw,
-  X,
-} from "lucide-react";
+import { ArrowUpRight, Check, ChevronDown, ExternalLink, Search, RotateCcw, X } from "lucide-react";
 import { createPortal } from "react-dom";
 import {
   CATEGORY_QUERY,
@@ -22,10 +11,8 @@ import {
   SENIORITY_QUERY,
 } from "@/features/jobs/data";
 import type { JobCategory, Seniority } from "@/features/jobs/contracts";
-import { getHiringNewsFn } from "@/features/jobs/server-functions";
 import { logoForDomain } from "@/features/markets/entity-logos";
-import { MotionReveal } from "@/components/MotionReveal";
-import { EmployerDirectory } from "./EmployerDirectory";
+import { JobsReveal } from "./JobsReveal";
 
 /** Light pastel tones per filter group — active picks up the group's tint. */
 const GROUP_TONES = {
@@ -295,19 +282,6 @@ export function JobsPanel() {
     return [base, fn, lvl, remoteOnly ? "remote" : "", keyword.trim()].filter(Boolean).join(" ");
   }, [categories, seniority, remoteOnly, keyword]);
 
-  const newsKeywords = useMemo(() => {
-    const list = ["biofuel hiring jobs", "bioenergy hiring jobs"];
-    if (categories.length) list.push(`${CATEGORY_QUERY[categories[0]!]} hiring`);
-    if (region.location) list.push(`biofuel jobs ${region.location}`);
-    return list.slice(0, 4);
-  }, [categories, region]);
-
-  const news = useQuery({
-    queryKey: ["hiring-news", newsKeywords],
-    queryFn: () => getHiringNewsFn({ data: { keywords: newsKeywords } }),
-    staleTime: 15 * 60_000,
-  });
-
   const activeCount =
     categories.length +
     (seniority ? 1 : 0) +
@@ -418,7 +392,7 @@ export function JobsPanel() {
         )}
       </section>
 
-      <MotionReveal className="jobs-stats" aria-label="Career directory coverage">
+      <JobsReveal className="jobs-stats" aria-label="Career directory coverage">
         {[
           [EMPLOYERS.length, "Bioenergy employers"],
           [JOB_REGIONS.length - 1, "Regional searches"],
@@ -430,10 +404,10 @@ export function JobsPanel() {
             <span>{label}</span>
           </div>
         ))}
-      </MotionReveal>
+      </JobsReveal>
 
       <section id="job-sources" className="jobs-section" aria-labelledby="jobs-sources-title">
-        <MotionReveal className="jobs-section-heading">
+        <JobsReveal className="jobs-section-heading">
           <div>
             <h2 id="jobs-sources-title">Browse job sources</h2>
             <p>Explore opportunities on trusted job boards, using your selected filters.</p>
@@ -441,10 +415,10 @@ export function JobsPanel() {
           <span className="jobs-count">
             {JOB_BOARDS.length} sources · {region.name}
           </span>
-        </MotionReveal>
+        </JobsReveal>
         <div className="jobs-source-grid">
           {JOB_BOARDS.map((board, index) => (
-            <MotionReveal as="article" key={board.name} delay={Math.min(index * 0.04, 0.2)}>
+            <JobsReveal as="article" key={board.name} delay={Math.min(index * 0.04, 0.2)}>
               <a
                 href={board.url({ keywords: query, location: region.location })}
                 target="_blank"
@@ -461,90 +435,10 @@ export function JobsPanel() {
                   Search opportunities <ExternalLink size={12} aria-hidden="true" />
                 </span>
               </a>
-            </MotionReveal>
+            </JobsReveal>
           ))}
         </div>
       </section>
-
-      <section className="jobs-section jobs-hiring-section" aria-labelledby="jobs-hiring-title">
-        <MotionReveal className="jobs-section-heading">
-          <div>
-            <span className="jobs-section-kicker">Workforce intelligence</span>
-            <h2 id="jobs-hiring-title">Hiring signals</h2>
-            <p>Recruitment and workforce developments across the global bioenergy sector.</p>
-          </div>
-          <span className="jobs-count" aria-live="polite">
-            {news.isFetching ? "Updating…" : `${news.data?.items.length ?? 0} items`}
-          </span>
-        </MotionReveal>
-        <div className="jobs-news-list" aria-busy={news.isFetching}>
-          {news.isLoading && (
-            <p className="jobs-empty" role="status">
-              Scanning recruitment news…
-            </p>
-          )}
-          {news.isError && (
-            <div className="jobs-empty" role="alert">
-              Hiring news could not be loaded.{" "}
-              <button className="jobs-text-button" type="button" onClick={() => news.refetch()}>
-                Try again
-              </button>
-            </div>
-          )}
-          {!news.isLoading && !news.isError && !news.data?.items.length && (
-            <p className="jobs-empty" role="status">
-              No recent hiring news for these filters — widen the function or region selection.
-            </p>
-          )}
-          {news.data?.items.slice(0, 10).map((item) => {
-            const date = item.published ? new Date(item.published) : null;
-            const validDate =
-              date && Number.isFinite(date.getTime()) ? date.toISOString().slice(0, 10) : null;
-            return (
-              <a
-                key={item.url}
-                href={item.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="jobs-news-card"
-              >
-                <div>
-                  <h3>{item.title}</h3>
-                  <p>
-                    {item.source}
-                    {validDate && (
-                      <>
-                        {" "}
-                        · <time dateTime={validDate}>{validDate}</time>
-                      </>
-                    )}
-                  </p>
-                </div>
-                <span className="jobs-news-category">Hiring news</span>
-                <ArrowUpRight size={18} aria-hidden="true" />
-              </a>
-            );
-          })}
-        </div>
-      </section>
-
-      <EmployerDirectory />
-
-      <MotionReveal className="jobs-endnote">
-        <div>
-          <CheckCircle2 size={22} aria-hidden="true" />
-          <div>
-            <h2>Your next step starts at the source.</h2>
-            <p>
-              Openings and applications are hosted on employer and job-board websites. Check each
-              source for current availability and application details.
-            </p>
-          </div>
-        </div>
-        <Link className="jobs-button" to="/contact">
-          Contact the careers desk <ArrowUpRight size={16} />
-        </Link>
-      </MotionReveal>
     </div>
   );
 }

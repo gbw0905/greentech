@@ -1,4 +1,4 @@
-import { geoEquirectangular, geoPath, geoGraticule10 } from "d3-geo";
+import { geoNaturalEarth1, geoPath, geoGraticule10 } from "d3-geo";
 import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { feature } from "topojson-client";
 import { Minus, Plus, Maximize2 } from "lucide-react";
@@ -37,6 +37,7 @@ const WIDTH = 900;
 const HEIGHT = 450;
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 8;
+const INITIAL_VIEW: View = { z: 1.2, x: -WIDTH * 0.1, y: -8 };
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 const constrain = (view: View): View => ({
   ...view,
@@ -55,7 +56,7 @@ const CountryShape = memo(function CountryShape({
   active: boolean;
   hovered: boolean;
   onHover: HoverHandler;
-  onSelect: (slug: string) => void;
+  onSelect: (slug: string, keyboard?: boolean) => void;
 }) {
   return (
     <path
@@ -68,6 +69,21 @@ const CountryShape = memo(function CountryShape({
       className={shape.country ? "jurisdiction-country" : "jurisdiction-untracked"}
       data-country={shape.country?.slug}
       data-selected={active || undefined}
+      data-hovered={hovered || undefined}
+      tabIndex={shape.country ? 0 : undefined}
+      role={shape.country ? "button" : undefined}
+      aria-haspopup={shape.country ? "dialog" : undefined}
+      aria-label={shape.country ? "Open " + shape.country.name + " summary" : undefined}
+      onFocus={(event) =>
+        onHover(shape.country?.slug ?? null, event.currentTarget.getBoundingClientRect())
+      }
+      onBlur={() => onHover(null)}
+      onKeyDown={(event) => {
+        if ((event.key === "Enter" || event.key === " ") && shape.country) {
+          event.preventDefault();
+          onSelect(shape.country.slug, true);
+        }
+      }}
       onPointerEnter={(event) =>
         onHover(shape.country?.slug ?? null, event.currentTarget.getBoundingClientRect())
       }
@@ -90,7 +106,7 @@ const CountryLayer = memo(function CountryLayer({
   active: string | null;
   hover: string | null;
   onHover: HoverHandler;
-  onSelect: (slug: string) => void;
+  onSelect: (slug: string, keyboard?: boolean) => void;
 }) {
   return shapes.map((shape) => (
     <CountryShape
@@ -118,7 +134,7 @@ export function WorldPolicyMap({
   const [hover, setHover] = useState<string | null>(null);
   const [hoverBounds, setHoverBounds] = useState<{ left: number; right: number } | null>(null);
   const [tip, setTip] = useState<Point | null>(null);
-  const [view, setView] = useState<View>({ z: 1, x: 0, y: 0 });
+  const [view, setView] = useState<View>(INITIAL_VIEW);
   const [tooltipSize, setTooltipSize] = useState({ width: 248, height: 222 });
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -128,6 +144,26 @@ export function WorldPolicyMap({
   const drag = useRef<{ start: Point; original: View; pointerId: number } | null>(null);
   const moved = useRef(false);
   const tooltipId = useId();
+  const dismissTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const keepTooltip = useCallback(() => {
+    if (dismissTimer.current) clearTimeout(dismissTimer.current);
+    dismissTimer.current = null;
+  }, []);
+  const dismissTooltip = useCallback(() => {
+    keepTooltip();
+    dismissTimer.current = setTimeout(() => {
+      if (tooltipRef.current?.contains(document.activeElement)) return;
+      if (
+        document.activeElement?.matches(".jurisdiction-country") &&
+        containerRef.current?.contains(document.activeElement)
+      )
+        return;
+      setHover(null);
+      setHoverBounds(null);
+      setTip(null);
+    }, 650);
+  }, [keepTooltip]);
+  useEffect(() => () => keepTooltip(), [keepTooltip]);
   const { data: marketData, isFetching } = useQuery({
     queryKey: ["country-indices"],
     queryFn: () => getCountryIndicesFn(),
@@ -155,10 +191,20 @@ export function WorldPolicyMap({
     return () => controller.abort();
   }, []);
 
-  const { path, graticule } = useMemo(() => {
-    const projection = geoEquirectangular().fitSize([WIDTH, HEIGHT], { type: "Sphere" });
+  const { path, graticule, sphere } = useMemo(() => {
+    const projection = geoNaturalEarth1().fitExtent(
+      [
+        [18, 6],
+        [WIDTH - 18, HEIGHT - 6],
+      ],
+      { type: "Sphere" },
+    );
     const path = geoPath(projection);
-    return { path, graticule: path(geoGraticule10()) ?? "" };
+    return {
+      path,
+      graticule: path(geoGraticule10()) ?? "",
+      sphere: path({ type: "Sphere" }) ?? "",
+    };
   }, []);
   const byMapName = useMemo(
     () =>
@@ -178,7 +224,7 @@ export function WorldPolicyMap({
           path: path(geo as never) ?? "",
           country,
           color: MAP_STATUS_COLORS[policyStatusFor(country)],
-          opacity: country ? (count > 0 ? Math.min(0.7 + count * 0.04, 0.95) : 0.55) : 1,
+          opacity: country ? (count > 0 ? Math.min(0.72 + count * 0.04, 1) : 0.62) : 1,
         };
       }),
     [features, byMapName, path, counts],
@@ -210,6 +256,7 @@ export function WorldPolicyMap({
     const node = containerRef.current;
     if (!node) return;
     const onWheel = (event: WheelEvent) => {
+      if ((event.target as Element).closest(".jurisdiction-tooltip")) return;
       const delta =
         event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? node.clientHeight : 1);
       // Let the page continue scrolling once the map has reached its minimum zoom.
@@ -221,21 +268,36 @@ export function WorldPolicyMap({
     return () => node.removeEventListener("wheel", onWheel);
   }, [localPoint, zoomAt]);
 
-  const handleHover = useCallback<HoverHandler>((slug, countryBounds) => {
-    if (drag.current) return;
-    setHover(slug);
-    if (!slug) setHoverBounds(null);
-    else if (countryBounds && containerRef.current) {
-      const canvasLeft = containerRef.current.getBoundingClientRect().left;
-      setHoverBounds({
-        left: countryBounds.left - canvasLeft,
-        right: countryBounds.right - canvasLeft,
-      });
-    }
-  }, []);
+  const handleHover = useCallback<HoverHandler>(
+    (slug, countryBounds) => {
+      if (drag.current) return;
+      if (!slug) {
+        dismissTooltip();
+        return;
+      }
+      keepTooltip();
+      setHover(slug);
+      if (countryBounds && containerRef.current) {
+        const canvas = containerRef.current.getBoundingClientRect();
+        setHoverBounds({
+          left: countryBounds.left - canvas.left,
+          right: countryBounds.right - canvas.left,
+        });
+        setTip({
+          x: (countryBounds.left + countryBounds.right) / 2 - canvas.left,
+          y: (countryBounds.top + countryBounds.bottom) / 2 - canvas.top,
+        });
+      }
+    },
+    [dismissTooltip, keepTooltip],
+  );
   const handleSelect = useCallback(
-    (slug: string) => {
-      if (!moved.current) onSelect(slug);
+    (slug: string, keyboard = false) => {
+      if (keyboard || !moved.current) {
+        setHover(null);
+        setTip(null);
+        onSelect(slug);
+      }
     },
     [onSelect],
   );
@@ -303,6 +365,7 @@ export function WorldPolicyMap({
           data-zoom={view.z.toFixed(2)}
           onPointerDown={(event) => {
             if (!event.isPrimary || event.button !== 0) return;
+            keepTooltip();
             moved.current = false;
             drag.current = {
               start: localPoint(event.clientX, event.clientY),
@@ -315,7 +378,10 @@ export function WorldPolicyMap({
             const rect = node.getBoundingClientRect();
             const current = drag.current;
             if (!current) {
-              setTip({ x: event.clientX - rect.left, y: event.clientY - rect.top });
+              // Freeze the card while crossing the gap to its Details link.
+              if ((event.target as Element).closest("[data-country]")) {
+                setTip({ x: event.clientX - rect.left, y: event.clientY - rect.top });
+              }
               return;
             }
             if (event.pointerId !== current.pointerId) return;
@@ -349,20 +415,18 @@ export function WorldPolicyMap({
             drag.current = null;
           }}
           onPointerLeave={() => {
-            if (!drag.current) {
-              setHover(null);
-              setTip(null);
-            }
+            if (!drag.current) dismissTooltip();
           }}
         >
           <svg
             ref={svgRef}
             viewBox={"0 0 " + WIDTH + " " + HEIGHT}
             className="jurisdiction-map-svg"
-            role="img"
+            role="group"
             aria-label="World map of biofuel policy activity"
           >
             <g transform={"translate(" + view.x + "," + view.y + ") scale(" + view.z + ")"}>
+              <path d={sphere} className="jurisdiction-sphere" vectorEffect="non-scaling-stroke" />
               <path
                 d={graticule}
                 className="jurisdiction-graticule"
@@ -378,11 +442,52 @@ export function WorldPolicyMap({
             </g>
           </svg>
           {hovered && tip && (
+            <button
+              type="button"
+              onClick={() => handleSelect(hovered.slug, true)}
+              tabIndex={-1}
+              aria-hidden="true"
+              className="jurisdiction-tooltip-bridge"
+              style={{
+                left: Math.min(tip.x, tipLeft),
+                top: tipTop,
+                width: Math.max(
+                  0,
+                  tipLeft > tip.x ? tipLeft - tip.x : tip.x - tipLeft - tooltipSize.width,
+                ),
+                height: tooltipSize.height,
+                clipPath:
+                  tipLeft > tip.x
+                    ? `polygon(0 ${clamp(tip.y - tipTop, 0, tooltipSize.height)}px, 100% 0, 100% 100%)`
+                    : `polygon(0 0, 100% ${clamp(tip.y - tipTop, 0, tooltipSize.height)}px, 0 100%)`,
+                ...(tipLeft < tip.x ? { left: tipLeft + tooltipSize.width } : {}),
+              }}
+              onPointerEnter={keepTooltip}
+              onPointerLeave={dismissTooltip}
+              onPointerDown={(event) => event.stopPropagation()}
+              onPointerMove={(event) => event.stopPropagation()}
+            />
+          )}
+          {hovered && tip && (
             <div
               ref={tooltipRef}
               id={tooltipId}
-              role="tooltip"
+              role="group"
+              aria-label={hovered.name + " summary"}
               className="jurisdiction-tooltip"
+              onPointerEnter={keepTooltip}
+              onPointerLeave={dismissTooltip}
+              onFocusCapture={keepTooltip}
+              onBlurCapture={dismissTooltip}
+              onPointerDown={(event) => event.stopPropagation()}
+              onPointerMove={(event) => event.stopPropagation()}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") {
+                  keepTooltip();
+                  setHover(null);
+                  setTip(null);
+                }
+              }}
               style={{ left: tipLeft, top: tipTop }}
             >
               <h3>{hovered.name}</h3>
@@ -429,6 +534,14 @@ export function WorldPolicyMap({
                   <dd>{hovered.region}</dd>
                 </div>
               </dl>
+              <button
+                type="button"
+                onClick={() => handleSelect(hovered.slug, true)}
+                className="jurisdiction-tooltip-details"
+                aria-label={"Open " + hovered.name + " summary"}
+              >
+                Summary
+              </button>
             </div>
           )}
           <div
@@ -457,7 +570,7 @@ export function WorldPolicyMap({
                 type="button"
                 aria-label="Reset view"
                 onClick={() => {
-                  setView({ z: 1, x: 0, y: 0 });
+                  setView(INITIAL_VIEW);
                   setHover(null);
                   setTip(null);
                 }}
@@ -483,7 +596,7 @@ export function WorldPolicyMap({
             </span>
           ))}
         </div>
-        <p>Scroll to zoom · drag to pan · click a country to load its profile below</p>
+        <p>Scroll to zoom · drag to pan · click for a country summary</p>
       </footer>
     </>
   );

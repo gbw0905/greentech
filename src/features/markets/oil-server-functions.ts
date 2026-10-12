@@ -1,3 +1,4 @@
+import { MARKET_BENCHMARKS } from "./benchmarks";
 import { createServerFn } from "@tanstack/react-start";
 
 export type OilQuote = {
@@ -23,7 +24,10 @@ async function loadSymbol(symbol: string, label: string, unit: string): Promise<
   try {
     const res = await fetch(
       `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=1mo&interval=1d`,
-      { headers: { "User-Agent": "Mozilla/5.0", Accept: "application/json" } },
+      {
+        headers: { "User-Agent": "Mozilla/5.0", Accept: "application/json" },
+        signal: AbortSignal.timeout(10_000),
+      },
     );
     if (!res.ok) return null;
     const json = (await res.json()) as { chart?: { result?: YahooOilChart[] } };
@@ -37,7 +41,7 @@ async function loadSymbol(symbol: string, label: string, unit: string): Promise<
       if (typeof c === "number" && Number.isFinite(c)) series.push({ t: ts[i]! * 1000, c });
     }
     const price = r.meta?.regularMarketPrice ?? series[series.length - 1]?.c;
-    if (typeof price !== "number") return null;
+    if (typeof price !== "number" || !Number.isFinite(price)) return null;
     const prevClose = series[series.length - 2]?.c ?? r.meta?.chartPreviousClose ?? price;
     return {
       symbol,
@@ -58,14 +62,12 @@ async function loadSymbol(symbol: string, label: string, unit: string): Promise<
 
 export const getOilPricesFn = createServerFn({ method: "GET" }).handler(async () => {
   const { cacheGet, cacheSet } = await import("./server/market-cache.server");
-  const [wti, spx, gas] = await Promise.all([
-    loadSymbol("CL=F", "WTI Crude", "/bbl"),
-    loadSymbol("^GSPC", "S&P 500", "index"),
-    loadSymbol("NG=F", "Natural Gas", "/MMBtu"),
-  ]);
-  const fresh = [wti, spx, gas].filter(Boolean) as OilQuote[];
+  const results = await Promise.all(
+    MARKET_BENCHMARKS.map(({ symbol, label, unit }) => loadSymbol(symbol, label, unit)),
+  );
+  const fresh = results.filter((quote): quote is OilQuote => quote !== null);
   const cached = cacheGet<OilQuote[]>("oil-prices");
-  if (fresh.length === 3) {
+  if (fresh.length === MARKET_BENCHMARKS.length) {
     cacheSet("oil-prices", fresh);
     return { quotes: fresh, stale: false, asOf: Date.now() };
   }

@@ -1,14 +1,17 @@
-import { MotionReveal } from "@/components/MotionReveal";
+import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowUp, Linkedin } from "lucide-react";
-import { AlertSignup } from "@/features/alerts/components/AlertSignup";
 import { feedQuery } from "@/features/policy/feed-query";
+import { FooterNewsletter } from "./FooterNewsletter";
 import siteLogo from "@/assets/logo.png";
+import "./IntelligenceFooter.css";
 
 export function IntelligenceFooter() {
   const { data: feed } = useQuery(feedQuery);
-  const scannedAt = feed?.fetchedAt ? new Date(feed.fetchedAt) : null;
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
+  const scannedAt = hydrated && feed?.fetchedAt ? new Date(feed.fetchedAt) : null;
   const lastScan =
     scannedAt && !Number.isNaN(scannedAt.getTime())
       ? scannedAt.toLocaleDateString("en-GB", {
@@ -19,93 +22,106 @@ export function IntelligenceFooter() {
         })
       : null;
   return (
-    <footer className="intelligence-footer">
-      <div className="intelligence-footer-inner">
-        <MotionReveal className="intelligence-footer-top">
-          <div className="intelligence-footer-about">
-            <Link to="/" className="intelligence-footer-brand">
-              <img src={siteLogo} width={40} height={40} alt="" />
+    <footer className="gbw-footer" id="footer">
+      <div className="footer-inner">
+        <div className="footer-top">
+          <div>
+            <Link to="/" className="footer-logo">
+              <img src={siteLogo} width={48} height={48} className="footer-logo-img" alt="" />
               <span>
-                Global Bioenergy Watch<small>Policy, Markets, Sustainability</small>
+                <span className="footer-brand-name">Global Bioenergy Watch</span>
+                <span className="footer-brand-tag">Policy, Markets, Sustainability</span>
               </span>
             </Link>
-            <p>
+            <p className="footer-blurb">
               A live intelligence desk tracking bioenergy policy, markets, companies and careers
               across every jurisdiction — from ethanol and biodiesel to SAF and emerging feedstocks
               like UCO.
             </p>
-            <span className="intelligence-footer-status">
-              <i />
+            <span className="footer-status">
+              <i className="status-pulse" aria-hidden="true" />
               {lastScan ? `Last scan ${lastScan}` : "Policy · Markets · Sustainability"}
             </span>
           </div>
-          <section
-            id="alerts"
-            className="intelligence-footer-brief scroll-mt-[88px]"
-            aria-labelledby="daily-brief-title"
-          >
-            <h2 id="daily-brief-title">Get the daily brief</h2>
-            <p>
-              AI-summarised policy and market updates from around the world, delivered once a day.
-            </p>
-            <AlertSignup appearance="footer" />
-          </section>
-        </MotionReveal>
-        <nav className="intelligence-footer-columns" aria-label="Footer">
-          <div>
-            <h2>Platform</h2>
-            <Link to="/" hash="markets">
-              Live markets
-            </Link>
-            <Link to="/" hash="map">
-              Jurisdiction map
-            </Link>
-            <Link to="/supply">Supply and producers</Link>
-            <Link to="/jobs">Bioenergy careers</Link>
-            <Link to="/" hash="alerts">
-              Email alerts
-            </Link>
-          </div>
-          <div>
-            <h2>Coverage</h2>
-            <Link to="/mandates">Mandate tracker</Link>
-            <Link to="/data-sources">Data sources</Link>
-            <Link to="/document-analyzer">Document analyzer</Link>
-            <Link to="/ci-calculator">CI calculator</Link>
-            <Link to="/dairy-rng-calculator">Dairy RNG calculator</Link>
-          </div>
-          <div>
+          <FooterNewsletter />
+        </div>
+        <nav className="footer-links" aria-label="Footer">
+          <div className="footer-col">
             <h2>Company</h2>
-            <Link to="/about">About us</Link>
-            <Link to="/about/mission-vision">Mission &amp; vision</Link>
-            <Link to="/about/team">Team members</Link>
-            <Link to="/" hash="disclaimer">
-              What we do
-            </Link>
+            <ul>
+              <li>
+                <Link to="/about">About us</Link>
+              </li>
+              <li>
+                <Link to="/about/mission-vision">Mission &amp; vision</Link>
+              </li>
+              <li>
+                <Link to="/about/team">Team members</Link>
+              </li>
+              <li>
+                <Link to="/" hash="disclaimer">
+                  Method &amp; disclaimer
+                </Link>
+              </li>
+              <li>
+                <Link to="/jobs">Careers</Link>
+              </li>
+              <li>
+                <Link to="/videos">Videos</Link>
+              </li>
+            </ul>
           </div>
-          <div>
+          <div className="footer-col" id="footer-contact">
             <h2>Contact</h2>
-            <Link to="/contact">Contact us</Link>
-            <Link to="/videos">Videos</Link>
-            <a
-              className="intelligence-social"
-              href="https://www.linkedin.com/company/global-bioenergy-watch/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Global Bioenergy Watch on LinkedIn"
-            >
-              <Linkedin size={18} />
-            </a>
+            <ul>
+              <li>
+                <a href="mailto:info@globalbioenergywatch.org">info@globalbioenergywatch.org</a>
+              </li>
+              <li>
+                <a href="mailto:info@globalbioenergywatch.org?subject=Policy%20or%20market%20tip">
+                  Submit a tip
+                </a>
+              </li>
+              <li>
+                <a href="mailto:info@globalbioenergywatch.org?subject=Advertising%20enquiry">
+                  Advertise
+                </a>
+              </li>
+            </ul>
+            <div className="footer-social" aria-label="Social and media links">
+              <a
+                href="https://www.linkedin.com/company/global-bioenergy-watch/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Global Bioenergy Watch on LinkedIn"
+              >
+                <Linkedin />
+              </a>
+            </div>
           </div>
         </nav>
-        <div className="intelligence-footer-bottom">
-          <p>© 2026 Global Bioenergy Watch. All rights reserved.</p>
-          <div>
-            <Link to="/privacy">Privacy policy</Link>
-            <Link to="/terms">Terms of Use</Link>
-          </div>
-          <a href="#top" className="intelligence-back-top">
-            Back to top <ArrowUp size={14} />
+        <div className="footer-bottom">
+          <p className="footer-copy">© 2026 Global Bioenergy Watch. All rights reserved.</p>
+          <ul className="footer-legal">
+            <li>
+              <Link to="/privacy">Privacy policy</Link>
+            </li>
+            <li>
+              <Link to="/terms">Terms of use</Link>
+            </li>
+            <li>
+              <Link to="/privacy" hash="cookies">
+                Cookies
+              </Link>
+            </li>
+            <li>
+              <Link to="/" hash="disclaimer">
+                Disclaimer
+              </Link>
+            </li>
+          </ul>
+          <a className="footer-top-link" href="#top">
+            Back to top <ArrowUp />
           </a>
         </div>
       </div>

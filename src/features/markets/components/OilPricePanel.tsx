@@ -1,9 +1,11 @@
+import { MARKET_BENCHMARKS as BENCHMARKS } from "@/features/markets/benchmarks";
 import { MotionReveal } from "@/components/MotionReveal";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import {
   ChevronDown,
   Loader2,
+  Minus,
   RefreshCw,
   Sparkles,
   TrendingDown,
@@ -13,9 +15,13 @@ import {
 import { toast } from "sonner";
 import { getOilPricesFn, type OilQuote } from "@/features/markets/oil-server-functions";
 import { marketOutlookFn } from "@/features/markets/outlook-server-functions";
+import { windowChange } from "@/features/markets/lib/window-change";
+import { compareCloses } from "@/features/markets/lib/comparison";
+import benchmarkStyles from "./BenchmarkPanel.module.css";
+import periodStyles from "./MarketPeriod.module.css";
 
 const assetColor = (symbol: string) =>
-  symbol === "^GSPC" ? "#178a6b" : symbol === "NG=F" ? "#8262b5" : "#0e2a43";
+  BENCHMARKS.find((benchmark) => benchmark.symbol === symbol)?.color ?? "#0e2a43";
 const number = (value: number) =>
   value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const price = (q: OilQuote, value: number) => (q.unit === "index" ? "" : "$") + number(value);
@@ -144,7 +150,42 @@ function MarketCard({
   );
 }
 
-function MarketChart({ q }: { q: OilQuote }) {
+function UnavailableMarketCard({
+  benchmark,
+  loading,
+}: {
+  benchmark: (typeof BENCHMARKS)[number];
+  loading: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      className="benchmark-card benchmark-card-unavailable"
+      disabled
+      aria-label={`${benchmark.label}: ${loading ? "loading" : "data unavailable"}`}
+      style={marketStyle(benchmark.symbol)}
+    >
+      <span className="benchmark-card-row">
+        <span className="benchmark-card-name">{benchmark.label}</span>
+        <span className="benchmark-symbol">{benchmark.symbol}</span>
+      </span>
+      <span className="benchmark-card-row">
+        <span className="benchmark-card-price">
+          —<small>{benchmark.unit}</small>
+        </span>
+      </span>
+      <span className="benchmark-missing-history">
+        {loading ? "Loading prices…" : "Price data unavailable"}
+      </span>
+      <span className="benchmark-card-row benchmark-card-foot">
+        <span>30-day trend</span>
+        <b>—</b>
+      </span>
+    </button>
+  );
+}
+
+function MarketChart({ q, comparison }: { q: OilQuote; comparison: OilQuote | undefined }) {
   const container = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: 640, height: 300 });
   const [hover, setHover] = useState<number | null>(null);
@@ -160,7 +201,13 @@ function MarketChart({ q }: { q: OilQuote }) {
     observer.observe(node);
     return () => observer.disconnect();
   }, []);
-  const { low, high } = stats(q);
+  const shared = comparison ? compareCloses(q.series, comparison.series) : [];
+  const history = comparison ? shared : q.series;
+  const values = comparison
+    ? shared.flatMap((p) => [p.value, p.otherValue])
+    : q.series.map((p) => p.c);
+  const low = values.length ? Math.min(...values) : null;
+  const high = values.length ? Math.max(...values) : null;
   const left = size.width < 400 ? 48 : 56;
   const right = size.width - 14;
   const top = 22;
@@ -169,15 +216,26 @@ function MarketChart({ q }: { q: OilQuote }) {
   const floor = (low ?? 0) - span * 0.12;
   const ceiling = (high ?? 0) + span * 0.12;
   const scale = ceiling - floor || 1;
-  const points: Array<[number, number]> = q.series.map((point, i) => [
-    left + (i / Math.max(1, q.series.length - 1)) * (right - left),
-    bottom - ((point.c - floor) / scale) * (bottom - top),
-  ]);
+  const x = (t: number) =>
+    left +
+    ((t - (history[0]?.t ?? t)) / ((history.at(-1)?.t ?? t) - (history[0]?.t ?? t) || 1)) *
+      (right - left);
+  const y = (value: number) => bottom - ((value - floor) / scale) * (bottom - top);
+  const points: Array<[number, number]> = comparison
+    ? shared.map((p) => [x(p.t), y(p.value)])
+    : history.map((p) => [x(p.t), y(p.c)]);
+  const secondaryPoints: Array<[number, number]> = shared.map((p) => [x(p.t), y(p.otherValue)]);
   const line = curve(points);
   const active = hover === null ? points.length - 1 : Math.min(hover, points.length - 1);
   const point = points[active] ?? [left, bottom];
-  const quotePoint = q.series[active];
-  const previous = q.series[active - 1]?.c;
+  const quotePoint = history[active];
+  const comparisonPoint = shared[active];
+  const primaryIndex = quotePoint
+    ? q.series.findIndex(
+        (p) => Math.floor(p.t / 86_400_000) === Math.floor(quotePoint.t / 86_400_000),
+      )
+    : -1;
+  const previous = q.series[primaryIndex - 1]?.c;
   const daily =
     quotePoint && previous !== undefined && previous !== 0
       ? ((quotePoint.c - previous) / previous) * 100
@@ -193,16 +251,24 @@ function MarketChart({ q }: { q: OilQuote }) {
         role="group"
         aria-label={
           q.label +
+          (comparison ? " compared with " + comparison.label + ", start = 100. " : "") +
           " daily closing prices. Use left and right arrow keys to explore. " +
           (quotePoint ? date(quotePoint.t) + ": " + price(q, quotePoint.c) : "History unavailable.")
         }
         onPointerMove={(event) => {
           if (!points.length) return;
           const bounds = event.currentTarget.getBoundingClientRect();
-          const ratio = (event.clientX - bounds.left - left) / (right - left);
-          setHover(
-            Math.max(0, Math.min(points.length - 1, Math.round(ratio * (points.length - 1)))),
+          const ratio = Math.max(
+            0,
+            Math.min(1, (event.clientX - bounds.left - left) / (right - left)),
           );
+          const target = history[0]!.t + ratio * (history.at(-1)!.t - history[0]!.t);
+          let nearest = 0;
+          for (let index = 1; index < history.length; index++) {
+            if (Math.abs(history[index]!.t - target) < Math.abs(history[nearest]!.t - target))
+              nearest = index;
+          }
+          setHover(nearest);
         }}
         onPointerLeave={() => setHover(null)}
         onBlur={() => setHover(null)}
@@ -244,10 +310,19 @@ function MarketChart({ q }: { q: OilQuote }) {
                 </g>
               );
             })}
-            {points.length > 1 && (
+            {points.length > 1 && !comparison && (
               <path
+                className="benchmark-area"
                 d={line + " L" + right + "," + bottom + " L" + left + "," + bottom + " Z"}
                 fill={"url(#" + fillId + ")"}
+              />
+            )}
+            {comparison && secondaryPoints.length > 1 && (
+              <path
+                className="benchmark-line benchmark-comparison-line"
+                pathLength={1}
+                d={curve(secondaryPoints)}
+                style={{ stroke: assetColor(comparison.symbol) }}
               />
             )}
             <path className="benchmark-line" pathLength={1} d={line} />
@@ -259,7 +334,7 @@ function MarketChart({ q }: { q: OilQuote }) {
                 y={size.height - 8}
                 textAnchor={index === 0 ? "start" : index === points.length - 1 ? "end" : "middle"}
               >
-                {date(q.series[index]!.t)}
+                {date(history[index]!.t)}
               </text>
             ))}
             {hover !== null && (
@@ -271,11 +346,27 @@ function MarketChart({ q }: { q: OilQuote }) {
                 className="benchmark-crosshair"
               />
             )}
-            <circle cx={point[0]} cy={point[1]} r={10} fill="var(--market-color)" opacity=".14" />
-            <circle cx={point[0]} cy={point[1]} r={5} className="benchmark-point" />
+            {comparison && secondaryPoints[active] && (
+              <circle
+                cx={secondaryPoints[active]![0]}
+                cy={secondaryPoints[active]![1]}
+                r={5}
+                fill="#fff"
+                stroke={assetColor(comparison.symbol)}
+                strokeWidth={2.5}
+              />
+            )}
+            <g className="benchmark-end">
+              <circle cx={point[0]} cy={point[1]} r={10} fill="var(--market-color)" opacity=".14" />
+              <circle cx={point[0]} cy={point[1]} r={5} className="benchmark-point" />
+            </g>
           </svg>
         ) : (
-          <p className="benchmark-history-empty">Price history unavailable right now.</p>
+          <p className="benchmark-history-empty">
+            {comparison
+              ? "Not enough shared closing dates to compare these markets."
+              : "Price history unavailable right now."}
+          </p>
         )}
         {hover !== null && quotePoint && (
           <div
@@ -288,18 +379,34 @@ function MarketChart({ q }: { q: OilQuote }) {
           >
             <span>{date(quotePoint.t)}</span>
             <b>{price(q, quotePoint.c)}</b>
+            {comparison && comparisonPoint && (
+              <span>
+                {comparison.label}: {price(comparison, comparisonPoint.other)}
+              </span>
+            )}
             <span className={daily !== null && daily < 0 ? "negative" : "positive"}>
               {daily === null ? "First available close" : percent(daily) + " vs previous close"}
             </span>
           </div>
         )}
         <span className="sr-only" aria-live="polite">
-          {hover !== null && quotePoint ? date(quotePoint.t) + ", " + price(q, quotePoint.c) : ""}
+          {hover !== null && quotePoint
+            ? date(quotePoint.t) +
+              ", " +
+              price(q, quotePoint.c) +
+              (comparison && comparisonPoint
+                ? ", " + comparison.label + ": " + price(comparison, comparisonPoint.other)
+                : "")
+            : ""}
         </span>
       </div>
       <p className="benchmark-caption">
         <span>
-          {q.unit === "index" ? "Index level" : "Price (" + q.currency + " " + q.unit + ")"}
+          {comparison
+            ? "Indexed comparison · shared dates · start = 100"
+            : q.unit === "index"
+              ? "Index level"
+              : "Price (" + q.currency + " " + q.unit + ")"}
         </span>
         <span>Daily close, last 30 days</span>
       </p>
@@ -308,53 +415,101 @@ function MarketChart({ q }: { q: OilQuote }) {
 }
 
 function MarketStats({ q }: { q: OilQuote }) {
-  const { low, high, last } = stats(q);
-  const position =
-    last !== null && low !== null && high !== null && high !== low
-      ? Math.max(0, Math.min(1, (last - low) / (high - low)))
-      : 0.5;
+  const { last } = stats(q);
+  const [days, setDays] = useState(14);
+  const sliderId = useId();
+  const result = windowChange(q.series, days);
+  const direction =
+    !result || result.change === 0 ? "neutral" : result.change > 0 ? "positive" : "negative";
+  const ChangeIcon =
+    direction === "positive" ? TrendingUp : direction === "negative" ? TrendingDown : Minus;
+  const rangeStyle = { "--period-progress": ((days - 1) / 29) * 100 + "%" } as CSSProperties;
   return (
-    <div className="benchmark-stats">
-      <div
-        className="benchmark-stat benchmark-range-box"
-        role="group"
-        aria-label="30-day closing price range"
-      >
-        <div className="benchmark-stat-label">30-day range</div>
-        {low !== null && high !== null && last !== null ? (
-          <>
-            <div className="benchmark-range" aria-hidden="true">
-              <span className="benchmark-range-fill" style={{ width: position * 100 + "%" }} />
-              <span className="benchmark-range-dot" style={{ left: position * 100 + "%" }} />
-              <span
-                className="benchmark-range-chip"
-                style={{
-                  left: position * 100 + "%",
-                  transform: "translateX(-" + position * 100 + "%)",
-                }}
-              >
-                {price(q, last)}
+    <div className={periodStyles["card"]}>
+      <div role="group" aria-label={q.label + " period change calculator"}>
+        <div className={periodStyles["main"]}>
+          <div className={periodStyles["control"]}>
+            <div className={periodStyles["heading"]}>
+              <label htmlFor={sliderId}>Compare period</label>
+              <span className={periodStyles["days"]}>
+                {days} {days === 1 ? "day" : "days"}
               </span>
             </div>
-            <div className="benchmark-range-ends">
-              <span>{price(q, low)}</span>
-              <span>{price(q, high)}</span>
+            <input
+              id={sliderId}
+              type="range"
+              min={1}
+              max={30}
+              step={1}
+              value={days}
+              disabled={!result}
+              aria-label={q.label + " comparison period"}
+              aria-valuetext={days + " calendar " + (days === 1 ? "day" : "days")}
+              aria-describedby={sliderId + "-result"}
+              className={periodStyles["slider"]}
+              style={rangeStyle}
+              onChange={(event) => setDays(Number(event.currentTarget.value))}
+            />
+            <div className={periodStyles["ends"]} aria-hidden="true">
+              <span>1 day</span>
+              <span>30 days</span>
             </div>
-            <span className="sr-only">
-              Low {price(q, low)}, high {price(q, high)}, latest close {price(q, last)}.
-            </span>
-          </>
-        ) : (
-          <div className="benchmark-stat-value">—</div>
-        )}
-      </div>
-      <div className="benchmark-stat">
-        <div className="benchmark-stat-label">Latest close</div>
-        <div className="benchmark-stat-value">{last === null ? "—" : price(q, last)}</div>
-      </div>
-      <div className="benchmark-stat">
-        <div className="benchmark-stat-label">Previous close</div>
-        <div className="benchmark-stat-value">{price(q, q.prevClose)}</div>
+          </div>
+          <div id={sliderId + "-result"} aria-live="polite" aria-atomic="true">
+            {result ? (
+              <div
+                className={periodStyles["result"]}
+                data-direction={direction}
+                key={days + ":" + result.latest.t + ":" + result.latest.c}
+              >
+                <div className={periodStyles["resultTop"]}>
+                  <strong>{result.changePct === null ? "—" : percent(result.changePct)}</strong>
+                  <span className={periodStyles["trend"]}>
+                    <ChangeIcon size={14} aria-hidden="true" />
+                    {result.change > 0 ? "Increase" : result.change < 0 ? "Decrease" : "Unchanged"}
+                  </span>
+                </div>
+                <div className={periodStyles["prices"]}>
+                  <span>{price(q, result.baseline.c)}</span>
+                  <span className={periodStyles["priceArrow"]} aria-hidden="true">
+                    →
+                  </span>
+                  <span className="sr-only">to</span>
+                  <span>{price(q, result.latest.c)}</span>
+                </div>
+                <p className={periodStyles["dates"]}>
+                  {date(result.baseline.t)} – {date(result.latest.t)}
+                </p>
+                {(result.partial || result.elapsedDays !== days || result.changePct === null) && (
+                  <p className={periodStyles["note"]}>
+                    {result.partial
+                      ? `Only ${result.elapsedDays} days of history available for this ${days}-day selection.`
+                      : result.elapsedDays !== days
+                        ? `Previous trading close used (${result.elapsedDays} days ago).`
+                        : ""}
+                    {result.changePct === null
+                      ? " Percentage unavailable: starting close is zero."
+                      : ""}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p className={periodStyles["note"]}>
+                At least two daily closes are needed to calculate a change.
+              </p>
+            )}
+          </div>
+          <dl className={periodStyles["closes"]}>
+            <div>
+              <dt>Latest close</dt>
+              <dd>{last === null ? "—" : price(q, last)}</dd>
+            </div>
+            <div>
+              <dt>Previous close</dt>
+              <dd>{price(q, q.prevClose)}</dd>
+            </div>
+          </dl>
+        </div>
       </div>
     </div>
   );
@@ -372,6 +527,7 @@ export function OilPricePanel() {
     gcTime: Infinity,
   });
   const [selected, setSelected] = useState<string | null>(null);
+  const [compareSymbol, setCompareSymbol] = useState<string | null>(null);
   const [outlookOpen, setOutlookOpen] = useState(false);
   const [outlook, setOutlook] = useState<Record<string, Outlook>>({});
   const pendingOutlook = useRef(new Set<string>());
@@ -405,8 +561,14 @@ export function OilPricePanel() {
       pendingOutlook.current.delete(q.symbol);
     }
   };
-  const quotes = data?.quotes ?? [];
+  const quotes = BENCHMARKS.flatMap((benchmark) => {
+    const quote = data?.quotes.find((item) => item.symbol === benchmark.symbol);
+    return quote ? [quote] : [];
+  });
   const q = quotes.find((quote) => quote.symbol === selected) ?? quotes[0];
+  const comparison = quotes.find(
+    (quote) => quote.symbol === compareSymbol && quote.symbol !== q?.symbol,
+  );
   const selectedOutlook = q ? outlook[q.symbol] : undefined;
   const stale = data?.stale ?? false;
   const asOf = data?.asOf ?? dataUpdatedAt;
@@ -420,14 +582,11 @@ export function OilPricePanel() {
   const trend = q ? stats(q).trend : null;
 
   return (
-    <div className="benchmark-inner">
+    <div className={`benchmark-inner ${benchmarkStyles["presentation"]}`}>
       <MotionReveal as="header" className="benchmark-header">
         <div>
-          <h2 id="markets-title">Crude oil, S&amp;P 500 and natural gas prices in real time</h2>
-          <p>
-            Live benchmark markets that move biofuel economics: 30-day trend, daily change and last
-            close for each.
-          </p>
+          <h2 id="markets-title">Benchmark prices that move biofuel economics</h2>
+          <p>Daily change, 30-day trends and side-by-side comparisons.</p>
         </div>
         <div className="benchmark-meta">
           <span className="benchmark-live">
@@ -458,112 +617,177 @@ export function OilPricePanel() {
           Price feed unavailable right now.
         </p>
       )}
-      {q && (
-        <div className="benchmark-layout">
-          <div className="benchmark-cards" role="group" aria-label="Choose a benchmark">
-            {quotes.map((quote) => (
-              <MarketCard
-                key={quote.symbol}
-                q={quote}
-                active={q.symbol === quote.symbol}
-                onSelect={() => {
-                  if (q.symbol !== quote.symbol) {
-                    setSelected(quote.symbol);
-                    setOutlookOpen(false);
-                  }
-                }}
-              />
-            ))}
-          </div>
-          <article
-            className="benchmark-panel"
-            id="benchmark-detail"
-            aria-label={q.label + " market details"}
-            style={marketStyle(q.symbol)}
-          >
-            <div className="benchmark-body" key={q.symbol}>
-              <div className="benchmark-panel-top">
-                <div className="benchmark-id">
-                  <h3>{q.label}</h3>
-                  <span className="benchmark-symbol">{q.symbol}</span>
-                </div>
-                <span
-                  className={
-                    "benchmark-trend " + (trend !== null && trend < 0 ? "negative" : "positive")
-                  }
-                >
-                  {trend === null ? "—" : percent(trend)} 30D
-                </span>
-              </div>
-              <div className="benchmark-price-row">
-                <div className="benchmark-price">
-                  {price(q, q.price)}
-                  <small>{q.unit}</small>
-                </div>
-                <DailyBadge q={q} />
-                <span className="benchmark-daily">
-                  1D change{" "}
-                  <b className={q.change >= 0 ? "positive" : "negative"}>
-                    {q.change >= 0 ? "+" : ""}
-                    {number(q.change)}
-                  </b>
-                </span>
-              </div>
-              <MarketChart q={q} />
-              <MarketStats q={q} />
-            </div>
-            <div className="benchmark-outlook">
-              <button
-                type="button"
-                className="benchmark-ai"
-                aria-expanded={outlookOpen}
-                aria-controls={outlookId}
-                onClick={() => {
-                  setOutlookOpen(!outlookOpen);
-                  if (!outlookOpen && !selectedOutlook?.text) void requestOutlook(q);
-                }}
+      <div className="benchmark-layout">
+        <div className="benchmark-cards" role="group" aria-label="Choose a benchmark">
+          {BENCHMARKS.map((benchmark, index) => {
+            const quote = quotes.find((item) => item.symbol === benchmark.symbol);
+            return (
+              <MotionReveal
+                key={benchmark.symbol}
+                delay={(index + 1) * 0.09}
+                className="benchmark-card-reveal"
               >
-                <Sparkles size={16} aria-hidden="true" />
-                AI market outlook
-                <ChevronDown size={14} aria-hidden="true" />
-              </button>
-              <div id={outlookId} hidden={!outlookOpen} className="benchmark-ai-content">
-                <div className="benchmark-ai-actions">
-                  <span>{q.label}</span>
-                  <button
-                    type="button"
-                    onClick={() => void requestOutlook(q)}
-                    disabled={selectedOutlook?.loading}
-                  >
-                    <RefreshCw size={13} aria-hidden="true" />
-                    Regenerate
-                  </button>
-                  <button type="button" onClick={() => setOutlookOpen(false)}>
-                    <X size={13} aria-hidden="true" />
-                    Close
-                  </button>
-                </div>
-                <p aria-live="polite">
-                  {selectedOutlook?.loading ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin" aria-hidden="true" />
-                      Writing an outlook from the latest price action…
-                    </>
-                  ) : (
-                    selectedOutlook?.error ||
-                    selectedOutlook?.text ||
-                    "Generate an outlook from this market’s current price series."
-                  )}
-                </p>
-                <small>
-                  AI-generated from the 30-day price series shown above. May contain errors — always
-                  cross-verify before acting.
-                </small>
-              </div>
-            </div>
-          </article>
+                {quote ? (
+                  <MarketCard
+                    q={quote}
+                    active={q?.symbol === quote.symbol}
+                    onSelect={() => {
+                      if (q?.symbol !== quote.symbol) {
+                        setSelected(quote.symbol);
+                        setCompareSymbol(null);
+                        setOutlookOpen(false);
+                      }
+                    }}
+                  />
+                ) : (
+                  <UnavailableMarketCard benchmark={benchmark} loading={isLoading} />
+                )}
+              </MotionReveal>
+            );
+          })}
         </div>
-      )}
+        {q && (
+          <MotionReveal delay={0.18} className="benchmark-panel-reveal">
+            <article
+              className="benchmark-panel"
+              id="benchmark-detail"
+              aria-label={q.label + " market details"}
+              style={marketStyle(q.symbol)}
+            >
+              <div className="benchmark-body" key={q.symbol}>
+                <div className="benchmark-panel-top">
+                  <div className="benchmark-id">
+                    <h3>{q.label}</h3>
+                    <span className="benchmark-symbol">{q.symbol}</span>
+                  </div>
+                  <span
+                    className={
+                      "benchmark-trend " + (trend !== null && trend < 0 ? "negative" : "positive")
+                    }
+                  >
+                    {trend === null ? "—" : percent(trend)} · 30-day history
+                  </span>
+                </div>
+                <div className="benchmark-price-row">
+                  <div className="benchmark-price">
+                    {price(q, q.price)}
+                    <small>{q.unit}</small>
+                  </div>
+                  <DailyBadge q={q} />
+                  <span className="benchmark-daily">
+                    1D change{" "}
+                    <b className={q.change >= 0 ? "positive" : "negative"}>
+                      {q.change >= 0 ? "+" : ""}
+                      {number(q.change)}
+                    </b>
+                  </span>
+                </div>
+                <div
+                  className="benchmark-compare"
+                  role="group"
+                  aria-label="Compare with another benchmark"
+                >
+                  <span>Compare with</span>
+                  {BENCHMARKS.filter((benchmark) => benchmark.symbol !== q.symbol).map(
+                    (benchmark) => {
+                      const quote = quotes.find((item) => item.symbol === benchmark.symbol);
+                      return (
+                        <button
+                          type="button"
+                          key={benchmark.symbol}
+                          disabled={!quote}
+                          title={!quote ? "Price data unavailable" : undefined}
+                          aria-pressed={comparison?.symbol === benchmark.symbol}
+                          style={marketStyle(benchmark.symbol)}
+                          onClick={() =>
+                            setCompareSymbol((current) =>
+                              current === benchmark.symbol ? null : benchmark.symbol,
+                            )
+                          }
+                        >
+                          <i aria-hidden="true" />
+                          {benchmark.label}
+                        </button>
+                      );
+                    },
+                  )}
+                </div>
+                {comparison && (
+                  <div className="benchmark-comparison-legend" aria-live="polite">
+                    <span style={marketStyle(q.symbol)}>
+                      <i />
+                      {q.label}
+                    </span>
+                    <span style={marketStyle(comparison.symbol)}>
+                      <i />
+                      {comparison.label}
+                    </span>
+                  </div>
+                )}
+                <MarketChart key={comparison?.symbol ?? "price"} q={q} comparison={comparison} />
+                <MarketStats q={q} />
+              </div>
+              <p className="benchmark-why">
+                <b>Why it matters:</b>{" "}
+                {q.symbol === "CL=F" || q.symbol === "BZ=F"
+                  ? "Crude oil prices help explain the relative economics of biodiesel, renewable diesel and ethanol blending."
+                  : q.symbol === "^GSPC" || q.symbol === "^NYA"
+                    ? "US equity benchmarks provide context for investment conditions across listed energy companies and biofuel producers."
+                    : "Natural gas is an operating cost for biofuel plants and a benchmark for renewable natural gas markets."}
+              </p>
+              <div className="benchmark-outlook">
+                <button
+                  type="button"
+                  className="benchmark-ai"
+                  aria-expanded={outlookOpen}
+                  aria-controls={outlookId}
+                  onClick={() => {
+                    setOutlookOpen(!outlookOpen);
+                    if (!outlookOpen && !selectedOutlook?.text) void requestOutlook(q);
+                  }}
+                >
+                  <Sparkles size={16} aria-hidden="true" />
+                  AI market outlook
+                  <ChevronDown size={14} aria-hidden="true" />
+                </button>
+                <div id={outlookId} hidden={!outlookOpen} className="benchmark-ai-content">
+                  <div className="benchmark-ai-actions">
+                    <span>{q.label}</span>
+                    <button
+                      type="button"
+                      onClick={() => void requestOutlook(q)}
+                      disabled={selectedOutlook?.loading}
+                    >
+                      <RefreshCw size={13} aria-hidden="true" />
+                      Regenerate
+                    </button>
+                    <button type="button" onClick={() => setOutlookOpen(false)}>
+                      <X size={13} aria-hidden="true" />
+                      Close
+                    </button>
+                  </div>
+                  <p aria-live="polite">
+                    {selectedOutlook?.loading ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+                        Writing an outlook from the latest price action…
+                      </>
+                    ) : (
+                      selectedOutlook?.error ||
+                      selectedOutlook?.text ||
+                      "Generate an outlook from this market’s current price series."
+                    )}
+                  </p>
+                  <small>
+                    AI-generated from the 30-day price series shown above. May contain errors —
+                    always cross-verify before acting.
+                  </small>
+                </div>
+              </div>
+            </article>
+          </MotionReveal>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import "@/features/home/HomePage.css";
 import { loadNavigationFeed } from "@/features/policy/navigation-feed";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -92,15 +93,16 @@ function Dashboard() {
   const topFive = useMemo(() => data.updates.slice(0, 5), [data.updates]);
 
   return (
-    <div>
+    <main>
       <LiveMarquee />
 
-      <HomeHero updates={topFive} stats={stats} />
-      <LatestUpdatesSection updates={topFive} />
+      <HomeHero stats={stats} />
 
       <section id="markets" className="benchmark-section" aria-labelledby="markets-title">
         <OilPricePanel />
       </section>
+
+      <LatestUpdatesSection updates={topFive} />
 
       <PolicyMapSection counts={counts} />
 
@@ -113,6 +115,6 @@ function Dashboard() {
       )}
       <IndustryCarousel />
       <IntelligenceSection />
-    </div>
+    </main>
   );
 }

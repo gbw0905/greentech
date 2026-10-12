@@ -17,7 +17,6 @@ export const Route = createFileRoute("/sitemap.xml")({
         const entries: SitemapEntry[] = [
           { path: "/", changefreq: "daily", priority: "1.0" },
           { path: "/timeline", changefreq: "daily", priority: "0.9" },
-          { path: "/profiles", changefreq: "weekly", priority: "0.8" },
           ...COUNTRIES.flatMap((c) => [
             {
               path: `/countries/${c.slug}`,

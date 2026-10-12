@@ -1,0 +1,104 @@
+/* Centre navigation in the available space between the brand and account action. */
+@media (min-width: 1200px) {
+  .gbw-header .gbw-header-inner {
+    gap: 20px;
+  }
+  .gbw-header .gbw-desktop-nav {
+    flex: 1;
+    justify-content: center;
+  }
+  .gbw-header .gbw-header-actions {
+    margin-left: 0;
+  }
+  .gbw-header .gbw-brand {
+    font-size: 20px;
+    font-weight: 750;
+    gap: 12px;
+  }
+  .gbw-header .gbw-brand img {
+    width: 48px;
+    height: 48px;
+  }
+}
+.gbw-nav-menu .gbw-nav-item strong {
+  font-size: 16px;
+}
+@media (min-width: 1200px) and (max-width: 1350px) {
+  .gbw-header .gbw-header-inner {
+    gap: 12px;
+    padding-inline: 24px;
+  }
+  .gbw-header .gbw-brand {
+    font-size: 18px;
+    gap: 10px;
+  }
+  .gbw-header .gbw-brand img {
+    width: 44px;
+    height: 44px;
+  }
+}
+@media (max-width: 1199px) {
+  .gbw-header .gbw-brand {
+    font-size: 20px;
+    font-weight: 750;
+  }
+  .gbw-header .gbw-brand img {
+    width: 44px;
+    height: 44px;
+  }
+}
+@media (max-width: 620px) {
+  .gbw-header .gbw-brand {
+    font-size: 16px;
+  }
+  .gbw-header .gbw-brand img {
+    width: 38px;
+    height: 38px;
+  }
+}
+.gbw-nav-list {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.gbw-nav-group {
+  position: relative;
+}
+.gbw-nav-group > .gbw-nav-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  max-height: min(70svh, 500px);
+  animation: gbw-menu-enter 0.18s ease-out;
+}
+.gbw-nav-group > .gbw-nav-menu[data-align="end"] {
+  left: auto;
+  right: 0;
+}
+.gbw-nav-group > .gbw-nav-menu::before {
+  content: "";
+  position: absolute;
+  inset: -10px 0 auto;
+  height: 10px;
+}
+.gbw-nav-menu .gbw-nav-item:hover {
+  background: #eef6f3;
+}
+@keyframes gbw-menu-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gbw-nav-group > .gbw-nav-menu {
+    animation: none;
+  }
+}

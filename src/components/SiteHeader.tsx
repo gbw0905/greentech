@@ -1,179 +1,262 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { RefreshCw, Menu, X } from "lucide-react";
+import { ChevronDown, Menu, X } from "lucide-react";
 import { AuthButton } from "@/features/auth/components/AuthButton";
-import { AboutMenu } from "@/components/AboutMenu";
+import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import siteLogo from "@/assets/logo.png";
+import "./SiteHeader.css";
 
-const SECTIONS = [
-  { to: "/", hash: "markets", label: "Markets" },
-  { to: "/", hash: "map", label: "Jurisdiction map" },
-  { to: "/supply", label: "Supply and producers" },
-  { to: "/jobs", label: "Jobs" },
-  { to: "/", hash: "alerts", label: "Email alerts" },
-  { to: "/", hash: "disclaimer", label: "What we do" },
+// Every item points to an existing route; reference placeholders are not carried over.
+const NAV_GROUPS = [
+  {
+    label: "Benchmarks",
+    items: [],
+  },
+  {
+    label: "Global Markets",
+    items: [
+      {
+        to: "/",
+        hash: "map",
+        label: "Jurisdiction map",
+      },
+      {
+        to: "/timeline",
+        label: "Latest policy updates",
+      },
+      {
+        to: "/mandates",
+        label: "Mandate tracker",
+      },
+      { to: "/videos", label: "Videos" },
+    ],
+  },
+  {
+    label: "Datasets",
+    items: [
+      {
+        to: "/supply",
+        label: "Suppliers & producers",
+      },
+      {
+        to: "/data-sources",
+        label: "Data sources",
+      },
+    ],
+  },
+  {
+    label: "Products",
+    items: [
+      {
+        to: "/ci-calculator",
+        label: "CI calculator",
+      },
+      {
+        to: "/my-results",
+        label: "CI WorkSpace",
+      },
+      {
+        to: "/dairy-rng-calculator",
+        label: "Dairy RNG calculator",
+      },
+      {
+        to: "/document-analyzer",
+        label: "Policy Document Analyzer",
+      },
+    ],
+  },
+  {
+    label: "Bioenergy Jobs",
+    items: [
+      {
+        to: "/jobs",
+        label: "Open roles",
+      },
+    ],
+  },
+  {
+    label: "About Us",
+    items: [
+      { to: "/about", label: "What we do" },
+      {
+        to: "/about/mission-vision",
+        label: "Mission & vision",
+      },
+      { to: "/about/team", label: "Team members" },
+    ],
+  },
 ] as const;
 
 export function SiteHeader({
   activeSection = null,
-  busy = false,
-  onRescan,
 }: {
   activeSection?: "markets" | "supply" | "jobs" | null;
-  busy?: boolean;
-  onRescan: () => void;
 }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [mobileOpenGroup, setMobileOpenGroup] = useState<string | null>(null);
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const [hydrated, setHydrated] = useState(false);
   const locationHref = useRouterState({ select: (state) => state.location.href });
-  useEffect(() => setMobileNavOpen(false), [locationHref]);
+  const isHome = locationHref.split(/[?#]/)[0] === "/";
+  useEffect(() => setHydrated(true), []);
+  useEffect(() => {
+    setMobileNavOpen(false);
+    setMobileOpenGroup(null);
+    setOpenGroup(null);
+  }, [locationHref]);
+  const groupActive = (label: string) => {
+    const [pathAndSearch, locationHash] = locationHref.split("#");
+    const pathname = pathAndSearch!.split("?")[0]!;
+    // URL fragments are unavailable to the server during the initial render.
+    const hash = hydrated ? locationHash : undefined;
+    if (label === "Global Markets")
+      return (
+        hash === "map" ||
+        hash === "updates" ||
+        /^\/(countries|mandates|timeline|videos)(\/|$)/.test(pathname)
+      );
+    if (label === "Benchmarks") return hash === "markets";
+    if (label === "Datasets") return activeSection === "supply" || pathname === "/data-sources";
+    if (label === "Products")
+      return /^\/(ci-calculator|dairy-rng-calculator|my-results|document-analyzer)(\/|$)/.test(
+        pathname,
+      );
+    if (label === "Bioenergy Jobs") return activeSection === "jobs" || pathname === "/jobs";
+    if (label === "About Us") return /^\/about(\/|$)/.test(pathname);
+    return false;
+  };
+
   return (
-    <header className="sticky top-0 z-50 border-b border-[#d6e1ea] bg-white/[.88] font-['Instrument_Sans'] text-[#0e2a43] backdrop-blur-[14px] backdrop-saturate-[1.4]">
-      <div className="mx-auto flex h-16 max-w-[1240px] items-center gap-3 px-5 min-[621px]:px-8 min-[1160px]:gap-7">
-        <div className="flex min-w-0 items-center gap-3">
-          <Link to="/" aria-label="Home" className="shrink-0">
-            <img
-              src={siteLogo}
-              alt="Global Bioenergy Watch logo: a globe with a leaf and rising data line"
-              width={1024}
-              height={1024}
-              className="size-9 shrink-0 object-contain"
-            />
-          </Link>
-          <div className="min-w-0">
-            <a
-              href="https://www.linkedin.com/company/global-bioenergy-watch/?viewAsMember=true"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block truncate font-['Bricolage_Grotesque'] text-[1.05rem] leading-[1.15] font-semibold tracking-[-0.01em] text-[#0e2a43] no-underline"
-            >
-              Global Bioenergy Watch
-            </a>
-            <div className="hidden text-xs leading-[1.25] text-[#7b8ea0] min-[1160px]:block">
-              Policy, Markets, Sustainability
-            </div>
+    <header className="gbw-header">
+      <div className="gbw-header-inner">
+        <Link to="/" aria-label="Global Bioenergy Watch home" className="gbw-brand">
+          <img src={siteLogo} alt="Global Bioenergy Watch logo" width={1024} height={1024} />
+          <span>Global Bioenergy Watch</span>
+        </Link>
+        <NavigationMenu.Root
+          asChild
+          value={openGroup ?? ""}
+          onValueChange={(value) => setOpenGroup(value || null)}
+          delayDuration={80}
+          skipDelayDuration={250}
+        >
+          <nav aria-label="Primary" className="gbw-desktop-nav">
+            <NavigationMenu.List className="gbw-nav-list">
+              {NAV_GROUPS.map((group) => (
+                <NavigationMenu.Item
+                  key={group.label}
+                  value={group.label}
+                  className="gbw-nav-group"
+                >
+                  {group.label === "Bioenergy Jobs" || group.label === "Benchmarks" ? (
+                    <NavigationMenu.Link asChild>
+                      <Link
+                        to={group.label === "Benchmarks" ? "/" : "/jobs"}
+                        hash={group.label === "Benchmarks" ? "markets" : ""}
+                        className="gbw-nav-trigger"
+                        data-active={groupActive(group.label) || undefined}
+                        onPointerEnter={() => setOpenGroup(null)}
+                      >
+                        {group.label}
+                      </Link>
+                    </NavigationMenu.Link>
+                  ) : (
+                    <>
+                      <NavigationMenu.Trigger
+                        className="gbw-nav-trigger"
+                        data-active={groupActive(group.label) || undefined}
+                      >
+                        {group.label}
+                        <ChevronDown size={13} aria-hidden />
+                      </NavigationMenu.Trigger>
+                      <NavigationMenu.Content
+                        className="gbw-nav-menu"
+                        data-align={group.label === "About Us" ? "end" : "start"}
+                      >
+                        {group.items.map((item) => (
+                          <NavigationMenu.Link asChild key={item.label}>
+                            <Link
+                              to={item.to}
+                              hash={"hash" in item ? item.hash : ""}
+                              className="gbw-nav-item"
+                              onClick={() => setOpenGroup(null)}
+                            >
+                              <strong>{item.label}</strong>
+                            </Link>
+                          </NavigationMenu.Link>
+                        ))}
+                      </NavigationMenu.Content>
+                    </>
+                  )}
+                </NavigationMenu.Item>
+              ))}
+            </NavigationMenu.List>
+          </nav>
+        </NavigationMenu.Root>
+        <div className="gbw-header-actions">
+          <div className="gbw-auth">
+            <AuthButton entryMode={isHome ? "signin" : "signup"} />
           </div>
-        </div>
-
-        <nav aria-label="Page sections" className="hidden min-[1160px]:block">
-          <div className="flex items-center gap-0.5">
-            {SECTIONS.slice(0, 5).map((section, index) => (
-              <Link
-                key={section.label}
-                to={section.to}
-                hash={"hash" in section ? section.hash : ""}
-                className={`inline-flex h-9 items-center rounded-lg px-3 text-sm font-medium whitespace-nowrap transition-colors ${
-                  index ===
-                  (activeSection === "supply"
-                    ? 2
-                    : activeSection === "markets"
-                      ? 0
-                      : activeSection === "jobs"
-                        ? 3
-                        : -1)
-                    ? "bg-[#e3f4ee] text-[#178a6b]"
-                    : "text-[#4c6278] hover:bg-[#eef3f7] hover:text-[#0e2a43]"
-                }`}
-              >
-                {section.label}
-              </Link>
-            ))}
-            <AboutMenu />
-          </div>
-        </nav>
-
-        <div className="ml-auto flex shrink-0 items-center gap-3">
           <button
             type="button"
-            onClick={() => onRescan()}
-            disabled={busy}
-            aria-label="Rescan feeds"
-            className="hidden h-9 items-center justify-center gap-2 rounded-[9px] border border-[#d6e1ea] bg-white px-3 text-sm font-semibold text-[#0e2a43] transition-colors hover:border-[#178a6b] disabled:opacity-60 min-[561px]:inline-flex min-[621px]:px-3.5 min-[1160px]:min-w-[120px]"
-          >
-            <RefreshCw className={`size-3.5 ${busy ? "animate-spin" : ""}`} />
-            <span className="hidden min-[621px]:inline">Rescan</span>
-          </button>
-          <div className="[&_a]:grid [&_a]:size-10 [&_a]:place-items-center [&_a]:rounded-full [&_a]:border [&_a]:border-[#d6e1ea] [&_a]:bg-[#e3f4ee] [&_a]:p-0 [&_a]:text-[#178a6b] [&_a]:shadow-none [&_a]:hover:border-[#178a6b] [&_a_.auth-label]:sr-only [&_a_svg]:size-4 [&_button]:grid [&_button]:size-10 [&_button]:place-items-center [&_button]:rounded-full [&_button]:border [&_button]:border-[#d6e1ea] [&_button]:bg-[#e3f4ee] [&_button]:p-0 [&_button]:text-[#178a6b] [&_button]:shadow-none [&_button]:hover:border-[#178a6b] [&_button_span]:hidden [&>div>span]:hidden">
-            <AuthButton />
-          </div>
-          <button
-            type="button"
+            className="gbw-burger"
             aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileNavOpen}
+            aria-controls="gbw-mobile-nav"
             onClick={() => setMobileNavOpen((open) => !open)}
-            className="grid size-10 place-items-center rounded-[10px] border border-[#d6e1ea] bg-white text-[#0e2a43] min-[1160px]:hidden"
           >
-            {mobileNavOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+            {mobileNavOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </div>
-
-      <nav
-        aria-label="Mobile page sections"
-        className={`absolute top-full right-0 left-0 z-50 border-b border-[#d6e1ea] bg-white px-5 pt-2 pb-4 shadow-[0_24px_40px_-28px_rgba(14,42,67,.5)] transition-all duration-200 min-[1160px]:hidden ${
-          mobileNavOpen
-            ? "visible translate-y-0 opacity-100"
-            : "invisible pointer-events-none -translate-y-2 opacity-0"
-        }`}
-      >
-        {SECTIONS.map((section, index) => (
-          <Link
-            key={section.label}
-            to={section.to}
-            hash={"hash" in section ? section.hash : ""}
-            onClick={() => setMobileNavOpen(false)}
-            className={`block border-b border-[#d6e1ea] px-1 py-3 font-medium no-underline ${index === (activeSection === "supply" ? 2 : activeSection === "markets" ? 0 : activeSection === "jobs" ? 3 : -1) ? "text-[#178a6b]" : "text-[#0e2a43]"}`}
-          >
-            {section.label}
-          </Link>
-        ))}
-        <Link
-          to="/ci-calculator"
-          onClick={() => setMobileNavOpen(false)}
-          className="block border-b border-[#d6e1ea] px-1 py-3 font-medium text-[#0e2a43] no-underline"
-        >
-          CI calculator
-        </Link>
-        <Link
-          to="/videos"
-          onClick={() => setMobileNavOpen(false)}
-          className="block border-b border-[#d6e1ea] px-1 py-3 font-medium text-[#0e2a43] no-underline"
-        >
-          Videos
-        </Link>
-        <Link
-          to="/about"
-          onClick={() => setMobileNavOpen(false)}
-          className="block border-b border-[#d6e1ea] px-1 py-3 font-medium text-[#0e2a43] no-underline"
-        >
-          About us
-        </Link>
-        <Link
-          to="/about/mission-vision"
-          onClick={() => setMobileNavOpen(false)}
-          className="block border-b border-[#d6e1ea] px-1 py-3 font-medium text-[#0e2a43] no-underline"
-        >
-          Mission &amp; vision
-        </Link>
-        <Link
-          to="/about/team"
-          onClick={() => setMobileNavOpen(false)}
-          className="block border-b border-[#d6e1ea] px-1 py-3 font-medium text-[#0e2a43] no-underline"
-        >
-          Team members
-        </Link>
-        <button
-          type="button"
-          onClick={() => {
-            setMobileNavOpen(false);
-            onRescan();
+      {mobileNavOpen && (
+        <nav
+          id="gbw-mobile-nav"
+          aria-label="Mobile primary"
+          className="gbw-mobile-nav"
+          onKeyDown={(event) => {
+            if (event.key === "Escape") setMobileNavOpen(false);
           }}
-          disabled={busy}
-          className="mt-2 hidden w-full items-center justify-center gap-2 rounded-[9px] border border-[#d6e1ea] bg-white px-3 py-2.5 text-sm font-medium text-[#4c6278] disabled:opacity-60 max-[560px]:flex"
         >
-          <RefreshCw className={`size-3.5 ${busy ? "animate-spin" : ""}`} />
-          Rescan sources
-        </button>
-      </nav>
+          {NAV_GROUPS.map((group) =>
+            group.label === "Bioenergy Jobs" || group.label === "Benchmarks" ? (
+              <Link
+                key={group.label}
+                to={group.label === "Benchmarks" ? "/" : "/jobs"}
+                hash={group.label === "Benchmarks" ? "markets" : ""}
+                className="gbw-mobile-direct"
+                onClick={() => setMobileNavOpen(false)}
+              >
+                {group.label}
+              </Link>
+            ) : (
+              <details key={group.label} open={mobileOpenGroup === group.label}>
+                <summary
+                  onClick={(event) => {
+                    event.preventDefault();
+                    setMobileOpenGroup((current) => (current === group.label ? null : group.label));
+                  }}
+                >
+                  {group.label}
+                  <ChevronDown size={15} aria-hidden="true" />
+                </summary>
+                <div>
+                  {group.items.map((item) => (
+                    <Link
+                      key={item.label}
+                      to={item.to}
+                      hash={"hash" in item ? item.hash : ""}
+                      onClick={() => setMobileNavOpen(false)}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </details>
+            ),
+          )}
+        </nav>
+      )}
     </header>
   );
 }
