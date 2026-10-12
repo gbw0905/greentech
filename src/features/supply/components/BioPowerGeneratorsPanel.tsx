@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { ChartMap } from "@/components/ChartMap";
 import { Zap } from "lucide-react";
 import {
@@ -28,6 +30,8 @@ import { BIOPOWER_TICKERS } from "@/features/markets/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/features/markets/hooks/useEntityQuotes";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/features/markets/market-caps";
+import { getSupplyDatasetFn } from "@/features/supply/server-functions";
+import { SupplySourceFacts } from "./SupplySourceFacts";
 
 type Generator = {
   name: string;
@@ -799,12 +803,52 @@ function scatterAxes(metricKey: Metric) {
 
 const TITLE = "Global electricity generators using biofuel";
 const NEWS_SUFFIX = "biomass biogas power generation";
+const DYNAMIC_DATASET_ID = "bio-power";
+
+function formatFreshnessDate(value: string | null): string {
+  if (!value) return "not recorded";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("en", {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+  }).format(date);
+}
+
+function reportingYearLabel(years: number[]): string {
+  if (years.length === 0) return "reporting year not recorded";
+  return years.length === 1 ? `reporting year ${years[0]}` : `reporting years ${years.join(", ")}`;
+}
+
+function freshnessLabel(stale: boolean | null): string {
+  if (stale === null) return "freshness pending";
+  return stale ? "refresh due" : "fresh";
+}
+
+function dynamicReportingYears(rows: { observations: { reportingYear: number | null }[] }[]): number[] {
+  return [
+    ...new Set(
+      rows
+        .flatMap((row) => row.observations)
+        .map((observation) => observation.reportingYear)
+        .filter((year): year is number => typeof year === "number"),
+    ),
+  ].sort((a, b) => b - a);
+}
 
 export function BioPowerGeneratorsPanel() {
   const [metricKey, setMetricKey] = useState<Metric>("capacity");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
   const { get } = useEntityQuotes();
+  const { data: dynamicPayload } = useQuery({
+    queryKey: ["supply-dataset", DYNAMIC_DATASET_ID],
+    queryFn: () => getSupplyDatasetFn({ data: { datasetId: DYNAMIC_DATASET_ID } }),
+    staleTime: 15 * 60 * 1000,
+  });
+  const dynamicRows = dynamicPayload?.rows ?? [];
+  const dynamicYears = dynamicReportingYears(dynamicRows);
   const metric = METRICS[metricKey];
   const valueOf = (g: Generator) =>
     metricKey === "price" ? (get(BIOPOWER_TICKERS[g.name])?.price ?? 0) : metric.value(g);
@@ -982,7 +1026,24 @@ export function BioPowerGeneratorsPanel() {
             matched={ranked.length}
           />
         }
-        footnote={`Indicative biofuel-fired capacities from generator annual reports, IEA Bioenergy and national renewables registries. Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
+        footnote={`${dynamicRows.length ? "Ember country-level bioenergy power rows are ingested as source-backed market aggregates; operator-level chart rows remain fallback data until operator-specific structured sources are wired." : "Indicative biofuel-fired capacities from generator annual reports, IEA Bioenergy and national renewables registries."} Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
+        sourceMeta={
+          dynamicRows.length ? (
+            <p className="label-mono mt-2 text-xs text-muted-foreground">
+              Ember country markets: {dynamicRows.length} entities · {reportingYearLabel(dynamicYears)} ·
+              ingested {formatFreshnessDate(dynamicPayload?.latestIngest?.finishedAt ?? null)} ·{" "}
+              {freshnessLabel(dynamicPayload?.freshness?.stale ?? null)} · fallback rows reviewed{" "}
+              {dynamicPayload?.registry?.lastReviewed ?? "not recorded"} ·{" "}
+              <Link
+                to="/data-sources"
+                hash={DYNAMIC_DATASET_ID}
+                className="text-primary underline underline-offset-4"
+              >
+                Sources &amp; method
+              </Link>
+            </p>
+          ) : undefined
+        }
       >
         {ghgEmpty ? (
           <GhgEmptyNotice />
@@ -1052,6 +1113,7 @@ export function BioPowerGeneratorsPanel() {
           />
         )}
       </ChartPanel>
+      <SupplySourceFacts payload={dynamicPayload} />
     </>
   );
 }

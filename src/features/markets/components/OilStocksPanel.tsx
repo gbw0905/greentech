@@ -25,6 +25,8 @@ import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/componen
 import { type BrandedExport } from "@/shared/export/branded-export";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/features/markets/market-caps";
+import { getSupplyDatasetFn } from "@/features/supply/server-functions";
+import { SupplySourceFacts } from "@/features/supply/components/SupplySourceFacts";
 
 const fmt = (n: number, d = 2) =>
   n.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -338,6 +340,11 @@ export function OilStocksPanel() {
     placeholderData: keepPreviousData,
     gcTime: Infinity,
   });
+  const { data: dynamicPayload } = useQuery({
+    queryKey: ["supply-dataset", "oil-companies"],
+    queryFn: () => getSupplyDatasetFn({ data: { datasetId: "oil-companies" } }),
+    staleTime: 15 * 60 * 1000,
+  });
 
   const metric = STOCK_METRICS[metricKey];
   const quotes: OilQuote[] = data?.quotes ?? [];
@@ -558,6 +565,7 @@ export function OilStocksPanel() {
           />
         )}
       </ChartPanel>
+      <SupplySourceFacts payload={dynamicPayload} />
     </>
   );
 }

@@ -1231,6 +1231,7 @@ export function ChartPanel({
   viewLabel = "View",
   status,
   footnote,
+  sourceMeta,
   filters,
   actions,
 
@@ -1254,6 +1255,7 @@ export function ChartPanel({
   viewLabel?: string;
   status?: string;
   footnote?: string;
+  sourceMeta?: React.ReactNode;
   /** Optional buttons (e.g. export) rendered in the header. */
   actions?: React.ReactNode;
   /** Optional filter/search bar rendered between the header and the chart. */
@@ -1367,7 +1369,7 @@ export function ChartPanel({
 
       {title ? (
         <>
-          {datasetFor(title) ? (
+          {sourceMeta ?? (datasetFor(title) ? (
             <p className="dataset-provenance label-mono mt-2 text-xs text-muted-foreground">
               Figures as reported for {datasetFor(title)!.reportingYear} · last reviewed{" "}
               {datasetFor(title)!.lastReviewed} ·{" "}
@@ -1379,7 +1381,7 @@ export function ChartPanel({
                 Sources &amp; method
               </Link>
             </p>
-          ) : null}
+          ) : null)}
           <details className="dataset-sources mt-2 text-xs text-muted-foreground">
             <summary className="label-mono cursor-pointer text-foreground">
               Data sources &amp; references

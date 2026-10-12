@@ -2,7 +2,6 @@ import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { MotionReveal } from "@/components/MotionReveal";
 
@@ -63,7 +62,11 @@ export function AuthPage({ initialMode = "signin" }: { initialMode?: "signin" | 
   async function google() {
     setError("");
     try {
-      await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+      const { error: err } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: window.location.origin },
+      });
+      if (err) throw err;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Google sign-in failed.");
     }
@@ -72,7 +75,11 @@ export function AuthPage({ initialMode = "signin" }: { initialMode?: "signin" | 
   async function microsoft() {
     setError("");
     try {
-      await lovable.auth.signInWithOAuth("microsoft", { redirect_uri: window.location.origin });
+      const { error: err } = await supabase.auth.signInWithOAuth({
+        provider: "azure",
+        options: { redirectTo: window.location.origin },
+      });
+      if (err) throw err;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Microsoft sign-in failed.");
     }

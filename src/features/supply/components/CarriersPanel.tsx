@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ChartMap } from "@/components/ChartMap";
 import { Ship, Truck, TrainFront } from "lucide-react";
 import {
@@ -28,6 +29,10 @@ import { CARRIER_TICKERS } from "@/features/markets/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/features/markets/hooks/useEntityQuotes";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/features/markets/market-caps";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
+import { getSupplyDatasetFn } from "@/features/supply/server-functions";
+import type { SupplyDatasetPayload } from "@/features/supply/contracts";
+import { SupplySourceFacts } from "./SupplySourceFacts";
+import { metaString, metricRows, metricValue } from "./dynamic-supply-rows";
 
 type Carrier = {
   name: string;
@@ -743,6 +748,90 @@ function scatterAxes(metricKey: Metric) {
   };
 }
 
+const DYNAMIC_VOLUME_KEYS = ["volumeMnL", "biofuelVolumeMl", "volumeMl"];
+const DYNAMIC_SHARE_KEYS = ["share", "biofuelSharePct", "biofuelShare"];
+const IMO_AGGREGATE_VOLUME_KEYS = ["biofuelVolumeKt"];
+
+/**
+ * Overlay backend-scraped carrier-level rows onto a mode's fallback list.
+ * Only name-matched rows are replaced: approved sources publish no
+ * per-carrier biofuel figures today (IMO DCS is anonymised by design),
+ * so dynamic rows without a fallback counterpart carry no mode
+ * attribution and stay out of the mode charts. Fleet aggregates surface
+ * in CarrierAggregateNotice and SupplySourceFacts instead.
+ */
+function mergeDynamicCarriers(
+  payload: SupplyDatasetPayload | undefined,
+  fallback: Carrier[],
+): Carrier[] {
+  const rows = metricRows(payload, DYNAMIC_VOLUME_KEYS);
+  if (rows.length === 0) return fallback;
+  const byName = new Map(fallback.map((carrier) => [carrier.name, carrier]));
+  for (const row of rows) {
+    const volume = metricValue(row, DYNAMIC_VOLUME_KEYS);
+    if (volume === null) continue;
+    const existing = byName.get(row.name);
+    if (!existing) continue;
+    byName.set(row.name, {
+      ...existing,
+      volumeMnL: volume,
+      share: metricValue(row, DYNAMIC_SHARE_KEYS) ?? existing.share,
+      note: metaString(row.metadata["note"], existing.note),
+    });
+  }
+  return [...byName.values()];
+}
+
+function observationYear(row: SupplyDatasetPayload["rows"][number], keys: string[]): number | null {
+  return row.observations.find((item) => keys.includes(item.metricKey))?.reportingYear ?? null;
+}
+
+function CarrierAggregateNotice({ payload }: { payload: SupplyDatasetPayload | undefined }) {
+  const row = metricRows(payload, IMO_AGGREGATE_VOLUME_KEYS)[0];
+  if (!row) return null;
+
+  const biofuelKt = metricValue(row, IMO_AGGREGATE_VOLUME_KEYS);
+  const biofuelShare = metricValue(row, ["biofuelSharePct"]);
+  const totalFuelMt = metricValue(row, ["totalFuelMt"]);
+  const year = observationYear(row, IMO_AGGREGATE_VOLUME_KEYS);
+
+  return (
+    <section className="rounded-lg border border-border bg-card/80 p-4 shadow-sm">
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-foreground">Source-backed IMO fleet aggregate</h3>
+          <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
+            IMO DCS publishes anonymised fleet totals, not named carrier rows. The company charts below
+            remain curated fallback estimates until operator-level reports are wired one by one.
+          </p>
+        </div>
+        <div className="grid grid-cols-3 gap-3 text-right text-sm">
+          <div>
+            <div className="font-semibold text-foreground">
+              {biofuelKt === null ? "NR" : fmt(biofuelKt, 1)}
+            </div>
+            <div className="text-xs text-muted-foreground">kt biofuel</div>
+          </div>
+          <div>
+            <div className="font-semibold text-foreground">
+              {biofuelShare === null ? "NR" : `${fmt(biofuelShare, 3)}%`}
+            </div>
+            <div className="text-xs text-muted-foreground">fleet share</div>
+          </div>
+          <div>
+            <div className="font-semibold text-foreground">
+              {totalFuelMt === null ? "NR" : fmt(totalFuelMt, 1)}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Mt fuel{year ? `, ${year}` : ""}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function CarrierChart({
   title,
   blurb,
@@ -1005,38 +1094,52 @@ function CarrierChart({
 }
 
 export function CarriersPanel() {
+  const { data: dynamicPayload } = useQuery({
+    queryKey: ["supply-dataset", "carriers"],
+    queryFn: () => getSupplyDatasetFn({ data: { datasetId: "carriers" } }),
+    staleTime: 15 * 60 * 1000,
+  });
+  const shipping = useMemo(() => mergeDynamicCarriers(dynamicPayload, SHIPPING), [dynamicPayload]);
+  const trucking = useMemo(() => mergeDynamicCarriers(dynamicPayload, TRUCKING), [dynamicPayload]);
+  const rail = useMemo(() => mergeDynamicCarriers(dynamicPayload, RAIL), [dynamicPayload]);
+  const chartFootnote =
+    metricRows(dynamicPayload, IMO_AGGREGATE_VOLUME_KEYS).length > 0
+      ? "Chart rows are curated fallback carrier estimates; IMO DCS fleet-level fuel totals are source-backed in the aggregate section on this page."
+      : "Chart rows are curated fallback carrier estimates pending operator-level report parsers.";
   return (
     <div className="space-y-4">
+      <CarrierAggregateNotice payload={dynamicPayload} />
       <CarrierChart
         icon={Ship}
         title="Top global shipping carriers using biofuel"
         blurb="Container lines, ro-ro and ferry operators bunkering bio-blends, biomethane and green methanol."
-        data={SHIPPING}
+        data={shipping}
         yLabel="Shipping carrier"
         exportName="shipping-carriers-biofuel"
         newsSuffix="biofuel OR bio-bunker OR green methanol shipping"
-        footnote="Indicative annual bio-bunker volumes from carrier sustainability reports, FuelEU Maritime filings and bunkering disclosures. Click any bar for the latest news."
+        footnote={`${chartFootnote} Click any bar for the latest news.`}
       />
       <CarrierChart
         icon={Truck}
         title="Top global trucking carriers using biofuel"
         blurb="Road freight and logistics fleets running renewable diesel, HVO100, biodiesel blends and renewable natural gas."
-        data={TRUCKING}
+        data={trucking}
         yLabel="Trucking carrier"
         exportName="trucking-carriers-biofuel"
         newsSuffix="renewable diesel OR HVO OR renewable natural gas fleet"
-        footnote="Indicative annual renewable fuel volumes from fleet sustainability reports and low-carbon fuel programme filings. Click any bar for the latest news."
+        footnote={`${chartFootnote} Click any bar for the latest news.`}
       />
       <CarrierChart
         icon={TrainFront}
         title="Top global rail carriers using biofuel"
         blurb="Freight and passenger railroads blending renewable diesel, HVO100 and biodiesel in diesel locomotive fleets."
-        data={RAIL}
+        data={rail}
         yLabel="Rail carrier"
         exportName="rail-carriers-biofuel"
         newsSuffix="renewable diesel OR biodiesel locomotive rail"
-        footnote="Indicative annual biofuel volumes from railroad sustainability disclosures and national rail decarbonisation programmes. Click any bar for the latest news."
+        footnote={`${chartFootnote} Click any bar for the latest news.`}
       />
+      <SupplySourceFacts payload={dynamicPayload} />
     </div>
   );
 }

@@ -1,8 +1,6 @@
 import "@/infrastructure/telemetry/error-capture";
 
-import ExcelJS from "exceljs";
-import mammoth from "mammoth";
-import { PDFParse } from "pdf-parse";
+import type ExcelJS from "exceljs";
 import type { DocumentAnalysis } from "@/features/documents/contracts";
 
 export const MAX_FILE_BYTES = 15 * 1024 * 1024;
@@ -42,6 +40,7 @@ function splitText(text: string, source: string): Section[] {
 }
 
 async function extractPdf(data: Uint8Array): Promise<Section[]> {
+  const { PDFParse } = await import("pdf-parse");
   const parser = new PDFParse({ data });
   try {
     const result = await parser.getText();
@@ -52,6 +51,7 @@ async function extractPdf(data: Uint8Array): Promise<Section[]> {
 }
 
 async function extractDocx(buffer: Buffer): Promise<Section[]> {
+  const mammoth = await import("mammoth");
   const result = await mammoth.extractRawText({ buffer });
   return splitText(result.value, "Document");
 }
@@ -75,6 +75,7 @@ async function extractWorkbook(buffer: Buffer, ext: string): Promise<Section[]> 
       "Legacy .xls files are not supported. Save the workbook as .xlsx or CSV and try again.",
     );
   }
+  const { default: ExcelJS } = await import("exceljs");
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.load(buffer as unknown as ExcelJS.Buffer);
   const sections: Section[] = [];

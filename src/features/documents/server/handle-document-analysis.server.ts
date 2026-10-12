@@ -1,4 +1,3 @@
-import { analyzeDocument } from "@/features/documents/server/analyze-document.server";
 import { assertAiQuota } from "@/infrastructure/ai/quota.server";
 
 function clientKey(request: Request): string {
@@ -23,6 +22,7 @@ export async function handleDocumentAnalysis(request: Request): Promise<Response
       return Response.json({ error: "Enter keywords or a topic." }, { status: 400 });
     }
 
+    const { analyzeDocument } = await import("@/features/documents/server/analyze-document.server");
     return Response.json(await analyzeDocument(file, query));
   } catch (error) {
     const message = error instanceof Error ? error.message : "Document analysis failed.";

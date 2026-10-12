@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ChartMap } from "@/components/ChartMap";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { Fuel } from "lucide-react";
@@ -29,6 +30,10 @@ import type { FuelType } from "@/features/policy/taxonomy";
 import { STATION_TICKERS } from "@/features/markets/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/features/markets/hooks/useEntityQuotes";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/features/markets/market-caps";
+import { getSupplyDatasetFn } from "@/features/supply/server-functions";
+import type { SupplyDatasetPayload } from "@/features/supply/contracts";
+import { SupplySourceFacts } from "./SupplySourceFacts";
+import { metaString, metaStringList, metricRows, metricValue } from "./dynamic-supply-rows";
 
 type Station = {
   name: string;
@@ -1138,6 +1143,34 @@ function perSiteValue(s: Station) {
   return (s.volumeMnL * 1000) / Math.max(s.sites, 1);
 }
 
+const DYNAMIC_METRICS = ["biofuelVolumeMl", "volumeMnL", "biofuelVolumeSoldMl"];
+
+function mergeDynamicStations(payload: SupplyDatasetPayload | undefined): Station[] {
+  const rows = metricRows(payload, DYNAMIC_METRICS);
+  if (rows.length === 0) return STATIONS;
+  const byName = new Map(STATIONS.map((station) => [station.name, station]));
+  for (const row of rows) {
+    const volume = metricValue(row, DYNAMIC_METRICS);
+    if (volume === null) continue;
+    const fallback = byName.get(row.name);
+    const fuels = metaStringList(row.metadata["fuels"]);
+    byName.set(row.name, {
+      name: row.name,
+      country: row.country ?? metaString(row.metadata["country"], fallback?.country ?? "Unknown"),
+      flag: fallback?.flag ?? "",
+      volumeMnL: volume,
+      sites:
+        metricValue(row, ["sites", "biofuelSites", "retailSites", "dispensingSites"]) ??
+        fallback?.sites ??
+        1,
+      fuels: fuels.length ? (fuels as FuelType[]) : fallback?.fuels ?? [],
+      note: metaString(row.metadata["note"], fallback?.note ?? "Source-backed retail network row"),
+      color: fallback?.color ?? "var(--chart-3)",
+    });
+  }
+  return [...byName.values()];
+}
+
 /** Defines the scatter-plot axes for each selected metric so X and Y never collide. */
 function scatterAxes(metricKey: StationMetric) {
   if (metricKey === "sites") {
@@ -1195,14 +1228,20 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
   const { get } = useEntityQuotes();
+  const { data: dynamicPayload } = useQuery({
+    queryKey: ["supply-dataset", "fuel-stations"],
+    queryFn: () => getSupplyDatasetFn({ data: { datasetId: "fuel-stations" } }),
+    staleTime: 15 * 60 * 1000,
+  });
+  const allStations = useMemo(() => mergeDynamicStations(dynamicPayload), [dynamicPayload]);
   const metric = STATION_METRICS[stationMetric];
   const valueOf = (s: Station) =>
     stationMetric === "price" ? (get(STATION_TICKERS[s.name])?.price ?? 0) : metric.value(s);
 
-  const matched = STATIONS.filter(
+  const matched = allStations.filter(
     (s) => fuels.length === 0 || s.fuels.some((f) => fuels.includes(f)),
   );
-  const base = matched.length > 0 ? matched : STATIONS;
+  const base = matched.length > 0 ? matched : allStations;
   const f = useChartFilter(base, {
     text: (s) => `${s.name} ${s.country} ${s.note} ${s.fuels.join(" ")}`,
     facetA: (s) => s.country,
@@ -1464,6 +1503,7 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
           />
         )}
       </ChartPanel>
+      <SupplySourceFacts payload={dynamicPayload} />
     </>
   );
 }

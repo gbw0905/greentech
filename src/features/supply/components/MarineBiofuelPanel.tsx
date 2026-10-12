@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { ChartMap } from "@/components/ChartMap";
 import { Ship } from "lucide-react";
 import {
@@ -28,8 +30,12 @@ import { MARINE_TICKERS } from "@/features/markets/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/features/markets/hooks/useEntityQuotes";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/features/markets/market-caps";
+import { COUNTRY_NAME_FLAG } from "@/features/policy/taxonomy";
+import { getSupplyDatasetFn } from "@/features/supply/server-functions";
+import type { SupplyDatasetPayload, SupplyEntityRow } from "@/features/supply/contracts";
+import { SupplySourceFacts } from "./SupplySourceFacts";
 
-type MarineRole = "Supplier" | "User";
+type MarineRole = "Supplier" | "User" | "Port market";
 
 type MarineEntity = {
   name: string;
@@ -42,6 +48,8 @@ type MarineEntity = {
   reach: number;
   /** Typical blend level offered or bunkered, % FAME/HVO in VLSFO */
   blendPct: number;
+  blendReported?: boolean;
+  sourceBacked?: boolean;
   note: string;
 };
 
@@ -821,17 +829,118 @@ function scatterAxes(metricKey: Metric) {
 
 const TITLE = "Global marine biofuel suppliers and users";
 const NEWS_SUFFIX = "marine biofuel OR bio-bunker OR B30 bunkering";
+const DYNAMIC_DATASET_ID = "marine-biofuel";
+
+function observationValue(row: SupplyEntityRow, metricKey: string): number | null {
+  const value = row.observations.find((o) => o.metricKey === metricKey)?.value;
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function dynamicEntity(row: SupplyEntityRow): MarineEntity | null {
+  const volumeKt = observationValue(row, "volumeKt");
+  const reach = observationValue(row, "reach");
+  if (volumeKt === null || reach === null) return null;
+
+  const country = row.country ?? String(row.metadata["country"] ?? "Unknown");
+  const role =
+    row.metadata["role"] === "Port market" || row.entityType === "port-market"
+      ? "Port market"
+      : "Supplier";
+  const latestMonth = typeof row.metadata["latestMonth"] === "string" ? row.metadata["latestMonth"] : "";
+
+  return {
+    name: row.name,
+    country,
+    flag: COUNTRY_NAME_FLAG[country] ?? "Global",
+    role,
+    volumeKt,
+    reach,
+    blendPct: 0,
+    blendReported: false,
+    sourceBacked: true,
+    note: `Source-backed MPA bunker sales aggregate${latestMonth ? ` through ${latestMonth}` : ""}; supplier splits and blend percentages are not reported in this dataset`,
+  };
+}
+
+function mergeDynamicEntities(payload: SupplyDatasetPayload | undefined): {
+  entities: MarineEntity[];
+  dynamicCount: number;
+  sourceBacked: boolean;
+  reportingYears: number[];
+  latestIngestFinishedAt: string | null;
+  stale: boolean | null;
+} {
+  const dynamic = (payload?.rows ?? []).map(dynamicEntity).filter((e): e is MarineEntity => Boolean(e));
+  if (dynamic.length === 0) {
+    return {
+      entities: ENTITIES,
+      dynamicCount: 0,
+      sourceBacked: false,
+      reportingYears: [],
+      latestIngestFinishedAt: null,
+      stale: payload?.freshness?.stale ?? null,
+    };
+  }
+
+  const byName = new Map(ENTITIES.map((entity) => [entity.name, entity]));
+  for (const entity of dynamic) byName.set(entity.name, entity);
+  const reportingYears = [
+    ...new Set(
+      (payload?.rows ?? [])
+        .flatMap((row) => row.observations)
+        .map((observation) => observation.reportingYear)
+        .filter((year): year is number => typeof year === "number"),
+    ),
+  ].sort((a, b) => b - a);
+
+  return {
+    entities: [...byName.values()],
+    dynamicCount: dynamic.length,
+    sourceBacked: true,
+    reportingYears,
+    latestIngestFinishedAt: payload?.latestIngest?.finishedAt ?? null,
+    stale: payload?.freshness?.stale ?? null,
+  };
+}
+
+function formatFreshnessDate(value: string | null): string {
+  if (!value) return "not recorded";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("en", {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+  }).format(date);
+}
+
+function reportingYearLabel(years: number[]): string {
+  if (years.length === 0) return "reporting year not recorded";
+  return years.length === 1 ? `reporting year ${years[0]}` : `reporting years ${years.join(", ")}`;
+}
+
+function freshnessLabel(stale: boolean | null): string {
+  if (stale === null) return "freshness pending";
+  return stale ? "refresh due" : "fresh";
+}
 
 export function MarineBiofuelPanel() {
   const [metricKey, setMetricKey] = useState<Metric>("volume");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
   const { get } = useEntityQuotes();
+  const { data: dynamicPayload } = useQuery({
+    queryKey: ["supply-dataset", DYNAMIC_DATASET_ID],
+    queryFn: () => getSupplyDatasetFn({ data: { datasetId: DYNAMIC_DATASET_ID } }),
+    staleTime: 15 * 60 * 1000,
+  });
+  const dynamic = useMemo(() => mergeDynamicEntities(dynamicPayload), [dynamicPayload]);
+  const entities = dynamic.entities;
   const metric = METRICS[metricKey];
   const valueOf = (e: MarineEntity) =>
     metricKey === "price" ? (get(MARINE_TICKERS[e.name])?.price ?? 0) : metric.value(e);
 
-  const f = useChartFilter(ENTITIES, {
+  const f = useChartFilter(entities, {
     text: (e) => `${e.name} ${e.country} ${e.role} ${e.note}`,
     facetA: (e) => e.country,
     facetB: (e) => e.role,
@@ -895,7 +1004,10 @@ export function MarineBiofuelPanel() {
       stats: [
         { label: "Marine biofuel", value: `${fmt(e.volumeKt, 0)} kt/yr` },
         { label: "Ports / vessels", value: fmt(e.reach, 0) },
-        { label: "Typical blend", value: `${fmt(e.blendPct, 0)}%` },
+        {
+          label: "Typical blend",
+          value: e.blendReported === false ? "Not reported by this source" : `${fmt(e.blendPct, 0)}%`,
+        },
         { label: "Ticker", value: MARINE_TICKERS[e.name] ?? "Not listed" },
         { label: "Share price", value: q ? fmt(q.price, 2) : "—" },
         {
@@ -968,7 +1080,7 @@ export function MarineBiofuelPanel() {
                     e.country,
                     e.volumeKt,
                     e.reach,
-                    e.blendPct,
+                    e.blendReported === false ? "" : e.blendPct,
                     MARINE_TICKERS[e.name] ?? "",
                     q ? q.price.toFixed(2) : "",
                     q ? q.changePct.toFixed(2) : "",
@@ -989,24 +1101,41 @@ export function MarineBiofuelPanel() {
               {
                 label: "Role",
                 value: f.b,
-                options: ["Supplier", "User"],
+                options: [...new Set(entities.map((e) => e.role))],
                 onChange: f.setB,
                 allLabel: "Suppliers & users",
               },
               {
                 label: "Country",
                 value: f.a,
-                options: countryFilterOptions(ENTITIES.map((e) => e.country)),
+                options: countryFilterOptions(entities.map((e) => e.country)),
                 onChange: f.setA,
                 allLabel: "All countries",
               },
             ]}
             shown={rows.length}
-            total={ENTITIES.length}
+            total={entities.length}
             matched={ranked.length}
           />
         }
-        footnote={`Indicative annual marine biofuel volumes from bunker supplier disclosures, MPA Singapore and Port of Rotterdam bunker statistics, and shipping-line sustainability reports. Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
+        footnote={`${dynamic.sourceBacked ? "MPA Singapore bunker-sales rows are ingested as a source-backed port-market aggregate; supplier-level splits and blend percentages remain fallback data until a source reports them directly." : "Indicative annual marine biofuel volumes from bunker supplier disclosures, MPA Singapore and Port of Rotterdam bunker statistics, and shipping-line sustainability reports."} Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
+        sourceMeta={
+          dynamic.sourceBacked ? (
+            <p className="label-mono mt-2 text-xs text-muted-foreground">
+              MPA Singapore rows: {dynamic.dynamicCount} port-market entity ·{" "}
+              {reportingYearLabel(dynamic.reportingYears)} · ingested{" "}
+              {formatFreshnessDate(dynamic.latestIngestFinishedAt)} · {freshnessLabel(dynamic.stale)} ·{" "}
+              fallback entity rows reviewed {dynamicPayload?.registry?.lastReviewed ?? "not recorded"} ·{" "}
+              <Link
+                to="/data-sources"
+                hash={DYNAMIC_DATASET_ID}
+                className="text-primary underline underline-offset-4"
+              >
+                Sources &amp; method
+              </Link>
+            </p>
+          ) : undefined
+        }
       >
         {ghgEmpty ? (
           <GhgEmptyNotice />
@@ -1076,6 +1205,7 @@ export function MarineBiofuelPanel() {
           />
         )}
       </ChartPanel>
+      <SupplySourceFacts payload={dynamicPayload} />
     </>
   );
 }

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ChartMap } from "@/components/ChartMap";
 import { Cylinder } from "lucide-react";
 import {
@@ -28,6 +29,10 @@ import { entityLogoByName } from "@/features/markets/entity-logos";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/features/markets/market-caps";
 import { RLPG_TICKERS } from "@/features/markets/entity-tickers";
+import { getSupplyDatasetFn } from "@/features/supply/server-functions";
+import type { SupplyDatasetPayload } from "@/features/supply/contracts";
+import { SupplySourceFacts } from "./SupplySourceFacts";
+import { metaString, metricRows, metricValue } from "./dynamic-supply-rows";
 
 type Supplier = {
   name: string;
@@ -548,17 +553,48 @@ function scatterAxes(metricKey: Metric) {
 
 const TITLE = "Global renewable LPG suppliers";
 const NEWS_SUFFIX = "renewable LPG bioLPG rDME";
+const DYNAMIC_DATASET_ID = "renewable-lpg";
+const DYNAMIC_METRICS = ["supplyKtY", "renewableLpgSupplyKtY", "volumeKtY", "deliveredKtY"];
+
+function mergeDynamicSuppliers(payload: SupplyDatasetPayload | undefined): Supplier[] {
+  const rows = metricRows(payload, DYNAMIC_METRICS);
+  if (rows.length === 0) return SUPPLIERS;
+  const byName = new Map(SUPPLIERS.map((supplier) => [supplier.name, supplier]));
+  for (const row of rows) {
+    const supply = metricValue(row, DYNAMIC_METRICS);
+    if (supply === null) continue;
+    const fallback = byName.get(row.name);
+    byName.set(row.name, {
+      name: row.name,
+      country: row.country ?? metaString(row.metadata["country"], fallback?.country ?? "Unknown"),
+      flag: fallback?.flag ?? "",
+      supplyKtY: supply,
+      capacityKtY:
+        metricValue(row, ["capacityKtY", "productionCapacityKtY", "renewableLpgCapacityKtY"]) ??
+        fallback?.capacityKtY ??
+        0,
+      role: metaString(row.metadata["role"], fallback?.role ?? "Supplier"),
+      note: metaString(row.metadata["note"], fallback?.note ?? "Source-backed renewable LPG row"),
+    });
+  }
+  return [...byName.values()];
+}
 
 export function RenewableLpgPanel() {
   const [metricKey, setMetricKey] = useState<Metric>("supply");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
   const { get } = useEntityQuotes();
+  const { data: dynamicPayload } = useQuery({
+    queryKey: ["supply-dataset", DYNAMIC_DATASET_ID],
+    queryFn: () => getSupplyDatasetFn({ data: { datasetId: DYNAMIC_DATASET_ID } }),
+  });
+  const suppliers = useMemo(() => mergeDynamicSuppliers(dynamicPayload), [dynamicPayload]);
   const metric = METRICS[metricKey];
   const valueOf = (s: Supplier) =>
     metricKey === "price" ? (get(RLPG_TICKERS[s.name])?.price ?? 0) : metric.value(s);
 
-  const f = useChartFilter(SUPPLIERS, {
+  const f = useChartFilter(suppliers, {
     text: (s) => `${s.name} ${s.country} ${s.role} ${s.note}`,
     facetA: (s) => s.country,
     facetB: (s) => s.role,
@@ -715,24 +751,24 @@ export function RenewableLpgPanel() {
               {
                 label: "Country",
                 value: f.a,
-                options: countryFilterOptions(SUPPLIERS.map((s) => s.country)),
+                options: countryFilterOptions(suppliers.map((s) => s.country)),
                 onChange: f.setA,
                 allLabel: "All countries",
               },
               {
                 label: "Role",
                 value: f.b,
-                options: countryFilterOptions(SUPPLIERS.map((s) => s.role)),
+                options: countryFilterOptions(suppliers.map((s) => s.role)),
                 onChange: f.setB,
                 allLabel: "All roles",
               },
             ]}
             shown={rows.length}
-            total={SUPPLIERS.length}
+            total={suppliers.length}
             matched={ranked.length}
           />
         }
-        footnote={`Indicative volumes compiled from company disclosures, Liquid Gas Europe and WLPGA renewable LPG reporting. BioLPG is largely an HVO/SAF co-product, so producer volumes track renewable diesel runs. Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
+        footnote={`${dynamicPayload?.dynamic ? "Approved renewable-LPG sources are connected to the scrape registry; chart volumes remain fallback data until a dedicated rLPG/rDME volume parser is wired." : "Indicative volumes compiled from company disclosures, Liquid Gas Europe and WLPGA renewable LPG reporting. BioLPG is largely an HVO/SAF co-product, so producer volumes track renewable diesel runs."} Click any tile for the latest news. ${MARKET_CAP_NOTE}`}
       >
         {ghgEmpty ? (
           <GhgEmptyNotice />
@@ -802,6 +838,7 @@ export function RenewableLpgPanel() {
           />
         )}
       </ChartPanel>
+      <SupplySourceFacts payload={dynamicPayload} />
     </>
   );
 }

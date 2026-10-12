@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ChartMap } from "@/components/ChartMap";
 import { Recycle } from "lucide-react";
 import {
@@ -28,6 +29,10 @@ import { UCO_TICKERS } from "@/features/markets/entity-tickers";
 import { priceMeta, priceTone, useEntityQuotes } from "@/features/markets/hooks/useEntityQuotes";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/features/markets/market-caps";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
+import { getSupplyDatasetFn } from "@/features/supply/server-functions";
+import type { SupplyDatasetPayload } from "@/features/supply/contracts";
+import { SupplySourceFacts } from "./SupplySourceFacts";
+import { metaString, metricRows, metricValue } from "./dynamic-supply-rows";
 
 type UcoSupplier = {
   name: string;
@@ -671,17 +676,47 @@ function scatterAxes(metricKey: Metric) {
 
 const TITLE = "Global UCO (used cooking oil) suppliers";
 const NEWS_SUFFIX = "used cooking oil OR UCO feedstock biofuel";
+const DYNAMIC_METRICS = ["ucoCollectedKt", "volumeKt", "ucoCollected", "collectionVolumeKt"];
+
+function mergeDynamicSuppliers(payload: SupplyDatasetPayload | undefined): UcoSupplier[] {
+  const rows = metricRows(payload, DYNAMIC_METRICS);
+  if (rows.length === 0) return SUPPLIERS;
+  const byName = new Map(SUPPLIERS.map((supplier) => [supplier.name, supplier]));
+  for (const row of rows) {
+    const volume = metricValue(row, DYNAMIC_METRICS);
+    if (volume === null) continue;
+    const fallback = byName.get(row.name);
+    byName.set(row.name, {
+      name: row.name,
+      country: row.country ?? metaString(row.metadata["country"], fallback?.country ?? "Unknown"),
+      flag: fallback?.flag ?? "",
+      volumeKt: volume,
+      countriesServed:
+        metricValue(row, ["countriesServed", "collectionCountries", "footprintCountries"]) ??
+        fallback?.countriesServed ??
+        1,
+      note: metaString(row.metadata["note"], fallback?.note ?? "Source-backed UCO supplier row"),
+    });
+  }
+  return [...byName.values()];
+}
 
 export function UcoSuppliersPanel() {
   const [metricKey, setMetricKey] = useState<Metric>("volume");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
   const { get } = useEntityQuotes();
+  const { data: dynamicPayload } = useQuery({
+    queryKey: ["supply-dataset", "uco-suppliers"],
+    queryFn: () => getSupplyDatasetFn({ data: { datasetId: "uco-suppliers" } }),
+    staleTime: 15 * 60 * 1000,
+  });
+  const suppliers = useMemo(() => mergeDynamicSuppliers(dynamicPayload), [dynamicPayload]);
   const metric = METRICS[metricKey];
   const valueOf = (s: UcoSupplier) =>
     metricKey === "price" ? (get(UCO_TICKERS[s.name])?.price ?? 0) : metric.value(s);
 
-  const f = useChartFilter(SUPPLIERS, {
+  const f = useChartFilter(suppliers, {
     text: (s) => `${s.name} ${s.country} ${s.note}`,
     facetA: (s) => s.country,
   });
@@ -830,13 +865,13 @@ export function UcoSuppliersPanel() {
               {
                 label: "Country",
                 value: f.a,
-                options: countryFilterOptions(SUPPLIERS.map((s) => s.country)),
+                options: countryFilterOptions(suppliers.map((s) => s.country)),
                 onChange: f.setA,
                 allLabel: "All countries",
               },
             ]}
             shown={rows.length}
-            total={SUPPLIERS.length}
+            total={suppliers.length}
             matched={ranked.length}
           />
         }
@@ -910,6 +945,7 @@ export function UcoSuppliersPanel() {
           />
         )}
       </ChartPanel>
+      <SupplySourceFacts payload={dynamicPayload} />
     </>
   );
 }
