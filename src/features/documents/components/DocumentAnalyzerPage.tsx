@@ -38,12 +38,12 @@ export function DocumentAnalyzerPage() {
     setError("");
     if (
       next &&
-      (!/\.(pdf|docx|xlsx|xls|csv|txt|md)$/i.test(next.name) ||
+      (!/\.(pdf|docx|xlsx|csv|txt|md)$/i.test(next.name) ||
         next.size > 15 * 1024 * 1024 ||
         next.size === 0)
     ) {
       setFile(null);
-      setError("Choose a non-empty PDF, Word, Excel, CSV or text file up to 15 MB.");
+      setError("Choose a non-empty PDF, Word, XLSX, CSV or text file up to 15 MB.");
       if (inputRef.current) inputRef.current.value = "";
       return;
     }
@@ -99,7 +99,7 @@ export function DocumentAnalyzerPage() {
             className="sr-only"
             aria-label="Upload a document"
             disabled={loading}
-            accept=".pdf,.docx,.xlsx,.xls,.csv,.txt,.md"
+            accept=".pdf,.docx,.xlsx,.csv,.txt,.md"
             onChange={(event) => chooseFile(event.target.files?.[0] ?? null)}
           />
           <button
@@ -136,7 +136,7 @@ export function DocumentAnalyzerPage() {
           <div className="analyzer-file-formats">
             <span>PDF</span>
             <span>Word</span>
-            <span>Excel</span>
+            <span>XLSX</span>
             <span>CSV</span>
             <span>Text</span>
             {file && (

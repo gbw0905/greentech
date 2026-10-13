@@ -10,7 +10,7 @@ const MAX_EVIDENCE_CHARS = 50_000;
 
 type Section = { source: string; text: string };
 
-const EXTENSIONS = new Set(["pdf", "docx", "xlsx", "xls", "csv", "txt", "md"]);
+const EXTENSIONS = new Set(["pdf", "docx", "xlsx", "csv", "txt", "md"]);
 
 function extension(name: string) {
   return name.toLowerCase().split(".").pop() ?? "";
@@ -40,9 +40,13 @@ function splitText(text: string, source: string): Section[] {
 }
 
 async function ensurePdfNodeRuntime() {
-  if (typeof globalThis.DOMMatrix !== "undefined") return;
-  const { DOMMatrix, DOMPoint, DOMRect } = await import("@napi-rs/canvas");
-  Object.assign(globalThis, { DOMMatrix, DOMPoint, DOMRect });
+  if (typeof globalThis.DOMMatrix === "undefined") {
+    const { DOMMatrix, DOMPoint, DOMRect } = await import("@napi-rs/canvas");
+    Object.assign(globalThis, { DOMMatrix, DOMPoint, DOMRect });
+  }
+  if (!("pdfjsWorker" in globalThis)) {
+    await import("pdfjs-dist/legacy/build/pdf.worker.mjs");
+  }
 }
 
 async function extractPdf(data: Uint8Array): Promise<Section[]> {
@@ -76,12 +80,7 @@ function cellText(value: ExcelJS.CellValue): string {
   return String(value);
 }
 
-async function extractWorkbook(buffer: Buffer, ext: string): Promise<Section[]> {
-  if (ext === "xls") {
-    throw new Error(
-      "Legacy .xls files are not supported. Save the workbook as .xlsx or CSV and try again.",
-    );
-  }
+async function extractWorkbook(buffer: Buffer): Promise<Section[]> {
   const { default: ExcelJS } = await import("exceljs");
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.load(buffer as unknown as ExcelJS.Buffer);
@@ -111,7 +110,7 @@ export async function extractDocument(
   let sections: Section[];
   if (ext === "pdf") sections = await extractPdf(new Uint8Array(arrayBuffer));
   else if (ext === "docx") sections = await extractDocx(buffer);
-  else if (ext === "xlsx" || ext === "xls") sections = await extractWorkbook(buffer, ext);
+  else if (ext === "xlsx") sections = await extractWorkbook(buffer);
   else
     sections = splitText(
       new TextDecoder("utf-8", { fatal: false }).decode(arrayBuffer),
