@@ -39,7 +39,14 @@ function splitText(text: string, source: string): Section[] {
   return sections;
 }
 
+async function ensurePdfNodeRuntime() {
+  if (typeof globalThis.DOMMatrix !== "undefined") return;
+  const { DOMMatrix, DOMPoint, DOMRect } = await import("@napi-rs/canvas");
+  Object.assign(globalThis, { DOMMatrix, DOMPoint, DOMRect });
+}
+
 async function extractPdf(data: Uint8Array): Promise<Section[]> {
+  await ensurePdfNodeRuntime();
   const { PDFParse } = await import("pdf-parse");
   const parser = new PDFParse({ data });
   try {
