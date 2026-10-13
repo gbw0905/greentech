@@ -72,7 +72,7 @@ Freshness is based on source cadence, not page views:
 - `annual`: stale after 30 days.
 - `manual`: never auto-refreshed.
 
-Vercel Cron calls `/api/public/refresh-stale-supply` hourly. The route is cheap
+Vercel Cron calls `/api/public/refresh-stale-supply` daily on the Hobby plan. The route is cheap
 when data is fresh because it skips scraping and returns the freshness state.
 
 ## First parser: ethanol
