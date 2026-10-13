@@ -1,16 +1,14 @@
 import { assertAiQuota } from "@/infrastructure/ai/quota.server";
 
-function clientKey(request: Request): string {
-  return (
-    request.headers.get("cf-connecting-ip") ||
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    "local"
-  );
-}
-
 export async function handleDocumentAnalysis(request: Request): Promise<Response> {
   try {
-    assertAiQuota(`document:${clientKey(request)}`, 4);
+    const { userIdFromRequest } = await import("@/features/auth/server/user-from-request.server");
+    const userId = await userIdFromRequest(request);
+    if (!userId) {
+      return Response.json({ error: "Sign in to analyze documents." }, { status: 401 });
+    }
+
+    assertAiQuota(`document:${userId}`, 4);
     const form = await request.formData();
     const file = form.get("file");
     const query = form.get("query");
