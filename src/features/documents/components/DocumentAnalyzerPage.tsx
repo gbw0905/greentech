@@ -13,9 +13,13 @@ import { useRef, useState, type FormEvent } from "react";
 import { IntelligencePage } from "@/components/IntelligencePage";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { SignInPrompt } from "@/features/auth/components/SignInPrompt";
+import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import type { DocumentAnalysis } from "@/features/documents/contracts";
+import { supabase } from "@/integrations/supabase/client";
 
 export function DocumentAnalyzerPage() {
+  const { signedIn, loading: authLoading } = useAuthSession();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -60,10 +64,18 @@ export function DocumentAnalyzerPage() {
     setError("");
     setAnalysis(null);
     try {
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token;
+      if (!token) throw new Error("Sign in to analyze documents.");
+
       const form = new FormData();
       form.set("file", file);
       form.set("query", query.trim());
-      const response = await fetch("/api/document-analyze", { method: "POST", body: form });
+      const response = await fetch("/api/document-analyze", {
+        method: "POST",
+        headers: { authorization: `Bearer ${token}` },
+        body: form,
+      });
       const contentType = response.headers.get("content-type") ?? "";
       const payload = contentType.includes("application/json")
         ? ((await response.json()) as DocumentAnalysis & { error?: string })
@@ -89,6 +101,9 @@ export function DocumentAnalyzerPage() {
     >
       <div className="analyzer-workspace">
         <form onSubmit={submit} className="analyzer-input-card">
+          {!authLoading && !signedIn ? (
+            <SignInPrompt action="use the document analyzer" />
+          ) : null}
           <div className="flex items-center gap-2">
             <Upload className="size-4 text-primary" />
             <h2 className="font-display text-lg font-extrabold">1. Add a document</h2>
@@ -98,13 +113,13 @@ export function DocumentAnalyzerPage() {
             type="file"
             className="sr-only"
             aria-label="Upload a document"
-            disabled={loading}
+            disabled={loading || authLoading || !signedIn}
             accept=".pdf,.docx,.xlsx,.csv,.txt,.md"
             onChange={(event) => chooseFile(event.target.files?.[0] ?? null)}
           />
           <button
             type="button"
-            disabled={loading}
+            disabled={loading || authLoading || !signedIn}
             data-dragging={dragging || undefined}
             data-selected={!!file || undefined}
             onDragOver={(event) => {
@@ -141,7 +156,7 @@ export function DocumentAnalyzerPage() {
             <span>Text</span>
             {file && (
               <button
-                disabled={loading}
+                disabled={loading || authLoading || !signedIn}
                 type="button"
                 onClick={() => {
                   chooseFile(null);
@@ -160,7 +175,7 @@ export function DocumentAnalyzerPage() {
           </div>
           <Textarea
             id="analysis-query"
-            disabled={loading}
+            disabled={loading || authLoading || !signedIn}
             aria-describedby="analysis-query-help"
             value={query}
             maxLength={1500}
@@ -206,7 +221,14 @@ export function DocumentAnalyzerPage() {
           ) : null}
           <Button
             type="submit"
-            disabled={loading || !file || keywords.length < 5 || keywords.length > 25}
+            disabled={
+              authLoading ||
+              !signedIn ||
+              loading ||
+              !file ||
+              keywords.length < 5 ||
+              keywords.length > 25
+            }
             className="mt-5 w-full sm:w-auto"
           >
             {loading ? (
