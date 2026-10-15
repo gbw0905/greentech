@@ -262,3 +262,28 @@
     transform: none;
   }
 }
+/* Keep all three tools comfortably visible in the CIVanta toolkit. */
+.civanta-hero-inner {
+  padding-block: 50px;
+}
+.civanta-tool {
+  padding: 20px;
+}
+.civanta-tool-top {
+  margin-bottom: 12px;
+}
+.civanta-tool-icon {
+  width: 34px;
+  height: 34px;
+}
+.civanta-tool h3 {
+  font-size: 19px;
+  margin-bottom: 8px;
+}
+.civanta-tool p {
+  line-height: 1.65;
+}
+.civanta-tool-footer {
+  margin-top: 12px;
+  padding-top: 12px;
+}

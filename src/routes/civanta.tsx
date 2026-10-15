@@ -5,6 +5,7 @@ import {
   ChartNoAxesCombined,
   Clock3,
   FileSpreadsheet,
+  Target,
 } from "lucide-react";
 import { MotionReveal } from "@/components/MotionReveal";
 import "@/features/ci-workspace/civanta.css";
@@ -35,8 +36,8 @@ function CivantaPage() {
             your fuel’s potential.
           </h2>
           <p className="civanta-description">
-            Model lifecycle carbon intensity. Explore credit and RIN economics. Keep every
-            calculation in your account.
+            Model lifecycle carbon intensity. Explore credit and RIN economics. Optimize your
+            pathway. Keep every calculation in your account.
           </p>
           <div className="civanta-features">
             <span>
@@ -52,7 +53,7 @@ function CivantaPage() {
         <MotionReveal className="civanta-tool-panel" duration={1.1} delay={0.15} distance={24}>
           <div className="civanta-panel-heading">
             <span>Your analytical toolkit</span>
-            <span>02 tools</span>
+            <span>03 tools</span>
           </div>
           <Link className="civanta-tool" to="/ci-workspace">
             <div className="civanta-tool-top">
@@ -87,6 +88,24 @@ function CivantaPage() {
             <div className="civanta-tool-footer">
               <span>LCFS · RFS</span>
               <strong>Open calculator →</strong>
+            </div>
+          </Link>
+          <Link className="civanta-tool" to="/civanta/optimizer">
+            <div className="civanta-tool-top">
+              <span className="civanta-tool-icon">
+                <Target size={22} />
+              </span>
+              <span className="civanta-tool-index">03 / OPTIMIZATION</span>
+              <ArrowUpRight className="civanta-tool-arrow" size={22} />
+            </div>
+            <h3>CIVanta Optimizer</h3>
+            <p>
+              Find the least-cost combination of measures for your CI target and compare the
+              operating setpoints.
+            </p>
+            <div className="civanta-tool-footer">
+              <span>Target solver · Cost & CI</span>
+              <strong>Open optimizer →</strong>
             </div>
           </Link>
           <Link className="civanta-history-link" to="/calculation-history">

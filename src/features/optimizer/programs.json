@@ -1,0 +1,134 @@
+[
+  {
+    "id": "ca",
+    "name": "California LCFS",
+    "kind": "Annual standard",
+    "bench": {
+      "2026": {
+        "gasoline": 75.16,
+        "diesel": 80.17
+      },
+      "2027": {
+        "gasoline": 73.72,
+        "diesel": 78.63
+      }
+    },
+    "url": "https://ww2.arb.ca.gov/sites/default/files/2025-08/2025_lcfs_fro_oal-approved_unofficial_08112025.pdf"
+  },
+  {
+    "id": "or",
+    "name": "Oregon CFP",
+    "kind": "Annual standard",
+    "bench": {
+      "2026": {
+        "gasoline": 84.92,
+        "diesel": 90.4
+      },
+      "2027": {
+        "gasoline": 82.99,
+        "diesel": 88.34
+      }
+    },
+    "url": "https://ormswd2.synergydcs.com/HPRMWebDrawer/Record/6864923/File/document"
+  },
+  {
+    "id": "wa",
+    "name": "Washington CFS",
+    "kind": "Annual standard",
+    "bench": {
+      "2026": {
+        "gasoline": 92,
+        "diesel": 93.1
+      },
+      "2027": {
+        "gasoline": 88.04,
+        "diesel": 89.1
+      }
+    },
+    "url": "https://apps.leg.wa.gov/wac/default.aspx?cite=173-424-900"
+  },
+  {
+    "id": "cfr",
+    "name": "Canada CFR · liquid class",
+    "kind": "Section 94 credit reference",
+    "bench": {
+      "2026": {
+        "gasoline": 85.3,
+        "diesel": 85.3
+      },
+      "2027": {
+        "gasoline": 84,
+        "diesel": 84
+      }
+    },
+    "url": "https://laws-lois.justice.gc.ca/eng/regulations/SOR-2022-140/page-18.html"
+  },
+  {
+    "id": "red",
+    "ref": 1,
+    "name": "EU RED III",
+    "kind": "Fossil comparator (65 percent saving for new plants gives 32.9)",
+    "bench": {
+      "2026": {
+        "gasoline": 94,
+        "diesel": 94
+      },
+      "2027": {
+        "gasoline": 94,
+        "diesel": 94
+      }
+    },
+    "url": "https://eur-lex.europa.eu/eli/dir/2023/2413/oj"
+  },
+  {
+    "id": "corsia",
+    "ref": 1,
+    "name": "ICAO CORSIA",
+    "kind": "Jet fuel baseline (10 percent saving required)",
+    "bench": {
+      "2026": {
+        "gasoline": 89,
+        "diesel": 89
+      },
+      "2027": {
+        "gasoline": 89,
+        "diesel": 89
+      }
+    },
+    "url": "https://www.icao.int/environmental-protection/CORSIA/Pages/CORSIA-Eligible-Fuels.aspx"
+  },
+  {
+    "id": "fueleu",
+    "ref": 1,
+    "name": "FuelEU Maritime",
+    "kind": "2020 fleet reference intensity",
+    "bench": {
+      "2026": {
+        "gasoline": 91.16,
+        "diesel": 91.16
+      },
+      "2027": {
+        "gasoline": 91.16,
+        "diesel": 91.16
+      }
+    },
+    "url": "https://eur-lex.europa.eu/eli/reg/2023/1805/oj"
+  },
+  {
+    "id": "reno",
+    "ref": 1,
+    "name": "Brazil RenovaBio",
+    "kind": "Fossil reference for CBIO issuance",
+    "bench": {
+      "2026": {
+        "gasoline": 87.4,
+        "diesel": 86.5
+      },
+      "2027": {
+        "gasoline": 87.4,
+        "diesel": 86.5
+      }
+    },
+    "url": "https://www.gov.br/anp/pt-br/assuntos/renovabio"
+  }
+]
