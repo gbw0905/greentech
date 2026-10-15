@@ -1,0 +1,217 @@
+[
+  {
+    "id": "rng-dairy",
+    "ci": -181.34737117656326,
+    "annualEnergy": 65140247.182780445
+  },
+  {
+    "id": "ethanol-corn",
+    "ci": 61.096000000000004,
+    "annualEnergy": 4026500000
+  },
+  {
+    "id": "ethanol-corn-ccs",
+    "ci": 37.07000000000001,
+    "annualEnergy": 4026500000
+  },
+  {
+    "id": "ethanol-sugarcane",
+    "ci": 32.552,
+    "annualEnergy": 4026500000
+  },
+  {
+    "id": "ethanol-cellulosic",
+    "ci": 20.18,
+    "annualEnergy": 4026500000
+  },
+  {
+    "id": "biodiesel-soy",
+    "ci": 43.862,
+    "annualEnergy": 6306500000
+  },
+  {
+    "id": "biodiesel-uco",
+    "ci": 17.41,
+    "annualEnergy": 6306500000
+  },
+  {
+    "id": "biodiesel-tallow",
+    "ci": 24.480999999999998,
+    "annualEnergy": 6306500000
+  },
+  {
+    "id": "rd-uco",
+    "ci": 16.326,
+    "annualEnergy": 6482500000
+  },
+  {
+    "id": "rd-soy",
+    "ci": 44.32600000000001,
+    "annualEnergy": 6482500000
+  },
+  {
+    "id": "rd-tallow",
+    "ci": 21.825999999999997,
+    "annualEnergy": 6482500000
+  },
+  {
+    "id": "saf-hefa-uco",
+    "ci": 18.137,
+    "annualEnergy": 6210500000
+  },
+  {
+    "id": "saf-atj",
+    "ci": 46.9,
+    "annualEnergy": 6210500000
+  },
+  {
+    "id": "saf-ft",
+    "ci": 21.740000000000002,
+    "annualEnergy": 6210500000
+  },
+  {
+    "id": "rng-landfill",
+    "ci": 30.09,
+    "annualEnergy": 2000000000
+  },
+  {
+    "id": "rng-wastewater",
+    "ci": 27.334999999999997,
+    "annualEnergy": 2000000000
+  },
+  {
+    "id": "h2-electrolysis",
+    "ci": 16.52,
+    "annualEnergy": 1200000000
+  },
+  {
+    "id": "h2-biomass",
+    "ci": 36.68,
+    "annualEnergy": 1200000000
+  },
+  {
+    "id": "biomethanol",
+    "ci": 30.839999999999996,
+    "annualEnergy": 795000000
+  },
+  {
+    "id": "rlpg",
+    "ci": 18.785999999999998,
+    "annualEnergy": 1240000000
+  },
+  {
+    "id": "marine-b100",
+    "ci": 19.41,
+    "annualEnergy": 6306500000
+  },
+  {
+    "id": "wood-pellets",
+    "ci": 25.01,
+    "annualEnergy": 8800000000
+  },
+  {
+    "id": "ethanol-wheat",
+    "ci": 66.08,
+    "annualEnergy": 4026500000
+  },
+  {
+    "id": "ethanol-sorghum",
+    "ci": 56.49600000000001,
+    "annualEnergy": 4026500000
+  },
+  {
+    "id": "ethanol-msw",
+    "ci": 20.740000000000002,
+    "annualEnergy": 4026500000
+  },
+  {
+    "id": "biodiesel-canola",
+    "ci": 49.481,
+    "annualEnergy": 6306500000
+  },
+  {
+    "id": "biodiesel-palm",
+    "ci": 61.79600000000001,
+    "annualEnergy": 6306500000
+  },
+  {
+    "id": "biodiesel-corn-oil",
+    "ci": 18.41,
+    "annualEnergy": 6306500000
+  },
+  {
+    "id": "rd-canola",
+    "ci": 48.32600000000001,
+    "annualEnergy": 6482500000
+  },
+  {
+    "id": "rd-corn-oil",
+    "ci": 16.825999999999997,
+    "annualEnergy": 6482500000
+  },
+  {
+    "id": "rd-palm",
+    "ci": 55.82600000000001,
+    "annualEnergy": 6482500000
+  },
+  {
+    "id": "saf-hefa-tallow",
+    "ci": 23.637,
+    "annualEnergy": 6210500000
+  },
+  {
+    "id": "saf-ft-msw",
+    "ci": 21.509999999999998,
+    "annualEnergy": 6210500000
+  },
+  {
+    "id": "saf-ptl",
+    "ci": 16.64,
+    "annualEnergy": 6210500000
+  },
+  {
+    "id": "saf-corn-atj",
+    "ci": 40.92,
+    "annualEnergy": 6210500000
+  },
+  {
+    "id": "rng-foodwaste",
+    "ci": -27.392500000000002,
+    "annualEnergy": 2000000000
+  },
+  {
+    "id": "rng-agresidue",
+    "ci": 36.949999999999996,
+    "annualEnergy": 2000000000
+  },
+  {
+    "id": "h2-rng-smr",
+    "ci": 43.855,
+    "annualEnergy": 1200000000
+  },
+  {
+    "id": "e-methanol",
+    "ci": 16.2,
+    "annualEnergy": 795000000
+  },
+  {
+    "id": "biobutanol",
+    "ci": 72.95,
+    "annualEnergy": 5550000000
+  },
+  {
+    "id": "pyrolysis-oil",
+    "ci": 22.5,
+    "annualEnergy": 875000000
+  },
+  {
+    "id": "torrefied-pellets",
+    "ci": 25.794000000000004,
+    "annualEnergy": 10500000000
+  },
+  {
+    "id": "ag-briquettes",
+    "ci": 26.340000000000003,
+    "annualEnergy": 7750000000
+  }
+]

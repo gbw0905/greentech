@@ -13,8 +13,12 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AssistantRouteImport } from './routes/assistant'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CalculationHistoryRouteImport } from './routes/calculation-history'
 import { Route as CiCalculatorRouteImport } from './routes/ci-calculator'
+import { Route as CiWorkspaceRouteImport } from './routes/ci-workspace'
+import { Route as CivantaRouteImport } from './routes/civanta'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as CreditCalculatorRouteImport } from './routes/credit-calculator'
 import { Route as DairyRngCalculatorRouteImport } from './routes/dairy-rng-calculator'
 import { Route as DataSourcesRouteImport } from './routes/data-sources'
 import { Route as DocumentAnalyzerRouteImport } from './routes/document-analyzer'
@@ -24,6 +28,7 @@ import { Route as MandatesRouteImport } from './routes/mandates'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as MyResultsRouteImport } from './routes/my-results'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ProfilesRouteImport } from './routes/profiles'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
@@ -81,14 +86,34 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CalculationHistoryRoute = CalculationHistoryRouteImport.update({
+  id: '/calculation-history',
+  path: '/calculation-history',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CiCalculatorRoute = CiCalculatorRouteImport.update({
   id: '/ci-calculator',
   path: '/ci-calculator',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CiWorkspaceRoute = CiWorkspaceRouteImport.update({
+  id: '/ci-workspace',
+  path: '/ci-workspace',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CivantaRoute = CivantaRouteImport.update({
+  id: '/civanta',
+  path: '/civanta',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreditCalculatorRoute = CreditCalculatorRouteImport.update({
+  id: '/credit-calculator',
+  path: '/credit-calculator',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DairyRngCalculatorRoute = DairyRngCalculatorRouteImport.update({
@@ -134,6 +159,11 @@ const MyResultsRoute = MyResultsRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfilesRoute = ProfilesRouteImport.update({
@@ -335,8 +365,12 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRouteWithChildren
   '/assistant': typeof AssistantRouteWithChildren
   '/auth': typeof AuthRoute
+  '/calculation-history': typeof CalculationHistoryRoute
   '/ci-calculator': typeof CiCalculatorRoute
+  '/ci-workspace': typeof CiWorkspaceRoute
+  '/civanta': typeof CivantaRoute
   '/contact': typeof ContactRoute
+  '/credit-calculator': typeof CreditCalculatorRoute
   '/dairy-rng-calculator': typeof DairyRngCalculatorRoute
   '/data-sources': typeof DataSourcesRoute
   '/document-analyzer': typeof DocumentAnalyzerRoute
@@ -346,6 +380,7 @@ export interface FileRoutesByFullPath {
   '/mcp': typeof McpRoute
   '/my-results': typeof MyResultsRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/profiles': typeof ProfilesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
@@ -387,8 +422,12 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/assistant': typeof AssistantRouteWithChildren
   '/auth': typeof AuthRoute
+  '/calculation-history': typeof CalculationHistoryRoute
   '/ci-calculator': typeof CiCalculatorRoute
+  '/ci-workspace': typeof CiWorkspaceRoute
+  '/civanta': typeof CivantaRoute
   '/contact': typeof ContactRoute
+  '/credit-calculator': typeof CreditCalculatorRoute
   '/dairy-rng-calculator': typeof DairyRngCalculatorRoute
   '/data-sources': typeof DataSourcesRoute
   '/document-analyzer': typeof DocumentAnalyzerRoute
@@ -398,6 +437,7 @@ export interface FileRoutesByTo {
   '/mcp': typeof McpRoute
   '/my-results': typeof MyResultsRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/profiles': typeof ProfilesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
@@ -440,8 +480,12 @@ export interface FileRoutesById {
   '/about': typeof AboutRouteWithChildren
   '/assistant': typeof AssistantRouteWithChildren
   '/auth': typeof AuthRoute
+  '/calculation-history': typeof CalculationHistoryRoute
   '/ci-calculator': typeof CiCalculatorRoute
+  '/ci-workspace': typeof CiWorkspaceRoute
+  '/civanta': typeof CivantaRoute
   '/contact': typeof ContactRoute
+  '/credit-calculator': typeof CreditCalculatorRoute
   '/dairy-rng-calculator': typeof DairyRngCalculatorRoute
   '/data-sources': typeof DataSourcesRoute
   '/document-analyzer': typeof DocumentAnalyzerRoute
@@ -451,6 +495,7 @@ export interface FileRoutesById {
   '/mcp': typeof McpRoute
   '/my-results': typeof MyResultsRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/profiles': typeof ProfilesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
@@ -495,8 +540,12 @@ export interface FileRouteTypes {
     | '/about'
     | '/assistant'
     | '/auth'
+    | '/calculation-history'
     | '/ci-calculator'
+    | '/ci-workspace'
+    | '/civanta'
     | '/contact'
+    | '/credit-calculator'
     | '/dairy-rng-calculator'
     | '/data-sources'
     | '/document-analyzer'
@@ -506,6 +555,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/my-results'
     | '/privacy'
+    | '/profile'
     | '/profiles'
     | '/sitemap.xml'
     | '/terms'
@@ -547,8 +597,12 @@ export interface FileRouteTypes {
     | '/'
     | '/assistant'
     | '/auth'
+    | '/calculation-history'
     | '/ci-calculator'
+    | '/ci-workspace'
+    | '/civanta'
     | '/contact'
+    | '/credit-calculator'
     | '/dairy-rng-calculator'
     | '/data-sources'
     | '/document-analyzer'
@@ -558,6 +612,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/my-results'
     | '/privacy'
+    | '/profile'
     | '/profiles'
     | '/sitemap.xml'
     | '/terms'
@@ -599,8 +654,12 @@ export interface FileRouteTypes {
     | '/about'
     | '/assistant'
     | '/auth'
+    | '/calculation-history'
     | '/ci-calculator'
+    | '/ci-workspace'
+    | '/civanta'
     | '/contact'
+    | '/credit-calculator'
     | '/dairy-rng-calculator'
     | '/data-sources'
     | '/document-analyzer'
@@ -610,6 +669,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/my-results'
     | '/privacy'
+    | '/profile'
     | '/profiles'
     | '/sitemap.xml'
     | '/terms'
@@ -653,8 +713,12 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRouteWithChildren
   AssistantRoute: typeof AssistantRouteWithChildren
   AuthRoute: typeof AuthRoute
+  CalculationHistoryRoute: typeof CalculationHistoryRoute
   CiCalculatorRoute: typeof CiCalculatorRoute
+  CiWorkspaceRoute: typeof CiWorkspaceRoute
+  CivantaRoute: typeof CivantaRoute
   ContactRoute: typeof ContactRoute
+  CreditCalculatorRoute: typeof CreditCalculatorRoute
   DairyRngCalculatorRoute: typeof DairyRngCalculatorRoute
   DataSourcesRoute: typeof DataSourcesRoute
   DocumentAnalyzerRoute: typeof DocumentAnalyzerRoute
@@ -664,6 +728,7 @@ export interface RootRouteChildren {
   McpRoute: typeof McpRoute
   MyResultsRoute: typeof MyResultsRoute
   PrivacyRoute: typeof PrivacyRoute
+  ProfileRoute: typeof ProfileRoute
   ProfilesRoute: typeof ProfilesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
@@ -725,6 +790,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/calculation-history': {
+      id: '/calculation-history'
+      path: '/calculation-history'
+      fullPath: '/calculation-history'
+      preLoaderRoute: typeof CalculationHistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/ci-calculator': {
       id: '/ci-calculator'
       path: '/ci-calculator'
@@ -732,11 +804,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CiCalculatorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ci-workspace': {
+      id: '/ci-workspace'
+      path: '/ci-workspace'
+      fullPath: '/ci-workspace'
+      preLoaderRoute: typeof CiWorkspaceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/civanta': {
+      id: '/civanta'
+      path: '/civanta'
+      fullPath: '/civanta'
+      preLoaderRoute: typeof CivantaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/contact': {
       id: '/contact'
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/credit-calculator': {
+      id: '/credit-calculator'
+      path: '/credit-calculator'
+      fullPath: '/credit-calculator'
+      preLoaderRoute: typeof CreditCalculatorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dairy-rng-calculator': {
@@ -800,6 +893,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profiles': {
@@ -1104,8 +1204,12 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRouteWithChildren,
   AssistantRoute: AssistantRouteWithChildren,
   AuthRoute: AuthRoute,
+  CalculationHistoryRoute: CalculationHistoryRoute,
   CiCalculatorRoute: CiCalculatorRoute,
+  CiWorkspaceRoute: CiWorkspaceRoute,
+  CivantaRoute: CivantaRoute,
   ContactRoute: ContactRoute,
+  CreditCalculatorRoute: CreditCalculatorRoute,
   DairyRngCalculatorRoute: DairyRngCalculatorRoute,
   DataSourcesRoute: DataSourcesRoute,
   DocumentAnalyzerRoute: DocumentAnalyzerRoute,
@@ -1115,6 +1219,7 @@ const rootRouteChildren: RootRouteChildren = {
   McpRoute: McpRoute,
   MyResultsRoute: MyResultsRoute,
   PrivacyRoute: PrivacyRoute,
+  ProfileRoute: ProfileRoute,
   ProfilesRoute: ProfilesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
@@ -1151,11 +1256,15 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'
+
 import type { startInstance } from './start.ts'
+
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
+
     router: Awaited<ReturnType<typeof getRouter>>
+
     config: Awaited<ReturnType<typeof startInstance.getOptions>>
   }
 }

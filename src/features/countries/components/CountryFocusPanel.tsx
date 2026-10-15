@@ -241,11 +241,11 @@ export function CountryFocusPanel({
 
         {tab === "videos" && (
           <div className="space-y-5">
-            <LiveMediaFeed fuels={fuels} country={country} />
+            <LiveMediaFeed fuels={fuels} countries={country ? [country] : []} />
             <VideoLibrary
               regions={[]}
               fuels={fuels}
-              country={country}
+              countries={country ? [country] : []}
               onSelectCountry={onSelectCountry}
             />
           </div>

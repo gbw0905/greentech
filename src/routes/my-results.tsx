@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { LayoutDashboard, Trash2 } from "lucide-react";
-import { PageShell, PageHeading } from "@/components/PageShell";
+import { LayoutDashboard, Trash2, ArrowRight } from "lucide-react";
+import { AccountLayout } from "@/features/account/AccountLayout";
 import { usePremium } from "@/features/premium/hooks/usePremium";
 import {
   deleteCiRunFn,
@@ -43,7 +43,12 @@ function MyResultsPage() {
   const { signedIn, premium, loading } = usePremium();
   const queryClient = useQueryClient();
 
-  const { data: runs, isLoading } = useQuery({
+  const {
+    data: runs,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["ci-runs"],
     queryFn: () => listCiRunsFn(),
     enabled: signedIn && premium,
@@ -59,14 +64,16 @@ function MyResultsPage() {
   const average = list.length ? list.reduce((s, r) => s + r.ciTotal, 0) / list.length : null;
 
   return (
-    <PageShell>
-      <PageHeading
-        icon={LayoutDashboard}
-        title="My carbon intensity results"
-        subtitle="Every scenario you saved from the calculator, with its carbon intensity next to the benchmark of each regulatory programme so you can see where your pathway sits."
-      />
-
-      {loading ? null : !signedIn ? (
+    <AccountLayout
+      title="My carbon intensity results"
+      section="results"
+      description="Your saved scenarios, lifecycle emissions and regulatory benchmark comparisons, together in one place."
+    >
+      {loading ? (
+        <p className="account-loading" role="status">
+          Loading your account…
+        </p>
+      ) : !signedIn ? (
         <Notice
           title="Sign in to see your results"
           body="Your saved scenarios are private to your account."
@@ -82,7 +89,17 @@ function MyResultsPage() {
           cta="Request premium access"
         />
       ) : isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading your saved scenarios…</p>
+        <p className="account-loading" role="status">
+          Loading your saved scenarios…
+        </p>
+      ) : isError ? (
+        <section className="account-card account-empty" role="alert">
+          <h2>Could not load your scenarios</h2>
+          <p>Your saved results could not be retrieved. Please try again.</p>
+          <button className="account-action" type="button" onClick={() => void refetch()}>
+            Try again
+          </button>
+        </section>
       ) : list.length === 0 ? (
         <Notice
           title="No saved scenarios yet"
@@ -92,7 +109,7 @@ function MyResultsPage() {
         />
       ) : (
         <>
-          <section className="grid gap-4 sm:grid-cols-3">
+          <section className="account-stats" aria-label="Scenario summary">
             {[
               ["Saved scenarios", String(list.length), TONE.blue],
               ["Lowest carbon intensity", best == null ? "—" : `${fmt(best)} gCO2e/MJ`, TONE.green],
@@ -102,27 +119,31 @@ function MyResultsPage() {
                 TONE.blue,
               ],
             ].map(([label, value, color]) => (
-              <div
-                key={label}
-                className="glass-panel border-l-4 p-4"
-                style={{ borderLeftColor: color }}
-              >
-                <p className="label-mono text-muted-foreground">{label}</p>
-                <p className="mt-1 font-display text-2xl font-extrabold tabular-nums text-foreground">
-                  {value}
-                </p>
+              <div key={label} className="account-card account-stat">
+                <p>{label}</p>
+                <strong style={{ color }}>{value}</strong>
               </div>
             ))}
           </section>
 
           <div className="grid min-w-0 gap-4">
             {list.map((run) => (
-              <RunCard key={run.id} run={run} onDelete={() => remove.mutate(run.id)} />
+              <RunCard
+                key={run.id}
+                run={run}
+                deleting={remove.isPending}
+                onDelete={() => remove.mutate(run.id)}
+              />
             ))}
           </div>
         </>
       )}
-    </PageShell>
+      {remove.isError && (
+        <p role="alert" className="account-error">
+          Could not delete the scenario. Please try again.
+        </p>
+      )}
+    </AccountLayout>
   );
 }
 
@@ -140,21 +161,42 @@ function Notice({
   cta: string;
 }) {
   return (
-    <section className="glass-panel border-l-4 p-5" style={{ borderLeftColor: TONE.blue }}>
-      <h2 className="font-display text-lg font-extrabold text-foreground">{title}</h2>
-      <p className="mt-1 text-sm text-muted-foreground">{body}</p>
-      <Link
-        to={to}
-        hash={hash}
-        className="mt-3 inline-flex items-center gap-1.5 border border-ink bg-ink px-2.5 py-1.5 text-xs font-semibold text-ink-foreground transition-opacity hover:opacity-85"
-      >
+    <section className="account-card account-empty">
+      <div className="account-icon">
+        <LayoutDashboard size={26} />
+      </div>
+      <h2>{title}</h2>
+      <p>{body}</p>
+      <Link to={to} hash={hash} className="account-action">
         {cta}
+        <ArrowRight size={16} />
       </Link>
+      {to === "/ci-calculator" && (
+        <div className="account-empty-steps">
+          <span>
+            <b>1</b>Model a pathway
+          </span>
+          <span>
+            <b>2</b>Save to your dashboard
+          </span>
+          <span>
+            <b>3</b>Compare your results
+          </span>
+        </div>
+      )}
     </section>
   );
 }
 
-function RunCard({ run, onDelete }: { run: SavedCiRun; onDelete: () => void }) {
+function RunCard({
+  run,
+  onDelete,
+  deleting,
+}: {
+  run: SavedCiRun;
+  onDelete: () => void;
+  deleting: boolean;
+}) {
   const programs = run.programs.filter((p) => p.benchmark != null);
 
   return (
@@ -187,6 +229,7 @@ function RunCard({ run, onDelete }: { run: SavedCiRun; onDelete: () => void }) {
           <button
             type="button"
             onClick={onDelete}
+            disabled={deleting}
             aria-label={`Delete ${run.name}`}
             className="inline-flex items-center gap-1.5 border border-border px-2.5 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-ink hover:text-foreground"
           >

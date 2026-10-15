@@ -11,15 +11,15 @@ const nameFor = (slug: string) => COUNTRIES.find((c) => c.slug === slug)?.name ?
 export function VideoLibrary({
   regions,
   fuels,
-  country,
+  countries,
   policies = [],
   onSelectCountry,
 }: {
   regions: Region[];
   fuels: FuelType[];
-  country: string | null;
+  countries: string[];
   policies?: string[];
-  onSelectCountry: (slug: string | null) => void;
+  onSelectCountry: (slug: string) => void;
 }) {
   const reduced = useReducedMotion();
   const list = useMemo(
@@ -28,18 +28,18 @@ export function VideoLibrary({
         (v) =>
           (regions.length === 0 || v.regions.some((r) => regions.includes(r))) &&
           (fuels.length === 0 || v.fuels.some((f) => fuels.includes(f))) &&
-          (!country || v.countries.includes(country)) &&
+          (countries.length === 0 || v.countries.some((slug) => countries.includes(slug))) &&
           (policies.length === 0 || v.policies.some((p) => policies.includes(p))),
       ),
-    [regions, fuels, country, policies],
+    [regions, fuels, countries, policies],
   );
   const searches = useMemo(() => {
-    const base = country ? nameFor(country) : (regions[0] ?? "global");
+    const bases = countries.length ? countries.map(nameFor) : [regions[0] ?? "global"];
     const topics = fuels.length
       ? fuels
       : (["ethanol", "biodiesel", "sustainable aviation fuel"] as string[]);
-    return topics.slice(0, 4).map((t) => `${base} ${t} policy`);
-  }, [country, regions, fuels]);
+    return bases.flatMap((base) => topics.slice(0, 4).map((t) => `${base} ${t} policy`));
+  }, [countries, regions, fuels]);
   return (
     <section className="videos-library" aria-labelledby="video-library-title">
       <header className="videos-section-head">
@@ -56,8 +56,9 @@ export function VideoLibrary({
       </header>
       {list.length === 0 && (
         <p className="videos-empty" role="status">
-          No video hubs match the current filters{country ? ` for ${nameFor(country)}` : ""}. Clear
-          a filter to see more.
+          No video hubs match the current filters
+          {countries.length ? ` for ${countries.map(nameFor).join(", ")}` : ""}. Clear a filter to
+          see more.
         </p>
       )}
       <div className="videos-hub-grid">
@@ -99,8 +100,8 @@ export function VideoLibrary({
                   <button
                     key={slug}
                     type="button"
-                    aria-pressed={country === slug}
-                    onClick={() => onSelectCountry(country === slug ? null : slug)}
+                    aria-pressed={countries.includes(slug)}
+                    onClick={() => onSelectCountry(slug)}
                     className="videos-country-tag"
                   >
                     <CountryFlag slug={slug} className="mr-1" />

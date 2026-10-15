@@ -1,0 +1,997 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>CI Workspace | Global Bioenergy Watch</title>
+    <meta name="robots" content="noindex" />
+    <style>
+      :root {
+        --ink: #112b34;
+        --green: #087a59;
+        --line: #dbe5e4;
+        --muted: #5b7077;
+        --bg: #f2f6f5;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font:
+          15px/1.55 system-ui,
+          -apple-system,
+          sans-serif;
+      }
+      header {
+        background: #fff;
+        border-bottom: 1px solid var(--line);
+        padding: 18px 5%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      header b {
+        font-size: 26px;
+        letter-spacing: -1px;
+      }
+      header span {
+        color: var(--green);
+      }
+      a {
+        color: var(--green);
+      }
+      header a {
+        font-size: 13px;
+        text-decoration: none;
+      }
+      .wrap {
+        max-width: 1220px;
+        margin: auto;
+        padding: 38px 24px;
+      }
+      .eyebrow {
+        font-size: 11px;
+        font-weight: 750;
+        letter-spacing: 2px;
+        color: var(--green);
+      }
+      h1 {
+        font-size: clamp(30px, 4vw, 44px);
+        letter-spacing: -1.5px;
+        line-height: 1.15;
+        margin: 12px 0;
+      }
+      h2 {
+        font-size: 18px;
+        margin: 0;
+      }
+      h3 {
+        font-size: 15px;
+        margin: 0 0 12px;
+      }
+      .intro {
+        max-width: 730px;
+        color: var(--muted);
+      }
+      .toolbar {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin: 26px 0;
+      }
+      .tabs {
+        display: flex;
+        padding: 4px;
+        background: #e3ece9;
+        border-radius: 10px;
+        gap: 3px;
+      }
+      button {
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: white;
+        padding: 10px 15px;
+        font: inherit;
+        font-size: 13px;
+        cursor: pointer;
+        color: var(--ink);
+      }
+      button:hover {
+        border-color: var(--green);
+      }
+      .tabs button {
+        background: transparent;
+        border: none;
+      }
+      .tabs button.active {
+        background: white;
+        box-shadow: 0 2px 4px #0001;
+        color: var(--green);
+        font-weight: 700;
+      }
+      .actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      button.primary {
+        background: var(--green);
+        color: #fff;
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.9fr);
+        gap: 24px;
+        align-items: start;
+      }
+      .panel {
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 18px;
+      }
+      .section-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 22px;
+      }
+      .step {
+        font-size: 11px;
+        background: #e5f3ed;
+        color: var(--green);
+        border-radius: 7px;
+        padding: 7px;
+        font-weight: 750;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        font-size: 12px;
+        font-weight: 650;
+      }
+      input,
+      select {
+        width: 100%;
+        border: 1px solid #cbd9d5;
+        border-radius: 7px;
+        padding: 11px;
+        background: #fff;
+        font: 15px system-ui;
+        color: var(--ink);
+        height: 45px;
+      }
+      input:focus,
+      select:focus,
+      button:focus-visible {
+        outline: 2px solid #64bfa1;
+        outline-offset: 2px;
+      }
+      input[readonly] {
+        background: #f1f5f4;
+      }
+      .field small,
+      .factor small {
+        font-size: 11px;
+        color: var(--muted);
+        font-weight: 400;
+        line-height: 1.45;
+      }
+      .factor {
+        background: #eef5f1;
+        border-radius: 7px;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .factor strong {
+        font-size: 18px;
+      }
+      .check {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        font-size: 12px;
+        margin-top: 20px;
+      }
+      .check input {
+        width: 17px;
+        height: 17px;
+        flex-shrink: 0;
+        accent-color: var(--green);
+      }
+      .note {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .result-hero {
+        background: #102f35;
+        color: white;
+        padding: 26px;
+        border-radius: 12px;
+        margin-bottom: 18px;
+      }
+      .result-hero .eyebrow {
+        color: #6fe0b7;
+      }
+      .result-hero h2 {
+        font-size: 27px;
+        letter-spacing: -0.7px;
+        margin: 10px 0;
+      }
+      .result-hero p {
+        font-size: 12px;
+        color: #b9d1cd;
+        margin: 0;
+      }
+      .metric {
+        background: white;
+        border: 1px solid var(--line);
+        padding: 22px;
+        border-radius: 12px;
+        margin-bottom: 14px;
+      }
+      .metric > div:first-child {
+        display: flex;
+        align-items: start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .metric span {
+        font-size: 13px;
+      }
+      .metric em {
+        font-style: normal;
+        font-size: 10px;
+        border-radius: 30px;
+        background: #edf4f1;
+        padding: 4px 8px;
+        color: #54776a;
+      }
+      .metric > strong {
+        font-size: 38px;
+        letter-spacing: -1px;
+        display: block;
+        color: var(--green);
+        padding: 13px 0;
+      }
+      .metric strong small {
+        display: block;
+        font-size: 12px;
+        letter-spacing: 0;
+        color: var(--muted);
+        font-weight: 400;
+      }
+      .metric strong.negative {
+        color: #af4b38;
+      }
+      .metric-foot {
+        border-top: 1px solid var(--line);
+        padding-top: 12px;
+        display: flex;
+        justify-content: space-between;
+      }
+      .metric-foot b {
+        font-size: 18px;
+      }
+      .combined {
+        padding: 22px;
+        background: #dfefe6;
+        border-radius: 12px;
+        margin-bottom: 18px;
+      }
+      .combined span,
+      .combined small {
+        display: block;
+        font-size: 12px;
+      }
+      .combined strong {
+        display: block;
+        font-size: 30px;
+        padding: 8px 0;
+      }
+      .compact {
+        padding: 20px;
+      }
+      dl {
+        display: grid;
+        grid-template-columns: 1.3fr 1fr;
+        gap: 10px;
+        font-size: 12px;
+      }
+      dt {
+        color: var(--muted);
+      }
+      dd {
+        margin: 0;
+        text-align: right;
+        font-weight: 650;
+      }
+      details {
+        font-size: 12px;
+        border-top: 1px solid var(--line);
+        padding-top: 14px;
+      }
+      summary {
+        cursor: pointer;
+        font-weight: 700;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 12px;
+      }
+      td,
+      th {
+        padding: 9px 4px;
+        text-align: right;
+        border-bottom: 1px solid var(--line);
+      }
+      td:first-child,
+      th:first-child {
+        text-align: left;
+      }
+      ul {
+        font-size: 12px;
+        padding-left: 18px;
+        color: var(--muted);
+      }
+      li {
+        margin-bottom: 8px;
+      }
+      .error {
+        border-color: #dc8170;
+      }
+      .error-text {
+        color: #a13b27;
+      }
+      footer {
+        font-size: 11px;
+        color: var(--muted);
+        padding: 28px 0;
+        border-top: 1px solid var(--line);
+        margin-top: 20px;
+      }
+      #status {
+        min-height: 24px;
+        font-size: 12px;
+        color: var(--green);
+      }
+      @media (max-width: 800px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+        .wrap {
+          padding: 25px 16px;
+        }
+        .grid {
+          gap: 14px;
+        }
+        .panel {
+          padding: 18px;
+        }
+        .toolbar {
+          gap: 12px;
+        }
+        header {
+          padding: 15px 20px;
+          gap: 10px;
+        }
+        header a {
+          font-size: 12px;
+          line-height: 1.35;
+        }
+      }
+      @media (max-width: 450px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .tabs button {
+          padding: 9px 12px;
+        }
+        .metric > div:first-child {
+          flex-direction: column;
+        }
+        .actions button {
+          padding: 8px 10px;
+        }
+      }
+      .stage-calc .sc-group {
+        border-top: 1px solid #d5e0dd;
+        padding: 8px 0;
+      }
+      .stage-calc h4 {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin: 4px 0;
+        font-size: 14px;
+      }
+      .stage-calc h4 span {
+        font-family: monospace;
+      }
+      .sc-row {
+        padding: 6px 0;
+        font-size: 13px;
+      }
+      .sc-name {
+        font-weight: 600;
+      }
+      .sc-formula {
+        line-height: 2;
+        overflow-wrap: anywhere;
+      }
+      .sc-formula input {
+        width: 7.5em;
+        max-width: 40%;
+        padding: 2px 4px;
+        color: #6b7c78;
+      }
+      .sc-user .sc-formula input {
+        color: inherit;
+        font-weight: 600;
+      }
+    </style>
+    <style>
+      .energy-row {
+        padding: 16px 0;
+        border-top: 1px solid var(--line);
+      }
+      .energy-row h3 {
+        margin-bottom: 10px;
+      }
+      .chart-row {
+        margin: 13px 0;
+      }
+      .chart-row .labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        gap: 12px;
+      }
+      .bar-track {
+        height: 7px;
+        background: #edf2f0;
+        margin-top: 6px;
+        border-radius: 4px;
+      }
+      .bar-fill {
+        height: 7px;
+        background: #16946d;
+        border-radius: 4px;
+        min-width: 1px;
+      }
+      .bar-fill.credit {
+        background: #4d82b8;
+      }
+      .badge {
+        background: #edf4f1;
+        padding: 5px 9px;
+        border-radius: 20px;
+        font-size: 10px;
+        color: #54776a;
+      }
+      .table-wrap {
+        overflow: auto;
+      }
+      .compact table {
+        min-width: 280px;
+      }
+      .line-table {
+        min-width: 580px !important;
+      }
+      textarea {
+        width: 100%;
+        min-height: 70px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        padding: 10px;
+        font: 13px system-ui;
+      }
+      .source-note {
+        padding: 12px;
+        background: #eff4f1;
+        border-radius: 7px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .plot {
+        width: 100%;
+        height: auto;
+        display: block;
+        margin: 14px 0;
+      }
+      .plot text {
+        font-family: system-ui;
+        fill: var(--ink);
+      }
+      details .grid {
+        margin: 14px 0;
+      }
+    </style>
+    <style>
+      :root {
+        --flow-surface: #fff;
+        --flow-positive: #087a59;
+        --flow-credit: #356dba;
+        --flow-credit-bg: #eef4fc;
+        --flow-emission-bg: #eef7f2;
+        --flow-net: #102f35;
+        --flow-net-text: #fff;
+      }
+      .calculation-flow {
+        margin: 0 0 28px;
+        padding: 24px 0;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+      .flow-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+      }
+      .flow-heading p {
+        margin: 0;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .flow-production {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 28px;
+        margin: 28px 0 22px;
+      }
+      .flow-step {
+        position: relative;
+        min-width: 0;
+      }
+      .flow-step:not(:last-child):after {
+        content: "→";
+        position: absolute;
+        right: -23px;
+        top: 22px;
+        color: var(--muted);
+        font-size: 22px;
+      }
+      .flow-stage-button {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        min-height: 155px;
+        text-align: center;
+        border: 0;
+        border-bottom: 3px solid var(--line);
+        border-radius: 0;
+        background: transparent;
+        padding: 10px 5px;
+        gap: 8px;
+      }
+      .flow-stage-button:hover,
+      .flow-stage-button[aria-expanded="true"] {
+        border-color: var(--flow-positive);
+        background: var(--flow-emission-bg);
+      }
+      .flow-stage-button svg {
+        width: 44px;
+        height: 44px;
+        fill: none;
+        stroke: var(--flow-positive);
+        stroke-width: 1.6;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .flow-stage-button b {
+        font-size: 15px;
+      }
+      .flow-stage-button small {
+        display: block;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .flow-production-note {
+        border-left: 3px solid var(--flow-positive);
+        padding: 10px 16px;
+        color: var(--muted);
+        font-size: 13px;
+        margin: 0 0 28px;
+      }
+      .flow-accounting {
+        display: grid;
+        grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+        gap: 30px;
+        border-top: 1px solid var(--line);
+        padding-top: 24px;
+      }
+      .flow-lane {
+        min-width: 0;
+      }
+      .flow-lane h3 {
+        font-size: 17px;
+        margin: 8px 0;
+      }
+      .flow-lane > p {
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .flow-lane.credit {
+        border-left: 2px dashed var(--flow-credit);
+        padding-left: 24px;
+      }
+      .flow-lane.credit .eyebrow,
+      .flow-lane.credit .flow-row-value {
+        color: var(--flow-credit);
+      }
+      .flow-group {
+        margin: 18px 0;
+      }
+      .flow-group > summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        font-size: 14px;
+        padding: 4px 0;
+      }
+      .flow-group > summary:after {
+        content: "+";
+        font-size: 20px;
+        color: var(--muted);
+      }
+      .flow-group[open] > summary:after {
+        content: "−";
+      }
+      .flow-group > summary span {
+        flex: 1;
+      }
+      .flow-row {
+        padding: 14px 0;
+        margin: 8px 0;
+      }
+      .flow-row > summary {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px;
+        font-size: 13px;
+      }
+      .flow-row-value {
+        color: var(--flow-positive);
+        white-space: nowrap;
+      }
+      .flow-row p {
+        font-size: 13px;
+        color: var(--muted);
+        overflow-wrap: anywhere;
+      }
+      .flow-row dl {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        font-size: 12px;
+      }
+      .flow-row dd {
+        overflow-wrap: anywhere;
+      }
+      .flow-row .flow-detail-note {
+        background: var(--flow-emission-bg);
+        padding: 10px;
+      }
+      .credit .flow-detail-note {
+        background: var(--flow-credit-bg);
+      }
+      .flow-equation {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr auto 1fr;
+        gap: 16px;
+        align-items: center;
+        margin: 24px 0 0;
+        padding: 22px;
+        background: var(--flow-net);
+        color: var(--flow-net-text);
+        border-radius: 4px;
+      }
+      .flow-equation small {
+        display: block;
+        font-size: 12px;
+      }
+      .flow-equation strong {
+        display: block;
+        font-size: 24px;
+        margin-top: 4px;
+        overflow-wrap: anywhere;
+      }
+      .flow-state {
+        font-size: 13px;
+        color: var(--muted);
+        margin: 16px 0 0;
+      }
+      .flow-boundary {
+        font-size: 13px;
+        color: var(--muted);
+        max-width: 850px;
+      }
+      .flow-empty {
+        font-size: 13px;
+        color: var(--muted);
+        padding: 15px 0;
+      }
+      @media (max-width: 650px) {
+        .flow-production {
+          grid-template-columns: 1fr;
+          gap: 22px;
+        }
+        .flow-stage-button {
+          flex-direction: row;
+          text-align: left;
+          min-height: 80px;
+          justify-content: flex-start;
+          gap: 16px;
+          padding: 12px;
+        }
+        .flow-stage-button svg {
+          flex-shrink: 0;
+        }
+        .flow-stage-button small {
+          display: block;
+        }
+        .flow-step:not(:last-child):after {
+          content: "↓";
+          top: auto;
+          bottom: -25px;
+          right: 50%;
+          font-size: 20px;
+        }
+        .flow-accounting {
+          grid-template-columns: 1fr;
+          gap: 22px;
+        }
+        .flow-lane.credit {
+          padding-left: 16px;
+        }
+        .flow-equation {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+        .flow-equation > span {
+          text-align: center;
+        }
+        .flow-equation > div {
+          display: flex;
+          align-items: baseline;
+          justify-content: space-between;
+          gap: 14px;
+        }
+        .flow-equation strong {
+          font-size: 22px;
+        }
+        .flow-row > summary {
+          grid-template-columns: 1fr;
+        }
+        .flow-heading p {
+          font-size: 13px;
+        }
+        .calculation-flow {
+          padding-top: 28px;
+        }
+      }
+    </style>
+    <style>
+      :root {
+        --ink: #0e2a43;
+        --green: #178a6b;
+        --line: #d6e1ea;
+        --muted: #526b80;
+        --bg: #eef3f7;
+      }
+      body {
+        background: transparent;
+        font-family: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+      }
+      body > header,
+      .wrap > .eyebrow,
+      .wrap > h1,
+      .wrap > .intro,
+      .wrap > footer {
+        display: none;
+      }
+      .wrap {
+        max-width: none;
+        padding: 0 1px 12px;
+      }
+      .toolbar {
+        margin: 0 0 12px;
+      }
+      .layout {
+        gap: 24px;
+      }
+      .panel,
+      .metric {
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 8px 24px -20px #0e2a4333;
+      }
+      h1,
+      h2,
+      h3 {
+        font-family: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+      }
+      .result-hero {
+        background: #0e2a43;
+        border-radius: 18px;
+      }
+      button {
+        border-radius: 10px;
+        transition:
+          background 0.18s,
+          border-color 0.18s,
+          transform 0.18s;
+      }
+      button.primary {
+        background: #0e2a43;
+        border-color: #0e2a43;
+      }
+      button:hover {
+        transform: translateY(-1px);
+      }
+      #fill-defaults {
+        background: #e3f4ee;
+        color: #126f56;
+        border-color: #b7dbcd;
+        font-weight: 650;
+      }
+      input,
+      select {
+        border-radius: 10px;
+        max-width: 100%;
+      }
+      .grid {
+        min-width: 0;
+      }
+      .field {
+        min-width: 0;
+      }
+      small {
+        overflow-wrap: anywhere;
+      }
+      #status {
+        color: var(--muted);
+        margin-bottom: 20px;
+      }
+      svg {
+        max-width: 100%;
+      }
+      section {
+        scroll-margin-top: 16px;
+      }
+      @media (max-width: 760px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+        .panel,
+        .metric {
+          padding: 18px;
+        }
+        .grid {
+          gap: 12px;
+        }
+        .toolbar .actions {
+          gap: 6px;
+        }
+        .toolbar button {
+          padding: 9px 11px;
+        }
+      }
+      @media (max-width: 460px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        button {
+          transition: none;
+        }
+        button:hover {
+          transform: none;
+        }
+      }
+    </style>
+    <link rel="stylesheet" href="/tools/calculator-premium.css" />
+  </head>
+  <body>
+    <header>
+      <b>CI<span>vanta</span></b
+      ><a href="https://globalbioenergywatch.org/civanta" target="_blank" rel="noopener"
+        >A Global Bioenergy Watch product ↗</a
+      >
+    </header>
+    <main class="wrap">
+      <span class="eyebrow">CARBON INTENSITY · SCENARIO WORKSPACE</span>
+      <h1>Understand your fuel’s carbon intensity.</h1>
+      <p class="intro">
+        Edit a pathway, inspect every lifecycle contribution, and compare improvements with a saved
+        baseline, and explore regulatory benchmarks and conditional credit quantities. The headline
+        result and stage breakdown use the same calculation ledger.
+      </p>
+      <div class="toolbar">
+        <div class="actions">
+          <button id="run" class="primary" data-run>▶ Run scenario</button>
+          <button id="fill-defaults">Fill with default values</button>
+          <button id="reset">Clear inputs</button><button id="baseline">Use as baseline</button>
+        </div>
+        <div class="actions">
+          <button id="export" class="primary">Download Excel</button>
+          <button id="json">Export JSON</button>
+        </div>
+      </div>
+      <div class="calculator-notices">
+        <span id="autosave-status" role="status">Changes save automatically in this browser.</span>
+        <p id="status" role="status" aria-live="polite">
+          Enter your values, or fill defaults to try a scenario.
+        </p>
+      </div>
+      <div class="layout">
+        <div>
+          <div id="inputs"></div>
+          <div id="toolsBottom"></div>
+          <div class="panel">
+            <p class="note">Finished entering values?</p>
+            <button type="button" class="primary" data-run>▶ Run scenario</button>
+          </div>
+        </div>
+        <aside aria-label="CI results and display settings">
+          <div id="results"></div>
+          <details class="panel display-preferences">
+            <summary>Display units</summary>
+            <div id="toolsTop"></div>
+          </details>
+        </aside>
+      </div>
+      <div id="processFlow" aria-live="polite"></div>
+      <section class="panel compact" id="runHistory" aria-label="Run history"></section>
+      <section class="panel compact">
+        <h3>What this model includes</h3>
+        <p class="note">
+          Feedstock production, land-use change, feedstock transport, process energy, process
+          chemicals/fugitives, distribution, end-use emissions and signed credits. Direct terms are
+          entered in gCO₂e/MJ; process inputs are multiplied by explicit emission factors. All
+          quantities use an LHV energy basis. Enter direct terms after any allocation appropriate to
+          your chosen method.
+        </p>
+        <p class="note">
+          This scenario workspace uses the GBW engine snapshot supplied on 29 September 2026. Preset
+          values are not newly verified emission-factor datasets. Regulatory methods require
+          different allocation, credit, boundary and eligibility treatments; a shared scenario
+          result is not a separate certified result for each program. Select the dairy manure
+          digester pathway for the dedicated LCFS-style farm inventory model. Other
+          framework-specific dairy models and detailed agriculture/transport inventories remain in
+          the full calculator.
+        </p>
+        <a href="/ci-calculator" target="_top" rel="noopener">Open the full GBW CI calculator ↗</a>
+        ·
+        <a href="https://www.energy.gov/cmei/greet" target="_blank" rel="noopener"
+          >Official GREET model documentation ↗</a
+        >
+      </section>
+      <footer>
+        © 2026 Global Bioenergy Watch. All rights reserved. · CIvanta scenario workspace v3.0 ·
+        Scenario inputs save on this device only.
+      </footer>
+    </main>
+    <script type="module" src="/tools/ci-workspace.js"></script>
+  </body>
+</html>

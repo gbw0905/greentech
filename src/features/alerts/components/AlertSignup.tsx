@@ -11,7 +11,7 @@ import {
 } from "@/features/policy/taxonomy";
 import { subscribeToAlerts } from "@/features/alerts/server-functions";
 
-function MultiSelectDropdown({
+export function MultiSelectDropdown({
   label,
   icon: Icon,
   options,
@@ -50,7 +50,12 @@ function MultiSelectDropdown({
     <div ref={ref} className="relative">
       <button
         type="button"
+        aria-expanded={open}
+        aria-label={label}
         onClick={() => setOpen((v) => !v)}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") setOpen(false);
+        }}
         className="flex w-full items-center justify-between gap-2 rounded-md border border-border bg-background px-3 py-2.5 text-sm shadow-sm transition-colors hover:border-primary focus:border-primary focus:ring-1 focus:ring-primary"
       >
         <span className="flex min-w-0 items-center gap-2">

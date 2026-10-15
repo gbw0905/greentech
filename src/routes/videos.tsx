@@ -40,7 +40,7 @@ export const Route = createFileRoute("/videos")({
 function VideosPage() {
   useVisitTracker();
   const [fuels, setFuels] = useState<FuelType[]>([]);
-  const [country, setCountry] = useState<string | null>(null);
+  const [countries, setCountries] = useState<string[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
   const [policies, setPolicies] = useState<string[]>([]);
   const { watch, view } = Route.useSearch();
@@ -102,13 +102,17 @@ function VideosPage() {
   };
   const toggleFuel = (f: FuelType) =>
     setFuels((list) => (list.includes(f) ? list.filter((v) => v !== f) : [...list, f]));
+  const toggleCountry = (slug: string) =>
+    setCountries((list) =>
+      list.includes(slug) ? list.filter((value) => value !== slug) : [...list, slug],
+    );
   const toggleRegion = (r: Region) =>
     setRegions((list) => (list.includes(r) ? list.filter((v) => v !== r) : [...list, r]));
   const togglePolicy = (p: string) =>
     setPolicies((list) => (list.includes(p) ? list.filter((v) => v !== p) : [...list, p]));
   const clearFilters = () => {
     setFuels([]);
-    setCountry(null);
+    setCountries([]);
     setRegions([]);
     setPolicies([]);
   };
@@ -157,8 +161,8 @@ function VideosPage() {
         </div>
         <div className="videos-layout">
           <VideoFilters
-            country={country}
-            onCountry={setCountry}
+            countries={countries}
+            onCountry={toggleCountry}
             fuels={fuels}
             onFuel={toggleFuel}
             regions={regions}
@@ -169,7 +173,7 @@ function VideosPage() {
           />
           <LiveMediaFeed
             fuels={fuels}
-            country={country}
+            countries={countries}
             selectedVideoId={watch ?? null}
             onPlayVideo={playVideo}
             onVideosChange={setAvailableVideos}
@@ -178,9 +182,9 @@ function VideosPage() {
         <VideoLibrary
           regions={regions}
           fuels={fuels}
-          country={country}
+          countries={countries}
           policies={policies}
-          onSelectCountry={setCountry}
+          onSelectCountry={toggleCountry}
         />
       </main>
     </div>

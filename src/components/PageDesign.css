@@ -681,3 +681,48 @@
     transition: none !important;
   }
 }
+
+.desk-design .team-page {
+  display: grid;
+  gap: 24px;
+}
+.desk-design .team-leadership {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.desk-design .team-leadership .member.lead {
+  grid-column: auto;
+  min-width: 0;
+}
+.desk-design .team-leadership .member.lead h2 {
+  font-size: clamp(20px, 2vw, 24px);
+}
+.desk-design .team-builders {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.desk-design .team-builders .av,
+.desk-design .team-leadership img.av {
+  object-fit: cover;
+}
+@media (max-width: 900px) {
+  .desk-design .team-leadership {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 640px) {
+  .desk-design .team-builders {
+    grid-template-columns: 1fr;
+  }
+}
+.desk-design .team-leadership .profile-link {
+  display: flex;
+  width: fit-content;
+}
+@media (max-width: 640px) {
+  .desk-design .team-leadership .profile-link {
+    margin-inline: auto;
+  }
+}

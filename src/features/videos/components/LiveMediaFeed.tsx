@@ -120,26 +120,47 @@ function VideoResults({
 
 export function LiveMediaFeed({
   fuels,
-  country,
+  countries,
   selectedVideoId = null,
   onPlayVideo,
   onVideosChange,
 }: {
   fuels: FuelType[];
-  country: string | null;
+  countries: string[];
   selectedVideoId?: string | null;
   onPlayVideo?: (video: LiveVideo) => void;
   onVideosChange?: (videos: LiveVideo[]) => void;
 }) {
   const keywords = useMemo(() => {
     const topics = fuels.length ? fuels.map((f) => FUEL_KEYWORD[f]) : BASE_KEYWORDS;
-    const prefix = country ? `${nameFor(country)} ` : "";
-    return Array.from(new Set(topics.map((t) => `${prefix}${t}`))).slice(0, 6);
-  }, [fuels, country]);
+    const prefixes = countries.length ? countries.map((slug) => `${nameFor(slug)} `) : [""];
+    return Array.from(
+      new Set(prefixes.flatMap((prefix) => topics.map((topic) => `${prefix}${topic}`))),
+    );
+  }, [fuels, countries]);
   const fetchMedia = useServerFn(getLiveMediaFn);
   const { data, isFetching, isError, refetch } = useQuery({
     queryKey: ["live-media", keywords],
-    queryFn: () => fetchMedia({ data: { keywords } }),
+    queryFn: async () => {
+      // Keep every selected country in the search while respecting the API batch limit.
+      const batches = Array.from({ length: Math.ceil(keywords.length / 12) }, (_, index) =>
+        keywords.slice(index * 12, index * 12 + 12),
+      );
+      const results = [];
+      for (const batch of batches) results.push(await fetchMedia({ data: { keywords: batch } }));
+      return {
+        videos: [
+          ...new Map(
+            results.flatMap((result) => result.videos).map((video) => [video.id, video]),
+          ).values(),
+        ],
+        articles: [
+          ...new Map(
+            results.flatMap((result) => result.articles).map((article) => [article.url, article]),
+          ).values(),
+        ],
+      };
+    },
     staleTime: 15 * 60_000,
   });
   useEffect(() => {
