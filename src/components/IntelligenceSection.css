@@ -23,23 +23,6 @@
   letter-spacing: 0.11em;
   text-transform: uppercase;
 }
-.intelligence-tour-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 8px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 550;
-  color: #4c6979;
-  transition:
-    color 0.2s,
-    background 0.2s;
-}
-.intelligence-tour-toggle:hover {
-  color: #126f56;
-  background: #dceee8;
-}
 .intelligence-accordion-stack {
   display: flex;
   flex: 1;
@@ -250,7 +233,6 @@
   .intelligence-surface .intelligence-number,
   .intelligence-surface .intelligence-chevron,
   .intelligence-chevron-wrap,
-  .intelligence-tour-toggle,
   .intelligence-surface .intelligence-tags a,
   .intelligence-explore-link svg {
     transition: none;

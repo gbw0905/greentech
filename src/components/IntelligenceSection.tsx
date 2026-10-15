@@ -9,8 +9,6 @@ import {
   ChevronDown,
   FileText,
   Newspaper,
-  Pause,
-  Play,
   ShieldCheck,
   Sparkles,
   TrendingUp,
@@ -90,13 +88,10 @@ export function IntelligenceSection() {
   const [open, setOpen] = useState<number | null>(0);
   const [active, setActive] = useState(0);
   const capability = CAPABILITIES[active] ?? CAPABILITIES[0];
-  const [automatic, setAutomatic] = useState(true);
-  const [hovered, setHovered] = useState(false);
-  const [focusWithin, setFocusWithin] = useState(false);
   const visualRef = useRef<HTMLDivElement>(null);
   const inView = useInView(visualRef, { amount: 0.35 });
   useEffect(() => {
-    if (reduced || !inView || !automatic || hovered || focusWithin) return;
+    if (reduced || !inView) return;
     const timer = setInterval(() => {
       if (document.hidden) return;
       const next = (active + 1) % CAPABILITIES.length;
@@ -104,7 +99,7 @@ export function IntelligenceSection() {
       setOpen(next);
     }, 8000);
     return () => clearInterval(timer);
-  }, [active, automatic, focusWithin, hovered, inView, reduced]);
+  }, [active, inView, reduced]);
   return (
     <div className="intelligence-surface">
       <section
@@ -151,39 +146,9 @@ export function IntelligenceSection() {
               </div>
             </div>
           </MotionReveal>
-          <div
-            className="intelligence-accordion"
-            data-expanded={open !== null}
-            onPointerEnter={(event) => {
-              if (event.pointerType === "mouse") setHovered(true);
-            }}
-            onPointerLeave={() => setHovered(false)}
-            onFocusCapture={() => setFocusWithin(true)}
-            onBlurCapture={(event) => {
-              if (!event.currentTarget.contains(event.relatedTarget)) setFocusWithin(false);
-            }}
-          >
+          <div className="intelligence-accordion" data-expanded={open !== null}>
             <div className="intelligence-accordion-header">
               <span>Explore the platform</span>
-              {!reduced && (
-                <button
-                  type="button"
-                  className="intelligence-tour-toggle"
-                  aria-label={automatic ? "Pause automatic tour" : "Resume automatic tour"}
-                  aria-pressed={automatic}
-                  onClick={() => {
-                    setAutomatic(!automatic);
-                    if (!automatic) setOpen(active);
-                  }}
-                >
-                  {automatic ? (
-                    <Pause size={12} aria-hidden="true" />
-                  ) : (
-                    <Play size={12} aria-hidden="true" />
-                  )}
-                  {automatic ? "Pause tour" : "Auto tour"}
-                </button>
-              )}
             </div>
             <div className="intelligence-accordion-stack">
               {CAPABILITIES.map((item, index) => {
@@ -204,7 +169,6 @@ export function IntelligenceSection() {
                         aria-expanded={expanded}
                         aria-controls={`intelligence-panel-${index}`}
                         onClick={() => {
-                          setAutomatic(false);
                           setOpen(expanded ? null : index);
                           setActive(index);
                         }}
