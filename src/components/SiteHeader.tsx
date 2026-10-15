@@ -47,22 +47,8 @@ const NAV_GROUPS = [
   {
     label: "Products",
     items: [
-      {
-        to: "/ci-calculator",
-        label: "CI calculator",
-      },
-      {
-        to: "/my-results",
-        label: "CI WorkSpace",
-      },
-      {
-        to: "/dairy-rng-calculator",
-        label: "Dairy RNG calculator",
-      },
-      {
-        to: "/document-analyzer",
-        label: "Policy Document Analyzer",
-      },
+      { to: "/civanta", label: "CIVanta" },
+      { to: "/document-analyzer", label: "Policy Document Analyzer" },
     ],
   },
   {
@@ -118,7 +104,7 @@ export function SiteHeader({
     if (label === "Benchmarks") return hash === "markets";
     if (label === "Datasets") return activeSection === "supply" || pathname === "/data-sources";
     if (label === "Products")
-      return /^\/(ci-calculator|dairy-rng-calculator|my-results|document-analyzer)(\/|$)/.test(
+      return /^\/(civanta|credit-calculator|ci-calculator|ci-workspace|dairy-rng-calculator|my-results|document-analyzer)(\/|$)/.test(
         pathname,
       );
     if (label === "Bioenergy Jobs") return activeSection === "jobs" || pathname === "/jobs";

@@ -308,3 +308,33 @@
     transition: none !important;
   }
 }
+.gbw-footer .footer-coverage-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 20px 0 14px;
+}
+.gbw-footer .footer-coverage-controls > div > button {
+  background: #ffffff08;
+  border-color: #ffffff26;
+  color: white;
+  border-radius: 10px;
+  padding: 11px;
+}
+.gbw-footer .footer-coverage-controls > div > button .text-foreground {
+  color: white;
+}
+.gbw-footer .footer-coverage-controls > div > button .text-muted-foreground {
+  color: #b6c9d6;
+}
+.gbw-footer .footer-coverage-controls > div > button svg {
+  color: #68d5b2;
+}
+.gbw-footer .footer-coverage-controls input[type="checkbox"] {
+  accent-color: #178a6b;
+}
+@media (max-width: 440px) {
+  .gbw-footer .footer-coverage-controls {
+    grid-template-columns: 1fr;
+  }
+}

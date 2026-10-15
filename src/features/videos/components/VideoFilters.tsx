@@ -30,7 +30,7 @@ function FilterGroup({
 }
 
 export function VideoFilters({
-  country,
+  countries,
   onCountry,
   fuels,
   onFuel,
@@ -40,8 +40,8 @@ export function VideoFilters({
   onPolicy,
   onClear,
 }: {
-  country: string | null;
-  onCountry: (country: string | null) => void;
+  countries: string[];
+  onCountry: (country: string) => void;
   fuels: FuelType[];
   onFuel: (fuel: FuelType) => void;
   regions: Region[];
@@ -52,10 +52,11 @@ export function VideoFilters({
 }) {
   const [allCountries, setAllCountries] = useState(false);
   const [allPolicies, setAllPolicies] = useState(false);
-  const active = !!country || fuels.length > 0 || regions.length > 0 || policies.length > 0;
+  const active =
+    countries.length > 0 || fuels.length > 0 || regions.length > 0 || policies.length > 0;
   const countryList = allCountries
     ? HUB_COUNTRIES
-    : HUB_COUNTRIES.filter((c, i) => i < 6 || c.slug === country);
+    : HUB_COUNTRIES.filter((c, i) => i < 6 || countries.includes(c.slug));
   const policyList = allPolicies
     ? HUB_POLICIES
     : HUB_POLICIES.filter((p, i) => i < 5 || policies.includes(p));
@@ -66,8 +67,8 @@ export function VideoFilters({
           <label className="videos-rail-item" key={c.slug}>
             <input
               type="checkbox"
-              checked={country === c.slug}
-              onChange={() => onCountry(country === c.slug ? null : c.slug)}
+              checked={countries.includes(c.slug)}
+              onChange={() => onCountry(c.slug)}
             />
             {c.name}
           </label>

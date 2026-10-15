@@ -1,0 +1,118 @@
+.ci-workspace-page {
+  background: linear-gradient(125deg, #edf5f5, #f7f9fc 65%);
+  color: #0e2a43;
+  padding: 22px 24px 50px;
+}
+.ci-workspace-shell {
+  max-width: 1240px;
+  margin: auto;
+  min-width: 0;
+}
+.calculator-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+.ci-workspace-heading {
+  min-width: 0;
+}
+.calculator-back {
+  color: #62788b;
+  font-size: 12px;
+}
+.ci-workspace-heading h1 {
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-size: clamp(26px, 2.6vw, 34px);
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+  font-weight: 650;
+  margin: 8px 0;
+}
+.ci-workspace-heading h1 span {
+  color: #178a6b;
+}
+.ci-workspace-heading p {
+  color: #62788b;
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 70ch;
+}
+.calculator-subnav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px 16px;
+  align-items: center;
+  flex: 0 0 320px;
+  color: #526b80;
+  font-size: 12px;
+}
+.calculator-subnav small {
+  flex-basis: 100%;
+  text-align: right;
+  color: #62788b;
+  font-size: 11px;
+}
+.calculator-subnav button {
+  background: white;
+  border: 1px solid #d4e2eb;
+  border-radius: 8px;
+  color: #0e2a43;
+  padding: 9px 12px;
+  font-weight: 600;
+}
+.calculator-subnav button[aria-expanded="true"] {
+  background: #e7f4ef;
+  color: #126f56;
+  border-color: #b9dacf;
+}
+.calculator-sync-status {
+  padding: 7px 12px;
+  background: #eaf4f0;
+  border: 1px solid #d0e6dc;
+  color: #12634b;
+  border-radius: 8px;
+  font-size: 11px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.calculator-sync-status button {
+  font-weight: 700;
+  text-decoration: underline;
+}
+.ci-workspace-frame {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: transparent;
+}
+.ci-workspace-page .history-panel {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+@media (max-width: 800px) {
+  .calculator-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .calculator-subnav {
+    flex-basis: auto;
+    justify-content: flex-start;
+  }
+  .calculator-subnav small {
+    flex-basis: auto;
+    text-align: left;
+  }
+}
+@media (max-width: 640px) {
+  .ci-workspace-page {
+    padding: 18px 16px 30px;
+  }
+}

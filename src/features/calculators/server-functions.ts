@@ -114,6 +114,7 @@ export const listCiRunsFn = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("ci_runs")
       .select("*")
+      .not("pathway_id", "like", "civanta/%")
       .order("created_at", { ascending: false })
       .limit(100);
     if (error) throw new Error(error.message);

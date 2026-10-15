@@ -1,8 +1,15 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { LogIn, LogOut } from "lucide-react";
+import { LogIn, LogOut, UserRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
+
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 /** Header sign-in / sign-out affordance, driven by the live session. */
 export function AuthButton({ entryMode = "signin" }: { entryMode?: "signin" | "signup" }) {
@@ -32,19 +39,30 @@ export function AuthButton({ entryMode = "signin" }: { entryMode?: "signin" | "s
     navigate({ to: "/auth", replace: true });
   }
 
+  const avatar = user.user_metadata["avatar_url"];
+  const name =
+    user.user_metadata["full_name"] || user.user_metadata["name"] || user.email || "Member";
   return (
-    <div className="flex shrink-0 items-center gap-2">
-      <span className="hidden max-w-[12rem] truncate font-mono text-xs text-menubar-muted lg:inline">
-        {user.email}
-      </span>
-      <button
-        type="button"
-        onClick={signOut}
-        className="label-mono pill-motion inline-flex shrink-0 items-center gap-2 border border-menubar-fg/40 bg-menubar-nav px-2.5 py-1.5 font-bold text-menubar-fg hover:border-menubar-fg hover:bg-menubar-fg/10 sm:px-3.5 sm:py-2"
-      >
-        <LogOut className="size-3.5" />
-        <span className="hidden sm:inline">Sign out</span>
-      </button>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button type="button" className="gbw-profile-avatar" aria-label="Open profile menu">
+          {typeof avatar === "string" && /^https:\/\//.test(avatar) ? (
+            <img src={avatar} alt="" referrerPolicy="no-referrer" />
+          ) : (
+            <span aria-hidden>{String(name).slice(0, 1).toUpperCase()}</span>
+          )}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="gbw-profile-menu">
+        <DropdownMenuItem asChild>
+          <Link to="/profile">
+            <UserRound size={16} /> View Profile
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={signOut}>
+          <LogOut size={16} /> Sign Out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

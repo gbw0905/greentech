@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ExternalLink, FileText, Newspaper } from "lucide-react";
+import { governmentSitesForCountry, mandatesForCountry } from "@/features/countries/mandates";
 import { CountryFlag } from "./CountryFlag";
 import {
   policyStatusFor,
@@ -16,6 +17,8 @@ export function CountryProfileHeader({
   section?: "overview" | "mandates" | "updates";
 }) {
   const status = policyStatusFor(country);
+  const sources = governmentSitesForCountry(country.slug);
+  const mandates = mandatesForCountry(country.slug);
   return (
     <header className="banner">
       <div className="wrap">
@@ -52,6 +55,37 @@ export function CountryProfileHeader({
                 <span key={f}>{f}</span>
               ))}
             </div>
+            <section className="hero-evidence" aria-label="Explore this jurisdiction">
+              <div className="hero-quick-links">
+                <Link to="/countries/$slug" params={{ slug: country.slug }} hash="mandates">
+                  <FileText size={18} />
+                  <span>
+                    <strong>{mandates.length} tracked mandates</strong>
+                    <small>Timeline &amp; compliance</small>
+                  </span>
+                  <ArrowRight size={16} />
+                </Link>
+                <Link to="/countries/$slug" params={{ slug: country.slug }} hash="updates">
+                  <Newspaper size={18} />
+                  <span>
+                    <strong>Live updates</strong>
+                    <small>Latest policy &amp; market news</small>
+                  </span>
+                  <ArrowRight size={16} />
+                </Link>
+              </div>
+              {sources.length > 0 && (
+                <div className="hero-source-links">
+                  <p>Official sources · {sources.length}</p>
+                  {sources.slice(0, 3).map((source) => (
+                    <a key={source.url} href={source.url} target="_blank" rel="noopener noreferrer">
+                      {source.label}
+                      <ExternalLink size={13} />
+                    </a>
+                  ))}
+                </div>
+              )}
+            </section>
           </div>
           <aside className="snap" aria-label="Profile snapshot">
             <p className="snap-h">Profile snapshot</p>

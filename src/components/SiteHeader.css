@@ -1,11 +1,19 @@
-/* Centre navigation in the available space between the brand and account action. */
+/* Distribute space within navigation rather than leaving empty blocks beside it. */
 @media (min-width: 1200px) {
   .gbw-header .gbw-header-inner {
     gap: 20px;
   }
   .gbw-header .gbw-desktop-nav {
     flex: 1;
-    justify-content: center;
+    justify-content: space-evenly;
+  }
+  .gbw-header .gbw-desktop-nav > div {
+    width: 100%;
+  }
+  .gbw-header .gbw-nav-list {
+    width: 100%;
+    justify-content: space-between;
+    gap: 4px;
   }
   .gbw-header .gbw-header-actions {
     margin-left: 0;
@@ -100,5 +108,84 @@
 @media (prefers-reduced-motion: reduce) {
   .gbw-nav-group > .gbw-nav-menu {
     animation: none;
+  }
+}
+
+/* Brand, six navigation items and account control share the same flexible gap. */
+@media (min-width: 1200px) {
+  .gbw-header .gbw-header-inner {
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .gbw-header .gbw-desktop-nav,
+  .gbw-header .gbw-desktop-nav > div,
+  .gbw-header .gbw-nav-list {
+    display: contents;
+  }
+  .gbw-header .gbw-header-actions {
+    margin-left: 0;
+  }
+}
+.gbw-header .gbw-auth button.gbw-profile-avatar {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #e1f2ed;
+  color: #126f56;
+  border: 1px solid #b9dbcf;
+  font-size: 18px;
+  display: grid;
+  place-items: center;
+}
+.gbw-profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.gbw-profile-avatar:focus-visible {
+  outline: 3px solid #178a6b;
+  outline-offset: 3px;
+}
+.gbw-profile-menu {
+  background: white;
+  color: #0e2a43;
+  border: 1px solid #d4e2ed;
+  border-radius: 14px;
+  padding: 8px;
+  min-width: 180px;
+}
+.gbw-profile-menu [role="menuitem"] {
+  gap: 10px;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.gbw-profile-menu [role="menuitem"]:focus {
+  background: #eef6f3;
+}
+@media (max-width: 480px) {
+  .gbw-header .gbw-header-inner {
+    padding-inline: 12px;
+    gap: 10px;
+  }
+  .gbw-header .gbw-brand {
+    font-size: 14px;
+    gap: 8px;
+  }
+  .gbw-header .gbw-brand img {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* A little extra breathing room between the navigation and its outer controls. */
+@media (min-width: 1200px) {
+  .gbw-header .gbw-nav-group:first-child {
+    margin-inline-start: 16px;
+  }
+  .gbw-header .gbw-nav-group:last-child {
+    margin-inline-end: 16px;
   }
 }

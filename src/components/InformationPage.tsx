@@ -10,7 +10,7 @@ const PAGES = [
 const CHIPS = {
   about: ["4 fuel streams tracked", "Regulators & credible media", "Daily AI-assisted briefs"],
   mission: ["Independent", "Source-cited", "Updated daily"],
-  team: ["4 team members", "Editors & developers", "Open to contributors"],
+  team: ["5 team members", "Editors & developers", "Open to contributors"],
 };
 
 export function InformationPage({
