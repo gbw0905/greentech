@@ -9,10 +9,13 @@ import {
   ChevronDown,
   FileText,
   Newspaper,
+  Pause,
+  Play,
   ShieldCheck,
   Sparkles,
   TrendingUp,
 } from "lucide-react";
+import "./IntelligenceSection.css";
 
 const CAPABILITIES = [
   {
@@ -24,6 +27,7 @@ const CAPABILITIES = [
     to: "/",
     hash: "map",
     tracking: "Bioenergy signals worldwide",
+    action: "Explore the policy map",
   },
   {
     title: "Fuel and feedstock markets",
@@ -34,6 +38,7 @@ const CAPABILITIES = [
     to: "/",
     hash: "markets",
     tracking: "Policy and market developments",
+    action: "Explore live benchmarks",
   },
   {
     title: "Live development tracker",
@@ -44,6 +49,7 @@ const CAPABILITIES = [
     to: "/",
     hash: "updates",
     tracking: "Developments across jurisdictions",
+    action: "Read the latest updates",
   },
   {
     title: "Sector company intelligence",
@@ -53,6 +59,7 @@ const CAPABILITIES = [
     tags: ["Producers", "Suppliers", "Users"],
     to: "/supply",
     tracking: "Companies across the value chain",
+    action: "Explore companies & suppliers",
   },
   {
     title: "AI-powered briefings",
@@ -62,6 +69,7 @@ const CAPABILITIES = [
     tags: ["AI summaries", "Daily digest", "Email alerts"],
     to: "/get-alerts",
     tracking: "Policy and market briefings",
+    action: "Create your briefing",
   },
   {
     title: "Bioenergy careers",
@@ -71,6 +79,7 @@ const CAPABILITIES = [
     tags: ["Jobs", "Companies", "Careers"],
     to: "/jobs",
     tracking: "Careers across the bioenergy sector",
+    action: "Explore bioenergy careers",
   },
 ] as const;
 
@@ -82,17 +91,20 @@ export function IntelligenceSection() {
   const [active, setActive] = useState(0);
   const capability = CAPABILITIES[active] ?? CAPABILITIES[0];
   const [automatic, setAutomatic] = useState(true);
+  const [hovered, setHovered] = useState(false);
+  const [focusWithin, setFocusWithin] = useState(false);
   const visualRef = useRef<HTMLDivElement>(null);
   const inView = useInView(visualRef, { amount: 0.35 });
   useEffect(() => {
-    if (reduced || !inView || !automatic) return;
+    if (reduced || !inView || !automatic || hovered || focusWithin) return;
     const timer = setInterval(() => {
       if (document.hidden) return;
-      setActive((current) => (current + 1) % CAPABILITIES.length);
-      setOpen((current) => ((current ?? 0) + 1) % CAPABILITIES.length);
-    }, 6000);
+      const next = (active + 1) % CAPABILITIES.length;
+      setActive(next);
+      setOpen(next);
+    }, 8000);
     return () => clearInterval(timer);
-  }, [automatic, inView, reduced]);
+  }, [active, automatic, focusWithin, hovered, inView, reduced]);
   return (
     <div className="intelligence-surface">
       <section
@@ -139,68 +151,119 @@ export function IntelligenceSection() {
               </div>
             </div>
           </MotionReveal>
-          <div className="intelligence-accordion" data-expanded={open !== null}>
-            {CAPABILITIES.map((item, index) => {
-              const Icon = item.icon;
-              const expanded = open === index;
-              return (
-                <MotionReveal
-                  as="article"
-                  delay={0.08 + index * 0.07}
-                  distance={28}
-                  key={item.title}
-                  className={`intelligence-item ${expanded ? "is-open" : ""}`}
+          <div
+            className="intelligence-accordion"
+            data-expanded={open !== null}
+            onPointerEnter={(event) => {
+              if (event.pointerType === "mouse") setHovered(true);
+            }}
+            onPointerLeave={() => setHovered(false)}
+            onFocusCapture={() => setFocusWithin(true)}
+            onBlurCapture={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget)) setFocusWithin(false);
+            }}
+          >
+            <div className="intelligence-accordion-header">
+              <span>Explore the platform</span>
+              {!reduced && (
+                <button
+                  type="button"
+                  className="intelligence-tour-toggle"
+                  aria-label={automatic ? "Pause automatic tour" : "Resume automatic tour"}
+                  aria-pressed={automatic}
+                  onClick={() => {
+                    setAutomatic(!automatic);
+                    if (!automatic) setOpen(active);
+                  }}
                 >
-                  <h3>
-                    <button
-                      type="button"
-                      id={`intelligence-trigger-${index}`}
-                      aria-expanded={expanded}
-                      aria-controls={`intelligence-panel-${index}`}
-                      onClick={() => {
-                        setAutomatic(false);
-                        setOpen(expanded ? null : index);
-                        setActive(index);
-                      }}
-                    >
-                      <span className="intelligence-number">
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
-                      <span>{item.title}</span>
-                      <Icon
-                        className="intelligence-item-icon"
-                        size={19}
-                        strokeWidth={1.5}
-                        aria-hidden="true"
-                      />
-                      <ChevronDown className="intelligence-chevron" size={16} aria-hidden="true" />
-                    </button>
-                  </h3>
-                  <motion.div
-                    id={`intelligence-panel-${index}`}
-                    role="region"
-                    aria-labelledby={`intelligence-trigger-${index}`}
-                    aria-hidden={!expanded}
-                    inert={!expanded}
-                    initial={false}
-                    animate={{ height: expanded ? "auto" : 0, opacity: expanded ? 1 : 0 }}
-                    transition={{ duration: reduced ? 0 : 0.35, ease: [0.2, 0.7, 0.2, 1] }}
-                    className="intelligence-panel-motion"
+                  {automatic ? (
+                    <Pause size={12} aria-hidden="true" />
+                  ) : (
+                    <Play size={12} aria-hidden="true" />
+                  )}
+                  {automatic ? "Pause tour" : "Auto tour"}
+                </button>
+              )}
+            </div>
+            <div className="intelligence-accordion-stack">
+              {CAPABILITIES.map((item, index) => {
+                const Icon = item.icon;
+                const expanded = open === index;
+                return (
+                  <MotionReveal
+                    as="article"
+                    delay={0.08 + index * 0.07}
+                    distance={28}
+                    key={item.title}
+                    className={`intelligence-item ${expanded ? "is-open" : ""}`}
                   >
-                    <div className="intelligence-item-content">
-                      <p>{item.description}</p>
-                      <div className="intelligence-tags">
-                        {item.tags.map((tag) => (
-                          <Link key={tag} to={item.to} hash={"hash" in item ? item.hash : ""}>
-                            {tag}
-                          </Link>
-                        ))}
+                    <h3>
+                      <button
+                        type="button"
+                        id={`intelligence-trigger-${index}`}
+                        aria-expanded={expanded}
+                        aria-controls={`intelligence-panel-${index}`}
+                        onClick={() => {
+                          setAutomatic(false);
+                          setOpen(expanded ? null : index);
+                          setActive(index);
+                        }}
+                      >
+                        <span className="intelligence-number">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                        <span className="intelligence-item-title">{item.title}</span>
+                        <Icon
+                          className="intelligence-item-icon"
+                          size={19}
+                          strokeWidth={1.5}
+                          aria-hidden="true"
+                        />
+                        <span className="intelligence-chevron-wrap" aria-hidden="true">
+                          <ChevronDown className="intelligence-chevron" size={16} />
+                        </span>
+                      </button>
+                    </h3>
+                    <motion.div
+                      id={`intelligence-panel-${index}`}
+                      role="region"
+                      aria-labelledby={`intelligence-trigger-${index}`}
+                      aria-hidden={!expanded}
+                      inert={!expanded}
+                      initial={false}
+                      animate={{ height: expanded ? "auto" : 0, opacity: expanded ? 1 : 0 }}
+                      transition={{
+                        height: { duration: reduced ? 0 : 0.5, ease: [0.22, 1, 0.36, 1] },
+                        opacity: {
+                          duration: reduced ? 0 : 0.25,
+                          delay: expanded && !reduced ? 0.08 : 0,
+                        },
+                      }}
+                      className="intelligence-panel-motion"
+                    >
+                      <div className="intelligence-item-content">
+                        <p>{item.description}</p>
+                        <div className="intelligence-tags">
+                          {item.tags.map((tag) => (
+                            <Link key={tag} to={item.to} hash={"hash" in item ? item.hash : ""}>
+                              {tag}
+                            </Link>
+                          ))}
+                        </div>
+                        <Link
+                          className="intelligence-explore-link"
+                          to={item.to}
+                          hash={"hash" in item ? item.hash : ""}
+                        >
+                          {item.action}
+                          <ArrowRight size={15} aria-hidden="true" />
+                        </Link>
                       </div>
-                    </div>
-                  </motion.div>
-                </MotionReveal>
-              );
-            })}
+                    </motion.div>
+                  </MotionReveal>
+                );
+              })}
+            </div>
           </div>
         </div>
         <MotionReveal blur={0} className="intelligence-audience">

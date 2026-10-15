@@ -1,0 +1,258 @@
+/* Keep the accordion at its content height; the pipeline stretches to match it. */
+.intelligence-surface .intelligence-grid {
+  gap: 28px;
+  grid-template-columns: minmax(0, 0.96fr) minmax(0, 1.04fr);
+}
+.intelligence-surface .intelligence-accordion {
+  justify-content: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+.intelligence-accordion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 28px;
+  padding-inline: 4px;
+}
+.intelligence-accordion-header > span {
+  color: #647e8d;
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+.intelligence-tour-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 550;
+  color: #4c6979;
+  transition:
+    color 0.2s,
+    background 0.2s;
+}
+.intelligence-tour-toggle:hover {
+  color: #126f56;
+  background: #dceee8;
+}
+.intelligence-accordion-stack {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+}
+.intelligence-surface .intelligence-item,
+.intelligence-surface .intelligence-item.is-open,
+.intelligence-surface .intelligence-accordion[data-expanded="false"] .intelligence-item {
+  position: relative;
+  flex: 0 0 auto;
+  min-width: 0;
+  background: #ffffffab;
+  border: 1px solid #d6e3e9;
+  border-radius: 15px;
+  box-shadow: 0 2px 3px #0e2a4302;
+  transition:
+    border-color 0.3s,
+    box-shadow 0.3s,
+    background 0.3s;
+}
+.intelligence-surface .intelligence-item:hover {
+  border-color: #a7cabe;
+  background: #fff;
+  box-shadow: 0 6px 20px -14px #0e2a4340;
+}
+.intelligence-surface .intelligence-item.is-open {
+  background: linear-gradient(120deg, #fff 55%, #f3faf7);
+  border-color: #9ecfbc;
+  box-shadow:
+    0 12px 28px -20px #126f5660,
+    0 1px 3px #0e2a4305;
+}
+.intelligence-surface .intelligence-item::before {
+  content: "";
+  position: absolute;
+  inset: 21px auto 21px -1px;
+  width: 3px;
+  border-radius: 3px;
+  background: #178a6b;
+  opacity: 0;
+  transform: scaleY(0.55);
+  transition:
+    opacity 0.3s,
+    transform 0.45s;
+  pointer-events: none;
+}
+.intelligence-surface .intelligence-item.is-open::before {
+  opacity: 1;
+  transform: scaleY(1);
+}
+.intelligence-surface .intelligence-item h3 {
+  display: block;
+  flex: none;
+}
+.intelligence-surface .intelligence-item h3 button {
+  gap: 12px;
+  min-height: 68px;
+  padding: 16px;
+  font-size: 17px;
+  line-height: 1.4;
+  letter-spacing: -0.35px;
+  border-radius: 14px;
+}
+.intelligence-item-title {
+  flex: 1;
+  min-width: 0;
+  color: #19354a;
+}
+.intelligence-surface .intelligence-number {
+  width: 34px;
+  height: 34px;
+  border-color: #dce6eb;
+  background: #f5f8fa;
+  color: #708594;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  transition:
+    color 0.3s,
+    background 0.3s,
+    border-color 0.3s,
+    box-shadow 0.3s;
+}
+.intelligence-surface .is-open .intelligence-number {
+  background: #178a6b;
+  color: #fff;
+  border-color: #178a6b;
+  box-shadow: 0 0 0 4px #178a6b0b;
+}
+.intelligence-surface .intelligence-item-icon {
+  color: #77909e;
+  margin-left: 0;
+}
+.intelligence-chevron-wrap {
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #eaf0f4;
+  transition: background 0.3s;
+}
+.intelligence-surface .intelligence-chevron {
+  color: #677f8f;
+  transition:
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.3s;
+}
+.intelligence-surface .is-open .intelligence-item-icon,
+.intelligence-surface .is-open .intelligence-chevron {
+  color: #178a6b;
+}
+.intelligence-surface .is-open .intelligence-chevron-wrap {
+  background: #e2f2eb;
+}
+.intelligence-surface .intelligence-item.is-open .intelligence-panel-motion {
+  margin-block: 0;
+}
+.intelligence-surface .intelligence-item-content {
+  padding: 0 24px 22px 62px;
+}
+.intelligence-surface .intelligence-item-content p {
+  margin: 0 0 14px;
+  color: #536d7d;
+  font-size: 14px;
+  line-height: 1.75;
+}
+.intelligence-surface .intelligence-tags {
+  gap: 7px;
+}
+.intelligence-surface .intelligence-tags a {
+  padding: 5px 10px;
+  font-size: 11px;
+  line-height: 1.5;
+  border-radius: 6px;
+  border-color: #dce9e4;
+  color: #486c60;
+  background: #f1f7f4;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+.intelligence-surface .intelligence-tags a:hover {
+  border-color: #9fcebb;
+  background: #e6f3ec;
+}
+.intelligence-explore-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 17px;
+  color: #126f56;
+  font-size: 12px;
+  font-weight: 650;
+}
+.intelligence-explore-link svg {
+  transition: transform 0.25s;
+}
+.intelligence-explore-link:hover svg {
+  transform: translateX(3px);
+}
+@media (max-width: 1000px) {
+  .intelligence-surface .intelligence-grid {
+    gap: 18px;
+  }
+  .intelligence-surface .intelligence-item h3 button {
+    font-size: 14px;
+    gap: 10px;
+    padding: 15px 13px;
+  }
+  .intelligence-surface .intelligence-item-content {
+    padding-left: 57px;
+    padding-right: 18px;
+  }
+}
+@media (max-width: 700px) {
+  .intelligence-surface .intelligence-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .intelligence-surface .intelligence-accordion-stack {
+    gap: 10px;
+  }
+  .intelligence-surface .intelligence-item h3 button {
+    font-size: 15px;
+  }
+  .intelligence-surface .intelligence-item-content {
+    padding: 0 20px 20px 57px;
+  }
+}
+@media (max-width: 420px) {
+  .intelligence-surface .intelligence-item h3 button {
+    gap: 9px;
+    font-size: 14px;
+  }
+  .intelligence-surface .intelligence-item-icon {
+    display: none;
+  }
+  .intelligence-surface .intelligence-item-content {
+    padding-left: 20px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .intelligence-surface .intelligence-item,
+  .intelligence-surface .intelligence-item::before,
+  .intelligence-surface .intelligence-number,
+  .intelligence-surface .intelligence-chevron,
+  .intelligence-chevron-wrap,
+  .intelligence-tour-toggle,
+  .intelligence-surface .intelligence-tags a,
+  .intelligence-explore-link svg {
+    transition: none;
+  }
+}
