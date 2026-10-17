@@ -17,7 +17,7 @@
   font-family: "Instrument Sans", sans-serif;
 }
 .heading {
-  font-size: 9.5px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.16em;
   fill: #ffffff66;
@@ -33,7 +33,7 @@
   stroke: #ffffff47;
 }
 .source text {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   fill: #ffffffe0;
 }
@@ -42,12 +42,12 @@
   stroke: #5fd3ae8c;
 }
 .processor text {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   fill: #fff;
 }
 .processor .brand {
-  font-size: 9px;
+  font-size: 14px;
   letter-spacing: 0.18em;
   fill: #5fd3ae;
 }
@@ -87,13 +87,13 @@
   transition: opacity 0.3s;
 }
 .number {
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 700;
   fill: #ffffff66;
   transition: fill 0.3s;
 }
 .label {
-  font-size: 11.5px;
+  font-size: 14px;
   font-weight: 500;
   fill: #ffffff9e;
   transition: fill 0.3s;

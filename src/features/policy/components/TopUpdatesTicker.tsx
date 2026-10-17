@@ -35,7 +35,7 @@ export function TopUpdatesTicker({ updates }: { updates: PolicyUpdate[] }) {
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
     >
-      <div className="mb-2 flex items-center justify-end gap-1 font-mono text-[11px] tabular-nums text-muted-foreground">
+      <div className="mb-2 flex items-center justify-end gap-1 font-mono text-[14px] tabular-nums text-muted-foreground">
         <span className="font-bold text-foreground">{String(active + 1).padStart(2, "0")}</span>
         <span aria-hidden>/</span>
         <span>{String(count).padStart(2, "0")}</span>

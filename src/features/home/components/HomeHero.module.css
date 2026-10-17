@@ -27,7 +27,7 @@
   border-radius: 30px;
   background: #fff;
   color: #4c6278;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
 }
 .live::before {
@@ -71,7 +71,7 @@
   border: 1px solid #dce6ee;
   border-radius: 10px;
   text-decoration: none;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   transition:
     background 0.2s,
@@ -106,7 +106,7 @@
   border-radius: 30px;
   background: #ffffffb3;
   color: #4c6278;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   text-decoration: none;
   transition:
@@ -149,14 +149,14 @@
 }
 .stat dt {
   margin-top: 8px;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
 }
 .stat p {
   max-width: 34ch;
   margin: 4px auto 0;
   color: #4c6278;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.5;
 }
 .hero :is(a, button, canvas):focus-visible {
@@ -193,7 +193,7 @@
     font-size: clamp(32px, 3.8vw, 40px);
   }
   .description {
-    font-size: 15px;
+    font-size: 16px;
   }
   .topics,
   .actions {
@@ -230,20 +230,20 @@
     font-size: 30px;
   }
   .stat dt {
-    font-size: 13px;
+    font-size: 14px;
   }
   .stat p {
-    font-size: 12px;
+    font-size: 14px;
   }
 }
 @media (max-width: 420px) {
   .live {
-    font-size: 11px;
+    font-size: 14px;
   }
   .primary,
   .secondary {
     padding: 11px 12px;
-    font-size: 13px;
+    font-size: 14px;
   }
   .stat {
     padding-right: 8px;

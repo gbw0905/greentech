@@ -43,7 +43,7 @@
   align-items: center;
   gap: 10px;
   text-transform: uppercase;
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 650;
   letter-spacing: 0.16em;
   margin: 0 0 28px;
@@ -85,7 +85,7 @@
   margin-top: 36px;
   padding-top: 22px;
   border-top: 1px solid #d2eee126;
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 0.02em;
   color: #d0dfd9;
   max-width: 430px;
@@ -107,7 +107,7 @@
   display: flex;
   justify-content: space-between;
   padding: 4px 2px 19px;
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: #c4d8d0;
@@ -152,7 +152,7 @@
   color: #14785a;
 }
 .civanta-tool-index {
-  font-size: 9px;
+  font-size: 14px;
   letter-spacing: 0.09em;
   color: #6e827d;
 }
@@ -172,7 +172,7 @@
   margin: 0 0 10px;
 }
 .civanta-tool p {
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.8;
   color: #5f7880;
   margin: 0;
@@ -184,7 +184,7 @@
   padding-top: 18px;
   margin-top: 18px;
   border-top: 1px solid #d5e3dc;
-  font-size: 10px;
+  font-size: 14px;
   color: #657f75;
 }
 .civanta-tool-footer strong {
@@ -196,7 +196,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font-size: 11px;
+  font-size: 14px;
   color: #c0d7cb;
   padding: 10px 0 1px;
 }
