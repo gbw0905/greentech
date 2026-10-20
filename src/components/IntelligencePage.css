@@ -572,6 +572,9 @@
   border: 1px solid #c8dddf;
   font-size: 14px;
 }
+.analyzer-access {
+  margin-bottom: 22px;
+}
 .analyzer-workspace {
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);

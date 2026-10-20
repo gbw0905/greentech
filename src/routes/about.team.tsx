@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Github, Users, Linkedin } from "lucide-react";
+import { Users, Linkedin } from "lucide-react";
 import { InformationPage } from "@/components/InformationPage";
 
 const TITLE = "Team Members — Global Bioenergy Watch";
@@ -30,21 +30,18 @@ const DEVELOPMENT_TEAM = [
     name: "Shahnaeous Ali",
     role: "Lead Developer",
     image: "/team/shahnaeous-ali-linkedin.jpg",
-    githubUrl: "https://github.com/Shah139",
     linkedinUrl: "https://www.linkedin.com/in/shahneous-ali-0b3a53349/",
   },
   {
     name: "Muhammad Asif",
     role: "Developer",
     image: "/team/muhammad-asif-linkedin.png",
-    githubUrl: "https://github.com/asifhasan973",
     linkedinUrl: "https://www.linkedin.com/in/asifhasan973/",
   },
   {
     name: "Rakibul Islam",
     role: "UI/UX",
     image: "/team/rakibul-islam-linkedin.jpg",
-    githubUrl: "https://github.com/rakib120822",
     linkedinUrl: "https://www.linkedin.com/in/rakibul-islam-payel/",
   },
 ];
@@ -128,16 +125,6 @@ function TeamPage() {
                 >
                   <Linkedin size={15} aria-hidden="true" />
                   LinkedIn
-                </a>
-                <a
-                  className="profile-link"
-                  href={member.githubUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`${member.name} on GitHub`}
-                >
-                  <Github size={15} aria-hidden="true" />
-                  GitHub
                 </a>
               </div>
             </article>
