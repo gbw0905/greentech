@@ -186,7 +186,7 @@ export function AssistantChat({
             <PromptInputSubmit status={status} disabled={busy} />
           </PromptInputFooter>
         </PromptInput>
-        <p className="mt-2 text-[0.7rem] text-muted-foreground">
+        <p className="mt-2 text-[0.875rem] text-muted-foreground">
           AI-generated answers can be wrong. Verify against primary legislation and official sources
           before compliance decisions.
         </p>

@@ -46,7 +46,7 @@
   }
   .section :global(.jurisdiction-kicker) {
     padding: 5px 12px;
-    font-size: 12px;
+    font-size: 14px;
   }
   .section :global(.jurisdiction-heading h2) {
     margin: 10px 0 0;
@@ -56,7 +56,7 @@
   .section :global(.jurisdiction-heading p) {
     max-width: none;
     margin-top: 7px;
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.45;
   }
   .frame :global(.jurisdiction-map-header) {

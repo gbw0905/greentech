@@ -64,6 +64,7 @@ function CreditCalculatorPage() {
           </div>
           <nav className="calculator-subnav" aria-label="Calculator navigation">
             <Link to="/ci-workspace">CI Workspace ↗</Link>
+            <Link to="/civanta/optimizer">Optimizer ↗</Link>
             <button
               type="button"
               aria-expanded={showHistory}

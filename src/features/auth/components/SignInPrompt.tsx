@@ -1,18 +1,30 @@
 import { Link } from "@tanstack/react-router";
-import { Lock } from "lucide-react";
+import { ArrowRight, LockKeyhole } from "lucide-react";
+import "./SignInPrompt.css";
 
 /** Inline notice shown when an action requires an authenticated account. */
-export function SignInPrompt({ action }: { action: string }) {
+export function SignInPrompt({
+  action,
+  title = "Continue with your account",
+  description,
+}: {
+  action: string;
+  title?: string;
+  description?: string;
+}) {
   return (
-    <div className="mt-2 flex flex-wrap items-center gap-2 rounded-sm border border-border bg-background p-3">
-      <Lock className="size-3.5 shrink-0 text-muted-foreground" />
-      <p className="text-sm text-muted-foreground">Sign in to {action}.</p>
-      <Link
-        to="/auth"
-        className="inline-flex items-center gap-1.5 border border-ink bg-ink px-2.5 py-1.5 text-xs font-semibold text-ink-foreground transition-opacity hover:opacity-85"
-      >
+    <aside className="sign-in-prompt" aria-label={title}>
+      <span className="sign-in-prompt-icon" aria-hidden="true">
+        <LockKeyhole size={23} />
+      </span>
+      <div className="sign-in-prompt-copy">
+        <strong>{title}</strong>
+        <p>{description ?? `Sign in to ${action}.`}</p>
+      </div>
+      <Link to="/auth" className="sign-in-prompt-link">
         Sign in
+        <ArrowRight size={17} aria-hidden="true" />
       </Link>
-    </div>
+    </aside>
   );
 }

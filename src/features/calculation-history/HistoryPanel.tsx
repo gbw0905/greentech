@@ -11,11 +11,11 @@ export function HistoryPanel({
   preview = false,
 }: {
   preview?: boolean;
-  kind?: "ci" | "credit";
+  kind?: "ci" | "credit" | "optimizer";
   onRestore?: (id: string) => void;
 }) {
   const { user, loading } = useAuthSession();
-  const [filter, setFilter] = useState<"all" | "ci" | "credit">(kind ?? "all");
+  const [filter, setFilter] = useState<"all" | "ci" | "credit" | "optimizer">(kind ?? "all");
   const query = useInfiniteQuery({
     queryKey: ["calculation-history", user?.id, filter],
     initialPageParam: null as string | null,
@@ -43,14 +43,20 @@ export function HistoryPanel({
         </div>
         {!kind && (
           <div className="history-filters" aria-label="Filter history">
-            {(["all", "ci", "credit"] as const).map((value) => (
+            {(["all", "ci", "credit", "optimizer"] as const).map((value) => (
               <button
                 key={value}
                 type="button"
                 aria-pressed={value === filter}
                 onClick={() => setFilter(value)}
               >
-                {value === "all" ? "All runs" : value === "ci" ? "CI Workspace" : "Credit & RIN"}
+                {value === "all"
+                  ? "All runs"
+                  : value === "ci"
+                    ? "CI Workspace"
+                    : value === "optimizer"
+                      ? "Optimizer"
+                      : "Credit & RIN"}
               </button>
             ))}
           </div>
@@ -79,8 +85,8 @@ export function HistoryPanel({
           <Clock3 size={28} />
           <h3>Your next calculation starts your history.</h3>
           <p>
-            Run a CI scenario or click Calculate in Credit & RIN. Each successful run is saved
-            automatically.
+            Run a CI scenario, calculate Credit & RIN, or run the Optimizer. Each successful run is
+            saved automatically.
           </p>
         </div>
       ) : (
@@ -89,7 +95,11 @@ export function HistoryPanel({
             <article key={run.id} className="history-run">
               <div>
                 <span className="history-kind">
-                  {run.kind === "ci" ? "CI Workspace" : "Credit & RIN"}
+                  {run.kind === "ci"
+                    ? "CI Workspace"
+                    : run.kind === "optimizer"
+                      ? "Optimizer"
+                      : "Credit & RIN"}
                 </span>
                 <h3>{run.name}</h3>
                 <p>
@@ -101,7 +111,7 @@ export function HistoryPanel({
                 </p>
               </div>
               <div className="history-metric">
-                {run.kind === "ci" ? (
+                {run.kind !== "credit" ? (
                   <>
                     <strong>
                       {run.metrics.ci?.toLocaleString("en-US", { maximumFractionDigits: 3 }) ?? "—"}
@@ -131,7 +141,13 @@ export function HistoryPanel({
               ) : (
                 <Link
                   className="history-open"
-                  to={run.kind === "ci" ? "/ci-workspace" : "/credit-calculator"}
+                  to={
+                    run.kind === "ci"
+                      ? "/ci-workspace"
+                      : run.kind === "optimizer"
+                        ? "/civanta/optimizer"
+                        : "/credit-calculator"
+                  }
                   search={{ run: run.id }}
                 >
                   Open run

@@ -138,13 +138,13 @@ export function LatestUpdatesSection({ updates }: { updates: PolicyUpdate[] }) {
                 role="tab"
                 aria-selected={filter === value}
                 onClick={() => setFilter(value)}
-                className={`inline-flex h-9 items-center gap-2 rounded-full px-4 text-[13px] font-semibold capitalize transition-colors ${
+                className={`inline-flex h-9 items-center gap-2 rounded-full px-4 text-[14px] font-semibold capitalize transition-colors ${
                   filter === value ? "bg-[#0e2a43] text-white" : "text-[#4c6278] hover:bg-[#eef3f7]"
                 }`}
               >
                 {value}
                 <span
-                  className={`grid min-w-5 place-items-center rounded-full px-1.5 py-0.5 text-[11px] ${
+                  className={`grid min-w-5 place-items-center rounded-full px-1.5 py-0.5 text-[14px] ${
                     filter === value ? "bg-white/15 text-white" : "bg-[#eef3f7] text-[#4c6278]"
                   }`}
                 >
@@ -187,7 +187,7 @@ export function LatestUpdatesSection({ updates }: { updates: PolicyUpdate[] }) {
         <MotionReveal delay={0.09} className="mt-5 flex justify-center">
           <Link
             to="/timeline"
-            className="inline-flex h-[46px] items-center gap-3 rounded-[10px] border border-[#d6e1ea] bg-white px-[22px] text-[15px] font-semibold text-[#0e2a43] no-underline transition-colors hover:border-[#178a6b]"
+            className="inline-flex h-[46px] items-center gap-3 rounded-[10px] border border-[#d6e1ea] bg-white px-[22px] text-[16px] font-semibold text-[#0e2a43] no-underline transition-colors hover:border-[#178a6b]"
           >
             View all updates
             <ArrowRight className="size-4" />

@@ -16,7 +16,7 @@
 }
 .heading label {
   color: #4c6278;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
 }
 .days {
@@ -24,7 +24,7 @@
   border-radius: 7px;
   background: #edf3f7;
   color: #0e2a43;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -102,7 +102,7 @@
   gap: 12px;
   margin-top: 1px;
   color: #53697d;
-  font-size: 11px;
+  font-size: 14px;
   font-variant-numeric: tabular-nums;
 }
 .result {
@@ -143,7 +143,7 @@
   border-radius: 5px;
   color: var(--change-color);
   background: var(--change-bg);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 500;
 }
 .trend svg {
@@ -155,7 +155,7 @@
   flex-wrap: wrap;
   gap: 9px;
   margin-top: 5px;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.4;
   font-variant-numeric: tabular-nums;
 }
@@ -165,13 +165,13 @@
 .dates {
   margin: 3px 0 0;
   color: #53697d;
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.5;
 }
 .note {
   margin: 7px 0 0;
   color: #53697d;
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.5;
 }
 .closes {
@@ -189,12 +189,12 @@
 }
 .closes dt {
   color: #53697d;
-  font-size: 11px;
+  font-size: 14px;
 }
 .closes dd {
   margin: 0;
   color: #0e2a43;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }

@@ -369,7 +369,7 @@ export function ChartTrend({ panel }: { panel: string }) {
             key={m}
             type="button"
             onClick={() => setMode(m)}
-            className={`label-mono border px-2.5 py-1 text-[0.7rem] uppercase tracking-[0.08em] transition-colors ${
+            className={`label-mono border px-2.5 py-1 text-[0.875rem] uppercase tracking-[0.08em] transition-colors ${
               mode === m
                 ? "border-foreground bg-foreground text-background"
                 : "border-border text-muted-foreground hover:bg-foreground/[0.05]"
@@ -386,26 +386,26 @@ export function ChartTrend({ panel }: { panel: string }) {
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
             <XAxis
               dataKey="year"
-              tick={{ fontSize: 11 }}
+              tick={{ fontSize: 14 }}
               stroke="var(--muted-foreground)"
               tickLine={false}
-              label={{ value: "Year", position: "insideBottom", offset: -14, fontSize: 11 }}
+              label={{ value: "Year", position: "insideBottom", offset: -14, fontSize: 14 }}
             />
             <YAxis
-              tick={{ fontSize: 11 }}
+              tick={{ fontSize: 14 }}
               stroke="var(--muted-foreground)"
               tickLine={false}
               axisLine={false}
               width={56}
-              label={{ value: trend.unit, angle: -90, position: "insideLeft", fontSize: 11 }}
+              label={{ value: trend.unit, angle: -90, position: "insideLeft", fontSize: 14 }}
             />
             <Tooltip
               formatter={(v: number | string, n: string) => [chartFmt(Number(v), 1), n]}
               labelFormatter={(l) => `Year ${l}`}
-              contentStyle={{ fontSize: 12 }}
+              contentStyle={{ fontSize: 14 }}
             />
             <Legend
-              wrapperStyle={{ fontSize: 11, paddingTop: 8 }}
+              wrapperStyle={{ fontSize: 14, paddingTop: 8 }}
               iconType="plainline"
               iconSize={18}
             />
@@ -801,7 +801,7 @@ export function ChartHeat({
                 <div className="min-w-0">
                   <div
                     className="chart-label truncate leading-tight"
-                    style={{ fontSize: big ? "0.8rem" : "0.68rem" }}
+                    style={{ fontSize: "0.875rem" }}
                   >
                     {item.label}
                   </div>
@@ -811,7 +811,7 @@ export function ChartHeat({
                 </div>
                 {typeof item.changePct === "number" && mid ? (
                   <span
-                    className="ml-auto shrink-0 rounded-sm bg-black/25 px-1 font-mono text-[0.6rem] leading-4 tabular-nums text-white"
+                    className="ml-auto shrink-0 rounded-sm bg-black/25 px-1 font-mono text-[0.875rem] leading-4 tabular-nums text-white"
                     title={`1-day move: ${pct(item.changePct)}`}
                   >
                     {item.changePct >= 0 ? "▲" : "▼"}
@@ -823,7 +823,7 @@ export function ChartHeat({
                 <div className="min-w-0">
                   <div
                     className="chart-value truncate"
-                    style={{ fontSize: big ? "0.95rem" : "0.7rem" }}
+                    style={{ fontSize: big ? "1rem" : "0.875rem" }}
                   >
                     {big ? format(item.value) : compactFmt(item.value)}
                   </div>
@@ -1122,13 +1122,13 @@ export function ChartScatter({
               domain={xDomain as [number, number]}
               tickFormatter={formatX}
               stroke="var(--muted-foreground)"
-              tick={{ fill: "var(--muted-foreground)", fontSize: isMobile ? 9 : 11 }}
+              tick={{ fill: "var(--muted-foreground)", fontSize: 14 }}
               label={{
                 value: `${xAxis.label} (${xAxis.unit})`,
                 position: "insideBottom",
                 offset: isMobile ? -18 : -25,
                 fill: "var(--foreground)",
-                fontSize: isMobile ? 10 : 12,
+                fontSize: 14,
                 fontWeight: 600,
               }}
             />
@@ -1139,7 +1139,7 @@ export function ChartScatter({
               domain={yDomain as [number, number]}
               tickFormatter={formatY}
               stroke="var(--muted-foreground)"
-              tick={{ fill: "var(--muted-foreground)", fontSize: isMobile ? 9 : 11 }}
+              tick={{ fill: "var(--muted-foreground)", fontSize: 14 }}
               {...(isMobile
                 ? {}
                 : {
@@ -1148,7 +1148,7 @@ export function ChartScatter({
                       angle: -90,
                       position: "insideLeft",
                       fill: "var(--foreground)",
-                      fontSize: 12,
+                      fontSize: 14,
                       fontWeight: 600,
                     },
                   })}
@@ -1231,7 +1231,6 @@ export function ChartPanel({
   viewLabel = "View",
   status,
   footnote,
-  sourceMeta,
   filters,
   actions,
 
@@ -1255,7 +1254,6 @@ export function ChartPanel({
   viewLabel?: string;
   status?: string;
   footnote?: string;
-  sourceMeta?: React.ReactNode;
   /** Optional buttons (e.g. export) rendered in the header. */
   actions?: React.ReactNode;
   /** Optional filter/search bar rendered between the header and the chart. */
@@ -1369,7 +1367,7 @@ export function ChartPanel({
 
       {title ? (
         <>
-          {sourceMeta ?? (datasetFor(title) ? (
+          {datasetFor(title) ? (
             <p className="dataset-provenance label-mono mt-2 text-xs text-muted-foreground">
               Figures as reported for {datasetFor(title)!.reportingYear} · last reviewed{" "}
               {datasetFor(title)!.lastReviewed} ·{" "}
@@ -1381,7 +1379,7 @@ export function ChartPanel({
                 Sources &amp; method
               </Link>
             </p>
-          ) : null)}
+          ) : null}
           <details className="dataset-sources mt-2 text-xs text-muted-foreground">
             <summary className="label-mono cursor-pointer text-foreground">
               Data sources &amp; references

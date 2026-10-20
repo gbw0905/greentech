@@ -44,7 +44,7 @@
   background: transparent;
   color: #4c6278;
   font:
-    500 13px "Instrument Sans",
+    500 14px "Instrument Sans",
     sans-serif;
   cursor: pointer;
   transition:
@@ -83,7 +83,7 @@
   }
   .layers button {
     padding: 6px 9px;
-    font-size: 12px;
+    font-size: 14px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -160,7 +160,7 @@
   text-anchor: middle;
   fill: #4c6278;
   font:
-    600 14px "Instrument Sans",
+    600 16px "Instrument Sans",
     sans-serif;
 }
 .flowPulse {
@@ -174,7 +174,7 @@
   text-anchor: middle;
   fill: #7b91a5;
   font:
-    500 13px "Instrument Sans",
+    500 14px "Instrument Sans",
     sans-serif;
 }
 .flowWord {

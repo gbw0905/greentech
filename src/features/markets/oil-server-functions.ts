@@ -62,13 +62,18 @@ async function loadSymbol(symbol: string, label: string, unit: string): Promise<
 
 export const getOilPricesFn = createServerFn({ method: "GET" }).handler(async () => {
   const { cacheGet, cacheSet } = await import("./server/market-cache.server");
+  const cached = cacheGet<OilQuote[]>("oil-prices");
+  const recentComplete = cacheGet<OilQuote[]>("oil-prices-complete");
+  if (recentComplete && Date.now() - recentComplete.at < 60_000) {
+    return { quotes: recentComplete.value, stale: false, asOf: recentComplete.at };
+  }
   const results = await Promise.all(
     MARKET_BENCHMARKS.map(({ symbol, label, unit }) => loadSymbol(symbol, label, unit)),
   );
   const fresh = results.filter((quote): quote is OilQuote => quote !== null);
-  const cached = cacheGet<OilQuote[]>("oil-prices");
   if (fresh.length === MARKET_BENCHMARKS.length) {
     cacheSet("oil-prices", fresh);
+    cacheSet("oil-prices-complete", fresh);
     return { quotes: fresh, stale: false, asOf: Date.now() };
   }
   // Market feed partially/fully unavailable: keep the most recent good data.

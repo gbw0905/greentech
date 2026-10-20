@@ -387,7 +387,7 @@ function LinkedInSettingsPage() {
                 </p>
                 {companyPosting && (
                   <p
-                    className={`mt-2 inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-bold ${
+                    className={`mt-2 inline-flex items-center gap-1 rounded-md px-2 py-1 text-[14px] font-bold ${
                       companyPosting.available
                         ? "bg-emerald-500/10 text-emerald-700"
                         : "bg-amber-500/10 text-amber-700"

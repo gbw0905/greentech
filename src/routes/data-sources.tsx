@@ -174,7 +174,7 @@ function DataSourcesPage() {
       <main className="sources-main">
         <MotionReveal as="header" className="sources-hero">
           <div className="sources-hero-copy">
-            <span className="information-eyebrow">
+            <span className="sources-eyebrow">
               <BookOpen className="size-3.5" aria-hidden="true" /> Data & provenance
             </span>
             <h1>
@@ -189,13 +189,13 @@ function DataSourcesPage() {
             <div>
               <Database aria-hidden="true" />
               <span>
-                <strong>{DATASETS.length}</strong>Documented datasets
+                <strong>{DATASETS.length}</strong>Datasets
               </span>
             </div>
             <div>
               <Layers3 aria-hidden="true" />
               <span>
-                <strong>{METRIC_COUNT}</strong>Defined metrics
+                <strong>{METRIC_COUNT}</strong>Metrics
               </span>
             </div>
             <div>

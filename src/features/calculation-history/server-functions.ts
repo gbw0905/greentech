@@ -31,7 +31,7 @@ export const listCalculationRunsFn = createServerFn({ method: "GET" })
     z
       .object({
         before: z.string().datetime({ offset: true }).nullable(),
-        kind: z.enum(["ci", "credit"]).optional(),
+        kind: z.enum(["ci", "credit", "optimizer"]).optional(),
       })
       .parse(input),
   )
@@ -40,7 +40,12 @@ export const listCalculationRunsFn = createServerFn({ method: "GET" })
       .from("ci_runs")
       .select("id,created_at,inputs")
       .eq("user_id", context.userId)
-      .in("pathway_id", params.kind ? [`civanta/${params.kind}`] : ["civanta/ci", "civanta/credit"])
+      .in(
+        "pathway_id",
+        params.kind
+          ? [`civanta/${params.kind}`]
+          : ["civanta/ci", "civanta/credit", "civanta/optimizer"],
+      )
       .order("created_at", { ascending: false })
       .limit(50);
     if (params.before) query = query.lt("created_at", params.before);
@@ -61,7 +66,7 @@ export const getCalculationRunFn = createServerFn({ method: "GET" })
       .select("id,created_at,inputs")
       .eq("user_id", context.userId)
       .eq("id", data.id)
-      .in("pathway_id", ["civanta/ci", "civanta/credit"])
+      .in("pathway_id", ["civanta/ci", "civanta/credit", "civanta/optimizer"])
       .single();
     if (error || !row) throw new Error("This calculation could not be found in your account.");
     return {

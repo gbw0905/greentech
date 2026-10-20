@@ -1,0 +1,432 @@
+[
+  {
+    "id": "ethanol-corn",
+    "label": "Ethanol — corn dry mill (natural gas)",
+    "group": "Ethanol",
+    "benchmarkFuel": "gasoline",
+    "ci": 61.096,
+    "ng": 0.34,
+    "kwh": 0.021,
+    "transport": 2.2
+  },
+  {
+    "id": "ethanol-corn-ccs",
+    "label": "Ethanol — corn dry mill with CCS",
+    "group": "Ethanol",
+    "benchmarkFuel": "gasoline",
+    "ci": 37.07,
+    "ng": 0.34,
+    "kwh": 0.03,
+    "transport": 2.2
+  },
+  {
+    "id": "ethanol-sugarcane",
+    "label": "Ethanol — Brazilian sugarcane",
+    "group": "Ethanol",
+    "benchmarkFuel": "gasoline",
+    "ci": 32.552,
+    "ng": 0,
+    "kwh": 0.002,
+    "transport": 2
+  },
+  {
+    "id": "ethanol-cellulosic",
+    "label": "Ethanol — cellulosic (corn stover)",
+    "group": "Ethanol",
+    "benchmarkFuel": "gasoline",
+    "ci": 20.18,
+    "ng": 0,
+    "kwh": 0.01,
+    "transport": 3
+  },
+  {
+    "id": "biodiesel-soy",
+    "label": "Biodiesel (FAME) — soybean oil",
+    "group": "Biodiesel",
+    "benchmarkFuel": "diesel",
+    "ci": 43.862,
+    "ng": 0.09,
+    "kwh": 0.006,
+    "transport": 2
+  },
+  {
+    "id": "biodiesel-uco",
+    "label": "Biodiesel (FAME) — used cooking oil",
+    "group": "Biodiesel",
+    "benchmarkFuel": "diesel",
+    "ci": 17.41,
+    "ng": 0.08,
+    "kwh": 0.005,
+    "transport": 3
+  },
+  {
+    "id": "biodiesel-tallow",
+    "label": "Biodiesel (FAME) — tallow",
+    "group": "Biodiesel",
+    "benchmarkFuel": "diesel",
+    "ci": 24.481,
+    "ng": 0.09,
+    "kwh": 0.006,
+    "transport": 3
+  },
+  {
+    "id": "rd-uco",
+    "label": "Renewable diesel (HEFA) — used cooking oil",
+    "group": "Renewable diesel",
+    "benchmarkFuel": "diesel",
+    "ci": 16.326,
+    "ng": 0.06,
+    "kwh": 0.006,
+    "transport": 3.5
+  },
+  {
+    "id": "rd-soy",
+    "label": "Renewable diesel (HEFA) — soybean oil",
+    "group": "Renewable diesel",
+    "benchmarkFuel": "diesel",
+    "ci": 44.326,
+    "ng": 0.06,
+    "kwh": 0.006,
+    "transport": 2.5
+  },
+  {
+    "id": "rd-tallow",
+    "label": "Renewable diesel (HEFA) — tallow",
+    "group": "Renewable diesel",
+    "benchmarkFuel": "diesel",
+    "ci": 21.826,
+    "ng": 0.06,
+    "kwh": 0.006,
+    "transport": 3
+  },
+  {
+    "id": "saf-hefa-uco",
+    "label": "SAF — HEFA from used cooking oil",
+    "group": "Sustainable aviation fuel",
+    "benchmarkFuel": "jet",
+    "ci": 18.137,
+    "ng": 0.07,
+    "kwh": 0.007,
+    "transport": 3.5
+  },
+  {
+    "id": "saf-atj",
+    "label": "SAF — alcohol to jet from ethanol",
+    "group": "Sustainable aviation fuel",
+    "benchmarkFuel": "jet",
+    "ci": 46.9,
+    "ng": 0.12,
+    "kwh": 0.02,
+    "transport": 3
+  },
+  {
+    "id": "saf-ft",
+    "label": "SAF — Fischer-Tropsch from forest residue",
+    "group": "Sustainable aviation fuel",
+    "benchmarkFuel": "jet",
+    "ci": 21.74,
+    "ng": 0,
+    "kwh": 0.03,
+    "transport": 4
+  },
+  {
+    "id": "rng-landfill",
+    "label": "Renewable natural gas — landfill gas",
+    "group": "Renewable gas",
+    "benchmarkFuel": "diesel",
+    "ci": 30.09,
+    "ng": 0.02,
+    "kwh": 0.02,
+    "transport": 0
+  },
+  {
+    "id": "rng-dairy",
+    "label": "Dairy RNG — farm calculator",
+    "group": "Renewable gas",
+    "benchmarkFuel": "diesel",
+    "ci": -183.558,
+    "ng": 0.02,
+    "kwh": 0.03,
+    "transport": 0
+  },
+  {
+    "id": "rng-wastewater",
+    "label": "Renewable natural gas — wastewater sludge",
+    "group": "Renewable gas",
+    "benchmarkFuel": "diesel",
+    "ci": 27.335,
+    "ng": 0.01,
+    "kwh": 0.025,
+    "transport": 0
+  },
+  {
+    "id": "h2-electrolysis",
+    "label": "Renewable hydrogen — electrolysis",
+    "group": "Hydrogen",
+    "benchmarkFuel": "diesel",
+    "ci": 16.06,
+    "ng": 0,
+    "kwh": 0,
+    "transport": 0
+  },
+  {
+    "id": "h2-biomass",
+    "label": "Renewable hydrogen — biomass gasification",
+    "group": "Hydrogen",
+    "benchmarkFuel": "diesel",
+    "ci": 36.68,
+    "ng": 0,
+    "kwh": 0.04,
+    "transport": 4
+  },
+  {
+    "id": "biomethanol",
+    "label": "Bio-methanol — biomass gasification",
+    "group": "Other liquids",
+    "benchmarkFuel": "marine",
+    "ci": 30.84,
+    "ng": 0,
+    "kwh": 0.04,
+    "transport": 4
+  },
+  {
+    "id": "rlpg",
+    "label": "Renewable LPG — HEFA co-product",
+    "group": "Other liquids",
+    "benchmarkFuel": "diesel",
+    "ci": 18.786,
+    "ng": 0.06,
+    "kwh": 0.006,
+    "transport": 3
+  },
+  {
+    "id": "marine-b100",
+    "label": "Marine biofuel — B100 from waste oils",
+    "group": "Other liquids",
+    "benchmarkFuel": "marine",
+    "ci": 19.41,
+    "ng": 0.08,
+    "kwh": 0.005,
+    "transport": 4
+  },
+  {
+    "id": "wood-pellets",
+    "label": "Wood pellets — industrial heat and power",
+    "group": "Solid biomass",
+    "benchmarkFuel": "heat",
+    "ci": 25.01,
+    "ng": 0.02,
+    "kwh": 0.02,
+    "transport": 4
+  },
+  {
+    "id": "ethanol-wheat",
+    "label": "Ethanol — wheat grain (EU)",
+    "group": "Ethanol",
+    "benchmarkFuel": "gasoline",
+    "ci": 66.08,
+    "ng": 0.38,
+    "kwh": 0.025,
+    "transport": 2.5
+  },
+  {
+    "id": "ethanol-sorghum",
+    "label": "Ethanol — grain sorghum",
+    "group": "Ethanol",
+    "benchmarkFuel": "gasoline",
+    "ci": 56.496,
+    "ng": 0.34,
+    "kwh": 0.021,
+    "transport": 2.2
+  },
+  {
+    "id": "ethanol-msw",
+    "label": "Ethanol — municipal solid waste (biogenic fraction)",
+    "group": "Ethanol",
+    "benchmarkFuel": "gasoline",
+    "ci": 20.74,
+    "ng": 0,
+    "kwh": 0.03,
+    "transport": 2
+  },
+  {
+    "id": "biodiesel-canola",
+    "label": "Biodiesel (FAME) — canola / rapeseed oil",
+    "group": "Biodiesel",
+    "benchmarkFuel": "diesel",
+    "ci": 49.481,
+    "ng": 0.09,
+    "kwh": 0.006,
+    "transport": 2
+  },
+  {
+    "id": "biodiesel-palm",
+    "label": "Biodiesel (FAME) — palm oil",
+    "group": "Biodiesel",
+    "benchmarkFuel": "diesel",
+    "ci": 61.796,
+    "ng": 0.08,
+    "kwh": 0.006,
+    "transport": 4
+  },
+  {
+    "id": "biodiesel-corn-oil",
+    "label": "Biodiesel (FAME) — distillers corn oil",
+    "group": "Biodiesel",
+    "benchmarkFuel": "diesel",
+    "ci": 18.41,
+    "ng": 0.08,
+    "kwh": 0.005,
+    "transport": 2
+  },
+  {
+    "id": "rd-canola",
+    "label": "Renewable diesel (HEFA) — canola oil",
+    "group": "Renewable diesel",
+    "benchmarkFuel": "diesel",
+    "ci": 48.326,
+    "ng": 0.06,
+    "kwh": 0.006,
+    "transport": 2.5
+  },
+  {
+    "id": "rd-corn-oil",
+    "label": "Renewable diesel (HEFA) — distillers corn oil",
+    "group": "Renewable diesel",
+    "benchmarkFuel": "diesel",
+    "ci": 16.826,
+    "ng": 0.06,
+    "kwh": 0.006,
+    "transport": 2
+  },
+  {
+    "id": "rd-palm",
+    "label": "Renewable diesel (HEFA) — palm and PFAD",
+    "group": "Renewable diesel",
+    "benchmarkFuel": "diesel",
+    "ci": 55.826,
+    "ng": 0.06,
+    "kwh": 0.006,
+    "transport": 5
+  },
+  {
+    "id": "saf-hefa-tallow",
+    "label": "SAF — HEFA from tallow and animal fats",
+    "group": "Sustainable aviation fuel",
+    "benchmarkFuel": "jet",
+    "ci": 23.637,
+    "ng": 0.07,
+    "kwh": 0.007,
+    "transport": 3
+  },
+  {
+    "id": "saf-ft-msw",
+    "label": "SAF — Fischer-Tropsch from municipal solid waste",
+    "group": "Sustainable aviation fuel",
+    "benchmarkFuel": "jet",
+    "ci": 21.51,
+    "ng": 0,
+    "kwh": 0.035,
+    "transport": 2
+  },
+  {
+    "id": "saf-ptl",
+    "label": "SAF — power to liquid (e-kerosene)",
+    "group": "Sustainable aviation fuel",
+    "benchmarkFuel": "jet",
+    "ci": 16.52,
+    "ng": 0,
+    "kwh": 0,
+    "transport": 0
+  },
+  {
+    "id": "saf-corn-atj",
+    "label": "SAF — alcohol to jet from sugarcane ethanol",
+    "group": "Sustainable aviation fuel",
+    "benchmarkFuel": "jet",
+    "ci": 40.92,
+    "ng": 0,
+    "kwh": 0.02,
+    "transport": 2
+  },
+  {
+    "id": "rng-foodwaste",
+    "label": "Renewable natural gas — food waste digester",
+    "group": "Renewable gas",
+    "benchmarkFuel": "diesel",
+    "ci": -27.393,
+    "ng": 0.015,
+    "kwh": 0.03,
+    "transport": 0
+  },
+  {
+    "id": "rng-agresidue",
+    "label": "Renewable natural gas — agricultural residue digestion",
+    "group": "Renewable gas",
+    "benchmarkFuel": "diesel",
+    "ci": 36.95,
+    "ng": 0.02,
+    "kwh": 0.03,
+    "transport": 3
+  },
+  {
+    "id": "h2-rng-smr",
+    "label": "Renewable hydrogen — reforming of renewable natural gas",
+    "group": "Hydrogen",
+    "benchmarkFuel": "diesel",
+    "ci": 43.855,
+    "ng": 0.15,
+    "kwh": 0.03,
+    "transport": 0
+  },
+  {
+    "id": "e-methanol",
+    "label": "E-methanol — renewable hydrogen and captured CO2",
+    "group": "Other liquids",
+    "benchmarkFuel": "marine",
+    "ci": 16.1,
+    "ng": 0,
+    "kwh": 0,
+    "transport": 0
+  },
+  {
+    "id": "biobutanol",
+    "label": "Bio-butanol — fermentation from starch and sugar",
+    "group": "Other liquids",
+    "benchmarkFuel": "gasoline",
+    "ci": 72.95,
+    "ng": 0.42,
+    "kwh": 0.03,
+    "transport": 2.2
+  },
+  {
+    "id": "pyrolysis-oil",
+    "label": "Pyrolysis bio-oil — industrial heat",
+    "group": "Other liquids",
+    "benchmarkFuel": "heat",
+    "ci": 22.5,
+    "ng": 0,
+    "kwh": 0.03,
+    "transport": 4
+  },
+  {
+    "id": "torrefied-pellets",
+    "label": "Torrefied pellets — coal replacement",
+    "group": "Solid biomass",
+    "benchmarkFuel": "heat",
+    "ci": 25.794,
+    "ng": 0,
+    "kwh": 0.025,
+    "transport": 4
+  },
+  {
+    "id": "ag-briquettes",
+    "label": "Agricultural residue briquettes — process heat",
+    "group": "Solid biomass",
+    "benchmarkFuel": "heat",
+    "ci": 26.34,
+    "ng": 0,
+    "kwh": 0.03,
+    "transport": 3
+  }
+]

@@ -1,6 +1,6 @@
 import { z } from "zod";
 export const historyInputSchema = z.object({
-  kind: z.enum(["ci", "credit"]),
+  kind: z.enum(["ci", "credit", "optimizer"]),
   name: z.string().min(1).max(120),
   pathway: z.string().min(1).max(200),
   snapshot: z
