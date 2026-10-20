@@ -12,7 +12,7 @@
   grid-template-columns: minmax(0, 1.13fr) minmax(0, 1fr);
   align-items: center;
   gap: 36px;
-  max-width: 1240px;
+  max-width: 1176px;
   margin: auto;
 }
 .copy {
@@ -94,29 +94,6 @@
   border-color: #178a6b;
   background: #f7fcfa;
 }
-.topics {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-  margin-top: 20px;
-}
-.topics a {
-  padding: 6px 11px;
-  border: 1px solid #dce6ee;
-  border-radius: 30px;
-  background: #ffffffb3;
-  color: #4c6278;
-  font-size: 14px;
-  font-weight: 500;
-  text-decoration: none;
-  transition:
-    background 0.2s,
-    color 0.2s;
-}
-.topics a:hover {
-  background: #e3f4ee;
-  color: #178a6b;
-}
 .visual {
   min-width: 0;
   width: 100%;
@@ -128,7 +105,7 @@
 .stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  max-width: 1240px;
+  max-width: 1176px;
   margin: 14px auto 0;
   border-top: 1px solid #dce6ee;
 }
@@ -171,7 +148,7 @@
 @media (min-width: 1500px) {
   .layout,
   .stats {
-    max-width: 1320px;
+    max-width: 1176px;
   }
 }
 @media (min-width: 761px) and (max-height: 760px) {
@@ -195,7 +172,6 @@
   .description {
     font-size: 16px;
   }
-  .topics,
   .actions {
     margin-top: 22px;
   }
@@ -279,9 +255,6 @@
 .actions {
   animation: heroFade 800ms 700ms ease both;
 }
-.topics {
-  animation: heroFade 800ms 850ms ease both;
-}
 .visual {
   animation: visualEnter 1400ms 100ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
@@ -325,7 +298,6 @@
 
 /* Keyboard navigation can reveal a control without waiting for the entrance. */
 .actions:focus-within,
-.topics:focus-within,
 .visual:focus-within {
   animation: none;
 }

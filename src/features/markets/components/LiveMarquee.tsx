@@ -41,10 +41,15 @@ function PricePill({
   );
 }
 
-export function LiveMarquee() {
+export function LiveMarquee({
+  initialMarket,
+}: {
+  initialMarket?: Awaited<ReturnType<typeof getOilPricesFn>> | null;
+}) {
   const { data: oilData } = useQuery({
     queryKey: ["oil-prices"],
     queryFn: () => getOilPricesFn(),
+    initialData: initialMarket ?? undefined,
     refetchInterval: 60_000,
     staleTime: 30_000,
   });

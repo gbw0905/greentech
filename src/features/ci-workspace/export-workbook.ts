@@ -1,4 +1,5 @@
 import { polishWorkbook, REPORT_FORMAT } from "./workbook-style";
+import { pathwayExportFilename } from "./export-filename";
 import { z } from "zod";
 
 const rowSchema = z.record(z.string(), z.unknown());
@@ -274,7 +275,7 @@ export async function exportWorkspaceWorkbook(input: unknown) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = "GBW-CI-Workspace.xlsx";
+  link.download = pathwayExportFilename(data.pathwayLabel, "workspace");
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

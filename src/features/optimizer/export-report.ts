@@ -1,4 +1,5 @@
 import { polishWorkbook, REPORT_FORMAT } from "@/features/ci-workspace/workbook-style";
+import { pathwayExportFilename } from "@/features/ci-workspace/export-filename";
 import { FIELD_LABELS } from "./fields";
 import {
   pathwayFor,
@@ -133,7 +134,6 @@ export async function exportOptimizerReport(
       ["Default pathway CI", pathway.ci],
     ],
   };
-  const date = new Date().toISOString().slice(0, 10);
   let blob: Blob;
   if (format === "csv") {
     const csv = Object.entries(tables)
@@ -190,7 +190,11 @@ export async function exportOptimizerReport(
   const url = URL.createObjectURL(blob),
     link = document.createElement("a");
   link.href = url;
-  link.download = `civanta-optimizer-${input.pathwayId}-${date}.${format === "excel" ? "xlsx" : "csv"}`;
+  link.download = pathwayExportFilename(
+    pathway.label,
+    "optimizer",
+    format === "excel" ? "xlsx" : "csv",
+  );
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

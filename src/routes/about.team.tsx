@@ -24,25 +24,28 @@ const LEADERSHIP = [
   },
 ];
 
-// Profile portraits from the GitHub accounts linked below.
+// Local copies of each member's LinkedIn profile portrait.
 const DEVELOPMENT_TEAM = [
   {
     name: "Shahnaeous Ali",
     role: "Lead Developer",
-    image: "/team/shahnaeous-ali.jpg",
-    url: "https://github.com/Shah139",
+    image: "/team/shahnaeous-ali-linkedin.jpg",
+    githubUrl: "https://github.com/Shah139",
+    linkedinUrl: "https://www.linkedin.com/in/shahneous-ali-0b3a53349/",
   },
   {
     name: "Muhammad Asif",
     role: "Developer",
-    image: "/team/muhammad-asif.jpg",
-    url: "https://github.com/asifhasan973",
+    image: "/team/muhammad-asif-linkedin.png",
+    githubUrl: "https://github.com/asifhasan973",
+    linkedinUrl: "https://www.linkedin.com/in/asifhasan973/",
   },
   {
     name: "Rakibul Islam",
     role: "UI/UX",
-    image: "/team/rakibul-islam.jpg",
-    url: "https://github.com/rakib120822",
+    image: "/team/rakibul-islam-linkedin.jpg",
+    githubUrl: "https://github.com/rakib120822",
+    linkedinUrl: "https://www.linkedin.com/in/rakibul-islam-payel/",
   },
 ];
 
@@ -115,16 +118,28 @@ function TeamPage() {
               />
               <h3>{member.name}</h3>
               <span className="role">{member.role}</span>
-              <a
-                className="profile-link"
-                href={member.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`${member.name} on GitHub`}
-              >
-                <Github size={15} aria-hidden="true" />
-                GitHub profile
-              </a>
+              <div className="team-profile-links">
+                <a
+                  className="profile-link"
+                  href={member.linkedinUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${member.name} on LinkedIn`}
+                >
+                  <Linkedin size={15} aria-hidden="true" />
+                  LinkedIn
+                </a>
+                <a
+                  className="profile-link"
+                  href={member.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${member.name} on GitHub`}
+                >
+                  <Github size={15} aria-hidden="true" />
+                  GitHub
+                </a>
+              </div>
             </article>
           ))}
         </section>

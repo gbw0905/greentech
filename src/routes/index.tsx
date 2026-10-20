@@ -8,6 +8,7 @@ import { PolicyMapSection } from "@/features/countries/components/PolicyMapSecti
 
 import { OilPricePanel } from "@/features/markets/components/OilPricePanel";
 import { LiveMarquee } from "@/features/markets/components/LiveMarquee";
+import { getOilPricesFn } from "@/features/markets/oil-server-functions";
 
 import { useVisitTracker } from "@/features/traffic/hooks/useVisitTracker";
 import { IndustryCarousel } from "@/features/home/components/IndustryCarousel";
@@ -22,7 +23,13 @@ const DESCRIPTION =
   "Live tracker of global bioenergy and biofuel policy: ethanol, biodiesel, renewable diesel and SAF mandates by region, country and fuel type.";
 
 export const Route = createFileRoute("/")({
-  loader: ({ context }) => loadNavigationFeed(context.queryClient),
+  loader: async ({ context }) => {
+    const [{ feed }, market] = await Promise.all([
+      loadNavigationFeed(context.queryClient),
+      getOilPricesFn().catch(() => null),
+    ]);
+    return { feed, market };
+  },
   head: () => ({
     meta: [
       { title: TITLE },
@@ -67,7 +74,7 @@ function Index() {
 
 function Dashboard() {
   useVisitTracker();
-  const { feed: initialFeed } = Route.useLoaderData();
+  const { feed: initialFeed, market: initialMarket } = Route.useLoaderData();
   const { data: feed } = useQuery(feedQueryWithInitial(initialFeed));
   const data = feed ?? {
     updates: [],
@@ -94,12 +101,12 @@ function Dashboard() {
 
   return (
     <main>
-      <LiveMarquee />
+      <LiveMarquee initialMarket={initialMarket} />
 
       <HomeHero stats={stats} />
 
       <section id="markets" className="benchmark-section" aria-labelledby="markets-title">
-        <OilPricePanel />
+        <OilPricePanel initialMarket={initialMarket} />
       </section>
 
       <LatestUpdatesSection updates={topFive} />

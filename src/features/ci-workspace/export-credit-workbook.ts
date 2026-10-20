@@ -1,4 +1,5 @@
 import { polishWorkbook, REPORT_FORMAT } from "./workbook-style";
+import { pathwayExportFilename } from "./export-filename";
 import { z } from "zod";
 const scalar = z.union([z.string().max(4000), z.number().finite(), z.boolean(), z.null()]);
 const schema = z.object({
@@ -207,7 +208,7 @@ export async function exportCreditWorkbook(payload: unknown) {
   );
   const link = document.createElement("a");
   link.href = url;
-  link.download = "GBW-Credit-RIN-Estimate.xlsx";
+  link.download = pathwayExportFilename(data.fuelName, "credit");
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
