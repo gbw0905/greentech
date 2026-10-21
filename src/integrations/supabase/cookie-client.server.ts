@@ -38,10 +38,15 @@ export function createCookieClient(request: Request) {
       return responseCookies;
     },
     applyToResponse(response: Response) {
+      const headers = new Headers(response.headers);
       for (const cookie of responseCookies) {
-        response.headers.append("set-cookie", cookie);
+        headers.append("set-cookie", cookie);
       }
-      return response;
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+      });
     },
   };
 }
