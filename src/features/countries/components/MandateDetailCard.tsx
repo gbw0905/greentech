@@ -4,7 +4,7 @@ import { mandateStatusTone, type Mandate } from "@/features/countries/mandates";
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="label-mono text-[0.65rem] font-bold text-foreground">{label}</dt>
+      <dt className="label-mono text-[0.875rem] font-bold text-foreground">{label}</dt>
       <dd className="text-muted-foreground">{value}</dd>
     </div>
   );
@@ -21,14 +21,14 @@ export function MandateDetailCard({ mandate: m }: { mandate: Mandate }) {
         <header className="border-b border-border pb-4">
           <div className="flex flex-wrap items-center gap-2">
             <span
-              className={`label-mono rounded-sm border px-2 py-0.5 text-[0.65rem] font-bold ${mandateStatusTone(m.status)}`}
+              className={`label-mono rounded-sm border px-2 py-0.5 text-[0.875rem] font-bold ${mandateStatusTone(m.status)}`}
             >
               {m.status}
             </span>
             {m.fuels.map((f) => (
               <span
                 key={f}
-                className="label-mono rounded-sm border border-border bg-muted px-2 py-0.5 text-[0.65rem] font-bold text-foreground"
+                className="label-mono rounded-sm border border-border bg-muted px-2 py-0.5 text-[0.875rem] font-bold text-foreground"
               >
                 {f}
               </span>
@@ -95,7 +95,7 @@ export function MandateDetailCard({ mandate: m }: { mandate: Mandate }) {
             {m.sourceName}
             <ExternalLink className="size-3.5" />
           </a>
-          <span className="label-mono text-[0.65rem] text-muted-foreground">
+          <span className="label-mono text-[0.875rem] text-muted-foreground">
             Last reviewed {m.lastReviewed}
           </span>
         </footer>

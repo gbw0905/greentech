@@ -15,17 +15,17 @@
 }
 .presentation :global(.benchmark-header p) {
   max-width: 65ch;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.5;
   margin-top: 6px;
 }
 .presentation :global(.benchmark-meta) {
   gap: 5px;
-  font-size: 11px;
+  font-size: 14px;
 }
 .presentation :global(.benchmark-live) {
   padding: 4px 10px;
-  font-size: 11px;
+  font-size: 14px;
 }
 .presentation :global(.benchmark-layout) {
   grid-template-columns: minmax(0, 1fr);
@@ -111,7 +111,7 @@
   transform: translateY(-3px);
 }
 .presentation :global(.benchmark-card-name) {
-  font-size: 13px;
+  font-size: 14px;
 }
 .presentation :global(.benchmark-card-price) {
   font-size: clamp(19px, 1.6vw, 23px);
@@ -122,14 +122,14 @@
   gap: 4px;
 }
 .presentation :global(.benchmark-card .benchmark-symbol) {
-  font-size: 10px;
+  font-size: 14px;
   padding: 2px 6px;
 }
 .presentation :global(.benchmark-card-price small) {
-  font-size: 10px;
+  font-size: 14px;
 }
 .presentation :global(.benchmark-card .benchmark-badge) {
-  font-size: 10px;
+  font-size: 14px;
   padding: 3px 5px;
 }
 .presentation :global(.benchmark-card .benchmark-badge svg) {
@@ -137,7 +137,7 @@
   height: 11px;
 }
 .presentation :global(.benchmark-card-foot) {
-  font-size: 10px;
+  font-size: 14px;
 }
 .presentation :global(.benchmark-card-unavailable) {
   cursor: default;
@@ -156,7 +156,7 @@
   align-items: center;
   height: 28px;
   color: #6c8195;
-  font-size: 11px;
+  font-size: 14px;
 }
 .presentation :global(.benchmark-spark) {
   height: 28px;
@@ -180,11 +180,11 @@
 }
 .presentation :global(.benchmark-price small),
 .presentation :global(.benchmark-daily) {
-  font-size: 12px;
+  font-size: 14px;
 }
 .presentation :global(.benchmark-caption) {
   margin-top: 4px;
-  font-size: 10px;
+  font-size: 14px;
 }
 .presentation :global(.benchmark-outlook) {
   margin-top: 10px;
@@ -192,11 +192,11 @@
 }
 .presentation :global(.benchmark-ai) {
   padding: 6px 9px;
-  font-size: 12px;
+  font-size: 14px;
   border-radius: 7px;
 }
 .presentation :global(.benchmark-trend) {
-  font-size: 11px;
+  font-size: 14px;
 }
 .presentation :global(.benchmark-compare) {
   display: flex;
@@ -207,7 +207,7 @@
 }
 .presentation :global(.benchmark-compare > span) {
   color: var(--benchmark-muted);
-  font-size: 11px;
+  font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-weight: 600;
@@ -222,7 +222,7 @@
   border-radius: 5px;
   padding: 5px 9px;
   color: #4c6278;
-  font-size: 12px;
+  font-size: 14px;
   cursor: pointer;
   transition:
     background 0.2s,
@@ -259,7 +259,7 @@
   gap: 18px;
   margin-top: 14px;
   color: #4c6278;
-  font-size: 12px;
+  font-size: 14px;
 }
 .presentation :global(.benchmark-comparison-legend span) {
   display: inline-flex;
@@ -270,7 +270,7 @@
   margin-top: 10px;
   padding: 8px 0 0;
   border-top: 1px solid var(--benchmark-line);
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.5;
   color: #4c6278;
 }
@@ -367,7 +367,7 @@
     gap: 12px;
   }
   .presentation :global(.benchmark-trend) {
-    font-size: 11px;
+    font-size: 14px;
   }
   .presentation :global(.benchmark-caption) {
     flex-wrap: wrap;

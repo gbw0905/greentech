@@ -58,7 +58,7 @@ export function UpdateCard({
       )}
       <div className="min-w-0 flex-1">
         <div
-          className={`label-mono flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-muted-foreground ${compact ? "text-[11px]" : ""}`}
+          className={`label-mono flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-muted-foreground ${compact ? "text-[14px]" : ""}`}
         >
           <span
             className={`rounded-full font-semibold tracking-[0.14em] uppercase ${compact ? "px-1.5 py-0" : "px-2 py-0.5"} ${update.category === "market" ? "bg-blue-100 text-blue-700" : "bg-red-100 text-red-700"}`}
@@ -84,7 +84,7 @@ export function UpdateCard({
         </div>
 
         <h3
-          className={`font-semibold leading-tight ${compact ? "mt-1 text-[15px]" : "mt-2 text-lg leading-snug"}`}
+          className={`font-semibold leading-tight ${compact ? "mt-1 text-[16px]" : "mt-2 text-lg leading-snug"}`}
         >
           <a
             href={update.url}
@@ -108,7 +108,7 @@ export function UpdateCard({
             {update.fuels.map((f) => (
               <span
                 key={f}
-                className={`label-mono rounded-full bg-secondary text-secondary-foreground ${compact ? "px-1.5 py-0 text-[10px]" : "px-2 py-0.5"}`}
+                className={`label-mono rounded-full bg-secondary text-secondary-foreground ${compact ? "px-1.5 py-0 text-[14px]" : "px-2 py-0.5"}`}
               >
                 {f}
               </span>

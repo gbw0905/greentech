@@ -11,7 +11,7 @@ export const Route = createFileRoute("/calculation-history")({
   component: () => (
     <AccountLayout
       title="Calculation history"
-      description="Every CI and Credit & RIN calculation, saved to your account and ready to revisit."
+      description="Your CI, Credit & RIN and Optimizer calculations, saved to your account and ready to revisit."
       section="history"
     >
       <HistoryPanel />

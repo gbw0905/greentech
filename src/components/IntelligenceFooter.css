@@ -44,12 +44,12 @@
 }
 .gbw-footer .footer-brand-tag {
   display: block;
-  font-size: 12px;
+  font-size: 14px;
   color: #89a7b8;
   margin-top: 5px;
 }
 .gbw-footer .footer-blurb {
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.8;
   max-width: 49ch;
   margin-bottom: 20px;
@@ -61,7 +61,7 @@
   border: 1px solid #ffffff20;
   padding: 8px 13px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 14px;
   color: #a9c7d1;
 }
 .gbw-footer .status-pulse {
@@ -87,7 +87,7 @@
   font-weight: 600;
 }
 .gbw-footer .footer-newsletter > p {
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.65;
   margin-bottom: 20px;
 }
@@ -106,7 +106,7 @@
   background: #ffffff08;
   color: white;
   font: inherit;
-  font-size: 14px;
+  font-size: 16px;
 }
 .gbw-footer .footer-form input::placeholder {
   color: #87a3b5;
@@ -126,7 +126,7 @@
   height: 48px;
   color: white;
   font: inherit;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
@@ -150,10 +150,10 @@
 .gbw-footer .footer-fine {
   margin-top: 12px;
   color: #89a7b8;
-  font-size: 12px;
+  font-size: 14px;
 }
 .gbw-footer .footer-feedback {
-  font-size: 13px;
+  font-size: 14px;
   color: #b2f5dc;
   margin-top: 12px;
   line-height: 1.6;
@@ -169,7 +169,7 @@
   padding: 32px 0;
 }
 .gbw-footer .footer-col h2 {
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   font-weight: 600;
@@ -188,7 +188,7 @@
 }
 .gbw-footer .footer-col a {
   color: #b6c9d6;
-  font-size: 14px;
+  font-size: 16px;
   text-decoration: none;
   overflow-wrap: anywhere;
   transition: color 0.2s;
@@ -231,7 +231,7 @@
   padding-top: 24px;
 }
 .gbw-footer .footer-copy {
-  font-size: 11px;
+  font-size: 14px;
   color: #89a7b8;
 }
 .gbw-footer .footer-legal {
@@ -243,7 +243,7 @@
   margin: 0;
 }
 .gbw-footer .footer-legal a {
-  font-size: 11px;
+  font-size: 14px;
   color: #a4bdcc;
 }
 .gbw-footer .footer-top-link {
@@ -251,7 +251,7 @@
   align-items: center;
   gap: 6px;
   color: #c4d8e3;
-  font-size: 12px;
+  font-size: 14px;
   padding: 9px 12px;
   border: 1px solid #ffffff20;
   border-radius: 8px;

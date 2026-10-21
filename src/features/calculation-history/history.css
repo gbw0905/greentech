@@ -20,7 +20,7 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #178a6b;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
 }
 .history-heading h2 {
@@ -32,7 +32,7 @@
 .history-heading p,
 .history-empty p {
   color: #62788b;
-  font-size: 13px;
+  font-size: 16px;
   line-height: 1.7;
 }
 .history-filters {
@@ -46,7 +46,7 @@
 .history-filters button {
   padding: 9px 12px;
   color: #526b80;
-  font-size: 12px;
+  font-size: 14px;
   border-radius: 7px;
 }
 .history-filters button[aria-pressed="true"] {
@@ -63,17 +63,17 @@
   border-top: 1px solid #e0e9ef;
 }
 .history-run h3 {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 650;
   margin: 6px 0;
 }
 .history-run p {
-  font-size: 12px;
+  font-size: 14px;
   color: #62788b;
 }
 .history-kind {
   color: #178a6b;
-  font-size: 10px;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -83,12 +83,12 @@
   text-align: right;
 }
 .history-metric strong {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
 }
 .history-metric span {
-  font-size: 11px;
+  font-size: 13px;
   color: #62788b;
 }
 .history-open {
@@ -98,7 +98,7 @@
   border: 1px solid #d5e3ed;
   border-radius: 8px;
   padding: 10px 14px;
-  font-size: 12px;
+  font-size: 14px;
   color: #0e2a43;
 }
 .history-open:hover {
@@ -116,7 +116,7 @@
   color: #178a6b;
 }
 .history-empty h3 {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
 }
 .history-empty button {

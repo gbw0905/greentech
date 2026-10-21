@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import { Link } from "@tanstack/react-router";
 import { DottedPolicyGlobe } from "./DottedPolicyGlobe";
 import styles from "./HomeHero.module.css";
 
@@ -38,13 +37,6 @@ export function HomeHero({
               Read today&apos;s updates
             </a>
           </div>
-          <nav className={styles["topics"]} aria-label="Browse by topic">
-            <Link to="/timeline">Ethanol</Link>
-            <Link to="/timeline">Biodiesel</Link>
-            <Link to="/timeline">Sustainable aviation fuel</Link>
-            <Link to="/mandates">Blending mandates</Link>
-            <Link to="/timeline">Tax credits</Link>
-          </nav>
         </div>
         <div className={styles["visual"]}>
           <DottedPolicyGlobe />

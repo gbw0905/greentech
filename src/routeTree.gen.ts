@@ -45,6 +45,7 @@ import { Route as ApiDocumentAnalyzeRouteImport } from './routes/api/document-an
 import { Route as ApiDocumentHistoryRouteImport } from './routes/api/document-history'
 import { Route as ApiDocumentHistoryItemRouteImport } from './routes/api/document-history-item'
 import { Route as AssistantThreadIdRouteImport } from './routes/assistant.$threadId'
+import { Route as CivantaOptimizerRouteImport } from './routes/civanta_.optimizer'
 import { Route as CountriesSlugRouteImport } from './routes/countries.$slug'
 import { Route as SettingsLinkedinRouteImport } from './routes/settings.linkedin'
 import { Route as SupplyIndexRouteImport } from './routes/supply.index'
@@ -252,6 +253,11 @@ const AssistantThreadIdRoute = AssistantThreadIdRouteImport.update({
   path: '/$threadId',
   getParentRoute: () => AssistantRoute,
 } as any)
+const CivantaOptimizerRoute = CivantaOptimizerRouteImport.update({
+  id: '/civanta_/optimizer',
+  path: '/civanta/optimizer',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CountriesSlugRoute = CountriesSlugRouteImport.update({
   id: '/countries/$slug',
   path: '/countries/$slug',
@@ -421,6 +427,7 @@ export interface FileRoutesByFullPath {
   '/api/document-history': typeof ApiDocumentHistoryRoute
   '/api/document-history-item': typeof ApiDocumentHistoryItemRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
+  '/civanta/optimizer': typeof CivantaOptimizerRoute
   '/countries/$slug': typeof CountriesSlugRouteWithChildren
   '/settings/linkedin': typeof SettingsLinkedinRoute
   '/supply/$panel': typeof SupplyPanelRoute
@@ -482,6 +489,7 @@ export interface FileRoutesByTo {
   '/api/document-history': typeof ApiDocumentHistoryRoute
   '/api/document-history-item': typeof ApiDocumentHistoryItemRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
+  '/civanta/optimizer': typeof CivantaOptimizerRoute
   '/settings/linkedin': typeof SettingsLinkedinRoute
   '/supply/$panel': typeof SupplyPanelRoute
   '/about': typeof AboutIndexRoute
@@ -544,6 +552,7 @@ export interface FileRoutesById {
   '/api/document-history': typeof ApiDocumentHistoryRoute
   '/api/document-history-item': typeof ApiDocumentHistoryItemRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
+  '/civanta_/optimizer': typeof CivantaOptimizerRoute
   '/countries/$slug': typeof CountriesSlugRouteWithChildren
   '/settings/linkedin': typeof SettingsLinkedinRoute
   '/supply/$panel': typeof SupplyPanelRoute
@@ -608,6 +617,7 @@ export interface FileRouteTypes {
     | '/api/document-history'
     | '/api/document-history-item'
     | '/assistant/$threadId'
+    | '/civanta/optimizer'
     | '/countries/$slug'
     | '/settings/linkedin'
     | '/supply/$panel'
@@ -669,6 +679,7 @@ export interface FileRouteTypes {
     | '/api/document-history'
     | '/api/document-history-item'
     | '/assistant/$threadId'
+    | '/civanta/optimizer'
     | '/settings/linkedin'
     | '/supply/$panel'
     | '/about'
@@ -730,6 +741,7 @@ export interface FileRouteTypes {
     | '/api/document-history'
     | '/api/document-history-item'
     | '/assistant/$threadId'
+    | '/civanta_/optimizer'
     | '/countries/$slug'
     | '/settings/linkedin'
     | '/supply/$panel'
@@ -790,6 +802,7 @@ export interface RootRouteChildren {
   ApiDocumentAnalyzeRoute: typeof ApiDocumentAnalyzeRoute
   ApiDocumentHistoryRoute: typeof ApiDocumentHistoryRoute
   ApiDocumentHistoryItemRoute: typeof ApiDocumentHistoryItemRoute
+  CivantaOptimizerRoute: typeof CivantaOptimizerRoute
   CountriesSlugRoute: typeof CountriesSlugRouteWithChildren
   SettingsLinkedinRoute: typeof SettingsLinkedinRoute
   SupplyPanelRoute: typeof SupplyPanelRoute
@@ -1067,6 +1080,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AssistantThreadIdRouteImport
       parentRoute: typeof AssistantRoute
     }
+    '/civanta_/optimizer': {
+      id: '/civanta_/optimizer'
+      path: '/civanta/optimizer'
+      fullPath: '/civanta/optimizer'
+      preLoaderRoute: typeof CivantaOptimizerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/countries/$slug': {
       id: '/countries/$slug'
       path: '/countries/$slug'
@@ -1314,6 +1334,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiDocumentAnalyzeRoute: ApiDocumentAnalyzeRoute,
   ApiDocumentHistoryRoute: ApiDocumentHistoryRoute,
   ApiDocumentHistoryItemRoute: ApiDocumentHistoryItemRoute,
+  CivantaOptimizerRoute: CivantaOptimizerRoute,
   CountriesSlugRoute: CountriesSlugRouteWithChildren,
   SettingsLinkedinRoute: SettingsLinkedinRoute,
   SupplyPanelRoute: SupplyPanelRoute,

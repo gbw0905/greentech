@@ -1,50 +1,321 @@
-.account-page { color: #0e2a43; background: linear-gradient(130deg,#edf5f6,#f7f9fc 70%); padding: 32px 24px 72px; }
-.account-shell { max-width: 1240px; margin: auto; }
-.account-breadcrumb { display: flex; align-items: center; gap: 10px; color: #62788b; font-size: 13px; margin-bottom: 32px; }
-.account-breadcrumb a:hover { color: #178a6b; }
-.account-heading { margin-bottom: 30px; }
-.account-eyebrow { color: #178a6b; text-transform: uppercase; letter-spacing: .12em; font-size: 11px; font-weight: 750; }
-.account-heading h1 { font: 650 clamp(32px,4vw,48px)/1.15 'Bricolage Grotesque',sans-serif; letter-spacing: -.04em; margin: 12px 0; }
-.account-heading p { color: #526b80; font-size: 16px; line-height: 1.7; max-width: 760px; }
-.account-tabs { display: flex; align-items: center; gap: 26px; border-bottom: 1px solid #d4e2e9; margin-bottom: 30px; }
-.account-tabs a { display: inline-flex; align-items: center; gap: 9px; padding: 15px 0; border-bottom: 3px solid transparent; color: #526b80; font-size: 14px; font-weight: 600; }
-.account-tabs a[aria-current='page'] { color: #126f56; border-color: #178a6b; }
-.account-tabs a:hover { color: #178a6b; }
-.account-tabs .account-tools-link { margin-left: auto; }
-.account-content { display: grid; gap: 24px; }
-.account-card { background: white; border: 1px solid #d5e2eb; border-radius: 20px; padding: 30px; box-shadow: 0 8px 25px #0e2a4305; }
-.account-profile-grid { display: grid; grid-template-columns: minmax(0,1.5fr) minmax(0,1fr); gap: 24px; }
-.account-identity { display: flex; align-items: center; gap: 18px; margin-bottom: 28px; }
-.account-avatar { height: 76px; width: 76px; border-radius: 50%; background: #e1f2ec; color: #126f56; border: 1px solid #c1dfd2; display: grid; place-items: center; font-size: 28px; font-weight: 650; flex-shrink: 0; overflow: hidden; }
-.account-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.account-card h2 { font: 650 24px/1.3 'Bricolage Grotesque',sans-serif; margin: 0 0 8px; letter-spacing: -.02em; }
-.account-card p { color: #526b80; font-size: 14px; line-height: 1.7; }
-.account-email { overflow-wrap: anywhere; }
-.account-badge { display: inline-flex; padding: 5px 10px; border-radius: 20px; color: #126f56; background: #e7f4ef; font-size: 11px; font-weight: 650; margin-top: 6px; }
-.account-details { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; padding-top: 24px; border-top: 1px solid #e1e9ef; }
-.account-details dt { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: #6b8092; margin-bottom: 8px; }
-.account-details dd { font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
-.account-action { display: inline-flex; align-items: center; gap: 10px; border-radius: 9px; padding: 12px 18px; background: #0e2a43; color: white; font-size: 13px; font-weight: 600; border: 1px solid #0e2a43; transition: background .2s, transform .2s; }
-.account-action:hover { background: #173e59; transform: translateY(-1px); }
-.account-card .account-action { margin-top: 22px; }
-.account-icon { width: 48px; height: 48px; border-radius: 14px; background: #e7f4ef; color: #178a6b; display: grid; place-items: center; margin-bottom: 20px; }
-.account-empty { text-align: center; padding: 44px 28px; }
-.account-empty .account-icon { margin: 0 auto 20px; width: 60px; height: 60px; border-radius: 18px; }
-.account-empty p { max-width: 560px; margin: 0 auto; }
-.account-empty-steps { display: flex; justify-content: center; flex-wrap: wrap; gap: 24px; margin: 28px 0 0; color: #62788b; font-size: 12px; }
-.account-empty-steps span { display: inline-flex; align-items: center; gap: 8px; }
-.account-empty-steps b { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #eef4f7; color: #0e2a43; font-size: 11px; }
-.account-loading { color: #62788b; padding: 30px; background: white; border: 1px solid #d5e2eb; border-radius: 18px; }
-.account-error { color: #b72d4c; font-size: 14px; }
-.account-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; }
-.account-stat { padding: 24px; }
-.account-stat p { font-size: 12px; margin-bottom: 14px; }
-.account-stat strong { font: 650 26px/1.3 'Bricolage Grotesque',sans-serif; font-variant-numeric: tabular-nums; }
-.account-page .glass-panel { background: white; border: 1px solid #d5e2eb; border-radius: 18px; box-shadow: none; padding: 26px; }
-.account-page .text-foreground { color: #0e2a43; }
-.account-page .text-muted-foreground { color: #62788b; }
-.account-page .label-mono { font-family: inherit; font-size: 11px; letter-spacing: .025em; }
-.account-page button[aria-label^='Delete'] { border-radius: 8px; padding: 10px; }
-.account-page button:disabled { opacity: .5; cursor: wait; }
-@media(max-width: 700px) { .account-page { padding: 24px 18px 40px; } .account-breadcrumb { margin-bottom: 24px; } .account-profile-grid,.account-stats { grid-template-columns: 1fr; } .account-tabs { gap: 20px; flex-wrap: wrap; } .account-tabs .account-tools-link { display: none; } .account-card { padding: 24px; } .account-details { grid-template-columns: 1fr; } .account-identity { align-items: flex-start; } .account-avatar { height: 56px; width: 56px; font-size: 23px; } .account-empty { padding: 36px 20px; } }
-@media(prefers-reduced-motion: reduce) { .account-action { transition: none; } }
+.account-page {
+  color: #0e2a43;
+  background: linear-gradient(130deg, #edf5f6, #f7f9fc 70%);
+  padding: 32px 24px 72px;
+}
+.account-shell {
+  max-width: 1240px;
+  margin: auto;
+}
+.account-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #62788b;
+  font-size: 14px;
+  margin-bottom: 32px;
+}
+.account-breadcrumb a:hover {
+  color: #178a6b;
+}
+.account-heading {
+  margin-bottom: 30px;
+}
+.account-eyebrow {
+  color: #178a6b;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 14px;
+  font-weight: 750;
+}
+.account-heading h1 {
+  font:
+    650 clamp(32px, 4vw, 48px)/1.15 "Bricolage Grotesque",
+    sans-serif;
+  letter-spacing: -0.04em;
+  margin: 12px 0;
+}
+.account-heading p {
+  color: #526b80;
+  font-size: 16px;
+  line-height: 1.7;
+  max-width: 760px;
+}
+.account-tabs {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  border-bottom: 1px solid #d4e2e9;
+  margin-bottom: 30px;
+}
+.account-tabs a {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 15px 0;
+  border-bottom: 3px solid transparent;
+  color: #526b80;
+  font-size: 16px;
+  font-weight: 600;
+}
+.account-tabs a[aria-current="page"] {
+  color: #126f56;
+  border-color: #178a6b;
+}
+.account-tabs a:hover {
+  color: #178a6b;
+}
+.account-tabs .account-tools-link {
+  margin-left: auto;
+}
+.account-content {
+  display: grid;
+  gap: 24px;
+}
+.account-card {
+  background: white;
+  border: 1px solid #d5e2eb;
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 8px 25px #0e2a4305;
+}
+.account-profile-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 24px;
+}
+.account-identity {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 28px;
+}
+.account-avatar {
+  height: 76px;
+  width: 76px;
+  border-radius: 50%;
+  background: #e1f2ec;
+  color: #126f56;
+  border: 1px solid #c1dfd2;
+  display: grid;
+  place-items: center;
+  font-size: 28px;
+  font-weight: 650;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.account-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.account-card h2 {
+  font:
+    650 24px/1.3 "Bricolage Grotesque",
+    sans-serif;
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+}
+.account-card p {
+  color: #526b80;
+  font-size: 16px;
+  line-height: 1.7;
+}
+.account-email {
+  overflow-wrap: anywhere;
+}
+.account-badge {
+  display: inline-flex;
+  padding: 5px 10px;
+  border-radius: 20px;
+  color: #126f56;
+  background: #e7f4ef;
+  font-size: 14px;
+  font-weight: 650;
+  margin-top: 6px;
+}
+.account-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  padding-top: 24px;
+  border-top: 1px solid #e1e9ef;
+}
+.account-details dt {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #6b8092;
+  margin-bottom: 8px;
+}
+.account-details dd {
+  font-size: 16px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.account-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 9px;
+  padding: 12px 18px;
+  background: #0e2a43;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid #0e2a43;
+  transition:
+    background 0.2s,
+    transform 0.2s;
+}
+.account-action:hover {
+  background: #173e59;
+  transform: translateY(-1px);
+}
+.account-card .account-action {
+  margin-top: 22px;
+}
+.account-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: #e7f4ef;
+  color: #178a6b;
+  display: grid;
+  place-items: center;
+  margin-bottom: 20px;
+}
+.account-empty {
+  text-align: center;
+  padding: 44px 28px;
+}
+.account-empty .account-icon {
+  margin: 0 auto 20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+}
+.account-empty p {
+  max-width: 560px;
+  margin: 0 auto;
+}
+.account-empty-steps {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin: 28px 0 0;
+  color: #62788b;
+  font-size: 14px;
+}
+.account-empty-steps span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.account-empty-steps b {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #eef4f7;
+  color: #0e2a43;
+  font-size: 14px;
+}
+.account-loading {
+  color: #62788b;
+  padding: 30px;
+  background: white;
+  border: 1px solid #d5e2eb;
+  border-radius: 18px;
+}
+.account-error {
+  color: #b72d4c;
+  font-size: 16px;
+}
+.account-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+.account-stat {
+  padding: 24px;
+}
+.account-stat p {
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+.account-stat strong {
+  font:
+    650 26px/1.3 "Bricolage Grotesque",
+    sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+.account-page .glass-panel {
+  background: white;
+  border: 1px solid #d5e2eb;
+  border-radius: 18px;
+  box-shadow: none;
+  padding: 26px;
+}
+.account-page .text-foreground {
+  color: #0e2a43;
+}
+.account-page .text-muted-foreground {
+  color: #62788b;
+}
+.account-page .label-mono {
+  font-family: inherit;
+  font-size: 14px;
+  letter-spacing: 0.025em;
+}
+.account-page button[aria-label^="Delete"] {
+  border-radius: 8px;
+  padding: 10px;
+}
+.account-page button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+@media (max-width: 700px) {
+  .account-page {
+    padding: 24px 18px 40px;
+  }
+  .account-breadcrumb {
+    margin-bottom: 24px;
+  }
+  .account-profile-grid,
+  .account-stats {
+    grid-template-columns: 1fr;
+  }
+  .account-tabs {
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .account-tabs .account-tools-link {
+    display: none;
+  }
+  .account-card {
+    padding: 24px;
+  }
+  .account-details {
+    grid-template-columns: 1fr;
+  }
+  .account-identity {
+    align-items: flex-start;
+  }
+  .account-avatar {
+    height: 56px;
+    width: 56px;
+    font-size: 23px;
+  }
+  .account-empty {
+    padding: 36px 20px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .account-action {
+    transition: none;
+  }
+}

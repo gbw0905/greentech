@@ -79,6 +79,7 @@ function CiWorkspacePage() {
           </div>
           <nav className="calculator-subnav" aria-label="Calculator navigation">
             <Link to="/credit-calculator">Credit & RIN Calculator ↗</Link>
+            <Link to="/civanta/optimizer">Optimizer ↗</Link>
             <button
               type="button"
               aria-expanded={showHistory}

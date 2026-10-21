@@ -37,7 +37,7 @@
   align-items: center;
   gap: 7px;
   padding: 5px 10px;
-  font-size: 12px;
+  font-size: 14px;
   color: #4c6278;
   background: #edf4f8;
   border: 1px solid #d6e1ea;
@@ -73,19 +73,19 @@
 .facts dt {
   color: #178a6b;
   font-weight: 600;
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   margin-bottom: 8px;
 }
 .facts dd {
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.55;
 }
 .regulator {
   margin-top: 18px;
   color: #4c6278;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.55;
 }
 .regulator strong {
@@ -103,7 +103,7 @@
 }
 .footer p {
   color: #4c6278;
-  font-size: 12px;
+  font-size: 14px;
 }
 .footer > div {
   display: flex;
@@ -114,7 +114,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   color: #178a6b;
   text-decoration: none;

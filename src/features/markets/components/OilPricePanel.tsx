@@ -517,10 +517,15 @@ function MarketStats({ q }: { q: OilQuote }) {
 
 type Outlook = { text: string; loading: boolean; error?: string };
 
-export function OilPricePanel() {
+export function OilPricePanel({
+  initialMarket,
+}: {
+  initialMarket?: Awaited<ReturnType<typeof getOilPricesFn>> | null;
+}) {
   const { data, isLoading, dataUpdatedAt } = useQuery({
     queryKey: ["oil-prices"],
     queryFn: () => getOilPricesFn(),
+    initialData: initialMarket ?? undefined,
     refetchInterval: 60_000,
     placeholderData: keepPreviousData,
     staleTime: Infinity,

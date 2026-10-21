@@ -185,7 +185,9 @@ function Field({
     <label className="block min-w-0">
       <span className="label-mono block text-muted-foreground">{label}</span>
       <div className="mt-1.5">{children}</div>
-      {hint ? <span className="mt-1 block text-[0.7rem] text-muted-foreground">{hint}</span> : null}
+      {hint ? (
+        <span className="mt-1 block text-[0.875rem] text-muted-foreground">{hint}</span>
+      ) : null}
     </label>
   );
 }
@@ -2103,7 +2105,7 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
                           </select>
                         </Field>
                       </div>
-                      <p className="mt-2 text-[0.7rem] text-muted-foreground">{s.note}</p>
+                      <p className="mt-2 text-[0.875rem] text-muted-foreground">{s.note}</p>
                     </div>
                   );
                 })}
@@ -2501,14 +2503,14 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
                                 <span className="mt-2 font-mono text-xs font-bold tabular-nums text-foreground">
                                   {ci(c.total)}
                                 </span>
-                                <span className="text-center text-[0.7rem] leading-tight text-muted-foreground">
+                                <span className="text-center text-[0.875rem] leading-tight text-muted-foreground">
                                   {c.category}
                                 </span>
                               </div>
                             ))}
                           </div>
                         </div>
-                        <p className="mt-2 text-[0.7rem] text-muted-foreground">
+                        <p className="mt-2 text-[0.875rem] text-muted-foreground">
                           Bars above the zero line add emissions; hatched bars below the line are
                           credits (negative values), plotted downward.
                         </p>
@@ -2710,7 +2712,7 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
                           {ticks.map((tick) => (
                             <span
                               key={tick}
-                              className="absolute right-3 -translate-y-1/2 font-mono text-[0.65rem] tabular-nums text-muted-foreground"
+                              className="absolute right-3 -translate-y-1/2 font-mono text-[0.875rem] tabular-nums text-muted-foreground"
                               style={{ top: yForValue(tick) }}
                             >
                               {ci(tick)}
@@ -2740,7 +2742,7 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
                             >
                               <div className="relative h-[220px] w-7">
                                 <span
-                                  className="absolute left-1/2 z-20 -translate-x-1/2 whitespace-nowrap text-center font-mono text-[0.65rem] font-bold tabular-nums text-foreground"
+                                  className="absolute left-1/2 z-20 -translate-x-1/2 whitespace-nowrap text-center font-mono text-[0.875rem] font-bold tabular-nums text-foreground"
                                   style={{
                                     top: Math.max(
                                       0,
@@ -2765,7 +2767,7 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
                               </div>
                               <div className="relative h-[220px] w-7">
                                 <span
-                                  className="absolute left-1/2 z-20 -translate-x-1/2 whitespace-nowrap text-center font-mono text-[0.65rem] font-bold tabular-nums text-foreground"
+                                  className="absolute left-1/2 z-20 -translate-x-1/2 whitespace-nowrap text-center font-mono text-[0.875rem] font-bold tabular-nums text-foreground"
                                   style={{
                                     top: Math.max(
                                       0,
@@ -2785,7 +2787,7 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
                                   title={`${p.program.label}: ${ci(p.benchmark as number)} ${ciUnit.label}`}
                                 />
                               </div>
-                              <span className="absolute inset-x-1 top-[228px] text-center text-[0.65rem] leading-tight font-semibold text-foreground">
+                              <span className="absolute inset-x-1 top-[228px] text-center text-[0.875rem] leading-tight font-semibold text-foreground">
                                 {p.program.label}
                               </span>
                             </div>
@@ -2796,7 +2798,7 @@ export function PathwayCiBuilder({ mode = "general" }: { mode?: CiBuilderMode } 
                         {rows.map((p) => (
                           <div key={p.program.id} className="min-w-24 flex-1 px-2 text-center">
                             <span
-                              className="font-mono text-[0.65rem] font-bold tabular-nums"
+                              className="font-mono text-[0.875rem] font-bold tabular-nums"
                               style={{
                                 color: (p.gapPerMj ?? 0) >= 0 ? TONE_COLOR.green : TONE_COLOR.red,
                               }}

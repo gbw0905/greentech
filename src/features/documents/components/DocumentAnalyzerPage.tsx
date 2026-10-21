@@ -199,6 +199,15 @@ export function DocumentAnalyzerPage() {
       subtitle="Add a document and at least five topics to get a briefing backed by its source passages."
       className="intelligence-analyzer"
     >
+      {!authLoading && !signedIn ? (
+        <div className="analyzer-access">
+          <SignInPrompt
+            action="analyze your documents"
+            title="Unlock your document's insights"
+            description="Sign in to create a focused briefing with key findings and source references."
+          />
+        </div>
+      ) : null}
       <div className="analyzer-workspace">
         <div className="analyzer-left-column">
           <form onSubmit={submit} className="analyzer-input-card">

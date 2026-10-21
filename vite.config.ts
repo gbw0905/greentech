@@ -21,6 +21,11 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
+    optimizeDeps: {
+      // These document parsers run on the server. Prebundling their native
+      // canvas binary for the browser fails and blocks every client module.
+      exclude: ["@napi-rs/canvas", "pdf-parse", "pdfjs-dist"],
+    },
     // The MCP plugin currently compares Windows paths without normalizing
     // separators and rejects this otherwise valid routes directory. MCP is
     // Lovable editor tooling, not part of the application runtime.

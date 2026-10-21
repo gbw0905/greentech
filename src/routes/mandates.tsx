@@ -219,7 +219,7 @@ function MandatesPage() {
                   {m.fuels.map((f) => (
                     <span
                       key={f}
-                      className="label-mono rounded-sm border border-border bg-muted px-2 py-0.5 text-[0.65rem] font-bold text-foreground"
+                      className="label-mono rounded-sm border border-border bg-muted px-2 py-0.5 text-[0.875rem] font-bold text-foreground"
                     >
                       {f}
                     </span>
@@ -305,7 +305,7 @@ function MandatesPage() {
                     {m.sourceName}
                     <ExternalLink className="size-3.5" />
                   </a>
-                  <span className="label-mono text-[0.65rem] text-muted-foreground">
+                  <span className="label-mono text-[0.875rem] text-muted-foreground">
                     Last reviewed {m.lastReviewed}
                   </span>
                 </footer>
@@ -321,7 +321,7 @@ function MandatesPage() {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="label-mono text-[0.65rem] font-bold text-foreground">{label}</dt>
+      <dt className="label-mono text-[0.875rem] font-bold text-foreground">{label}</dt>
       <dd className="text-muted-foreground">{value}</dd>
     </div>
   );
@@ -340,7 +340,7 @@ function FilterPills({
 }) {
   return (
     <div className="intelligence-filter-chips">
-      <span className="label-mono text-[0.65rem] font-bold text-muted-foreground">{label}</span>
+      <span className="label-mono text-[0.875rem] font-bold text-muted-foreground">{label}</span>
       {["all", ...options].map((opt) => {
         const active = value === opt;
         return (
