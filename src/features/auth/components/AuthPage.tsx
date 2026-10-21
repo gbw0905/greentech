@@ -6,7 +6,7 @@ import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { MotionReveal } from "@/components/MotionReveal";
 
 export function AuthPage({ initialMode = "signin" }: { initialMode?: "signin" | "signup" }) {
-  const { user, loading } = useAuthSession();
+  const { user, loading, refreshSession } = useAuthSession();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">(initialMode);
   const [email, setEmail] = useState("");
@@ -35,22 +35,19 @@ export function AuthPage({ initialMode = "signin" }: { initialMode?: "signin" | 
     setError("");
     setNotice("");
     try {
-      if (mode === "signup") {
-        const { data, error: err } = await supabase.auth.signUp({
-          email: email.trim(),
-          password,
-          options: { emailRedirectTo: window.location.origin },
-        });
-        if (err) throw err;
-        if (!data.session) {
-          setNotice("Check your inbox and confirm your email address to finish signing up.");
-        }
+      const endpoint = mode === "signup" ? "/api/auth/sign-up" : "/api/auth/sign-in";
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ email: email.trim(), password }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Something went wrong.");
+      if (data.needsConfirmation) {
+        setNotice("Check your inbox and confirm your email address to finish signing up.");
       } else {
-        const { error: err } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
-          password,
-        });
-        if (err) throw err;
+        await refreshSession();
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Try again.");
@@ -64,7 +61,7 @@ export function AuthPage({ initialMode = "signin" }: { initialMode?: "signin" | 
     try {
       const { error: err } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo: window.location.origin },
+        options: { redirectTo: `${window.location.origin}/api/auth/callback` },
       });
       if (err) throw err;
     } catch (err) {
@@ -77,7 +74,7 @@ export function AuthPage({ initialMode = "signin" }: { initialMode?: "signin" | 
     try {
       const { error: err } = await supabase.auth.signInWithOAuth({
         provider: "azure",
-        options: { redirectTo: window.location.origin },
+        options: { redirectTo: `${window.location.origin}/api/auth/callback` },
       });
       if (err) throw err;
     } catch (err) {

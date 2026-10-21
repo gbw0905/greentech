@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
-import { supabase } from "@/integrations/supabase/client";
 import {
   Conversation,
   ConversationContent,
@@ -33,16 +32,10 @@ const SUGGESTIONS = [
   "Who are the largest ethanol producers we track?",
 ];
 
-/** Sends the Supabase access token so the assistant server can save the thread. */
+/** Cookies are sent automatically — no custom fetch needed. */
 const transport = new DefaultChatTransport({
   api: "/api/chat",
-  fetch: (async (input: RequestInfo | URL, init?: RequestInit) => {
-    const { data } = await supabase.auth.getSession();
-    const token = data.session?.access_token;
-    const headers = new Headers(init?.headers);
-    if (token) headers.set("authorization", `Bearer ${token}`);
-    return fetch(input, { ...init, headers });
-  }) as typeof fetch,
+  credentials: "same-origin",
 });
 
 export function AssistantChat({

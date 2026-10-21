@@ -25,7 +25,7 @@ export const ENTITY_DOMAINS: Record<string, string> = {
   CNQ: "cnrl.com",
 };
 
-const TOKEN = import.meta.env["VITE_LOVABLE_CONNECTOR_LOGO_DEV_API_KEY"] as string | undefined;
+const TOKEN = import.meta.env["VITE_LOGO_DEV_API_KEY"] as string | undefined;
 
 /** Brand domains keyed by the display name used in the charts. */
 export const NAME_DOMAINS: Record<string, string> = {

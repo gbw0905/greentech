@@ -3,7 +3,7 @@
 import { sourcesFor } from "@/shared/data/data-sources";
 import type { SummaryRequest } from "@/features/chart-summary/contracts";
 
-const MODEL = "google/gemini-3.7-flash";
+const MODEL = "gemini-2.5-flash";
 
 function prompt(r: SummaryRequest) {
   const table = r.rows
@@ -41,39 +41,38 @@ function prompt(r: SummaryRequest) {
 }
 
 export async function generateChartSummary(req: SummaryRequest): Promise<string> {
-  const apiKey = process.env["LOVABLE_API_KEY"];
+  const apiKey = process.env["GEMINI_API_KEY"];
   if (!apiKey) throw new Error("AI is not configured for this site.");
 
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are a senior bioenergy and energy-markets analyst writing concise, factual briefings for industry readers.",
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        systemInstruction: {
+          parts: [
+            {
+              text: "You are a senior bioenergy and energy-markets analyst writing concise, factual briefings for industry readers.",
+            },
+          ],
         },
-        { role: "user", content: prompt(req) },
-      ],
-    }),
-  });
+        contents: [{ role: "user", parts: [{ text: prompt(req) }] }],
+      }),
+    },
+  );
 
   if (res.status === 429)
     throw new Error("Too many summary requests right now — please try again in a minute.");
-  if (res.status === 402)
-    throw new Error("AI credits for this site are exhausted. Please try again later.");
   if (!res.ok) {
     const body = await res.text().catch(() => "");
     throw new Error(`Summary failed (${res.status}): ${body.slice(0, 200)}`);
   }
 
-  const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-  const text = json.choices?.[0]?.message?.content?.trim();
+  const json = (await res.json()) as {
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+  };
+  const text = json.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
   if (!text) throw new Error("The summary came back empty — please try again.");
   return text;
 }

@@ -1,6 +1,6 @@
 import type { TablesUpdate } from "@/integrations/supabase/types";
 
-const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 
 interface EnrichmentResult {
   slug: string;
@@ -61,27 +61,26 @@ Respond with valid JSON only, no markdown.`;
     const apiKey = process.env["GEMINI_API_KEY"];
     if (!apiKey) return { slug, ok: false, fieldsUpdated: [], error: "no GEMINI_API_KEY" };
 
-    const res = await fetch(GATEWAY_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+    const model = "gemini-2.5-flash";
+    const res = await fetch(
+      `${GEMINI_URL}/${model}:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.2, maxOutputTokens: 1024 },
+        }),
       },
-      body: JSON.stringify({
-        model: "gemini-2.0-flash",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.2,
-        max_tokens: 1024,
-      }),
-    });
+    );
 
     if (!res.ok) {
       const text = await res.text();
-      throw new Error(`gateway ${res.status}: ${text.slice(0, 200)}`);
+      throw new Error(`Gemini ${res.status}: ${text.slice(0, 200)}`);
     }
 
     const json = await res.json();
-    const raw = json.choices?.[0]?.message?.content ?? "{}";
+    const raw = json.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
     const cleaned = raw.replace(/```json\n?|\n?```/g, "").trim();
     const updates = JSON.parse(cleaned);
 

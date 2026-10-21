@@ -25,7 +25,6 @@ import { Route as DocumentAnalyzerRouteImport } from './routes/document-analyzer
 import { Route as GetAlertsRouteImport } from './routes/get-alerts'
 import { Route as JobsRouteImport } from './routes/jobs'
 import { Route as MandatesRouteImport } from './routes/mandates'
-import { Route as McpRouteImport } from './routes/mcp'
 import { Route as MyResultsRouteImport } from './routes/my-results'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProfileRouteImport } from './routes/profile'
@@ -34,8 +33,6 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TimelineRouteImport } from './routes/timeline'
 import { Route as VideosRouteImport } from './routes/videos'
-import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
-import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as AboutIndexRouteImport } from './routes/about.index'
 import { Route as AboutMissionVisionRouteImport } from './routes/about.mission-vision'
 import { Route as AboutTeamRouteImport } from './routes/about.team'
@@ -47,20 +44,19 @@ import { Route as ApiDocumentHistoryItemRouteImport } from './routes/api/documen
 import { Route as AssistantThreadIdRouteImport } from './routes/assistant.$threadId'
 import { Route as CivantaOptimizerRouteImport } from './routes/civanta_.optimizer'
 import { Route as CountriesSlugRouteImport } from './routes/countries.$slug'
-import { Route as SettingsLinkedinRouteImport } from './routes/settings.linkedin'
 import { Route as SupplyIndexRouteImport } from './routes/supply.index'
 import { Route as SupplyPanelRouteImport } from './routes/supply.$panel'
-import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
-import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
+import { Route as ApiAuthSessionRouteImport } from './routes/api/auth/session'
+import { Route as ApiAuthSignInRouteImport } from './routes/api/auth/sign-in'
+import { Route as ApiAuthSignOutRouteImport } from './routes/api/auth/sign-out'
+import { Route as ApiAuthSignUpRouteImport } from './routes/api/auth/sign-up'
 import { Route as ApiPublicDailyFlyerEmailRouteImport } from './routes/api/public/daily-flyer-email'
-import { Route as ApiPublicDailyGeminiFlyerRouteImport } from './routes/api/public/daily-gemini-flyer'
-import { Route as ApiPublicDailyLinkedinDraftRouteImport } from './routes/api/public/daily-linkedin-draft'
 import { Route as ApiPublicDailyTrafficEmailRouteImport } from './routes/api/public/daily-traffic-email'
 import { Route as ApiPublicFlyerImageRouteImport } from './routes/api/public/flyer-image'
 import { Route as ApiPublicIngestPolicyRouteImport } from './routes/api/public/ingest-policy'
 import { Route as ApiPublicIngestSupplyRouteImport } from './routes/api/public/ingest-supply'
 import { Route as ApiPublicInstantBriefAlertsRouteImport } from './routes/api/public/instant-brief-alerts'
-import { Route as ApiPublicLinkedinPublishRouteImport } from './routes/api/public/linkedin-publish'
 import { Route as ApiPublicPolicyAlertDigestRouteImport } from './routes/api/public/policy-alert-digest'
 import { Route as ApiPublicRefreshStaleSupplyRouteImport } from './routes/api/public/refresh-stale-supply'
 import { Route as ApiPublicScheduledJobsRouteImport } from './routes/api/public/scheduled-jobs'
@@ -68,8 +64,6 @@ import { Route as ApiPublicSeedCountryDataRouteImport } from './routes/api/publi
 import { Route as CountriesSlugIndexRouteImport } from './routes/countries.$slug.index'
 import { Route as CountriesSlugMandatesRouteImport } from './routes/countries.$slug.mandates'
 import { Route as CountriesSlugUpdatesRouteImport } from './routes/countries.$slug.updates'
-import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
-import { Route as ApiPublicLinkedinOauthCallbackRouteImport } from './routes/api/public/linkedin/oauth/callback'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -151,11 +145,6 @@ const MandatesRoute = MandatesRouteImport.update({
   path: '/mandates',
   getParentRoute: () => rootRouteImport,
 } as any)
-const McpRoute = McpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const MyResultsRoute = MyResultsRouteImport.update({
   id: '/my-results',
   path: '/my-results',
@@ -196,18 +185,6 @@ const VideosRoute = VideosRouteImport.update({
   path: '/videos',
   getParentRoute: () => rootRouteImport,
 } as any)
-const Char91DotmcpChar93ListToolsRoute =
-  Char91DotmcpChar93ListToolsRouteImport.update({
-    id: '/.mcp/list-tools',
-    path: '/.mcp/list-tools',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const Char91DotwellKnownChar93OauthProtectedResourceRoute =
-  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
-    id: '/.well-known/oauth-protected-resource',
-    path: '/.well-known/oauth-protected-resource',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const AboutIndexRoute = AboutIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -263,11 +240,6 @@ const CountriesSlugRoute = CountriesSlugRouteImport.update({
   path: '/countries/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SettingsLinkedinRoute = SettingsLinkedinRouteImport.update({
-  id: '/settings/linkedin',
-  path: '/settings/linkedin',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SupplyIndexRoute = SupplyIndexRouteImport.update({
   id: '/supply/',
   path: '/supply/',
@@ -278,33 +250,35 @@ const SupplyPanelRoute = SupplyPanelRouteImport.update({
   path: '/supply/$panel',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
-  id: '/.lovable/oauth/consent',
-  path: '/.lovable/oauth/consent',
+const ApiAuthCallbackRoute = ApiAuthCallbackRouteImport.update({
+  id: '/api/auth/callback',
+  path: '/api/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
-const Char91DotmcpChar93InvokeToolToolRoute =
-  Char91DotmcpChar93InvokeToolToolRouteImport.update({
-    id: '/.mcp/invoke-tool/$tool',
-    path: '/.mcp/invoke-tool/$tool',
-    getParentRoute: () => rootRouteImport,
-  } as any)
+const ApiAuthSessionRoute = ApiAuthSessionRouteImport.update({
+  id: '/api/auth/session',
+  path: '/api/auth/session',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthSignInRoute = ApiAuthSignInRouteImport.update({
+  id: '/api/auth/sign-in',
+  path: '/api/auth/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthSignOutRoute = ApiAuthSignOutRouteImport.update({
+  id: '/api/auth/sign-out',
+  path: '/api/auth/sign-out',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthSignUpRoute = ApiAuthSignUpRouteImport.update({
+  id: '/api/auth/sign-up',
+  path: '/api/auth/sign-up',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicDailyFlyerEmailRoute =
   ApiPublicDailyFlyerEmailRouteImport.update({
     id: '/api/public/daily-flyer-email',
     path: '/api/public/daily-flyer-email',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicDailyGeminiFlyerRoute =
-  ApiPublicDailyGeminiFlyerRouteImport.update({
-    id: '/api/public/daily-gemini-flyer',
-    path: '/api/public/daily-gemini-flyer',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicDailyLinkedinDraftRoute =
-  ApiPublicDailyLinkedinDraftRouteImport.update({
-    id: '/api/public/daily-linkedin-draft',
-    path: '/api/public/daily-linkedin-draft',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicDailyTrafficEmailRoute =
@@ -332,12 +306,6 @@ const ApiPublicInstantBriefAlertsRoute =
   ApiPublicInstantBriefAlertsRouteImport.update({
     id: '/api/public/instant-brief-alerts',
     path: '/api/public/instant-brief-alerts',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicLinkedinPublishRoute =
-  ApiPublicLinkedinPublishRouteImport.update({
-    id: '/api/public/linkedin-publish',
-    path: '/api/public/linkedin-publish',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicPolicyAlertDigestRoute =
@@ -378,18 +346,6 @@ const CountriesSlugUpdatesRoute = CountriesSlugUpdatesRouteImport.update({
   path: '/updates',
   getParentRoute: () => CountriesSlugRoute,
 } as any)
-const LovableEmailTransactionalPreviewRoute =
-  LovableEmailTransactionalPreviewRouteImport.update({
-    id: '/lovable/email/transactional/preview',
-    path: '/lovable/email/transactional/preview',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicLinkedinOauthCallbackRoute =
-  ApiPublicLinkedinOauthCallbackRouteImport.update({
-    id: '/api/public/linkedin/oauth/callback',
-    path: '/api/public/linkedin/oauth/callback',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -408,7 +364,6 @@ export interface FileRoutesByFullPath {
   '/get-alerts': typeof GetAlertsRoute
   '/jobs': typeof JobsRoute
   '/mandates': typeof MandatesRoute
-  '/mcp': typeof McpRoute
   '/my-results': typeof MyResultsRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
@@ -417,8 +372,6 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/timeline': typeof TimelineRoute
   '/videos': typeof VideosRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/about/mission-vision': typeof AboutMissionVisionRoute
   '/about/team': typeof AboutTeamRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
@@ -429,21 +382,20 @@ export interface FileRoutesByFullPath {
   '/assistant/$threadId': typeof AssistantThreadIdRoute
   '/civanta/optimizer': typeof CivantaOptimizerRoute
   '/countries/$slug': typeof CountriesSlugRouteWithChildren
-  '/settings/linkedin': typeof SettingsLinkedinRoute
   '/supply/$panel': typeof SupplyPanelRoute
   '/about/': typeof AboutIndexRoute
   '/supply/': typeof SupplyIndexRoute
-  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/api/auth/callback': typeof ApiAuthCallbackRoute
+  '/api/auth/session': typeof ApiAuthSessionRoute
+  '/api/auth/sign-in': typeof ApiAuthSignInRoute
+  '/api/auth/sign-out': typeof ApiAuthSignOutRoute
+  '/api/auth/sign-up': typeof ApiAuthSignUpRoute
   '/api/public/daily-flyer-email': typeof ApiPublicDailyFlyerEmailRoute
-  '/api/public/daily-gemini-flyer': typeof ApiPublicDailyGeminiFlyerRoute
-  '/api/public/daily-linkedin-draft': typeof ApiPublicDailyLinkedinDraftRoute
   '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
   '/api/public/flyer-image': typeof ApiPublicFlyerImageRoute
   '/api/public/ingest-policy': typeof ApiPublicIngestPolicyRoute
   '/api/public/ingest-supply': typeof ApiPublicIngestSupplyRoute
   '/api/public/instant-brief-alerts': typeof ApiPublicInstantBriefAlertsRoute
-  '/api/public/linkedin-publish': typeof ApiPublicLinkedinPublishRoute
   '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
   '/api/public/refresh-stale-supply': typeof ApiPublicRefreshStaleSupplyRoute
   '/api/public/scheduled-jobs': typeof ApiPublicScheduledJobsRoute
@@ -451,8 +403,6 @@ export interface FileRoutesByFullPath {
   '/countries/$slug/mandates': typeof CountriesSlugMandatesRoute
   '/countries/$slug/updates': typeof CountriesSlugUpdatesRoute
   '/countries/$slug/': typeof CountriesSlugIndexRoute
-  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
-  '/api/public/linkedin/oauth/callback': typeof ApiPublicLinkedinOauthCallbackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -470,7 +420,6 @@ export interface FileRoutesByTo {
   '/get-alerts': typeof GetAlertsRoute
   '/jobs': typeof JobsRoute
   '/mandates': typeof MandatesRoute
-  '/mcp': typeof McpRoute
   '/my-results': typeof MyResultsRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
@@ -479,8 +428,6 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/timeline': typeof TimelineRoute
   '/videos': typeof VideosRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/about/mission-vision': typeof AboutMissionVisionRoute
   '/about/team': typeof AboutTeamRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
@@ -490,21 +437,20 @@ export interface FileRoutesByTo {
   '/api/document-history-item': typeof ApiDocumentHistoryItemRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
   '/civanta/optimizer': typeof CivantaOptimizerRoute
-  '/settings/linkedin': typeof SettingsLinkedinRoute
   '/supply/$panel': typeof SupplyPanelRoute
   '/about': typeof AboutIndexRoute
   '/supply': typeof SupplyIndexRoute
-  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/api/auth/callback': typeof ApiAuthCallbackRoute
+  '/api/auth/session': typeof ApiAuthSessionRoute
+  '/api/auth/sign-in': typeof ApiAuthSignInRoute
+  '/api/auth/sign-out': typeof ApiAuthSignOutRoute
+  '/api/auth/sign-up': typeof ApiAuthSignUpRoute
   '/api/public/daily-flyer-email': typeof ApiPublicDailyFlyerEmailRoute
-  '/api/public/daily-gemini-flyer': typeof ApiPublicDailyGeminiFlyerRoute
-  '/api/public/daily-linkedin-draft': typeof ApiPublicDailyLinkedinDraftRoute
   '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
   '/api/public/flyer-image': typeof ApiPublicFlyerImageRoute
   '/api/public/ingest-policy': typeof ApiPublicIngestPolicyRoute
   '/api/public/ingest-supply': typeof ApiPublicIngestSupplyRoute
   '/api/public/instant-brief-alerts': typeof ApiPublicInstantBriefAlertsRoute
-  '/api/public/linkedin-publish': typeof ApiPublicLinkedinPublishRoute
   '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
   '/api/public/refresh-stale-supply': typeof ApiPublicRefreshStaleSupplyRoute
   '/api/public/scheduled-jobs': typeof ApiPublicScheduledJobsRoute
@@ -512,8 +458,6 @@ export interface FileRoutesByTo {
   '/countries/$slug/mandates': typeof CountriesSlugMandatesRoute
   '/countries/$slug/updates': typeof CountriesSlugUpdatesRoute
   '/countries/$slug': typeof CountriesSlugIndexRoute
-  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
-  '/api/public/linkedin/oauth/callback': typeof ApiPublicLinkedinOauthCallbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -533,7 +477,6 @@ export interface FileRoutesById {
   '/get-alerts': typeof GetAlertsRoute
   '/jobs': typeof JobsRoute
   '/mandates': typeof MandatesRoute
-  '/mcp': typeof McpRoute
   '/my-results': typeof MyResultsRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
@@ -542,8 +485,6 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/timeline': typeof TimelineRoute
   '/videos': typeof VideosRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/about/mission-vision': typeof AboutMissionVisionRoute
   '/about/team': typeof AboutTeamRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
@@ -554,21 +495,20 @@ export interface FileRoutesById {
   '/assistant/$threadId': typeof AssistantThreadIdRoute
   '/civanta_/optimizer': typeof CivantaOptimizerRoute
   '/countries/$slug': typeof CountriesSlugRouteWithChildren
-  '/settings/linkedin': typeof SettingsLinkedinRoute
   '/supply/$panel': typeof SupplyPanelRoute
   '/about/': typeof AboutIndexRoute
   '/supply/': typeof SupplyIndexRoute
-  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/api/auth/callback': typeof ApiAuthCallbackRoute
+  '/api/auth/session': typeof ApiAuthSessionRoute
+  '/api/auth/sign-in': typeof ApiAuthSignInRoute
+  '/api/auth/sign-out': typeof ApiAuthSignOutRoute
+  '/api/auth/sign-up': typeof ApiAuthSignUpRoute
   '/api/public/daily-flyer-email': typeof ApiPublicDailyFlyerEmailRoute
-  '/api/public/daily-gemini-flyer': typeof ApiPublicDailyGeminiFlyerRoute
-  '/api/public/daily-linkedin-draft': typeof ApiPublicDailyLinkedinDraftRoute
   '/api/public/daily-traffic-email': typeof ApiPublicDailyTrafficEmailRoute
   '/api/public/flyer-image': typeof ApiPublicFlyerImageRoute
   '/api/public/ingest-policy': typeof ApiPublicIngestPolicyRoute
   '/api/public/ingest-supply': typeof ApiPublicIngestSupplyRoute
   '/api/public/instant-brief-alerts': typeof ApiPublicInstantBriefAlertsRoute
-  '/api/public/linkedin-publish': typeof ApiPublicLinkedinPublishRoute
   '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
   '/api/public/refresh-stale-supply': typeof ApiPublicRefreshStaleSupplyRoute
   '/api/public/scheduled-jobs': typeof ApiPublicScheduledJobsRoute
@@ -576,8 +516,6 @@ export interface FileRoutesById {
   '/countries/$slug/mandates': typeof CountriesSlugMandatesRoute
   '/countries/$slug/updates': typeof CountriesSlugUpdatesRoute
   '/countries/$slug/': typeof CountriesSlugIndexRoute
-  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
-  '/api/public/linkedin/oauth/callback': typeof ApiPublicLinkedinOauthCallbackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -598,7 +536,6 @@ export interface FileRouteTypes {
     | '/get-alerts'
     | '/jobs'
     | '/mandates'
-    | '/mcp'
     | '/my-results'
     | '/privacy'
     | '/profile'
@@ -607,8 +544,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/timeline'
     | '/videos'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
     | '/about/mission-vision'
     | '/about/team'
     | '/alerts/confirm'
@@ -619,21 +554,20 @@ export interface FileRouteTypes {
     | '/assistant/$threadId'
     | '/civanta/optimizer'
     | '/countries/$slug'
-    | '/settings/linkedin'
     | '/supply/$panel'
     | '/about/'
     | '/supply/'
-    | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
+    | '/api/auth/callback'
+    | '/api/auth/session'
+    | '/api/auth/sign-in'
+    | '/api/auth/sign-out'
+    | '/api/auth/sign-up'
     | '/api/public/daily-flyer-email'
-    | '/api/public/daily-gemini-flyer'
-    | '/api/public/daily-linkedin-draft'
     | '/api/public/daily-traffic-email'
     | '/api/public/flyer-image'
     | '/api/public/ingest-policy'
     | '/api/public/ingest-supply'
     | '/api/public/instant-brief-alerts'
-    | '/api/public/linkedin-publish'
     | '/api/public/policy-alert-digest'
     | '/api/public/refresh-stale-supply'
     | '/api/public/scheduled-jobs'
@@ -641,8 +575,6 @@ export interface FileRouteTypes {
     | '/countries/$slug/mandates'
     | '/countries/$slug/updates'
     | '/countries/$slug/'
-    | '/lovable/email/transactional/preview'
-    | '/api/public/linkedin/oauth/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -660,7 +592,6 @@ export interface FileRouteTypes {
     | '/get-alerts'
     | '/jobs'
     | '/mandates'
-    | '/mcp'
     | '/my-results'
     | '/privacy'
     | '/profile'
@@ -669,8 +600,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/timeline'
     | '/videos'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
     | '/about/mission-vision'
     | '/about/team'
     | '/alerts/confirm'
@@ -680,21 +609,20 @@ export interface FileRouteTypes {
     | '/api/document-history-item'
     | '/assistant/$threadId'
     | '/civanta/optimizer'
-    | '/settings/linkedin'
     | '/supply/$panel'
     | '/about'
     | '/supply'
-    | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
+    | '/api/auth/callback'
+    | '/api/auth/session'
+    | '/api/auth/sign-in'
+    | '/api/auth/sign-out'
+    | '/api/auth/sign-up'
     | '/api/public/daily-flyer-email'
-    | '/api/public/daily-gemini-flyer'
-    | '/api/public/daily-linkedin-draft'
     | '/api/public/daily-traffic-email'
     | '/api/public/flyer-image'
     | '/api/public/ingest-policy'
     | '/api/public/ingest-supply'
     | '/api/public/instant-brief-alerts'
-    | '/api/public/linkedin-publish'
     | '/api/public/policy-alert-digest'
     | '/api/public/refresh-stale-supply'
     | '/api/public/scheduled-jobs'
@@ -702,8 +630,6 @@ export interface FileRouteTypes {
     | '/countries/$slug/mandates'
     | '/countries/$slug/updates'
     | '/countries/$slug'
-    | '/lovable/email/transactional/preview'
-    | '/api/public/linkedin/oauth/callback'
   id:
     | '__root__'
     | '/'
@@ -722,7 +648,6 @@ export interface FileRouteTypes {
     | '/get-alerts'
     | '/jobs'
     | '/mandates'
-    | '/mcp'
     | '/my-results'
     | '/privacy'
     | '/profile'
@@ -731,8 +656,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/timeline'
     | '/videos'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
     | '/about/mission-vision'
     | '/about/team'
     | '/alerts/confirm'
@@ -743,21 +666,20 @@ export interface FileRouteTypes {
     | '/assistant/$threadId'
     | '/civanta_/optimizer'
     | '/countries/$slug'
-    | '/settings/linkedin'
     | '/supply/$panel'
     | '/about/'
     | '/supply/'
-    | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
+    | '/api/auth/callback'
+    | '/api/auth/session'
+    | '/api/auth/sign-in'
+    | '/api/auth/sign-out'
+    | '/api/auth/sign-up'
     | '/api/public/daily-flyer-email'
-    | '/api/public/daily-gemini-flyer'
-    | '/api/public/daily-linkedin-draft'
     | '/api/public/daily-traffic-email'
     | '/api/public/flyer-image'
     | '/api/public/ingest-policy'
     | '/api/public/ingest-supply'
     | '/api/public/instant-brief-alerts'
-    | '/api/public/linkedin-publish'
     | '/api/public/policy-alert-digest'
     | '/api/public/refresh-stale-supply'
     | '/api/public/scheduled-jobs'
@@ -765,8 +687,6 @@ export interface FileRouteTypes {
     | '/countries/$slug/mandates'
     | '/countries/$slug/updates'
     | '/countries/$slug/'
-    | '/lovable/email/transactional/preview'
-    | '/api/public/linkedin/oauth/callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -786,7 +706,6 @@ export interface RootRouteChildren {
   GetAlertsRoute: typeof GetAlertsRoute
   JobsRoute: typeof JobsRoute
   MandatesRoute: typeof MandatesRoute
-  McpRoute: typeof McpRoute
   MyResultsRoute: typeof MyResultsRoute
   PrivacyRoute: typeof PrivacyRoute
   ProfileRoute: typeof ProfileRoute
@@ -795,8 +714,6 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   TimelineRoute: typeof TimelineRoute
   VideosRoute: typeof VideosRoute
-  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
-  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   AlertsConfirmRoute: typeof AlertsConfirmRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiDocumentAnalyzeRoute: typeof ApiDocumentAnalyzeRoute
@@ -804,26 +721,23 @@ export interface RootRouteChildren {
   ApiDocumentHistoryItemRoute: typeof ApiDocumentHistoryItemRoute
   CivantaOptimizerRoute: typeof CivantaOptimizerRoute
   CountriesSlugRoute: typeof CountriesSlugRouteWithChildren
-  SettingsLinkedinRoute: typeof SettingsLinkedinRoute
   SupplyPanelRoute: typeof SupplyPanelRoute
   SupplyIndexRoute: typeof SupplyIndexRoute
-  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
-  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  ApiAuthCallbackRoute: typeof ApiAuthCallbackRoute
+  ApiAuthSessionRoute: typeof ApiAuthSessionRoute
+  ApiAuthSignInRoute: typeof ApiAuthSignInRoute
+  ApiAuthSignOutRoute: typeof ApiAuthSignOutRoute
+  ApiAuthSignUpRoute: typeof ApiAuthSignUpRoute
   ApiPublicDailyFlyerEmailRoute: typeof ApiPublicDailyFlyerEmailRoute
-  ApiPublicDailyGeminiFlyerRoute: typeof ApiPublicDailyGeminiFlyerRoute
-  ApiPublicDailyLinkedinDraftRoute: typeof ApiPublicDailyLinkedinDraftRoute
   ApiPublicDailyTrafficEmailRoute: typeof ApiPublicDailyTrafficEmailRoute
   ApiPublicFlyerImageRoute: typeof ApiPublicFlyerImageRoute
   ApiPublicIngestPolicyRoute: typeof ApiPublicIngestPolicyRoute
   ApiPublicIngestSupplyRoute: typeof ApiPublicIngestSupplyRoute
   ApiPublicInstantBriefAlertsRoute: typeof ApiPublicInstantBriefAlertsRoute
-  ApiPublicLinkedinPublishRoute: typeof ApiPublicLinkedinPublishRoute
   ApiPublicPolicyAlertDigestRoute: typeof ApiPublicPolicyAlertDigestRoute
   ApiPublicRefreshStaleSupplyRoute: typeof ApiPublicRefreshStaleSupplyRoute
   ApiPublicScheduledJobsRoute: typeof ApiPublicScheduledJobsRoute
   ApiPublicSeedCountryDataRoute: typeof ApiPublicSeedCountryDataRoute
-  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
-  ApiPublicLinkedinOauthCallbackRoute: typeof ApiPublicLinkedinOauthCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -940,13 +854,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MandatesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/mcp': {
-      id: '/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof McpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/my-results': {
       id: '/my-results'
       path: '/my-results'
@@ -1001,20 +908,6 @@ declare module '@tanstack/react-router' {
       path: '/videos'
       fullPath: '/videos'
       preLoaderRoute: typeof VideosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.mcp/list-tools': {
-      id: '/.mcp/list-tools'
-      path: '/.mcp/list-tools'
-      fullPath: '/.mcp/list-tools'
-      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.well-known/oauth-protected-resource': {
-      id: '/.well-known/oauth-protected-resource'
-      path: '/.well-known/oauth-protected-resource'
-      fullPath: '/.well-known/oauth-protected-resource'
-      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about/': {
@@ -1094,13 +987,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CountriesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/settings/linkedin': {
-      id: '/settings/linkedin'
-      path: '/settings/linkedin'
-      fullPath: '/settings/linkedin'
-      preLoaderRoute: typeof SettingsLinkedinRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/supply/': {
       id: '/supply/'
       path: '/supply'
@@ -1115,18 +1001,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SupplyPanelRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/.lovable/oauth/consent': {
-      id: '/.lovable/oauth/consent'
-      path: '/.lovable/oauth/consent'
-      fullPath: '/.lovable/oauth/consent'
-      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+    '/api/auth/callback': {
+      id: '/api/auth/callback'
+      path: '/api/auth/callback'
+      fullPath: '/api/auth/callback'
+      preLoaderRoute: typeof ApiAuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/.mcp/invoke-tool/$tool': {
-      id: '/.mcp/invoke-tool/$tool'
-      path: '/.mcp/invoke-tool/$tool'
-      fullPath: '/.mcp/invoke-tool/$tool'
-      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
+    '/api/auth/session': {
+      id: '/api/auth/session'
+      path: '/api/auth/session'
+      fullPath: '/api/auth/session'
+      preLoaderRoute: typeof ApiAuthSessionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/sign-in': {
+      id: '/api/auth/sign-in'
+      path: '/api/auth/sign-in'
+      fullPath: '/api/auth/sign-in'
+      preLoaderRoute: typeof ApiAuthSignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/sign-out': {
+      id: '/api/auth/sign-out'
+      path: '/api/auth/sign-out'
+      fullPath: '/api/auth/sign-out'
+      preLoaderRoute: typeof ApiAuthSignOutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/sign-up': {
+      id: '/api/auth/sign-up'
+      path: '/api/auth/sign-up'
+      fullPath: '/api/auth/sign-up'
+      preLoaderRoute: typeof ApiAuthSignUpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/daily-flyer-email': {
@@ -1134,20 +1041,6 @@ declare module '@tanstack/react-router' {
       path: '/api/public/daily-flyer-email'
       fullPath: '/api/public/daily-flyer-email'
       preLoaderRoute: typeof ApiPublicDailyFlyerEmailRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/daily-gemini-flyer': {
-      id: '/api/public/daily-gemini-flyer'
-      path: '/api/public/daily-gemini-flyer'
-      fullPath: '/api/public/daily-gemini-flyer'
-      preLoaderRoute: typeof ApiPublicDailyGeminiFlyerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/daily-linkedin-draft': {
-      id: '/api/public/daily-linkedin-draft'
-      path: '/api/public/daily-linkedin-draft'
-      fullPath: '/api/public/daily-linkedin-draft'
-      preLoaderRoute: typeof ApiPublicDailyLinkedinDraftRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/daily-traffic-email': {
@@ -1183,13 +1076,6 @@ declare module '@tanstack/react-router' {
       path: '/api/public/instant-brief-alerts'
       fullPath: '/api/public/instant-brief-alerts'
       preLoaderRoute: typeof ApiPublicInstantBriefAlertsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/linkedin-publish': {
-      id: '/api/public/linkedin-publish'
-      path: '/api/public/linkedin-publish'
-      fullPath: '/api/public/linkedin-publish'
-      preLoaderRoute: typeof ApiPublicLinkedinPublishRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/policy-alert-digest': {
@@ -1240,20 +1126,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/countries/$slug/updates'
       preLoaderRoute: typeof CountriesSlugUpdatesRouteImport
       parentRoute: typeof CountriesSlugRoute
-    }
-    '/lovable/email/transactional/preview': {
-      id: '/lovable/email/transactional/preview'
-      path: '/lovable/email/transactional/preview'
-      fullPath: '/lovable/email/transactional/preview'
-      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/linkedin/oauth/callback': {
-      id: '/api/public/linkedin/oauth/callback'
-      path: '/api/public/linkedin/oauth/callback'
-      fullPath: '/api/public/linkedin/oauth/callback'
-      preLoaderRoute: typeof ApiPublicLinkedinOauthCallbackRouteImport
-      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -1317,7 +1189,6 @@ const rootRouteChildren: RootRouteChildren = {
   GetAlertsRoute: GetAlertsRoute,
   JobsRoute: JobsRoute,
   MandatesRoute: MandatesRoute,
-  McpRoute: McpRoute,
   MyResultsRoute: MyResultsRoute,
   PrivacyRoute: PrivacyRoute,
   ProfileRoute: ProfileRoute,
@@ -1326,9 +1197,6 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   TimelineRoute: TimelineRoute,
   VideosRoute: VideosRoute,
-  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
-  Char91DotwellKnownChar93OauthProtectedResourceRoute:
-    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   AlertsConfirmRoute: AlertsConfirmRoute,
   ApiChatRoute: ApiChatRoute,
   ApiDocumentAnalyzeRoute: ApiDocumentAnalyzeRoute,
@@ -1336,26 +1204,23 @@ const rootRouteChildren: RootRouteChildren = {
   ApiDocumentHistoryItemRoute: ApiDocumentHistoryItemRoute,
   CivantaOptimizerRoute: CivantaOptimizerRoute,
   CountriesSlugRoute: CountriesSlugRouteWithChildren,
-  SettingsLinkedinRoute: SettingsLinkedinRoute,
   SupplyPanelRoute: SupplyPanelRoute,
   SupplyIndexRoute: SupplyIndexRoute,
-  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
-  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  ApiAuthCallbackRoute: ApiAuthCallbackRoute,
+  ApiAuthSessionRoute: ApiAuthSessionRoute,
+  ApiAuthSignInRoute: ApiAuthSignInRoute,
+  ApiAuthSignOutRoute: ApiAuthSignOutRoute,
+  ApiAuthSignUpRoute: ApiAuthSignUpRoute,
   ApiPublicDailyFlyerEmailRoute: ApiPublicDailyFlyerEmailRoute,
-  ApiPublicDailyGeminiFlyerRoute: ApiPublicDailyGeminiFlyerRoute,
-  ApiPublicDailyLinkedinDraftRoute: ApiPublicDailyLinkedinDraftRoute,
   ApiPublicDailyTrafficEmailRoute: ApiPublicDailyTrafficEmailRoute,
   ApiPublicFlyerImageRoute: ApiPublicFlyerImageRoute,
   ApiPublicIngestPolicyRoute: ApiPublicIngestPolicyRoute,
   ApiPublicIngestSupplyRoute: ApiPublicIngestSupplyRoute,
   ApiPublicInstantBriefAlertsRoute: ApiPublicInstantBriefAlertsRoute,
-  ApiPublicLinkedinPublishRoute: ApiPublicLinkedinPublishRoute,
   ApiPublicPolicyAlertDigestRoute: ApiPublicPolicyAlertDigestRoute,
   ApiPublicRefreshStaleSupplyRoute: ApiPublicRefreshStaleSupplyRoute,
   ApiPublicScheduledJobsRoute: ApiPublicScheduledJobsRoute,
   ApiPublicSeedCountryDataRoute: ApiPublicSeedCountryDataRoute,
-  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
-  ApiPublicLinkedinOauthCallbackRoute: ApiPublicLinkedinOauthCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

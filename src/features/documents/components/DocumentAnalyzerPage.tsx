@@ -18,7 +18,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { SignInPrompt } from "@/features/auth/components/SignInPrompt";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import type { DocumentAnalysis } from "@/features/documents/contracts";
-import { supabase } from "@/integrations/supabase/client";
 
 type HistoryEntry = {
   id: string;
@@ -71,11 +70,8 @@ export function DocumentAnalyzerPage() {
     if (!signedIn) return;
     setHistoryLoading(true);
     try {
-      const { data } = await supabase.auth.getSession();
-      const token = data.session?.access_token;
-      if (!token) return;
       const response = await fetch("/api/document-history", {
-        headers: { authorization: `Bearer ${token}` },
+        credentials: "same-origin",
       });
       if (response.ok) {
         setHistory(await response.json());
@@ -95,11 +91,8 @@ export function DocumentAnalyzerPage() {
     setLoadingHistoryId(entry.id);
     setError("");
     try {
-      const { data } = await supabase.auth.getSession();
-      const token = data.session?.access_token;
-      if (!token) throw new Error("Sign in to view history.");
       const response = await fetch(`/api/document-history-item?id=${encodeURIComponent(entry.id)}`, {
-        headers: { authorization: `Bearer ${token}` },
+        credentials: "same-origin",
       });
       if (!response.ok) throw new Error("Failed to load analysis.");
       const result = (await response.json()) as DocumentAnalysis;
@@ -118,12 +111,9 @@ export function DocumentAnalyzerPage() {
   const deleteHistoryItem = async (id: string) => {
     setDeletingId(id);
     try {
-      const { data } = await supabase.auth.getSession();
-      const token = data.session?.access_token;
-      if (!token) return;
       const response = await fetch(`/api/document-history?id=${encodeURIComponent(id)}`, {
         method: "DELETE",
-        headers: { authorization: `Bearer ${token}` },
+        credentials: "same-origin",
       });
       if (response.ok) {
         setHistory((prev) => prev.filter((item) => item.id !== id));
@@ -162,16 +152,12 @@ export function DocumentAnalyzerPage() {
     setError("");
     setAnalysis(null);
     try {
-      const { data } = await supabase.auth.getSession();
-      const token = data.session?.access_token;
-      if (!token) throw new Error("Sign in to analyze documents.");
-
       const form = new FormData();
       form.set("file", file);
       form.set("query", query.trim());
       const response = await fetch("/api/document-analyze", {
         method: "POST",
-        headers: { authorization: `Bearer ${token}` },
+        credentials: "same-origin",
         body: form,
       });
       const contentType = response.headers.get("content-type") ?? "";
