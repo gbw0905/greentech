@@ -17,7 +17,7 @@ import { CountryFlag } from "./CountryFlag";
 import { VideoLibrary } from "@/features/videos/components/VideoLibrary";
 import { LiveMediaFeed } from "@/features/videos/components/LiveMediaFeed";
 import { MandateDetailCard } from "./MandateDetailCard";
-import { mandatesForCountry, governmentSitesForCountry } from "@/features/countries/mandates";
+import { useCountryMandates, useGovernmentSites } from "../hooks/useCountryData";
 import { DateRangeFilter, EMPTY_RANGE, withinRange } from "@/components/DateRangeFilter";
 
 type Tab = "profile" | "updates" | "videos";
@@ -67,8 +67,8 @@ export function CountryFocusPanel({
   }, [updates, country, fuels, profile, range]);
 
   const status = profile ? policyStatusFor(profile) : null;
-  const trackedMandates = profile ? mandatesForCountry(profile.slug) : [];
-  const govSites = profile ? governmentSitesForCountry(profile.slug) : [];
+  const { data: trackedMandates = [] } = useCountryMandates(profile?.slug ?? "");
+  const { data: govSites = [] } = useGovernmentSites(profile?.slug ?? "");
 
   if (!profile) {
     return (

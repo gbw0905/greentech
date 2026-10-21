@@ -21,7 +21,23 @@ export async function handleDocumentAnalysis(request: Request): Promise<Response
     }
 
     const { analyzeDocument } = await import("@/features/documents/server/analyze-document.server");
-    return Response.json(await analyzeDocument(file, query));
+    const result = await analyzeDocument(file, query);
+
+    // Persist the analysis for the user's history (best-effort, don't block response)
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      await supabaseAdmin.from("document_analyses").insert({
+        user_id: userId,
+        file_name: result.fileName,
+        file_type: result.fileType,
+        keywords: result.keywordsUsed,
+        analysis: JSON.parse(JSON.stringify(result)),
+      });
+    } catch (saveError) {
+      console.error("failed to save analysis history", saveError);
+    }
+
+    return Response.json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Document analysis failed.";
     const status = message.startsWith("Too many")

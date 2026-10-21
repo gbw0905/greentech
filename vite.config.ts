@@ -13,7 +13,7 @@ Object.assign(process.env, loadEnv(process.env['NODE_ENV'] || "development", pro
 
 export default defineConfig({
   nitro: {
-    preset: "vercel",
+    preset: process.env.LOCAL_PREVIEW ? "node" : "vercel",
   },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
@@ -25,5 +25,8 @@ export default defineConfig({
     // separators and rejects this otherwise valid routes directory. MCP is
     // Lovable editor tooling, not part of the application runtime.
     plugins: process.platform === "win32" ? [] : [mcpPlugin()],
+    optimizeDeps: {
+      exclude: ["@napi-rs/canvas"],
+    },
   },
 });

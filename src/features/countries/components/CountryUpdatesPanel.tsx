@@ -6,7 +6,8 @@ import { EMPTY_RANGE, withinRange } from "@/components/DateRangeFilter";
 import { feedQueryWithInitial } from "@/features/policy/feed-query";
 import type { PolicyFeed } from "@/features/policy/contracts";
 import type { CountryProfile } from "@/features/policy/taxonomy";
-import { mandatesForCountry, updateMatchesMandate } from "@/features/countries/mandates";
+import { updateMatchesMandate } from "@/features/countries/mandates";
+import { useCountryMandates } from "../hooks/useCountryData";
 
 export function CountryUpdatesPanel({
   country,
@@ -19,7 +20,7 @@ export function CountryUpdatesPanel({
   const [range, setRange] = useState(EMPTY_RANGE);
   const [category, setCategory] = useState<"all" | "market" | "policy">("all");
   const keywords = (country.updateKeywords ?? []).map((k) => k.toLowerCase());
-  const mandates = mandatesForCountry(country.slug);
+  const { data: mandates = [] } = useCountryMandates(country.slug);
   const updates = (data?.updates ?? [])
     .filter((u) => {
       if (
