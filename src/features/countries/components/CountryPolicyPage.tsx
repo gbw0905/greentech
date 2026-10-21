@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { ArrowRight, ExternalLink, FileText, Layers, Newspaper, Target } from "lucide-react";
 import type { CountryProfile } from "@/features/policy/taxonomy";
 import type { PolicyFeed } from "@/features/policy/contracts";
-import { governmentSitesForCountry, mandatesForCountry } from "@/features/countries/mandates";
+import { useCountryProfile, useCountryMandates, useGovernmentSites } from "../hooks/useCountryData";
 import { CountryProfileHeader } from "./CountryProfileHeader";
 import { CountryTrackingStrip } from "./CountryTrackingStrip";
 import { CountryUpdatesPanel } from "./CountryUpdatesPanel";
@@ -12,7 +12,7 @@ import "@/components/PageDesign.css";
 import "./CountryPolicyPage.css";
 
 export function CountryPolicyPage({
-  country,
+  country: staticCountry,
   initialFeed = null,
   focusSection = "overview",
 }: {
@@ -20,8 +20,10 @@ export function CountryPolicyPage({
   initialFeed?: PolicyFeed | null;
   focusSection?: "overview" | "mandates" | "updates";
 }) {
-  const mandates = mandatesForCountry(country.slug);
-  const sources = governmentSitesForCountry(country.slug);
+  const { data: dynamicCountry } = useCountryProfile(staticCountry.slug);
+  const country = dynamicCountry ?? staticCountry;
+  const { data: mandates = [] } = useCountryMandates(country.slug);
+  const { data: sources = [] } = useGovernmentSites(country.slug);
   const activeSection = useCountrySection(country.slug, focusSection);
   useEffect(() => {
     if (focusSection === "overview") return;

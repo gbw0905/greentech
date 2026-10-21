@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, ExternalLink, FileText, Newspaper } from "lucide-react";
-import { governmentSitesForCountry, mandatesForCountry } from "@/features/countries/mandates";
+import { useCountryMandates, useGovernmentSites } from "../hooks/useCountryData";
 import { CountryFlag } from "./CountryFlag";
 import {
   policyStatusFor,
@@ -17,8 +17,8 @@ export function CountryProfileHeader({
   section?: "overview" | "mandates" | "updates";
 }) {
   const status = policyStatusFor(country);
-  const sources = governmentSitesForCountry(country.slug);
-  const mandates = mandatesForCountry(country.slug);
+  const { data: sources = [] } = useGovernmentSites(country.slug);
+  const { data: mandates = [] } = useCountryMandates(country.slug);
   return (
     <header className="banner">
       <div className="wrap">

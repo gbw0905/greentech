@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { policyStatusFor, type CountryProfile } from "@/features/policy/taxonomy";
-import { governmentSitesForCountry, mandatesForCountry } from "@/features/countries/mandates";
+import { useCountryMandates, useGovernmentSites } from "../hooks/useCountryData";
 import { MAP_STATUS_COLORS } from "./map-presentation";
 import styles from "./CountrySummaryModal.module.css";
 
@@ -16,15 +16,16 @@ export function CountrySummaryModal({
   onRestoreFocus: () => void;
 }) {
   const status = policyStatusFor(country);
+  const { data: detailedMandates = [] } = useCountryMandates(country?.slug ?? "");
+  const { data: sources = [] } = useGovernmentSites(country?.slug ?? "");
   const fuelSummary = (pattern: RegExp) =>
     country?.mandates
       .filter((item) => pattern.test(item.label))
       .map((item) => item.value)
       .join(" · ") || "Not listed in this profile";
   const regulators = country
-    ? [...new Set(mandatesForCountry(country.slug).map((m) => m.compliance.administrator))]
+    ? [...new Set(detailedMandates.map((m) => m.compliance.administrator))]
     : [];
-  const sources = country ? governmentSitesForCountry(country.slug) : [];
 
   return (
     <Dialog open={!!country} onOpenChange={(open) => !open && onClose()}>

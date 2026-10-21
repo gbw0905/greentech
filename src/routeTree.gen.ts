@@ -42,6 +42,8 @@ import { Route as AboutTeamRouteImport } from './routes/about.team'
 import { Route as AlertsConfirmRouteImport } from './routes/alerts.confirm'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiDocumentAnalyzeRouteImport } from './routes/api/document-analyze'
+import { Route as ApiDocumentHistoryRouteImport } from './routes/api/document-history'
+import { Route as ApiDocumentHistoryItemRouteImport } from './routes/api/document-history-item'
 import { Route as AssistantThreadIdRouteImport } from './routes/assistant.$threadId'
 import { Route as CivantaOptimizerRouteImport } from './routes/civanta_.optimizer'
 import { Route as CountriesSlugRouteImport } from './routes/countries.$slug'
@@ -61,6 +63,8 @@ import { Route as ApiPublicInstantBriefAlertsRouteImport } from './routes/api/pu
 import { Route as ApiPublicLinkedinPublishRouteImport } from './routes/api/public/linkedin-publish'
 import { Route as ApiPublicPolicyAlertDigestRouteImport } from './routes/api/public/policy-alert-digest'
 import { Route as ApiPublicRefreshStaleSupplyRouteImport } from './routes/api/public/refresh-stale-supply'
+import { Route as ApiPublicScheduledJobsRouteImport } from './routes/api/public/scheduled-jobs'
+import { Route as ApiPublicSeedCountryDataRouteImport } from './routes/api/public/seed-country-data'
 import { Route as CountriesSlugIndexRouteImport } from './routes/countries.$slug.index'
 import { Route as CountriesSlugMandatesRouteImport } from './routes/countries.$slug.mandates'
 import { Route as CountriesSlugUpdatesRouteImport } from './routes/countries.$slug.updates'
@@ -234,6 +238,16 @@ const ApiDocumentAnalyzeRoute = ApiDocumentAnalyzeRouteImport.update({
   path: '/api/document-analyze',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiDocumentHistoryRoute = ApiDocumentHistoryRouteImport.update({
+  id: '/api/document-history',
+  path: '/api/document-history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDocumentHistoryItemRoute = ApiDocumentHistoryItemRouteImport.update({
+  id: '/api/document-history-item',
+  path: '/api/document-history-item',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AssistantThreadIdRoute = AssistantThreadIdRouteImport.update({
   id: '/$threadId',
   path: '/$threadId',
@@ -338,6 +352,17 @@ const ApiPublicRefreshStaleSupplyRoute =
     path: '/api/public/refresh-stale-supply',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicScheduledJobsRoute = ApiPublicScheduledJobsRouteImport.update({
+  id: '/api/public/scheduled-jobs',
+  path: '/api/public/scheduled-jobs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicSeedCountryDataRoute =
+  ApiPublicSeedCountryDataRouteImport.update({
+    id: '/api/public/seed-country-data',
+    path: '/api/public/seed-country-data',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const CountriesSlugIndexRoute = CountriesSlugIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -399,6 +424,8 @@ export interface FileRoutesByFullPath {
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/api/chat': typeof ApiChatRoute
   '/api/document-analyze': typeof ApiDocumentAnalyzeRoute
+  '/api/document-history': typeof ApiDocumentHistoryRoute
+  '/api/document-history-item': typeof ApiDocumentHistoryItemRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
   '/civanta/optimizer': typeof CivantaOptimizerRoute
   '/countries/$slug': typeof CountriesSlugRouteWithChildren
@@ -419,6 +446,8 @@ export interface FileRoutesByFullPath {
   '/api/public/linkedin-publish': typeof ApiPublicLinkedinPublishRoute
   '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
   '/api/public/refresh-stale-supply': typeof ApiPublicRefreshStaleSupplyRoute
+  '/api/public/scheduled-jobs': typeof ApiPublicScheduledJobsRoute
+  '/api/public/seed-country-data': typeof ApiPublicSeedCountryDataRoute
   '/countries/$slug/mandates': typeof CountriesSlugMandatesRoute
   '/countries/$slug/updates': typeof CountriesSlugUpdatesRoute
   '/countries/$slug/': typeof CountriesSlugIndexRoute
@@ -457,6 +486,8 @@ export interface FileRoutesByTo {
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/api/chat': typeof ApiChatRoute
   '/api/document-analyze': typeof ApiDocumentAnalyzeRoute
+  '/api/document-history': typeof ApiDocumentHistoryRoute
+  '/api/document-history-item': typeof ApiDocumentHistoryItemRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
   '/civanta/optimizer': typeof CivantaOptimizerRoute
   '/settings/linkedin': typeof SettingsLinkedinRoute
@@ -476,6 +507,8 @@ export interface FileRoutesByTo {
   '/api/public/linkedin-publish': typeof ApiPublicLinkedinPublishRoute
   '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
   '/api/public/refresh-stale-supply': typeof ApiPublicRefreshStaleSupplyRoute
+  '/api/public/scheduled-jobs': typeof ApiPublicScheduledJobsRoute
+  '/api/public/seed-country-data': typeof ApiPublicSeedCountryDataRoute
   '/countries/$slug/mandates': typeof CountriesSlugMandatesRoute
   '/countries/$slug/updates': typeof CountriesSlugUpdatesRoute
   '/countries/$slug': typeof CountriesSlugIndexRoute
@@ -516,6 +549,8 @@ export interface FileRoutesById {
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/api/chat': typeof ApiChatRoute
   '/api/document-analyze': typeof ApiDocumentAnalyzeRoute
+  '/api/document-history': typeof ApiDocumentHistoryRoute
+  '/api/document-history-item': typeof ApiDocumentHistoryItemRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
   '/civanta_/optimizer': typeof CivantaOptimizerRoute
   '/countries/$slug': typeof CountriesSlugRouteWithChildren
@@ -536,6 +571,8 @@ export interface FileRoutesById {
   '/api/public/linkedin-publish': typeof ApiPublicLinkedinPublishRoute
   '/api/public/policy-alert-digest': typeof ApiPublicPolicyAlertDigestRoute
   '/api/public/refresh-stale-supply': typeof ApiPublicRefreshStaleSupplyRoute
+  '/api/public/scheduled-jobs': typeof ApiPublicScheduledJobsRoute
+  '/api/public/seed-country-data': typeof ApiPublicSeedCountryDataRoute
   '/countries/$slug/mandates': typeof CountriesSlugMandatesRoute
   '/countries/$slug/updates': typeof CountriesSlugUpdatesRoute
   '/countries/$slug/': typeof CountriesSlugIndexRoute
@@ -577,6 +614,8 @@ export interface FileRouteTypes {
     | '/alerts/confirm'
     | '/api/chat'
     | '/api/document-analyze'
+    | '/api/document-history'
+    | '/api/document-history-item'
     | '/assistant/$threadId'
     | '/civanta/optimizer'
     | '/countries/$slug'
@@ -597,6 +636,8 @@ export interface FileRouteTypes {
     | '/api/public/linkedin-publish'
     | '/api/public/policy-alert-digest'
     | '/api/public/refresh-stale-supply'
+    | '/api/public/scheduled-jobs'
+    | '/api/public/seed-country-data'
     | '/countries/$slug/mandates'
     | '/countries/$slug/updates'
     | '/countries/$slug/'
@@ -635,6 +676,8 @@ export interface FileRouteTypes {
     | '/alerts/confirm'
     | '/api/chat'
     | '/api/document-analyze'
+    | '/api/document-history'
+    | '/api/document-history-item'
     | '/assistant/$threadId'
     | '/civanta/optimizer'
     | '/settings/linkedin'
@@ -654,6 +697,8 @@ export interface FileRouteTypes {
     | '/api/public/linkedin-publish'
     | '/api/public/policy-alert-digest'
     | '/api/public/refresh-stale-supply'
+    | '/api/public/scheduled-jobs'
+    | '/api/public/seed-country-data'
     | '/countries/$slug/mandates'
     | '/countries/$slug/updates'
     | '/countries/$slug'
@@ -693,6 +738,8 @@ export interface FileRouteTypes {
     | '/alerts/confirm'
     | '/api/chat'
     | '/api/document-analyze'
+    | '/api/document-history'
+    | '/api/document-history-item'
     | '/assistant/$threadId'
     | '/civanta_/optimizer'
     | '/countries/$slug'
@@ -713,6 +760,8 @@ export interface FileRouteTypes {
     | '/api/public/linkedin-publish'
     | '/api/public/policy-alert-digest'
     | '/api/public/refresh-stale-supply'
+    | '/api/public/scheduled-jobs'
+    | '/api/public/seed-country-data'
     | '/countries/$slug/mandates'
     | '/countries/$slug/updates'
     | '/countries/$slug/'
@@ -751,6 +800,8 @@ export interface RootRouteChildren {
   AlertsConfirmRoute: typeof AlertsConfirmRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiDocumentAnalyzeRoute: typeof ApiDocumentAnalyzeRoute
+  ApiDocumentHistoryRoute: typeof ApiDocumentHistoryRoute
+  ApiDocumentHistoryItemRoute: typeof ApiDocumentHistoryItemRoute
   CivantaOptimizerRoute: typeof CivantaOptimizerRoute
   CountriesSlugRoute: typeof CountriesSlugRouteWithChildren
   SettingsLinkedinRoute: typeof SettingsLinkedinRoute
@@ -769,6 +820,8 @@ export interface RootRouteChildren {
   ApiPublicLinkedinPublishRoute: typeof ApiPublicLinkedinPublishRoute
   ApiPublicPolicyAlertDigestRoute: typeof ApiPublicPolicyAlertDigestRoute
   ApiPublicRefreshStaleSupplyRoute: typeof ApiPublicRefreshStaleSupplyRoute
+  ApiPublicScheduledJobsRoute: typeof ApiPublicScheduledJobsRoute
+  ApiPublicSeedCountryDataRoute: typeof ApiPublicSeedCountryDataRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   ApiPublicLinkedinOauthCallbackRoute: typeof ApiPublicLinkedinOauthCallbackRoute
 }
@@ -1006,6 +1059,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDocumentAnalyzeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/document-history': {
+      id: '/api/document-history'
+      path: '/api/document-history'
+      fullPath: '/api/document-history'
+      preLoaderRoute: typeof ApiDocumentHistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/document-history-item': {
+      id: '/api/document-history-item'
+      path: '/api/document-history-item'
+      fullPath: '/api/document-history-item'
+      preLoaderRoute: typeof ApiDocumentHistoryItemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/assistant/$threadId': {
       id: '/assistant/$threadId'
       path: '/$threadId'
@@ -1139,6 +1206,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicRefreshStaleSupplyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/scheduled-jobs': {
+      id: '/api/public/scheduled-jobs'
+      path: '/api/public/scheduled-jobs'
+      fullPath: '/api/public/scheduled-jobs'
+      preLoaderRoute: typeof ApiPublicScheduledJobsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/seed-country-data': {
+      id: '/api/public/seed-country-data'
+      path: '/api/public/seed-country-data'
+      fullPath: '/api/public/seed-country-data'
+      preLoaderRoute: typeof ApiPublicSeedCountryDataRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/countries/$slug/': {
       id: '/countries/$slug/'
       path: '/'
@@ -1251,6 +1332,8 @@ const rootRouteChildren: RootRouteChildren = {
   AlertsConfirmRoute: AlertsConfirmRoute,
   ApiChatRoute: ApiChatRoute,
   ApiDocumentAnalyzeRoute: ApiDocumentAnalyzeRoute,
+  ApiDocumentHistoryRoute: ApiDocumentHistoryRoute,
+  ApiDocumentHistoryItemRoute: ApiDocumentHistoryItemRoute,
   CivantaOptimizerRoute: CivantaOptimizerRoute,
   CountriesSlugRoute: CountriesSlugRouteWithChildren,
   SettingsLinkedinRoute: SettingsLinkedinRoute,
@@ -1269,6 +1352,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicLinkedinPublishRoute: ApiPublicLinkedinPublishRoute,
   ApiPublicPolicyAlertDigestRoute: ApiPublicPolicyAlertDigestRoute,
   ApiPublicRefreshStaleSupplyRoute: ApiPublicRefreshStaleSupplyRoute,
+  ApiPublicScheduledJobsRoute: ApiPublicScheduledJobsRoute,
+  ApiPublicSeedCountryDataRoute: ApiPublicSeedCountryDataRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   ApiPublicLinkedinOauthCallbackRoute: ApiPublicLinkedinOauthCallbackRoute,
 }
@@ -1277,15 +1362,11 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'
-
 import type { startInstance } from './start.ts'
-
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
-
     router: Awaited<ReturnType<typeof getRouter>>
-
     config: Awaited<ReturnType<typeof startInstance.getOptions>>
   }
 }

@@ -163,6 +163,171 @@ export type Database = {
         }
         Relationships: []
       }
+      document_analyses: {
+        Row: {
+          id: string
+          user_id: string
+          file_name: string
+          file_type: string
+          keywords: string[]
+          analysis: Json
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          file_name: string
+          file_type: string
+          keywords?: string[]
+          analysis: Json
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          file_name?: string
+          file_type?: string
+          keywords?: string[]
+          analysis?: Json
+          created_at?: string
+        }
+        Relationships: []
+      }
+      country_enrichment_log: {
+        Row: {
+          id: string
+          country_slug: string
+          enrichment_type: string
+          articles_used: string[]
+          result_summary: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          country_slug: string
+          enrichment_type: string
+          articles_used?: string[]
+          result_summary?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          country_slug?: string
+          enrichment_type?: string
+          articles_used?: string[]
+          result_summary?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      country_mandates: {
+        Row: {
+          id: string
+          country_slug: string | null
+          jurisdiction: string
+          instrument: string
+          fuels: string[]
+          status: string
+          current_obligation: string
+          requirements: string[]
+          compliance: Json
+          timeline: Json
+          source_name: string | null
+          source_url: string | null
+          official_sites: Json | null
+          keywords: string[] | null
+          last_reviewed: string | null
+          ai_updated_at: string | null
+          last_enriched_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          country_slug?: string | null
+          jurisdiction: string
+          instrument: string
+          fuels?: string[]
+          status?: string
+          current_obligation: string
+          requirements?: string[]
+          compliance?: Json
+          timeline?: Json
+          source_name?: string | null
+          source_url?: string | null
+          official_sites?: Json | null
+          keywords?: string[] | null
+          last_reviewed?: string | null
+          ai_updated_at?: string | null
+          last_enriched_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          country_slug?: string | null
+          jurisdiction?: string
+          instrument?: string
+          fuels?: string[]
+          status?: string
+          current_obligation?: string
+          requirements?: string[]
+          compliance?: Json
+          timeline?: Json
+          source_name?: string | null
+          source_url?: string | null
+          official_sites?: Json | null
+          keywords?: string[] | null
+          last_reviewed?: string | null
+          ai_updated_at?: string | null
+          last_enriched_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      country_profiles: {
+        Row: {
+          id: string
+          country_slug: string
+          blurb: string | null
+          mandates: Json
+          frameworks: string[]
+          policy_status: string | null
+          ai_blurb_at: string | null
+          ai_status_at: string | null
+          last_enriched_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          country_slug: string
+          blurb?: string | null
+          mandates?: Json
+          frameworks?: string[]
+          policy_status?: string | null
+          ai_blurb_at?: string | null
+          ai_status_at?: string | null
+          last_enriched_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          country_slug?: string
+          blurb?: string | null
+          mandates?: Json
+          frameworks?: string[]
+          policy_status?: string | null
+          ai_blurb_at?: string | null
+          ai_status_at?: string | null
+          last_enriched_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ci_runs: {
         Row: {
           annual_energy_mj: number

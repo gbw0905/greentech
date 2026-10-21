@@ -3,8 +3,8 @@
   "framework": "tanstack-start",
   "crons": [
     {
-      "path": "/api/public/refresh-stale-supply",
-      "schedule": "17 0 * * *"
+      "path": "/api/public/scheduled-jobs",
+      "schedule": "17 */6 * * *"
     }
   ]
 }
