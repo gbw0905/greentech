@@ -3,6 +3,8 @@ import { useCallback, useEffect, useState } from "react";
 interface AuthUser {
   id: string;
   email?: string;
+  avatar_url?: string | null;
+  full_name?: string | null;
 }
 
 export function useAuthSession() {

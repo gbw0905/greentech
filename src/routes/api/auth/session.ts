@@ -12,9 +12,15 @@ export const Route = createFileRoute("/api/auth/session")({
           return applyToResponse(Response.json({ user: null }));
         }
 
+        const meta = data.user.user_metadata ?? {};
         return applyToResponse(
           Response.json({
-            user: { id: data.user.id, email: data.user.email },
+            user: {
+              id: data.user.id,
+              email: data.user.email,
+              avatar_url: meta.avatar_url ?? meta.picture ?? null,
+              full_name: meta.full_name ?? meta.name ?? null,
+            },
           }),
         );
       },
