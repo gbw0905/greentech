@@ -11,7 +11,6 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "@/infrastructure/telemetry/lovable-error-reporting";
 import { SiteLayout } from "@/components/SiteLayout";
 
 function NotFoundComponent() {
@@ -40,7 +39,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    console.error("Root error boundary caught:", error);
   }, [error]);
 
   return (

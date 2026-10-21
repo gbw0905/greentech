@@ -5,9 +5,7 @@ import { template as policyAlertTemplate } from "./templates/policy-alert";
 import { template as policyBriefTemplate } from "./templates/policy-brief";
 import { template as dailyFlyerTemplate } from "./templates/daily-flyer";
 import { template as chartSummaryTemplate } from "./templates/chart-summary";
-import { template as linkedinDraftTemplate } from "./templates/linkedin-draft";
 import { template as contactFormTemplate } from "./templates/contact-form";
-import { template as geminiFlyerTemplate } from "./templates/gemini-flyer";
 
 export interface TemplateEntry {
   component: ComponentType<any>;
@@ -33,7 +31,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   "policy-brief": policyBriefTemplate,
   "daily-flyer": dailyFlyerTemplate,
   "chart-summary": chartSummaryTemplate,
-  "linkedin-draft": linkedinDraftTemplate,
   "contact-form": contactFormTemplate,
-  "gemini-flyer": geminiFlyerTemplate,
 };

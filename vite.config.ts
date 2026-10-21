@@ -1,37 +1,87 @@
-// @lovable.dev/vite-tanstack-config already includes the following — do NOT add them manually
-// or the app will break with duplicate plugins:
-//   - TanStack devtools (dev-only, first), tanstackStart, viteReact, tailwindcss, tsConfigPaths,
-//     nitro (build-only using cloudflare as a default target), VITE_* env injection, @ path alias,
-//     React/TanStack dedupe, error logger plugins, and sandbox detection (port/host/strictPort).
-// You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
-import { loadEnv } from "vite";
-import { defineConfig } from "@lovable.dev/vite-tanstack-config";
-import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
+import { defineConfig, loadEnv } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+import tsConfigPaths from "vite-tsconfig-paths";
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 
-// Server routes need non-VITE_ env vars (e.g. LOVABLE_API_KEY) in process.env.
-Object.assign(process.env, loadEnv(process.env['NODE_ENV'] || "development", process.cwd(), ""));
+// Server routes need non-VITE_ env vars (e.g. GEMINI_API_KEY) in process.env.
+Object.assign(process.env, loadEnv(process.env["NODE_ENV"] || "development", process.cwd(), ""));
 
-export default defineConfig({
-  nitro: {
-    preset: process.env.LOCAL_PREVIEW ? "node" : "vercel",
-  },
-  tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
-    server: { entry: "server" },
-  },
-  vite: {
+export default defineConfig(async ({ command, mode }) => {
+  const plugins: any[] = [];
+
+  // TanStack devtools (dev only)
+  if (mode === "development") {
+    const { devtools } = await import("@tanstack/devtools-vite");
+    plugins.push(
+      devtools({
+        logging: false,
+        eventBusConfig: { enabled: false },
+        enhancedLogs: { enabled: false },
+        consolePiping: { enabled: false },
+        removeDevtoolsOnBuild: false,
+        injectSource: { enabled: true },
+      }),
+    );
+  }
+
+  plugins.push(tailwindcss());
+  plugins.push(tsConfigPaths({ projects: ["./tsconfig.json"] }));
+
+  plugins.push(
+    tanstackStart({
+      importProtection: {
+        behavior: "error",
+        client: { files: ["**/server/**"], specifiers: ["server-only"] },
+      },
+      server: { entry: "server" },
+    }),
+  );
+
+  // Nitro deploy plugin (build only)
+  if (command === "build") {
+    const { nitro } = await import("nitro/vite");
+    plugins.push(
+      nitro({
+        preset: process.env.LOCAL_PREVIEW ? "node" : "vercel",
+      }),
+    );
+  }
+
+  plugins.push(react());
+
+  // Inject VITE_* env vars as import.meta.env defines
+  const envDefine: Record<string, string> = {};
+  const loadedEnv = loadEnv(mode, process.cwd(), "VITE_");
+  for (const [key, value] of Object.entries(loadedEnv)) {
+    envDefine[`import.meta.env.${key}`] = JSON.stringify(value);
+  }
+
+  return {
+    define: envDefine,
+    css: { transformer: "lightningcss" },
+    resolve: {
+      alias: { "@": `${process.cwd()}/src` },
+      dedupe: [
+        "react",
+        "react-dom",
+        "react/jsx-runtime",
+        "react/jsx-dev-runtime",
+        "@tanstack/react-query",
+        "@tanstack/query-core",
+      ],
+    },
     optimizeDeps: {
-      // These document parsers run on the server. Prebundling their native
-      // canvas binary for the browser fails and blocks every client module.
+      include: [
+        "react",
+        "react-dom",
+        "react-dom/client",
+        "react/jsx-runtime",
+        "react/jsx-dev-runtime",
+      ],
       exclude: ["@napi-rs/canvas", "pdf-parse", "pdfjs-dist"],
     },
-    // The MCP plugin currently compares Windows paths without normalizing
-    // separators and rejects this otherwise valid routes directory. MCP is
-    // Lovable editor tooling, not part of the application runtime.
-    plugins: process.platform === "win32" ? [] : [mcpPlugin()],
-    optimizeDeps: {
-      exclude: ["@napi-rs/canvas"],
-    },
-  },
+    server: { host: "::", port: 8080 },
+    plugins,
+  };
 });

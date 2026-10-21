@@ -1,18 +1,12 @@
 import * as React from "react";
 import { render } from "@react-email/render";
-import { EmailAPIError, sendLovableEmail } from "@lovable.dev/email-js";
+import { Resend } from "resend";
 import { TEMPLATES } from "./registry";
 
-// Server-only: reads LOVABLE_API_KEY. Never import from client components.
+// Server-only: reads RESEND_API_KEY. Never import from client components.
 
-// Configuration baked in at scaffold time
 const SITE_NAME = "Global Bioenergy Watch";
-// Sender address for outbound emails. The official contact inbox is paused;
-// use a non-reply sender until a branded mailbox is set up.
 const SENDER_EMAIL = "noreply@globalbioenergywatch.org";
-// SENDER_DOMAIN is the verified sender subdomain FQDN (e.g., "notify.example.com").
-// It MUST match the subdomain delegated to Lovable's nameservers. NEVER use the root domain.
-const SENDER_DOMAIN = "notify.globalbioenergywatch.org";
 
 export type SendTemplateEmailResult =
   { sent: true } | { sent: false; reason: "recipient_suppressed" };
@@ -25,20 +19,18 @@ export interface SendTemplateEmailOptions {
 }
 
 /**
- * Renders a registered template and sends it through Lovable's managed email
- * API. Suppression, retries, and rate limits are enforced by Lovable
- * server-side. A suppressed recipient is an expected outcome
- * ({ sent: false }); any other failure throws — EmailAPIError exposes
- * .code and .status for branching.
+ * Renders a registered template and sends it through Resend.
+ * A suppressed recipient is an expected outcome ({ sent: false });
+ * any other failure throws.
  */
 export async function sendTemplateEmail(
   templateName: string,
   to: string,
   options: SendTemplateEmailOptions = {},
 ): Promise<SendTemplateEmailResult> {
-  const apiKey = process.env["LOVABLE_API_KEY"];
+  const apiKey = process.env["RESEND_API_KEY"];
   if (!apiKey) {
-    throw new Error("LOVABLE_API_KEY is not configured");
+    throw new Error("RESEND_API_KEY is not configured");
   }
 
   const template = TEMPLATES[templateName];
@@ -48,8 +40,6 @@ export async function sendTemplateEmail(
     );
   }
 
-  // Template-level `to` takes precedence — notification templates always
-  // send to their fixed address.
   const recipient = template.to || to;
   if (!recipient) {
     throw new Error("Recipient is required (the template defines no fixed recipient)");
@@ -62,27 +52,25 @@ export async function sendTemplateEmail(
   const subject =
     typeof template.subject === "function" ? template.subject(templateData) : template.subject;
 
-  try {
-    await sendLovableEmail(
-      {
-        to: recipient,
-        from: `${SITE_NAME} <${SENDER_EMAIL}>`,
-        sender_domain: SENDER_DOMAIN,
-        subject,
-        html,
-        text,
-        purpose: "transactional",
-        label: templateName,
-        idempotency_key: options.idempotencyKey || crypto.randomUUID(),
-        reply_to: options.replyTo || SENDER_EMAIL,
-      },
-      { apiKey, sendUrl: process.env["LOVABLE_SEND_URL"] },
-    );
-  } catch (error) {
-    if (error instanceof EmailAPIError && error.code === "recipient_suppressed") {
+  const resend = new Resend(apiKey);
+
+  const { error } = await resend.emails.send({
+    to: recipient,
+    from: `${SITE_NAME} <${SENDER_EMAIL}>`,
+    subject,
+    html,
+    text,
+    replyTo: options.replyTo || SENDER_EMAIL,
+    headers: options.idempotencyKey
+      ? { "X-Entity-Ref-ID": options.idempotencyKey }
+      : undefined,
+  });
+
+  if (error) {
+    if (error.name === "validation_error" && error.message?.includes("suppressed")) {
       return { sent: false, reason: "recipient_suppressed" };
     }
-    throw error;
+    throw new Error(`Resend error: ${error.message}`);
   }
 
   return { sent: true };

@@ -30,7 +30,7 @@ export const marketOutlookFn = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { assertAiQuota } = await import("@/infrastructure/ai/quota.server");
     assertAiQuota(`outlook:${context.userId}`);
-    const apiKey = process.env["LOVABLE_API_KEY"];
+    const apiKey = process.env["GEMINI_API_KEY"];
     if (!apiKey) throw new Error("AI is not configured for this site.");
 
     const first = data.series[0]?.c ?? data.price;
@@ -39,52 +39,49 @@ export const marketOutlookFn = createServerFn({ method: "POST" })
     const lo = data.series.length ? Math.min(...data.series.map((p) => p.c)) : data.price;
     const hi = data.series.length ? Math.max(...data.series.map((p) => p.c)) : data.price;
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+    const userPrompt = [
+      `Write a ~150 word market outlook for ${data.label} (${data.symbol}).`,
+      "",
+      `Latest level: ${data.price} ${data.unit === "index" ? "points" : "USD " + data.unit}`,
+      `1-day change: ${data.change >= 0 ? "+" : ""}${data.change} (${data.changePct >= 0 ? "+" : ""}${data.changePct.toFixed(2)}%)`,
+      `Previous close: ${data.prevClose}`,
+      `30-day change: ${periodPct >= 0 ? "+" : ""}${periodPct.toFixed(2)}%`,
+      `30-day range: ${lo.toFixed(2)} – ${hi.toFixed(2)}`,
+      "",
+      "Cover: the current trend direction, what the 30-day range suggests about volatility, the near-term drivers a bioenergy market reader should watch, and how this benchmark typically relates to biofuel and feedstock economics.",
+      "Rules: plain prose, no markdown, no headings, no bullets, no preamble. Use only the figures given above — do not invent numbers, dates or events. About 150 words.",
+    ].join("\n");
+
+    const model = "gemini-2.5-flash";
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [
+              {
+                text: "You are a senior energy and macro markets analyst writing concise, factual outlooks for industry readers of Global Bioenergy Watch.",
+              },
+            ],
+          },
+          contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+        }),
       },
-      body: JSON.stringify({
-        model: "google/gemini-3.7-flash",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are a senior energy and macro markets analyst writing concise, factual outlooks for industry readers of Global Bioenergy Watch.",
-          },
-          {
-            role: "user",
-            content: [
-              `Write a ~150 word market outlook for ${data.label} (${data.symbol}).`,
-              "",
-              `Latest level: ${data.price} ${data.unit === "index" ? "points" : "USD " + data.unit}`,
-              `1-day change: ${data.change >= 0 ? "+" : ""}${data.change} (${data.changePct >= 0 ? "+" : ""}${data.changePct.toFixed(2)}%)`,
-              `Previous close: ${data.prevClose}`,
-              `30-day change: ${periodPct >= 0 ? "+" : ""}${periodPct.toFixed(2)}%`,
-              `30-day range: ${lo.toFixed(2)} – ${hi.toFixed(2)}`,
-              "",
-              "Cover: the current trend direction, what the 30-day range suggests about volatility, the near-term drivers a bioenergy market reader should watch, and how this benchmark typically relates to biofuel and feedstock economics.",
-              "Rules: plain prose, no markdown, no headings, no bullets, no preamble. Use only the figures given above — do not invent numbers, dates or events. About 150 words.",
-            ].join("\n"),
-          },
-        ],
-      }),
-    });
+    );
 
     if (res.status === 429)
       throw new Error("Too many requests right now — please try again in a minute.");
-    if (res.status === 402)
-      throw new Error("AI credits for this site are exhausted. Please try again later.");
     if (!res.ok) {
       const body = await res.text().catch(() => "");
       throw new Error(`Outlook failed (${res.status}): ${body.slice(0, 200)}`);
     }
 
     const json = (await res.json()) as {
-      choices?: Array<{ message?: { content?: string } }>;
+      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
     };
-    const text = json.choices?.[0]?.message?.content?.trim();
+    const text = json.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
     if (!text) throw new Error("The outlook came back empty — please try again.");
     return { outlook: text };
   });

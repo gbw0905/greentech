@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { LogIn, LogOut, UserRound } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 
 import {
@@ -35,22 +34,16 @@ export function AuthButton({ entryMode = "signin" }: { entryMode?: "signin" | "s
   async function signOut() {
     await queryClient.cancelQueries();
     queryClient.clear();
-    await supabase.auth.signOut();
+    await fetch("/api/auth/sign-out", { method: "POST", credentials: "same-origin" });
     navigate({ to: "/auth", replace: true });
   }
 
-  const avatar = user.user_metadata["avatar_url"];
-  const name =
-    user.user_metadata["full_name"] || user.user_metadata["name"] || user.email || "Member";
+  const name = user.email || "Member";
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button type="button" className="gbw-profile-avatar" aria-label="Open profile menu">
-          {typeof avatar === "string" && /^https:\/\//.test(avatar) ? (
-            <img src={avatar} alt="" referrerPolicy="no-referrer" />
-          ) : (
-            <span aria-hidden>{String(name).slice(0, 1).toUpperCase()}</span>
-          )}
+          <span aria-hidden>{String(name).slice(0, 1).toUpperCase()}</span>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="gbw-profile-menu">
