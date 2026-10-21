@@ -10,7 +10,10 @@ export const Route = createFileRoute("/api/auth/callback")({
         const origin = url.origin;
 
         if (!code) {
-          return Response.redirect(`${origin}/auth?error=missing_code`, 302);
+          return new Response(null, {
+            status: 302,
+            headers: { location: `${origin}/auth?error=missing_code` },
+          });
         }
 
         const { client, applyToResponse } = createCookieClient(request);
@@ -18,11 +21,16 @@ export const Route = createFileRoute("/api/auth/callback")({
 
         if (error) {
           return applyToResponse(
-            Response.redirect(`${origin}/auth?error=${encodeURIComponent(error.message)}`, 302),
+            new Response(null, {
+              status: 302,
+              headers: { location: `${origin}/auth?error=${encodeURIComponent(error.message)}` },
+            }),
           );
         }
 
-        return applyToResponse(Response.redirect(origin, 302));
+        return applyToResponse(
+          new Response(null, { status: 302, headers: { location: origin } }),
+        );
       },
     },
   },
