@@ -48,6 +48,7 @@ import { Route as SupplyIndexRouteImport } from './routes/supply.index'
 import { Route as SupplyPanelRouteImport } from './routes/supply.$panel'
 import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
 import { Route as ApiAuthSessionRouteImport } from './routes/api/auth/session'
+import { Route as ApiAuthSetSessionRouteImport } from './routes/api/auth/set-session'
 import { Route as ApiAuthSignInRouteImport } from './routes/api/auth/sign-in'
 import { Route as ApiAuthSignOutRouteImport } from './routes/api/auth/sign-out'
 import { Route as ApiAuthSignUpRouteImport } from './routes/api/auth/sign-up'
@@ -260,6 +261,11 @@ const ApiAuthSessionRoute = ApiAuthSessionRouteImport.update({
   path: '/api/auth/session',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuthSetSessionRoute = ApiAuthSetSessionRouteImport.update({
+  id: '/api/auth/set-session',
+  path: '/api/auth/set-session',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSignInRoute = ApiAuthSignInRouteImport.update({
   id: '/api/auth/sign-in',
   path: '/api/auth/sign-in',
@@ -387,6 +393,7 @@ export interface FileRoutesByFullPath {
   '/supply/': typeof SupplyIndexRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
+  '/api/auth/set-session': typeof ApiAuthSetSessionRoute
   '/api/auth/sign-in': typeof ApiAuthSignInRoute
   '/api/auth/sign-out': typeof ApiAuthSignOutRoute
   '/api/auth/sign-up': typeof ApiAuthSignUpRoute
@@ -442,6 +449,7 @@ export interface FileRoutesByTo {
   '/supply': typeof SupplyIndexRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
+  '/api/auth/set-session': typeof ApiAuthSetSessionRoute
   '/api/auth/sign-in': typeof ApiAuthSignInRoute
   '/api/auth/sign-out': typeof ApiAuthSignOutRoute
   '/api/auth/sign-up': typeof ApiAuthSignUpRoute
@@ -500,6 +508,7 @@ export interface FileRoutesById {
   '/supply/': typeof SupplyIndexRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
+  '/api/auth/set-session': typeof ApiAuthSetSessionRoute
   '/api/auth/sign-in': typeof ApiAuthSignInRoute
   '/api/auth/sign-out': typeof ApiAuthSignOutRoute
   '/api/auth/sign-up': typeof ApiAuthSignUpRoute
@@ -559,6 +568,7 @@ export interface FileRouteTypes {
     | '/supply/'
     | '/api/auth/callback'
     | '/api/auth/session'
+    | '/api/auth/set-session'
     | '/api/auth/sign-in'
     | '/api/auth/sign-out'
     | '/api/auth/sign-up'
@@ -614,6 +624,7 @@ export interface FileRouteTypes {
     | '/supply'
     | '/api/auth/callback'
     | '/api/auth/session'
+    | '/api/auth/set-session'
     | '/api/auth/sign-in'
     | '/api/auth/sign-out'
     | '/api/auth/sign-up'
@@ -671,6 +682,7 @@ export interface FileRouteTypes {
     | '/supply/'
     | '/api/auth/callback'
     | '/api/auth/session'
+    | '/api/auth/set-session'
     | '/api/auth/sign-in'
     | '/api/auth/sign-out'
     | '/api/auth/sign-up'
@@ -725,6 +737,7 @@ export interface RootRouteChildren {
   SupplyIndexRoute: typeof SupplyIndexRoute
   ApiAuthCallbackRoute: typeof ApiAuthCallbackRoute
   ApiAuthSessionRoute: typeof ApiAuthSessionRoute
+  ApiAuthSetSessionRoute: typeof ApiAuthSetSessionRoute
   ApiAuthSignInRoute: typeof ApiAuthSignInRoute
   ApiAuthSignOutRoute: typeof ApiAuthSignOutRoute
   ApiAuthSignUpRoute: typeof ApiAuthSignUpRoute
@@ -1015,6 +1028,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSessionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/set-session': {
+      id: '/api/auth/set-session'
+      path: '/api/auth/set-session'
+      fullPath: '/api/auth/set-session'
+      preLoaderRoute: typeof ApiAuthSetSessionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/sign-in': {
       id: '/api/auth/sign-in'
       path: '/api/auth/sign-in'
@@ -1208,6 +1228,7 @@ const rootRouteChildren: RootRouteChildren = {
   SupplyIndexRoute: SupplyIndexRoute,
   ApiAuthCallbackRoute: ApiAuthCallbackRoute,
   ApiAuthSessionRoute: ApiAuthSessionRoute,
+  ApiAuthSetSessionRoute: ApiAuthSetSessionRoute,
   ApiAuthSignInRoute: ApiAuthSignInRoute,
   ApiAuthSignOutRoute: ApiAuthSignOutRoute,
   ApiAuthSignUpRoute: ApiAuthSignUpRoute,

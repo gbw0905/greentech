@@ -28,6 +28,39 @@ export function AuthPage({ initialMode = "signin" }: { initialMode?: "signin" | 
     if (!loading && user) navigate({ to: "/", replace: true });
   }, [loading, user, navigate]);
 
+  // Handle OAuth callback: exchange code on client (has PKCE verifier), then set httpOnly cookies
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const code = url.searchParams.get("code");
+    if (!code) return;
+    url.searchParams.delete("code");
+    window.history.replaceState({}, "", url.toString());
+    setBusy(true);
+    setError("");
+    (async () => {
+      try {
+        const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+        if (exchangeError) throw exchangeError;
+        const session = data.session;
+        if (!session) throw new Error("No session returned from OAuth.");
+        await fetch("/api/auth/set-session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({
+            access_token: session.access_token,
+            refresh_token: session.refresh_token,
+          }),
+        });
+        await refreshSession();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "OAuth sign-in failed.");
+      } finally {
+        setBusy(false);
+      }
+    })();
+  }, [refreshSession]);
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (busy) return;
@@ -61,7 +94,7 @@ export function AuthPage({ initialMode = "signin" }: { initialMode?: "signin" | 
     try {
       const { error: err } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo: `${window.location.origin}/api/auth/callback` },
+        options: { redirectTo: `${window.location.origin}/auth` },
       });
       if (err) throw err;
     } catch (err) {
@@ -74,7 +107,7 @@ export function AuthPage({ initialMode = "signin" }: { initialMode?: "signin" | 
     try {
       const { error: err } = await supabase.auth.signInWithOAuth({
         provider: "azure",
-        options: { redirectTo: `${window.location.origin}/api/auth/callback` },
+        options: { redirectTo: `${window.location.origin}/auth` },
       });
       if (err) throw err;
     } catch (err) {
