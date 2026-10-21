@@ -2,8 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AuthPage } from "@/features/auth/components/AuthPage";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (search: Record<string, unknown>): { mode?: "signup" } =>
-    search["mode"] === "signup" ? { mode: "signup" } : {},
+  validateSearch: (search: Record<string, unknown>): { mode?: "signup"; error?: string } => ({
+    ...(search["mode"] === "signup" ? { mode: "signup" as const } : {}),
+    ...(typeof search["error"] === "string" ? { error: search["error"] } : {}),
+  }),
   head: () => ({
     meta: [
       { title: "Sign in — Global Bioenergy Watch" },
@@ -25,6 +27,6 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthRoute() {
-  const { mode } = Route.useSearch();
-  return <AuthPage key={mode ?? "signin"} initialMode={mode ?? "signin"} />;
+  const { mode, error } = Route.useSearch();
+  return <AuthPage key={mode ?? "signin"} initialMode={mode ?? "signin"} callbackError={error} />;
 }

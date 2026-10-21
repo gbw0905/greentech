@@ -52,7 +52,7 @@ export const marketOutlookFn = createServerFn({ method: "POST" })
       "Rules: plain prose, no markdown, no headings, no bullets, no preamble. Use only the figures given above — do not invent numbers, dates or events. About 150 words.",
     ].join("\n");
 
-    const model = "gemini-2.5-flash";
+    const model = "gemini-3.8-flash";
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
       {

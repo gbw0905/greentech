@@ -65,7 +65,7 @@ export async function handleChatRequest(request: Request) {
     return new Response(e instanceof Error ? e.message : "Rate limited", { status: 429 });
   }
 
-  const model = createGoogleGenerativeAI({ apiKey: geminiApiKey })("gemini-2.5-flash");
+  const model = createGoogleGenerativeAI({ apiKey: geminiApiKey })("gemini-3.8-flash");
 
   const result = streamText({
     model,

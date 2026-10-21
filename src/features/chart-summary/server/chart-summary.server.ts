@@ -3,7 +3,7 @@
 import { sourcesFor } from "@/shared/data/data-sources";
 import type { SummaryRequest } from "@/features/chart-summary/contracts";
 
-const MODEL = "gemini-2.5-flash";
+const MODEL = "gemini-3.8-flash";
 
 function prompt(r: SummaryRequest) {
   const table = r.rows

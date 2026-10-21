@@ -61,7 +61,7 @@ Respond with valid JSON only, no markdown.`;
     const apiKey = process.env["GEMINI_API_KEY"];
     if (!apiKey) return { slug, ok: false, fieldsUpdated: [], error: "no GEMINI_API_KEY" };
 
-    const model = "gemini-2.5-flash";
+    const model = "gemini-3.8-flash";
     const res = await fetch(
       `${GEMINI_URL}/${model}:generateContent?key=${apiKey}`,
       {

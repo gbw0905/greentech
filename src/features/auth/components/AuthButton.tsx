@@ -38,12 +38,16 @@ export function AuthButton({ entryMode = "signin" }: { entryMode?: "signin" | "s
     navigate({ to: "/auth", replace: true });
   }
 
-  const name = user.email || "Member";
+  const name = user.full_name || user.email || "Member";
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button type="button" className="gbw-profile-avatar" aria-label="Open profile menu">
-          <span aria-hidden>{String(name).slice(0, 1).toUpperCase()}</span>
+          {user.avatar_url ? (
+            <img src={user.avatar_url} alt="" referrerPolicy="no-referrer" />
+          ) : (
+            <span aria-hidden>{String(name).slice(0, 1).toUpperCase()}</span>
+          )}
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="gbw-profile-menu">

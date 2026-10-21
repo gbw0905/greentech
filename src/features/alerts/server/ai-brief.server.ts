@@ -2,7 +2,7 @@
 
 import type { BriefSource } from "@/features/alerts/contracts";
 
-const MODEL = "gemini-2.5-flash";
+const MODEL = "gemini-3.8-flash";
 
 function prompt(u: BriefSource) {
   return [
