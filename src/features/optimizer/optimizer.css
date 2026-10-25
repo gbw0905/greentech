@@ -17,7 +17,7 @@
   cursor: not-allowed;
 }
 .optimizer-page :is(button, input, select, a):focus-visible {
-  outline: 2px solid #178a6b;
+  outline: 2px solid #286ba8;
   outline-offset: 3px;
 }
 .optimizer-page .calculator-subnav button {
@@ -38,6 +38,16 @@
   margin-bottom: 20px;
   box-shadow: 0 4px 15px #16334803;
 }
+.optimizer-history-back {
+  margin: 0 0 12px;
+  padding: 8px 2px;
+  border: 0;
+  background: transparent;
+  color: #225c85;
+  font: 700 15px "Instrument Sans", sans-serif;
+  cursor: pointer;
+}
+.optimizer-history-back:hover { text-decoration: underline; }
 .opt-toolbar > div {
   display: flex;
   align-items: center;
@@ -61,7 +71,7 @@
     box-shadow 0.2s;
 }
 .opt-toolbar button:hover {
-  background: #edf5f2;
+  background: #e8f2fb;
 }
 .opt-toolbar .opt-primary {
   background: #0e2a43;
@@ -114,9 +124,9 @@
   height: 36px;
   display: grid;
   place-items: center;
-  background: #e9f4ef;
+  background: #e8f2fb;
   border-radius: 11px;
-  color: #178a6b;
+  color: #286ba8;
 }
 .opt-field {
   display: block;
@@ -154,7 +164,7 @@
 }
 .opt-field input:focus,
 .opt-field select:focus {
-  border-color: #72b59e;
+  border-color: #286ba8;
   background: #fff;
 }
 .opt-pathway {
@@ -215,7 +225,7 @@
   cursor: pointer;
 }
 .opt-measure legend input {
-  accent-color: #178a6b;
+  accent-color: #286ba8;
   width: 14px;
   height: 14px;
 }
@@ -233,6 +243,7 @@
 }
 .opt-output {
   min-width: 0;
+  scroll-margin-top: calc(var(--site-chrome-height, 111px) + 96px);
 }
 .opt-live-label {
   display: flex;
@@ -252,9 +263,9 @@
 .opt-live-label i {
   width: 5px;
   height: 5px;
-  background: #178a6b;
+  background: #286ba8;
   border-radius: 100%;
-  box-shadow: 0 0 0 3px #178a6b12;
+  box-shadow: 0 0 0 3px #286ba812;
 }
 .opt-live-label small {
   font-size: 12px;
@@ -263,10 +274,10 @@
 .opt-recommendation {
   border-radius: 18px;
   padding: 26px 28px;
-  color: #f4fbf8;
+  color: #f4f9ff;
   background:
-    radial-gradient(ellipse at top right, #1e634f80, transparent 80%),
-    linear-gradient(120deg, #102e43, #163e3a);
+    radial-gradient(ellipse at top right, #2a6f9d80, transparent 80%),
+    linear-gradient(120deg, #102e43, #173d5e);
   box-shadow: 0 14px 32px #0e2a4310;
 }
 .opt-recommend-top {
@@ -281,7 +292,7 @@
   gap: 8px;
   font-size: 12px;
   letter-spacing: 0.09em;
-  color: #94d6bd;
+  color: #a9d2f2;
 }
 .opt-plan-status {
   display: flex;
@@ -307,12 +318,12 @@
   font-family: inherit;
   font-size: 16px;
   letter-spacing: 0;
-  color: #afccc2;
+  color: #c4d9e9;
   font-weight: 400;
 }
 .opt-recommendation > p {
   font-size: 16px;
-  color: #cbdfd8;
+  color: #d2e2ee;
   margin: 0;
   line-height: 1.7;
 }
@@ -321,11 +332,11 @@
   gap: 26px;
   align-items: center;
   flex-wrap: wrap;
-  border-top: 1px solid #a8dbcc22;
+  border-top: 1px solid #b8d9ef33;
   margin-top: 22px;
   padding-top: 17px;
   font-size: 14px;
-  color: #a5c4bc;
+  color: #bad2e4;
 }
 .opt-plan-baseline span {
   display: flex;
@@ -333,12 +344,12 @@
   gap: 8px;
 }
 .opt-plan-baseline b {
-  color: #eef9f4;
+  color: #f2f9ff;
   font-weight: 550;
 }
 .opt-plan-baseline span:last-child {
   margin-left: auto;
-  color: #8dd6b9;
+  color: #a9d2f2;
 }
 .opt-plan-warning {
   padding-top: 14px;
@@ -411,8 +422,8 @@
   transition: color 0.2s;
 }
 .opt-tabs button[data-state="active"] {
-  color: #126f56 !important;
-  border-color: #178a6b;
+  color: #286ba8 !important;
+  border-color: #286ba8;
   font-weight: 650;
 }
 .opt-tab-content {
@@ -462,11 +473,11 @@
 .opt-waterfall-row i {
   width: 5px;
   height: 5px;
-  background: #178a6b;
+  background: #286ba8;
   border-radius: 50%;
 }
 .opt-waterfall-row strong {
-  color: #178a6b;
+  color: #286ba8;
   font-weight: 600;
 }
 .opt-waterfall-row small {
@@ -477,7 +488,7 @@
 .opt-waterfall-row.final {
   background: #eaf5ef;
   border: 0;
-  color: #146b51;
+  color: #245f91;
   font-weight: 600;
 }
 .opt-selection {
@@ -526,7 +537,7 @@
   padding: 4px 7px;
 }
 .opt-badge.good {
-  color: #167456;
+  color: #286ba8;
   background: #e7f4ed;
 }
 .opt-badge.muted {
@@ -585,7 +596,7 @@
   display: block;
   font-size: 12px;
   font-weight: 400;
-  color: #178a6b;
+  color: #286ba8;
   margin-top: 3px;
 }
 .opt-scatter {
@@ -613,7 +624,7 @@
 .opt-solver-answer {
   display: flex;
   gap: 14px;
-  color: #178a6b;
+  color: #286ba8;
   border-top: 1px solid #d9e8df;
   margin-top: 20px;
   padding-top: 20px;
@@ -691,7 +702,7 @@
 .opt-sensitivity-track b {
   position: absolute;
   left: 50%;
-  background: #178a6b;
+  background: #286ba8;
   height: 12px;
   border-radius: 0 3px 3px 0;
 }
@@ -733,7 +744,7 @@
 .opt-regulatory a,
 .opt-evidence a {
   font-size: 14px;
-  color: #178a6b;
+  color: #286ba8;
 }
 .opt-evidence {
   display: grid;
@@ -992,5 +1003,149 @@
 }
 
 .optimizer-page .calculator-subnav > a:hover {
-  color: #126f56;
+  color: #286ba8;
+}
+
+/* CIVanta suite refinements */
+.optimizer-page .opt-toolbar {
+  border-radius: 17px;
+  padding: 16px 18px;
+  box-shadow: 0 8px 30px #102d4309;
+}
+.optimizer-page .opt-toolbar .opt-primary {
+  min-height: 45px;
+  padding-inline: 19px;
+  font-weight: 700;
+}
+.optimizer-page .opt-workspace {
+  grid-template-columns: minmax(330px, 390px) minmax(0, 1fr);
+  gap: 22px;
+}
+.optimizer-page .opt-inputs,
+.optimizer-page .opt-tab-content {
+  border-radius: 17px;
+  box-shadow: 0 8px 30px #102d4308;
+}
+.optimizer-page .opt-section-title h2 {
+  font-size: 23px;
+  font-weight: 700;
+}
+.optimizer-page .opt-section-title p {
+  font-size: 15px;
+}
+.optimizer-page .opt-icon {
+  background: #e8f2fb;
+  color: #286ba8;
+}
+.optimizer-page .opt-field > span {
+  font-size: 15px;
+  min-height: 0;
+}
+.optimizer-page .opt-field small {
+  font-size: 13px;
+}
+.optimizer-page .opt-field :is(input, select) {
+  min-height: 46px;
+  font-size: 16px;
+}
+.optimizer-page .opt-field :is(input, select):focus {
+  border-color: #286ba8;
+  box-shadow: 0 0 0 3px #e8f2fb;
+}
+.optimizer-page .opt-details {
+  padding-top: 19px;
+}
+.optimizer-page .opt-details summary {
+  margin-bottom: 0;
+  font-size: 16px;
+}
+.optimizer-page .opt-details[open] summary {
+  margin-bottom: 18px;
+}
+.optimizer-page .opt-note {
+  font-size: 14px;
+  line-height: 1.6;
+}
+.optimizer-page .opt-recommendation {
+  background:
+    radial-gradient(ellipse at top right, #2767a777, transparent 70%),
+    linear-gradient(120deg, #102d43, #173d5e);
+}
+.optimizer-page .opt-recommendation h2 {
+  font-weight: 700;
+}
+.optimizer-page .opt-metric > span {
+  font-size: 15px;
+  color: #526a7b;
+}
+.optimizer-page .opt-metric strong {
+  font-weight: 700;
+  font-size: 28px;
+}
+.optimizer-page .opt-metric small {
+  font-size: 13px;
+}
+.optimizer-page .opt-tabs button {
+  font-size: 16px !important;
+  white-space: nowrap;
+}
+.optimizer-page .opt-tabs button[data-state="active"] {
+  color: #245f9d !important;
+  border-color: #286ba8;
+}
+.optimizer-page .opt-tab-content h3 {
+  font-size: 24px;
+}
+.optimizer-page .opt-tab-content > p,
+.optimizer-page .opt-target-solver p,
+.optimizer-page .opt-heading-inline p {
+  font-size: 16px;
+  line-height: 1.65;
+}
+.optimizer-page .opt-table tbody tr {
+  transition: background 0.18s;
+}
+.optimizer-page .opt-table tbody tr:hover {
+  background: #e8f2fb;
+}
+.opt-report-upgrade {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 10px 15px;
+  border: 1px solid #e0c28a;
+  border-radius: 9px;
+  background: #fff4dc;
+  color: #815716;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.opt-report-upgrade:hover {
+  background: #ffe9bb;
+}
+.optimizer-page :is(button, input, select, a):focus-visible {
+  outline-color: #286ba8;
+}
+@media (max-width: 1050px) {
+  .optimizer-page .opt-workspace {
+    grid-template-columns: minmax(290px, 340px) minmax(0, 1fr);
+  }
+}
+@media (max-width: 800px) {
+  .optimizer-page .opt-workspace {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 480px) {
+  .optimizer-page .opt-metric strong {
+    font-size: 24px;
+  }
+}
+@media print {
+  .optimizer-page .calculator-header,
+  .optimizer-page .opt-report-upgrade {
+    display: none !important;
+  }
 }

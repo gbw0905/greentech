@@ -1,7 +1,8 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { LogIn, LogOut, UserRound } from "lucide-react";
-import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
+import { toast } from "sonner";
+import { authSessionQueryKey, useAuthSession } from "@/features/auth/hooks/useAuthSession";
 
 import {
   DropdownMenu,
@@ -32,10 +33,21 @@ export function AuthButton({ entryMode = "signin" }: { entryMode?: "signin" | "s
   }
 
   async function signOut() {
-    await queryClient.cancelQueries();
-    queryClient.clear();
-    await fetch("/api/auth/sign-out", { method: "POST", credentials: "same-origin" });
-    navigate({ to: "/auth", replace: true });
+    try {
+      const response = await fetch("/api/auth/sign-out", {
+        method: "POST",
+        credentials: "same-origin",
+      });
+      if (!response.ok) throw new Error("Sign out failed. Please try again.");
+      await queryClient.cancelQueries();
+      queryClient.removeQueries({
+        predicate: (query) => query.queryKey[0] !== authSessionQueryKey[0],
+      });
+      queryClient.setQueryData(authSessionQueryKey, null);
+      await navigate({ to: "/auth", replace: true });
+    } catch {
+      toast.error("Sign out failed. Please try again.");
+    }
   }
 
   const name = user.full_name || user.email || "Member";

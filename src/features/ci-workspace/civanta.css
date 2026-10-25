@@ -1,117 +1,64 @@
 .civanta-page {
-  padding: 28px 32px 32px;
-  color: #0e2a43;
-  background: radial-gradient(ellipse at top right, #deeee9, transparent 58%), #f2f6f8;
+  display: grid;
+  align-content: center;
+  min-height: calc(100svh - var(--site-chrome-height, 111px));
+  padding: 42px 32px 38px;
+  color: #fff;
+  background-color: #0b2d34;
+  background-image:
+    linear-gradient(90deg, #082d31ec 0%, #082d31d9 45%, #0a3034ba 100%),
+    url("/civanta-landscape.jpg");
+  background-position:
+    center,
+    center 55%;
+  background-size: cover;
+  background-repeat: no-repeat;
   font-family: "Instrument Sans", sans-serif;
 }
 .civanta-shell {
+  width: 100%;
   max-width: 1240px;
   margin: auto;
 }
 .civanta-intro {
-  position: relative;
-  isolation: isolate;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 28px;
-  overflow: hidden;
-  border-radius: 20px;
-  padding: 26px 32px;
-  background: #0e2d38;
+  padding: 12px 0 30px;
+  border-bottom: 1px solid #ffffff3d;
   color: #fff;
 }
-.civanta-intro-image {
-  position: absolute;
-  inset: 0 0 0 auto;
-  z-index: -2;
-  width: 65%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 54%;
-}
-.civanta-intro::before {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  content: "";
-  background: linear-gradient(90deg, #0e2d38 22%, #0e2d38e8 46%, #0b2c35a6 72%, #0b2c3566);
-}
 .civanta-intro-copy {
-  max-width: 660px;
+  max-width: 760px;
 }
-.civanta-eyebrow {
-  margin: 0 0 9px;
-  color: #a9d8c4;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-}
-.civanta-intro h1 {
-  margin: 0 0 10px;
+.site-shell .civanta-intro h1 {
+  margin: 0 0 12px;
   font:
-    650 clamp(40px, 4vw, 52px)/1.05 "Bricolage Grotesque",
+    650 clamp(48px, 5vw, 68px)/1.05 "Bricolage Grotesque",
     sans-serif;
-  letter-spacing: -0.055em;
+  letter-spacing: -0.05em;
 }
 .civanta-intro h1 > span {
   color: #74d7b1;
 }
 .civanta-description {
   margin: 0;
-  font-size: 18px;
-  line-height: 1.6;
-  color: #d6e7e3;
-}
-.civanta-intro-caption {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  max-width: 225px;
-  font-size: 13px;
+  font-size: 21px;
   line-height: 1.5;
-  color: #e0ece5;
-}
-.civanta-intro-caption > span {
-  flex: 0 0 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #75d5b1;
-}
-.civanta-toolkit-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  margin: 24px 0 18px;
-}
-.civanta-kicker {
-  margin: 0 0 4px;
-  color: #147a60;
-  font-size: 12px;
-  font-weight: 650;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-}
-.civanta-toolkit-heading h2 {
-  margin: 0;
-  font:
-    600 26px/1.25 "Bricolage Grotesque",
-    sans-serif;
-  letter-spacing: -0.025em;
+  color: #d6e7e3;
 }
 .civanta-history-link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 9px;
-  border: 1px solid #cfdfdf;
+  border: 1px solid #ffffff66;
   border-radius: 9px;
-  padding: 10px 14px;
-  background: #ffffffa8;
-  color: #245161;
-  font-size: 15px;
+  padding: 12px 16px;
+  background: #092f34a8;
+  color: #fff;
+  font-size: 16px;
   font-weight: 500;
   text-decoration: none;
   transition:
@@ -119,29 +66,51 @@
     border-color 0.2s;
 }
 .civanta-history-link:hover {
-  border-color: #9fcbb9;
-  background: #fff;
+  border-color: #a6e4c9;
+  background: #0d4142;
 }
 .civanta-tools {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 20px;
+  margin-top: 28px;
 }
 .civanta-tool-reveal {
   min-width: 0;
   display: flex;
+}
+.civanta-tool-reveal--emerald {
+  --tool-accent: #08765a;
+  --tool-surface: #eaf8f1;
+  --tool-icon-surface: #d9f0e5;
+  --tool-outline: #a8d6c1;
+}
+.civanta-tool-reveal--blue {
+  --tool-accent: #245f9d;
+  --tool-surface: #eaf3ff;
+  --tool-icon-surface: #d8e9fc;
+  --tool-outline: #adc8e8;
+}
+.civanta-tool-reveal--gold {
+  --tool-accent: #8b5917;
+  --tool-surface: #fff3e3;
+  --tool-icon-surface: #fbe7c5;
+  --tool-outline: #e4c99a;
 }
 .civanta-tool {
   display: flex;
   flex: 1;
   flex-direction: column;
   min-width: 0;
-  padding: 22px;
-  border: 1px solid #d6e3e8;
+  min-height: 300px;
+  padding: 28px;
+  border: 1px solid var(--tool-outline);
+  border-top: 4px solid var(--tool-accent);
   border-radius: 16px;
-  background: #fff;
+  background: linear-gradient(180deg, var(--tool-surface) 0%, #fffffff5 88%);
   color: #0e2a43;
-  box-shadow: 0 4px 10px #102e4203;
+  box-shadow: 0 18px 40px #061f2691;
+  backdrop-filter: blur(12px);
   text-decoration: none;
   transition:
     transform 0.25s,
@@ -150,46 +119,24 @@
 }
 .civanta-tool:hover {
   transform: translateY(-4px);
-  border-color: #7ebda7;
-  box-shadow: 0 12px 25px #173e4010;
-}
-.civanta-tool-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 18px;
+  box-shadow: 0 24px 46px #061f26a6;
 }
 .civanta-tool-icon {
   display: grid;
+  flex: none;
   place-items: center;
-  width: 44px;
-  height: 44px;
-  color: #137c60;
-  background: #e7f3ed;
-  border: 1px solid #d7eae1;
-  border-radius: 12px;
-}
-.civanta-tool-number {
-  color: #8da3b1;
-  font:
-    500 14px "IBM Plex Mono",
-    monospace;
-}
-.civanta-tool-category {
-  margin: 0 0 8px;
-  color: #147a60;
-  font-size: 12px;
-  line-height: 1.5;
-  letter-spacing: 0.09em;
-  font-weight: 650;
-  text-transform: uppercase;
+  width: 50px;
+  height: 50px;
+  margin-bottom: 22px;
+  color: var(--tool-accent);
+  background: var(--tool-icon-surface);
+  border: 1px solid var(--tool-outline);
+  border-radius: 13px;
 }
 .civanta-tool h3 {
-  min-height: 56px;
-  margin: 0 0 10px;
+  margin: 0 0 20px;
   font:
-    600 23px/1.2 "Bricolage Grotesque",
+    600 27px/1.2 "Bricolage Grotesque",
     sans-serif;
   letter-spacing: -0.025em;
 }
@@ -197,15 +144,15 @@
   flex: 1;
   margin: 0 0 18px;
   color: #536c7f;
-  font-size: 16px;
-  line-height: 1.65;
+  font-size: 18px;
+  line-height: 1.55;
 }
 .civanta-tool-detail {
   padding-bottom: 16px;
   color: #536c7f;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
-  border-bottom: 1px solid #e0e9ec;
+  border-bottom: 1px solid var(--tool-outline);
 }
 .civanta-tool-action {
   display: flex;
@@ -213,8 +160,8 @@
   justify-content: space-between;
   gap: 16px;
   margin-top: 16px;
-  color: #126e55;
-  font-size: 17px;
+  color: var(--tool-accent);
+  font-size: 18px;
   font-weight: 650;
 }
 .civanta-tool-action svg {
@@ -222,31 +169,6 @@
 }
 .civanta-tool:hover .civanta-tool-action svg {
   transform: translateX(4px);
-}
-.civanta-tool-outcome {
-  margin-top: 5px;
-  color: #697f8e;
-  font-size: 13px;
-  line-height: 1.5;
-}
-.civanta-supporting-note {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px 30px;
-  margin-top: 22px;
-  color: #58717f;
-  font-size: 14px;
-  line-height: 1.5;
-}
-.civanta-supporting-note > span {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-.civanta-supporting-note svg {
-  color: #178a6b;
 }
 .civanta-page a:focus-visible {
   outline: 3px solid #178a6b;
@@ -259,17 +181,12 @@
   .civanta-intro {
     padding-block: 20px;
   }
-  .civanta-intro h1 {
-    font-size: 44px;
+  .site-shell .civanta-intro h1 {
+    font-size: 48px;
   }
   .civanta-tool {
-    padding: 20px;
-  }
-  .civanta-tool-top {
-    margin-bottom: 12px;
-  }
-  .civanta-toolkit-heading {
-    margin-top: 18px;
+    min-height: 270px;
+    padding: 24px;
   }
 }
 @media (max-width: 1000px) {
@@ -280,61 +197,39 @@
     gap: 14px;
   }
   .civanta-tool {
-    padding: 20px 18px;
+    padding: 24px;
   }
   .civanta-tool h3 {
-    font-size: 21px;
-  }
-  .civanta-intro-caption {
-    display: none;
+    font-size: 24px;
   }
 }
 @media (max-width: 760px) {
   .civanta-page {
     padding: 20px;
+    background-image:
+      linear-gradient(90deg, #082d31f2 0%, #082d31dd 100%), url("/civanta-landscape.jpg");
   }
   .civanta-intro {
-    padding: 24px;
-    border-radius: 16px;
-  }
-  .civanta-intro-copy {
-    max-width: 80%;
-  }
-  .civanta-intro-image {
-    width: 100%;
-  }
-  .civanta-intro::before {
-    background: linear-gradient(90deg, #0e2d38ed, #0e2d38ab);
-  }
-  .civanta-description {
-    font-size: 17px;
-  }
-  .civanta-toolkit-heading {
     align-items: flex-start;
     flex-direction: column;
-    gap: 14px;
+    gap: 20px;
+    padding: 12px 0 24px;
   }
-  .civanta-toolkit-heading h2 {
-    font-size: 24px;
+  .civanta-intro-copy {
+    max-width: 100%;
+  }
+  .civanta-description {
+    font-size: 18px;
   }
   .civanta-tools {
     grid-template-columns: 1fr;
+    margin-top: 20px;
   }
   .civanta-tool h3 {
-    min-height: 0;
     font-size: 24px;
   }
   .civanta-tool-description {
     margin-bottom: 18px;
-  }
-  .civanta-tool-top {
-    margin-bottom: 16px;
-  }
-  .civanta-supporting-note {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 10px;
-    padding-inline: 2px;
   }
 }
 @media (max-width: 440px) {
@@ -345,10 +240,7 @@
     max-width: none;
   }
   .civanta-intro {
-    padding: 22px;
-  }
-  .civanta-eyebrow {
-    font-size: 11px;
+    padding: 12px 0 22px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

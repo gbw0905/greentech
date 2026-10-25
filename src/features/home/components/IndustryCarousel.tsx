@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView, useReducedMotion } from "motion/react";
-import { ArrowLeft, ArrowRight, Pause, Play } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { MotionReveal } from "@/components/MotionReveal";
 import biogas from "@/assets/topic-biogas.jpg";
 import ethanol from "@/assets/topic-ethanol.jpg";
@@ -87,32 +87,19 @@ export function IndustryCarousel() {
   const [cycle, setCycle] = useState(0);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
-  const [stopped, setStopped] = useState(false);
   const [pageVisible, setPageVisible] = useState(true);
   const [failed, setFailed] = useState<Set<number>>(() => new Set());
   const reduced = useReducedMotion();
   const stage = useRef<HTMLDivElement>(null);
   const thumbnails = useRef<HTMLDivElement>(null);
   const pointerInteraction = useRef(false);
-  const playbackIntent = useRef<boolean | null>(null);
   const elapsed = useRef(0);
   const visible = useInView(stage, { amount: 0.15 });
-  const running = visible && pageVisible && !hovered && !focused && !stopped && !reduced;
+  const running = visible && pageVisible && !hovered && !focused && !reduced;
 
   const select = (index: number) => {
     setActive((index + SLIDES.length) % SLIDES.length);
     setCycle((value) => value + 1);
-  };
-
-  const togglePlayback = () => {
-    // Preserve the button's intent before pointer/focus events change temporary pauses.
-    const resume = playbackIntent.current ?? !running;
-    playbackIntent.current = null;
-    setStopped(!resume);
-    if (resume) {
-      setHovered(false);
-      setFocused(false);
-    }
   };
 
   useEffect(() => {
@@ -161,21 +148,12 @@ export function IndustryCarousel() {
     <section className="industry-section" id="industries" aria-labelledby="industry-title">
       <div
         className="industry-inner"
-        onPointerDownCapture={(event) => {
-          const playbackButton = (event.target as Element).closest(".industry-pause");
-          if (playbackButton) playbackIntent.current = !running;
+        onPointerDownCapture={() => {
           pointerInteraction.current = true;
           setFocused(false);
-          if (!playbackButton) setHovered(false);
+          setHovered(false);
         }}
-        onKeyDownCapture={(event) => {
-          if (
-            !event.repeat &&
-            (event.key === " " || event.key === "Enter") &&
-            (event.target as Element).closest(".industry-pause")
-          ) {
-            playbackIntent.current = !running;
-          }
+        onKeyDownCapture={() => {
           pointerInteraction.current = false;
           setFocused(true);
         }}
@@ -316,15 +294,6 @@ export function IndustryCarousel() {
                   />
                 ))}
               </div>
-              <button
-                type="button"
-                className="industry-pause"
-                aria-label={running ? "Pause industry slideshow" : "Play industry slideshow"}
-                aria-pressed={!running}
-                onClick={togglePlayback}
-              >
-                {running ? <Pause size={14} /> : <Play size={14} />}
-              </button>
             </div>
             <div ref={thumbnails} className="industry-thumbnails" aria-label="Industry thumbnails">
               {SLIDES.map((slide, index) => (

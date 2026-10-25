@@ -2444,7 +2444,6 @@ input.chart-select {
 .industry-dots button { position: relative; height: 10px; width: 10px; border-radius: 99px; background: #d6e1ea; transition: width 0.3s, background 0.3s, box-shadow 0.3s; cursor: pointer; }
 .industry-dots button::before { content: ""; position: absolute; inset: -10px -3px; }
 .industry-dots button[aria-pressed="true"] { width: 30px; background: #178a6b; box-shadow: 0 0 0 4px #bce1d6; }
-.industry-pause { position: absolute; right: 0; display: grid; place-items: center; width: 28px; height: 28px; color: #4c6278; border: 1px solid #d6e1ea; border-radius: 50%; cursor: pointer; }
 .industry-thumbnails { display: flex; gap: 14px; overflow-x: auto; padding: 4px; scrollbar-width: thin; }
 .industry-thumbnails button { flex: 0 0 108px; height: 68px; border: 2px solid transparent; padding: 2px; border-radius: 10px; opacity: 0.5; cursor: pointer; transition: opacity 0.3s, border-color 0.3s, box-shadow 0.3s; }
 .industry-thumbnails button:hover { opacity: 0.85; }
@@ -2820,7 +2819,7 @@ input.chart-select {
   .jurisdiction-map-header { padding: 14px 18px; }
   .jurisdiction-map-canvas { aspect-ratio: auto; height: clamp(300px, calc(100svh - 330px), 440px); max-width: 1000px; margin: auto; }
 }
-@media (max-width: 1199px) {
+@media (max-width: 1279px) {
   .gbw-header-inner { padding: 0 20px; gap: 12px; }
   .gbw-desktop-nav { display: none; }
   .gbw-burger { display: flex; }
@@ -3058,7 +3057,7 @@ input.chart-select {
 
 .intelligence-accordion[data-expanded="false"] .intelligence-item { flex: 1; }
 .intelligence-accordion[data-expanded="false"] .intelligence-item h3 { display: flex; flex: 1; }
-@media (min-width: 1200px) and (max-width: 1350px) {
+@media (min-width: 1280px) and (max-width: 1350px) {
   .gbw-header-inner {
     padding-inline: 24px;
     gap: 12px;

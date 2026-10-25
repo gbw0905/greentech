@@ -42,3 +42,17 @@ test("sorts, rejects invalid points and uses the latest close on duplicate dates
     ],
   );
 });
+
+test("aligns coarse long-range histories by month when exchanges close on different dates", () => {
+  const primary = [close("2025-01-02", 80), close("2025-04-01", 100)];
+  const secondary = [close("2025-01-03", 200), close("2025-04-02", 180)];
+  assert.deepEqual(compareCloses(primary, secondary), []);
+  const result = compareCloses(primary, secondary, true);
+  assert.deepEqual(
+    result.map((point) => [point.value, point.otherValue]),
+    [
+      [100, 100],
+      [125, 90],
+    ],
+  );
+});

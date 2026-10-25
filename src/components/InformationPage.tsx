@@ -10,7 +10,6 @@ const PAGES = [
 const CHIPS = {
   about: ["4 fuel streams tracked", "Regulators & credible media", "Daily AI-assisted briefs"],
   mission: ["Independent", "Source-cited", "Updated daily"],
-  team: ["5 team members", "Editors & developers", "Open to contributors"],
 };
 
 export function InformationPage({
@@ -51,11 +50,13 @@ export function InformationPage({
             {words.join(" ")} <em>{accent}</em>
           </h1>
           <p className="hero-lede">{subtitle}</p>
-          <div className="chips">
-            {CHIPS[active].map((chip) => (
-              <span key={chip}>{chip}</span>
-            ))}
-          </div>
+          {active !== "team" && (
+            <div className="chips">
+              {CHIPS[active].map((chip) => (
+                <span key={chip}>{chip}</span>
+              ))}
+            </div>
+          )}
           <nav className="tabs" aria-label="About the desk">
             {PAGES.map((page) => (
               <Link

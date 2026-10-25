@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { JobsPanel } from "@/features/jobs/components/JobsPanel";
 import { JOB_BOARDS } from "@/features/jobs/data";
 import { JobsHero } from "@/features/jobs/components/JobsHero";
-import { LiveMarquee } from "@/features/markets/components/LiveMarquee";
 import { useVisitTracker } from "@/features/traffic/hooks/useVisitTracker";
 
 const TITLE = "Biofuel & bioenergy jobs | Global Bioenergy Watch";
@@ -77,7 +76,6 @@ function JobsPage() {
   useVisitTracker();
   return (
     <div className="jobs-page">
-      <LiveMarquee />
       <main className="jobs-main">
         <JobsHero />
         <JobsPanel />
