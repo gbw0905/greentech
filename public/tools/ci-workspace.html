@@ -912,7 +912,7 @@
     </style>
     <link rel="stylesheet" href="/tools/calculator-premium.css" />
   </head>
-  <body>
+  <body class="tool-workspace">
     <header>
       <b>CI<span>vanta</span></b
       ><a href="https://globalbioenergywatch.org/civanta" target="_blank" rel="noopener"
@@ -920,38 +920,26 @@
       >
     </header>
     <main class="wrap">
-      <span class="eyebrow">CARBON INTENSITY · SCENARIO WORKSPACE</span>
       <h1>Understand your fuel’s carbon intensity.</h1>
-      <p class="intro">
-        Edit a pathway, inspect every lifecycle contribution, and compare improvements with a saved
-        baseline, and explore regulatory benchmarks and conditional credit quantities. The headline
-        result and stage breakdown use the same calculation ledger.
-      </p>
       <div class="toolbar">
         <div class="actions">
-          <button id="run" class="primary" data-run>▶ Run scenario</button>
+          <button id="save" class="primary" data-save>Save scenario</button>
           <button id="fill-defaults">Fill with default values</button>
           <button id="reset">Clear inputs</button><button id="baseline">Use as baseline</button>
         </div>
         <div class="actions">
-          <button id="export" class="primary">Download Excel</button>
-          <button id="json">Export JSON</button>
+          <button id="export" class="primary">Pro · Download Excel</button>
+          <button id="json">Pro · Export JSON</button>
         </div>
       </div>
       <div class="calculator-notices">
         <span id="autosave-status" role="status">Changes save automatically in this browser.</span>
-        <p id="status" role="status" aria-live="polite">
-          Enter your values, or fill defaults to try a scenario.
-        </p>
+        <p id="status" role="status" aria-live="polite"></p>
       </div>
       <div class="layout">
         <div>
           <div id="inputs"></div>
           <div id="toolsBottom"></div>
-          <div class="panel">
-            <p class="note">Finished entering values?</p>
-            <button type="button" class="primary" data-run>▶ Run scenario</button>
-          </div>
         </div>
         <aside aria-label="CI results and display settings">
           <div id="results"></div>
@@ -962,6 +950,12 @@
         </aside>
       </div>
       <div id="processFlow" aria-live="polite"></div>
+      <div class="pro-feature-invite" aria-label="CIVanta Pro feature">
+        <span>PRO ANALYSIS</span>
+        <h2>Inspect every stage and factor.</h2>
+        <p>Upgrade to open the full lifecycle flow, calculation details and downloadable reports.</p>
+        <button type="button" id="workspace-pro-cta">Explore CIVanta Pro ↗</button>
+      </div>
       <section class="panel compact" id="runHistory" aria-label="Run history"></section>
       <section class="panel compact">
         <h3>What this model includes</h3>

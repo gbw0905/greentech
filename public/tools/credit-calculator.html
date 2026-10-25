@@ -431,7 +431,7 @@
     </style>
     <link rel="stylesheet" href="/tools/calculator-premium.css" />
   </head>
-  <body>
+  <body class="tool-credit">
     <header>
       <b>CI<span>vanta</span></b
       ><a href="https://globalbioenergywatch.org/civanta" target="_blank" rel="noopener"
@@ -439,21 +439,16 @@
       >
     </header>
     <main class="wrap">
-      <span class="eyebrow">FUEL ECONOMICS · PLANNING TOOLS</span>
       <h1>Credit & RIN Calculator</h1>
-      <p class="intro">
-        Translate eligible fuel quantity and pathway carbon intensity into California LCFS credits
-        and U.S. RFS RIN estimates. Review the assumptions behind every number.
-      </p>
       <div class="toolbar">
         <div class="tabs" aria-label="Calculation mode">
           <button data-mode="both">Both programs</button>
           <button data-mode="lcfs">LCFS credits</button><button data-mode="rfs">RFS RINs</button>
         </div>
         <div class="actions">
-          <button id="calculate" class="primary">Calculate</button>
+          <button id="save" class="primary">Save scenario</button>
           <button id="reset">Load example</button>
-          <button id="export" class="primary">Download Excel</button>
+          <button id="export" class="primary">Pro · Download Excel</button>
         </div>
       </div>
       <div class="calculator-notices">
@@ -464,7 +459,15 @@
       </div>
       <div class="layout">
         <div id="inputs"></div>
-        <aside id="results" aria-label="Calculation results"></aside>
+        <aside aria-label="Calculation results">
+          <div id="results"></div>
+          <div class="pro-feature-invite" aria-label="CIVanta Pro feature">
+            <span>PRO ANALYSIS</span>
+            <h2>Test more than one price.</h2>
+            <p>Unlock price sensitivity and a formatted Excel report for your review.</p>
+            <button type="button" id="credit-pro-cta">Explore CIVanta Pro ↗</button>
+          </div>
+        </aside>
       </div>
       <footer>
         © 2026 Global Bioenergy Watch. All rights reserved. · CIvanta v1.0 · Liquid road fuels and

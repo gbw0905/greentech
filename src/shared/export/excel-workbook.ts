@@ -53,7 +53,7 @@ async function logoBuffer(): Promise<ArrayBuffer | null> {
   }
 }
 
-const chartImage = (chart: WorkbookChart) => {
+export const chartImage = (chart: WorkbookChart) => {
   const width = 1200;
   const height = 600;
   const canvas = document.createElement("canvas");

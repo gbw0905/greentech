@@ -2,7 +2,7 @@ import { MotionReveal } from "@/components/MotionReveal";
 
 export function PageShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mx-auto max-w-[80rem] px-5 py-6 lg:px-8 lg:py-8">
+    <div className="page-shell mx-auto py-6 lg:py-8">
       <MotionReveal as="main" className="space-y-6">
         {children}
       </MotionReveal>

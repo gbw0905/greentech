@@ -26,6 +26,7 @@ import { Route as GetAlertsRouteImport } from './routes/get-alerts'
 import { Route as JobsRouteImport } from './routes/jobs'
 import { Route as MandatesRouteImport } from './routes/mandates'
 import { Route as MyResultsRouteImport } from './routes/my-results'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ProfilesRouteImport } from './routes/profiles'
@@ -149,6 +150,11 @@ const MandatesRoute = MandatesRouteImport.update({
 const MyResultsRoute = MyResultsRouteImport.update({
   id: '/my-results',
   path: '/my-results',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -371,6 +377,7 @@ export interface FileRoutesByFullPath {
   '/jobs': typeof JobsRoute
   '/mandates': typeof MandatesRoute
   '/my-results': typeof MyResultsRoute
+  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/profiles': typeof ProfilesRoute
@@ -428,6 +435,7 @@ export interface FileRoutesByTo {
   '/jobs': typeof JobsRoute
   '/mandates': typeof MandatesRoute
   '/my-results': typeof MyResultsRoute
+  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/profiles': typeof ProfilesRoute
@@ -486,6 +494,7 @@ export interface FileRoutesById {
   '/jobs': typeof JobsRoute
   '/mandates': typeof MandatesRoute
   '/my-results': typeof MyResultsRoute
+  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/profiles': typeof ProfilesRoute
@@ -546,6 +555,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/mandates'
     | '/my-results'
+    | '/pricing'
     | '/privacy'
     | '/profile'
     | '/profiles'
@@ -603,6 +613,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/mandates'
     | '/my-results'
+    | '/pricing'
     | '/privacy'
     | '/profile'
     | '/profiles'
@@ -660,6 +671,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/mandates'
     | '/my-results'
+    | '/pricing'
     | '/privacy'
     | '/profile'
     | '/profiles'
@@ -719,6 +731,7 @@ export interface RootRouteChildren {
   JobsRoute: typeof JobsRoute
   MandatesRoute: typeof MandatesRoute
   MyResultsRoute: typeof MyResultsRoute
+  PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ProfileRoute: typeof ProfileRoute
   ProfilesRoute: typeof ProfilesRoute
@@ -872,6 +885,13 @@ declare module '@tanstack/react-router' {
       path: '/my-results'
       fullPath: '/my-results'
       preLoaderRoute: typeof MyResultsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -1210,6 +1230,7 @@ const rootRouteChildren: RootRouteChildren = {
   JobsRoute: JobsRoute,
   MandatesRoute: MandatesRoute,
   MyResultsRoute: MyResultsRoute,
+  PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ProfileRoute: ProfileRoute,
   ProfilesRoute: ProfilesRoute,

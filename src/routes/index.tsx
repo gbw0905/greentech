@@ -7,7 +7,6 @@ import { feedQueryWithInitial } from "@/features/policy/feed-query";
 import { PolicyMapSection } from "@/features/countries/components/PolicyMapSection";
 
 import { OilPricePanel } from "@/features/markets/components/OilPricePanel";
-import { LiveMarquee } from "@/features/markets/components/LiveMarquee";
 import { getOilPricesFn } from "@/features/markets/oil-server-functions";
 
 import { useVisitTracker } from "@/features/traffic/hooks/useVisitTracker";
@@ -16,6 +15,7 @@ import { IntelligenceSection } from "@/components/IntelligenceSection";
 import { getErrorMessage } from "@/shared/errors";
 import { HomeHero } from "@/features/home/components/HomeHero";
 import { LatestUpdatesSection } from "@/features/home/components/LatestUpdatesSection";
+import { getHomeStats, homeStatsQuery } from "@/features/home/home-stats";
 
 const TITLE = "Global Bioenergy Watch | Worldwide Biofuel Policy Tracker";
 
@@ -28,7 +28,9 @@ export const Route = createFileRoute("/")({
       loadNavigationFeed(context.queryClient),
       getOilPricesFn().catch(() => null),
     ]);
-    return { feed, market };
+    // The first feed load can populate an empty archive; count after it completes.
+    const stats = await getHomeStats().catch(() => null);
+    return { feed, market, stats };
   },
   head: () => ({
     meta: [
@@ -74,8 +76,11 @@ function Index() {
 
 function Dashboard() {
   useVisitTracker();
-  const { feed: initialFeed, market: initialMarket } = Route.useLoaderData();
+  const { feed: initialFeed, market: initialMarket, stats: initialStats } = Route.useLoaderData();
   const { data: feed } = useQuery(feedQueryWithInitial(initialFeed));
+  const { data: stats } = useQuery(
+    initialStats ? { ...homeStatsQuery, initialData: initialStats } : homeStatsQuery,
+  );
   const data = feed ?? {
     updates: [],
     fetchedAt: null as string | null,
@@ -88,30 +93,19 @@ function Dashboard() {
     return c;
   }, [data.updates]);
 
-  const stats = useMemo(
-    () => ({
-      total: data.updates.length,
-      countries: new Set(data.updates.map((u) => u.countrySlug).filter(Boolean)).size,
-      policy: data.updates.filter((u) => u.category !== "market").length,
-    }),
-    [data.updates],
-  );
-
   const topFive = useMemo(() => data.updates.slice(0, 5), [data.updates]);
 
   return (
     <main>
-      <LiveMarquee initialMarket={initialMarket} />
-
-      <HomeHero stats={stats} />
+      <HomeHero stats={stats ?? null} />
 
       <section id="markets" className="benchmark-section" aria-labelledby="markets-title">
         <OilPricePanel initialMarket={initialMarket} />
       </section>
 
-      <LatestUpdatesSection updates={topFive} />
-
       <PolicyMapSection counts={counts} />
+
+      <LatestUpdatesSection updates={topFive} />
 
       {data.error && (
         <div className="mx-auto max-w-[80rem] px-5 py-8 lg:px-8 lg:py-10">

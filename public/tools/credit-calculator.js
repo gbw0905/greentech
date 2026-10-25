@@ -8,10 +8,25 @@ import {
   defaults,
   standardEV,
   calculate,
-  exportRows,
 } from "./credit-engine.mjs";
 const $ = (id) => document.getElementById(id);
+let proAccess = false;
+function requestUpgrade() {
+  if (window.parent !== window) window.parent.postMessage({ type: "civanta-upgrade-request" }, location.origin);
+  else location.assign("/auth?next=%2Fpricing");
+}
+window.addEventListener("message", (event) => {
+  if (event.origin !== location.origin || event.source !== window.parent || event.data?.type !== "civanta-plan-state") return;
+  proAccess = event.data.premium === true;
+  document.body.dataset.plan = proAccess ? "pro" : "free";
+  $("export").textContent = proAccess ? "Download Excel" : "Pro · Download Excel";
+  results();
+});
+if (window.parent !== window) window.parent.postMessage({ type: "civanta-access-request" }, location.origin);
+document.getElementById("credit-pro-cta")?.addEventListener("click", requestUpgrade);
 let state = defaults();
+let committedSnapshot = null;
+let publishedFloatingSummary = null;
 const fmt = (n, d = 0) =>
   n == null ? "—" : Number(n).toLocaleString("en-US", { maximumFractionDigits: d });
 const money = (n) =>
@@ -22,6 +37,54 @@ const money = (n) =>
         currency: "USD",
         maximumFractionDigits: 0,
       }).format(n);
+function floatingSummary(r, forcedState) {
+  if (window.parent === window) return;
+  const invalid = r.errors.length || r.rinError;
+  const stateLabel = forcedState || (invalid ? "invalid" : committedSnapshot === JSON.stringify(state) ? "current" : "preview");
+  const both = state.mode === "both";
+  const value = invalid
+    ? "—"
+    : both && r.combined !== null
+      ? money(r.combined)
+      : state.mode !== "rfs"
+        ? fmt(Math.abs(r.lcfsTonnes), 2)
+        : fmt(r.rins);
+  const unit = invalid ? "" : both && r.combined !== null ? "USD gross" : state.mode !== "rfs" ? "tonnes CO₂e" : "RINs";
+  const summary = {
+    value,
+    unit,
+    detail: invalid ? r.errors[0] || r.rinError : `${FUELS[state.fuel].name} · ${state.year}`,
+    state: stateLabel,
+  };
+  publishedFloatingSummary = summary;
+  window.parent.postMessage(
+    {
+      type: "civanta-floating-summary",
+      kind: "credit",
+      summary,
+      height: document.documentElement.scrollHeight,
+    },
+    location.origin,
+  );
+}
+let pendingFloatingInput = null;
+document.addEventListener("input", (event) => {
+  if (!event.target.matches?.("#inputs input, #inputs select")) return;
+  pendingFloatingInput = event.target;
+  if (publishedFloatingSummary)
+    window.parent.postMessage(
+      {
+        type: "civanta-floating-summary",
+        kind: "credit",
+        summary: { ...publishedFloatingSummary, detail: "Updating inputs", state: "stale" },
+        height: document.documentElement.scrollHeight,
+      },
+      location.origin,
+    );
+});
+document.addEventListener("change", (event) => {
+  if (event.target === pendingFloatingInput) pendingFloatingInput = null;
+});
 function field(id, label, value, help = "", min = "", step = "any") {
   return `<label class="field">${label}<input id="${id}" type="number" value="${value}" step="${step}" ${min !== "" ? `min="${min}"` : ""}><small>${help}</small></label>`;
 }
@@ -177,12 +240,14 @@ function render() {
   results();
 }
 function results() {
+  $("results").classList.remove("show-result-animation");
   const r = calculate(state),
     lcfs = state.mode !== "rfs",
     rfs = state.mode !== "lcfs";
   if (r.errors.length) {
     $("results").innerHTML =
       `<section class="panel error" role="alert"><h2>Check your inputs</h2><ul>${r.errors.map((x) => `<li>${x}</li>`).join("")}</ul></section>`;
+    floatingSummary(r);
     return;
   }
   $("results").innerHTML =
@@ -191,7 +256,7 @@ function results() {
  ${rfs ? `<section class="metric"><div><span>RIN quantity ${state.dcode ? "· " + state.dcode : ""}</span><em>${state.rfsConfirmed ? "User-confirmed assumptions" : "Conditional estimate"}</em></div><strong>${fmt(r.rins)}<small>estimated gallon-RINs</small></strong>${r.rinError ? `<p class="note error-text">${r.rinError}</p>` : ""}<div class="metric-foot"><span>Gross RIN value</span><b>${money(r.rinValue)}</b></div></section>` : ""}
  ${state.mode === "both" ? `<section class="combined"><span>Combined gross value / net deficit cost</span><strong>${money(r.combined)}</strong><small>${r.combined === null ? "Confirm eligibility and entitlement for both programs to show a combined planning value." : "Assumes you hold both revenue streams. Excludes fees, taxes, revenue sharing and sale timing."}</small></section>` : ""}
  <section class="panel compact"><h3>Calculation trail</h3><dl><dt>Total fuel energy (LHV)</dt><dd>${fmt(r.energyMj, 2)} MJ</dd>${lcfs ? `<dt>LCFS-eligible energy</dt><dd>${fmt(r.lcfsEnergy, 2)} MJ</dd><dt>Benchmark × EER − pathway CI</dt><dd>${fmt(r.delta, 3)} gCO₂e/MJ</dd><dt>Signed credits / deficits</dt><dd>${fmt(r.lcfsTonnes, 4)} tonnes</dd>` : ""}${rfs ? `<dt>${state.fuel === "rng" ? "RNG energy per RIN" : "Equivalence value"}</dt><dd>${state.fuel === "rng" ? fmt(77000 * BTU_TO_MJ, 6) + " MJ LHV" : r.ev + " RINs/gal"}</dd>` : ""}</dl><details><summary>Equations & sources</summary><p>LCFS = (benchmark × EER − CI) × eligible fuel energy ÷ 1,000,000.</p><p>Liquid RIN estimate = eligible standardized renewable gallons × equivalence value. RNG RIN estimate = eligible biomethane Btu (LHV) ÷ 77,000.</p><p>Do not multiply the full CI difference by EER. Use an unadjusted pathway CI. Actual batch rounding and regulatory submissions are outside this planning estimate.</p>${SOURCES.map((x) => `<p><a href="${x.url}" target="_blank" rel="noopener noreferrer">${x.title} ↗</a></p>`).join("")}<p>Reviewed 1 October 2026 · Engine ${VERSION}. Energy-density and price presets are illustrative; the benchmark and equivalence values are source-based.</p></details></section>
- <section class="panel compact"><h3>Price sensitivity</h3><p class="note">Quantity held constant; price assumptions ±25%.</p><table><thead><tr><th>Scenario</th>${lcfs ? "<th>LCFS value</th>" : ""}${rfs ? "<th>RIN value</th>" : ""}</tr></thead><tbody>${[
+ ${proAccess ? `<section class="panel compact pro-analysis"><h3>Price sensitivity</h3><p class="note">Quantity held constant; price assumptions ±25%.</p><table><thead><tr><th>Scenario</th>${lcfs ? "<th>LCFS value</th>" : ""}${rfs ? "<th>RIN value</th>" : ""}</tr></thead><tbody>${[
    ["Low", 0.75],
    ["Base", 1],
    ["High", 1.25],
@@ -200,21 +265,15 @@ function results() {
      ([label, m]) =>
        `<tr><td>${label}</td>${lcfs ? `<td>${money(r.lcfsValue * m)}</td>` : ""}${rfs ? `<td>${r.rinValue === null ? "—" : money(r.rinValue * m)}</td>` : ""}</tr>`,
    )
-   .join("")}</tbody></table></section>
+   .join("")}</tbody></table></section>` : ""}
  <section class="panel compact"><h3>Assumptions to review</h3><ul>${r.warnings.map((x) => `<li>${x}</li>`).join("")}<li>Confirm credit ownership and contracts separately for each program. A checkbox records your assumption; it is not verification.</li></ul></section>`;
-}
-function download(name, content, type) {
-  const u = URL.createObjectURL(new Blob([content], { type }));
-  const a = document.createElement("a");
-  a.href = u;
-  a.download = name;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(u), 1000);
+  floatingSummary(r);
 }
 $("export").addEventListener("click", () => {
+  if (!proAccess) { requestUpgrade(); return; }
   const r = calculate(state);
-  if (r.errors.length) {
-    $("status").textContent = "Correct the inputs before exporting.";
+  if (r.errors.length || r.rinError) {
+    $("status").textContent = r.errors[0] || r.rinError;
     return;
   }
   if (window.parent !== window) {
@@ -237,12 +296,25 @@ $("export").addEventListener("click", () => {
     $("status").textContent = "Preparing Excel workbook…";
     return;
   }
-  const csv = exportRows(state, r)
-    .map((row) => row.map((v) => '"' + String(v ?? "").replaceAll('"', '""') + '"').join(","))
-    .join("\r\n");
-  download("CIVanta-credit-RIN-estimate.csv", csv, "text/csv;charset=utf-8");
+  $("status").textContent = "Open this calculator through the Credit & RIN page to download reports.";
 });
 window.addEventListener("message", (e) => {
+  if (
+    e.source === window.parent &&
+    e.origin === location.origin &&
+    e.data?.type === "civanta-floating-sync-request"
+  ) {
+    if (publishedFloatingSummary)
+      window.parent.postMessage(
+        { type: "civanta-floating-summary", kind: "credit", summary: publishedFloatingSummary, height: document.documentElement.scrollHeight },
+        location.origin,
+      );
+    window.parent.postMessage(
+      { type: "civanta-credit-height", height: document.documentElement.scrollHeight },
+      location.origin,
+    );
+    return;
+  }
   if (
     e.source === window.parent &&
     e.origin === location.origin &&
@@ -335,20 +407,36 @@ if (window.parent !== window && typeof ResizeObserver !== "undefined") {
   observer.observe(document.body);
 }
 
-$("calculate").addEventListener("click", () => {
+$("save").addEventListener("click", () => {
   const r = calculate(state);
   results();
   if (r.errors.length) {
-    $("status").textContent = "Correct your inputs before calculating.";
+    $("status").textContent = r.errors[0];
     return;
   }
-  $("status").textContent = "Calculation complete.";
+  if (r.rinError) {
+    $("status").textContent = `${r.rinError} Choose LCFS credits only if you want to save that result without RINs.`;
+    return;
+  }
+  window.parent.postMessage({ type: "civanta-save-request", kind: "credit", suggestedName: FUELS[state.fuel].name + " · " + state.year }, location.origin);
+});
+function persistScenario(name) {
+  if (typeof name !== "string" || !name.trim() || name.trim().length > 100) return;
+  const r = calculate(state);
+  if (r.errors.length || r.rinError) {
+    $("status").textContent = r.errors[0] || r.rinError;
+    results();
+    return;
+  }
+  committedSnapshot = JSON.stringify(state);
+  results();
+  $("status").textContent = `Saved “${name.trim()}”.`;
   window.parent.postMessage(
     {
       type: "civanta-history-save",
       payload: {
         kind: "credit",
-        name: FUELS[state.fuel].name + " · " + state.year,
+        name: name.trim(),
         pathway:
           state.mode === "both"
             ? "LCFS + RFS"
@@ -368,8 +456,25 @@ $("calculate").addEventListener("click", () => {
     },
     location.origin,
   );
-});
+}
 window.addEventListener("message", (e) => {
+  if (e.source === window.parent && e.origin === location.origin && e.data?.type === "civanta-save-confirm" && e.data.kind === "credit") {
+    if (pendingFloatingInput?.isConnected) pendingFloatingInput.dispatchEvent(new Event("change", { bubbles: true }));
+    pendingFloatingInput = null;
+    persistScenario(e.data.name);
+    return;
+  }
+  if (
+    e.source === window.parent &&
+    e.origin === location.origin &&
+    e.data?.type === "civanta-floating-save-request"
+  ) {
+    if (pendingFloatingInput?.isConnected)
+      pendingFloatingInput.dispatchEvent(new Event("change", { bubbles: true }));
+    pendingFloatingInput = null;
+    $("save").click();
+    return;
+  }
   if (
     e.source === window.parent &&
     e.origin === location.origin &&
@@ -399,6 +504,7 @@ window.addEventListener("message", (e) => {
       return;
     }
     state = structuredClone(saved);
+    committedSnapshot = JSON.stringify(state);
     render();
     $("status").textContent =
       "Inputs restored and recalculated. The original run remains in your history.";

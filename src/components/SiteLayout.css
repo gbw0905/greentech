@@ -1,0 +1,150 @@
+.site-shell {
+  --site-content-width: 1240px;
+  --site-reading-width: 1080px;
+  --site-gutter: clamp(32px, 4vw, 64px);
+  --site-nav-height: 69px;
+  --site-ribbon-height: 42px;
+  --site-chrome-height: calc(var(--site-nav-height) + var(--site-ribbon-height));
+}
+
+/* Keep one mounted ribbon across navigation, outside animated page containers. */
+.site-chrome {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  flex: none;
+  background: #fff;
+}
+.site-chrome > .gbw-header {
+  position: relative;
+  top: auto;
+  z-index: 2;
+}
+.site-chrome .gbw-header .gbw-header-inner {
+  width: min(var(--site-content-width), calc(100% - 2 * var(--site-gutter)));
+  max-width: var(--site-content-width);
+  padding-inline: 0;
+}
+
+/* Shared page edges; long-form pages keep a narrower reading measure. */
+.site-shell
+  :is(
+    .jobs-main,
+    .supply-directory-main,
+    .sources-main,
+    .information-main,
+    .intelligence-page,
+    .page-shell,
+    .videos-shell,
+    .video-watch-shell,
+    .video-history-shell,
+    .gbw-footer .footer-inner
+  ) {
+  width: min(var(--site-content-width), calc(100% - 2 * var(--site-gutter)));
+  max-width: var(--site-content-width);
+  margin-inline: auto;
+  padding-inline: 0;
+  min-width: 0;
+}
+.site-shell :is(.desk-design .wrap, .dataset-wrap, .country-design .wrap) {
+  width: min(var(--site-reading-width), calc(100% - 2 * var(--site-gutter)));
+  max-width: var(--site-reading-width);
+  margin-inline: auto;
+  padding-inline: 0;
+}
+.site-shell :is(.ci-workspace-page, .civanta-page, .account-page) {
+  padding-inline: var(--site-gutter);
+}
+.site-shell :is(.ci-workspace-shell, .civanta-shell, .account-shell) {
+  max-width: var(--site-content-width);
+}
+.site-shell
+  :is(
+    .jobs-hero h1,
+    .information-hero h1,
+    .videos-hero h1,
+    .desk-design h1,
+    .dataset-hero h1,
+    .civanta-intro h1
+  ) {
+  font-size: clamp(32px, 3.2vw, 48px);
+  letter-spacing: -0.035em;
+  line-height: 1.12;
+}
+.site-ribbon {
+  position: relative;
+  z-index: 1;
+  height: var(--site-ribbon-height);
+}
+.site-shell
+  :is(
+    .benchmark-section,
+    .jurisdiction-section,
+    .industry-section,
+    .jobs-search,
+    .sources-methodology,
+    .sources-library-heading,
+    .sources-dataset,
+    .supply-filter-bar,
+    #updates,
+    #intelligence-title,
+    #brief,
+    #footer-contact,
+    .videos-explainer,
+    .country-design #overview,
+    .country-design #mandates,
+    .country-design #updates
+  ) {
+  scroll-margin-top: calc(var(--site-chrome-height) + 16px);
+}
+.site-shell :is(.sources-sidebar, .country-design .aside, .videos-rail, .video-watch-related) {
+  top: calc(var(--site-chrome-height) + 16px);
+}
+.site-shell .videos-rail {
+  max-height: calc(100dvh - var(--site-chrome-height) - 32px);
+}
+
+@media (min-width: 1100px) {
+  .site-shell .opt-inputs {
+    top: calc(var(--site-chrome-height) + 16px);
+    max-height: calc(100svh - var(--site-chrome-height) - 32px);
+  }
+}
+@media (min-width: 1280px) {
+  .site-chrome .gbw-header .gbw-header-inner {
+    gap: 10px;
+  }
+  .site-chrome .gbw-header .gbw-brand {
+    font-size: 20px;
+    gap: 10px;
+  }
+  .site-chrome .gbw-header .gbw-brand img {
+    width: 46px;
+    height: 46px;
+  }
+}
+@media (max-width: 1279px) {
+  .site-shell {
+    --site-gutter: clamp(24px, 4vw, 48px);
+  }
+  .site-chrome .gbw-mobile-nav {
+    top: calc(100% + var(--site-ribbon-height));
+    max-height: calc(100svh - var(--site-chrome-height));
+  }
+}
+@media (max-width: 620px) {
+  .site-shell {
+    --site-gutter: 20px;
+    --site-nav-height: 63px;
+  }
+}
+@media print {
+  .site-shell {
+    --site-content-width: 100%;
+    --site-reading-width: 100%;
+    --site-gutter: 0px;
+  }
+  .site-chrome {
+    display: none !important;
+  }
+}

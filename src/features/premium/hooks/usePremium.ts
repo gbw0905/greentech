@@ -1,9 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { getPremiumStatusFn } from "@/features/premium/server-functions";
 
 /** Premium access = signed in AND listed on the curated premium members list. */
 export function usePremium() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const { user, loading, signedIn } = useAuthSession();
 
   const { data, isLoading } = useQuery({
@@ -15,8 +18,8 @@ export function usePremium() {
 
   return {
     signedIn,
-    premium: Boolean(data?.premium),
-    canEdit: Boolean(data?.canEdit),
-    loading: loading || (signedIn && isLoading),
+    premium: mounted && Boolean(data?.premium),
+    canEdit: mounted && Boolean(data?.canEdit),
+    loading: !mounted || loading || (signedIn && isLoading),
   };
 }

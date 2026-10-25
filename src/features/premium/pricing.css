@@ -1,0 +1,232 @@
+.civanta-pricing {
+  min-height: 80svh;
+  background: radial-gradient(circle at 82% 5%, #e9f2fa, transparent 35%), #f5f8fb;
+  color: #102d43;
+  font-family: "Instrument Sans", sans-serif;
+  padding: 22px 22px 64px;
+}
+.pricing-shell {
+  width: min(100%, 1180px);
+  margin: auto;
+}
+.pricing-hero {
+  text-align: center;
+  max-width: 900px;
+  margin: auto;
+}
+.pricing-back {
+  display: inline-block;
+  color: #527385;
+  font-size: 15px;
+  font-weight: 650;
+  text-decoration: none;
+  margin-bottom: 12px;
+}
+.pricing-back:hover {
+  color: #286ba8;
+}
+.pricing-eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #a77524;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.pricing-hero h1 {
+  margin: 8px 0;
+  font:
+    750 clamp(36px, 3.7vw, 53px)/1.08 "Bricolage Grotesque",
+    sans-serif;
+  letter-spacing: -0.05em;
+}
+.pricing-hero > p {
+  color: #526a7b;
+  font-size: 17px;
+  line-height: 1.42;
+  margin: 0 auto 16px;
+  max-width: 66ch;
+}
+.pricing-billing {
+  display: inline-flex;
+  padding: 5px;
+  border: 1px solid #d4e3e7;
+  border-radius: 12px;
+  background: #eaf0f3;
+}
+.pricing-billing button {
+  border: 0;
+  border-radius: 9px;
+  padding: 10px 17px;
+  background: transparent;
+  color: #526a7b;
+  font:
+    700 15px "Instrument Sans",
+    sans-serif;
+  cursor: pointer;
+}
+.pricing-billing button[aria-pressed="true"] {
+  background: white;
+  color: #102d43;
+  box-shadow: 0 4px 12px #102d4318;
+}
+.pricing-billing span {
+  color: #a77524;
+  font-size: 12px;
+  margin-left: 4px;
+}
+.pricing-preview-note {
+  display: block;
+  margin-top: 7px;
+  color: #718595;
+  font-size: 13px;
+}
+.pricing-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+  margin: 24px auto 30px;
+}
+.pricing-card {
+  min-width: 0;
+  padding: clamp(26px, 3vw, 38px);
+  border: 1px solid #d9e5e9;
+  border-radius: 22px;
+  background: white;
+  box-shadow: 0 16px 40px #102d430b;
+}
+.pricing-card-pro {
+  border-color: #e3cc9a;
+  border-top: 5px solid #bf9140;
+  background: linear-gradient(160deg, #fff7e8, white 38%);
+}
+.pricing-card-top span {
+  color: #27699e;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+.pricing-card-top h2 {
+  margin: 12px 0 5px;
+  font:
+    700 31px "Bricolage Grotesque",
+    sans-serif;
+}
+.pricing-card-pro .pricing-card-top span,
+.pricing-card-pro .pricing-card li svg {
+  color: #a77524;
+}
+.pricing-card-top p {
+  margin: 0;
+  color: #526a7b;
+  font-size: 16px;
+}
+.pricing-price {
+  margin: 31px 0 24px;
+  font:
+    750 48px "Bricolage Grotesque",
+    sans-serif;
+  letter-spacing: -0.05em;
+}
+.pricing-price small {
+  color: #6d8290;
+  font:
+    500 17px "Instrument Sans",
+    sans-serif;
+  letter-spacing: 0;
+}
+.pricing-card-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 52px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.pricing-free-action {
+  color: #102d43;
+  background: #eef4f6;
+}
+.pricing-pro-action {
+  color: white;
+  background: #aa7929;
+}
+.pricing-free-action:hover {
+  background: #dce9ee;
+}
+.pricing-pro-action:hover {
+  background: #865c1c;
+}
+.pricing-card ul {
+  margin: 28px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.pricing-card li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 0;
+  color: #38586c;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.pricing-card li svg {
+  flex: none;
+  color: #286ba8;
+  margin-top: 2px;
+}
+.pricing-trust-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.pricing-trust-row > div {
+  padding: 22px;
+  border: 1px solid #dce7e9;
+  border-radius: 15px;
+  background: #fff;
+}
+.pricing-trust-row svg {
+  color: #286ba8;
+}
+.pricing-trust-row b {
+  display: block;
+  margin: 9px 0 4px;
+  font:
+    700 19px "Bricolage Grotesque",
+    sans-serif;
+}
+.pricing-trust-row p {
+  margin: 0;
+  color: #60798a;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.pricing-footnote {
+  max-width: 90ch;
+  margin: 28px auto 0;
+  color: #6c8291;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.55;
+}
+@media (max-width: 720px) {
+  .civanta-pricing {
+    padding: 27px 16px 52px;
+  }
+  .pricing-cards {
+    grid-template-columns: 1fr;
+    margin-top: 31px;
+  }
+  .pricing-trust-row {
+    grid-template-columns: 1fr;
+  }
+}

@@ -117,7 +117,11 @@ export function LiveMarquee({
     : "—";
 
   return (
-    <div className="flex h-[42px] items-stretch overflow-hidden border-b border-[#d6e1ea] bg-white font-['Instrument_Sans'] text-[14px]">
+    <div
+      role="region"
+      aria-label="Live market and policy updates"
+      className="site-ribbon flex h-[42px] items-stretch overflow-hidden border-b border-[#d6e1ea] bg-white font-['Instrument_Sans'] text-[14px]"
+    >
       <div className="relative z-10 flex shrink-0 items-center gap-2 border-r border-[#d6e1ea] bg-white px-5 font-semibold text-[#0e2a43]">
         <span className="pulse-dot size-[7px] rounded-full bg-[#178a6b]" />
         Markets

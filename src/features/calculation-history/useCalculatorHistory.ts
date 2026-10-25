@@ -91,7 +91,11 @@ export function useCalculatorHistory(
         return;
       }
       if (!user) {
-        setStatus("Sign in to save your calculations to your account.");
+        setStatus(
+          kind === "ci"
+            ? "Scenario saved on this device. Sign in to sync it to your account."
+            : "Inputs saved in this browser. Sign in to save named scenarios to your account.",
+        );
         return;
       }
       setStatus("Saving this calculation to your account…");
@@ -99,12 +103,12 @@ export function useCalculatorHistory(
         await mutateAsync(parsed.data);
         if (active) {
           setFailed(null);
-          setStatus("Calculation saved to your account.");
+          setStatus("Scenario saved to your account.");
         }
       } catch {
         if (active) {
           setFailed(parsed.data);
-          setStatus("Calculation complete, but account history could not be saved. Retry below.");
+          setStatus("Scenario could not be saved to your account. Retry below.");
         }
       }
     };
@@ -130,7 +134,7 @@ export function useCalculatorHistory(
       try {
         await mutateAsync(failed);
         setFailed(null);
-        setStatus("Calculation saved to your account.");
+        setStatus("Scenario saved to your account.");
       } catch {
         setStatus("Account history is still unavailable. Please try again.");
       }

@@ -714,6 +714,9 @@
 .desk-design .team-leadership img.av {
   object-fit: cover;
 }
+.desk-design .team-builders .rakibul-portrait {
+  object-position: center 10%;
+}
 @media (max-width: 900px) {
   .desk-design .team-leadership {
     grid-template-columns: 1fr;

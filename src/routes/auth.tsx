@@ -2,9 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AuthPage } from "@/features/auth/components/AuthPage";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (search: Record<string, unknown>): { mode?: "signup"; error?: string } => ({
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { mode?: "signup"; error?: string; next?: "/pricing" } => ({
     ...(search["mode"] === "signup" ? { mode: "signup" as const } : {}),
     ...(typeof search["error"] === "string" ? { error: search["error"] } : {}),
+    ...(search["next"] === "/pricing" ? { next: "/pricing" as const } : {}),
   }),
   head: () => ({
     meta: [
@@ -27,6 +30,13 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthRoute() {
-  const { mode, error } = Route.useSearch();
-  return <AuthPage key={mode ?? "signin"} initialMode={mode ?? "signin"} callbackError={error} />;
+  const { mode, error, next } = Route.useSearch();
+  return (
+    <AuthPage
+      key={mode ?? "signin"}
+      initialMode={mode ?? "signin"}
+      {...(error ? { callbackError: error } : {})}
+      {...(next ? { next } : {})}
+    />
+  );
 }
