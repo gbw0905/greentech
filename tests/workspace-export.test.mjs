@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import {
   buildWorkspaceSpec,
   layoutWorkspaceSpec,
@@ -131,3 +131,94 @@ test("Saved XLSX retains formulas, cached numbers, logo, formats and cross-sheet
   const zip = await JSZip.loadAsync(output);
   assert.match(await zip.file("xl/workbook.xml").async("string"), /fullCalcOnLoad="1"/);
 });
+
+for (const id of ["rd-uco", "rd-palm", "biodiesel-uco", "ethanol-corn", "rng-dairy"])
+  test(`RFS export links annual quantity and eligibility: ${id}`, async () => {
+    const state = newScenario(id);
+    state.programs = { ...PROGRAM.settings(), rfsShare: 100, dcode: "D4" };
+    const payload = buildWorkspacePayload(state);
+    const { book, layout } = await createWorkspaceWorkbook(buildWorkspaceSpec(payload));
+    const cell = (key) => {
+      const [sheet, address] = layout.refs.get(key).split("!");
+      return book.getWorksheet(sheet.replaceAll("'", "")).getCell(address);
+    };
+    for (const key of ["energyMj", "gallons", "ev", "rinError", "rins", "rinValue"]) {
+      assert(cell(`rfs-${key}`).formula);
+      assert.equal(cell(`rfs-${key}`).result, payload.rinEstimate[key] ?? "");
+    }
+    assert.match(cell("rfs-energyMj").formula, /'Inputs'!B\d+/);
+    assert.match(cell("rfs-rins").formula, /IF\(/);
+    if (process.env.REPORT_FORMULA_CHECK_DIR) {
+      const expected = [];
+      for (const sheet of book.worksheets)
+        sheet.eachRow((row) =>
+          row.eachCell((c) => {
+            if (c.formula && !c.formula.startsWith("FORMULATEXT"))
+              expected.push({ sheet: sheet.name, cell: c.address, value: c.result ?? "" });
+          }),
+        );
+      const changed = structuredClone(state);
+      const quantityKey = id === "rng-dairy" ? "periodMj" : "annualVolume";
+      if (id !== "rng-dairy") changed.annualVolume *= 2;
+      const before = payload.rinEstimate;
+      const after =
+        id === "rng-dairy"
+          ? { ...before, energyMj: before.energyMj * 2, rins: before.rins * 2 }
+          : buildWorkspacePayload(changed).rinEstimate;
+      const checks = ["energyMj", "gallons", "rins"].map((key) => ({
+        sheet: "Calculation",
+        cell: cell(`rfs-${key}`).address,
+        value: after[key] ?? "",
+      }));
+      const changes = [
+        {
+          sheet: "Inputs",
+          cell: cell(quantityKey).address,
+          value: Number(cell(quantityKey).value) * 2,
+          checks,
+        },
+        {
+          sheet: "Inputs",
+          cell: cell("rfs-share").address,
+          value: 50,
+          checks: [
+            {
+              sheet: "Calculation",
+              cell: cell("rfs-rins").address,
+              value: after.rins == null ? "" : after.rins / 2,
+            },
+          ],
+        },
+        {
+          sheet: "Inputs",
+          cell: cell("rfs-dcode").address,
+          value: "",
+          checks: [{ sheet: "Calculation", cell: cell("rfs-rins").address, value: "" }],
+        },
+      ];
+      const nextYear = PROGRAM.comparePrograms(
+        changed,
+        { ...assess(changed), annualEnergyMj: payload.annualEnergyMj * 2 },
+        { ...state.programs, year: 2027, rfsShare: 50 },
+      ).rin;
+      changes.push(
+        { sheet: "Inputs", cell: cell("rfs-dcode").address, value: "D4", checks: [] },
+        {
+          sheet: "Inputs",
+          cell: cell("rfs-year").address,
+          value: 2027,
+          checks: [
+            { sheet: "Calculation", cell: cell("rfs-rins").address, value: nextYear.rins ?? "" },
+            {
+              sheet: "Calculation",
+              cell: cell("rfs-rinError").address,
+              value: nextYear.rinError ?? "",
+            },
+          ],
+        },
+      );
+      const base = `${process.env.REPORT_FORMULA_CHECK_DIR}/workspace-${id}`;
+      await book.xlsx.writeFile(`${base}.xlsx`);
+      await writeFile(`${base}.json`, JSON.stringify({ expected, changes }));
+    }
+  });

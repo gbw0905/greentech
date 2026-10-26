@@ -216,6 +216,100 @@ export function buildWorkspaceSpec(input: unknown): WorkspaceSpec {
       { key: "comparator", editable: [2] },
     ),
   ];
+  const rin = data["rinEstimate"] as Record<string, unknown> | null | undefined;
+  const program = (scenario["programs"] ?? {}) as Record<string, unknown>;
+  const rinInputs: ExportRow[] = rin
+    ? [
+        row(["RFS compliance year", value(program["year"] ?? 2026), "year", "2026 or 2027"], {
+          key: "rfs-year",
+          editable: [2],
+        }),
+        row(
+          [
+            "RFS eligible quantity",
+            value(program["rfsShare"] ?? 0),
+            "%",
+            "Eligible share of annual fuel quantity",
+          ],
+          { key: "rfs-share", editable: [2] },
+        ),
+        row(
+          [
+            "Registered RFS D-code",
+            value(program["dcode"] ?? ""),
+            "",
+            "Approved pathway D-code; not inferred from CI",
+          ],
+          { key: "rfs-dcode", editable: [2] },
+        ),
+        row(
+          [
+            "RFS equivalence value source",
+            value(program["evMode"] ?? "standard"),
+            "",
+            "standard or custom",
+          ],
+          { key: "rfs-ev-mode", editable: [2] },
+        ),
+        row(
+          [
+            "EPA-approved custom equivalence value",
+            value(program["customEV"] ?? 1.7),
+            "RIN/gal",
+            "Used only when the source is custom",
+          ],
+          { key: "rfs-custom-ev", editable: [2] },
+        ),
+        row(["RIN planning price", 1, "USD/RIN", "Companion engine default; user assumption"], {
+          key: "rfs-price",
+          editable: [2],
+        }),
+      ]
+    : [];
+  const rng = data.pathwayId.startsWith("rng-");
+  const rd = data.pathwayId.startsWith("rd-");
+  const bd = data.pathwayId.startsWith("biodiesel-");
+  const standardEv = rd ? `IF(${ref("rfs-year")}=2026,1.7,1.5)` : bd ? "1.5" : "1";
+  const rfsChecks = [
+    [`AND(${ref("rfs-year")}<>2026,${ref("rfs-year")}<>2027)`, "Choose 2026 or 2027."],
+    [
+      `OR(${ref("rfs-share")}<0,${ref("rfs-share")}>100)`,
+      "RFS eligible share must be between 0 and 100%.",
+    ],
+    [
+      `AND(${ref("rfs-ev-mode")}<>"standard",${ref("rfs-ev-mode")}<>"custom")`,
+      "Select an equivalence value source.",
+    ],
+    [
+      `AND(${ref("rfs-ev-mode")}="custom",OR(${ref("rfs-custom-ev")}<=0,${ref("rfs-custom-ev")}>5))`,
+      "Approved equivalence value must be greater than 0 and at most 5.",
+    ],
+    [
+      `AND(${rd ? "TRUE" : "FALSE"},${ref("rfs-year")}=2026,${ref("rfs-ev-mode")}="standard",${ref("lhv")}/0.00105505585262<123500)`,
+      "The 2026 1.7 factor requires LHV ≥ 123,500 Btu/gal. Enter an EPA-approved alternative equivalence value.",
+    ],
+    [
+      `${ref("rfs-dcode")}=""`,
+      "Select the D-code from the registered/approved pathway to calculate RINs.",
+    ],
+    [
+      `AND(${ref("rfs-dcode")}<>"D3",${ref("rfs-dcode")}<>"D4",${ref("rfs-dcode")}<>"D5",${ref("rfs-dcode")}<>"D6",${ref("rfs-dcode")}<>"D7")`,
+      "Choose a supported D-code.",
+    ],
+  ];
+  const rfsError = rfsChecks.reduceRight(
+    (next, [condition, message]) => `IF(${condition},"${message}",${next})`,
+    '""',
+  );
+
+  const rinFormulas: Record<string, string> = {
+    energyMj: ref("annualMj"),
+    gallons: rng ? '""' : ref("annualVolume"),
+    ev: rng ? "1" : `IF(${ref("rfs-ev-mode")}="custom",${ref("rfs-custom-ev")},${standardEv})`,
+    rinError: rfsError,
+    rins: `IF(${ref("rfs-rinError")}<>"","",${rng ? `${ref("annualMj")}/(77000*0.00105505585262)` : `${ref("rfs-gallons")}*${ref("rfs-ev")}`}*${ref("rfs-share")}/100)`,
+    rinValue: `IF(ISNUMBER(${ref("rfs-rins")}),${ref("rfs-rins")}*${ref("rfs-price")},"")`,
+  };
   if (
     !dairy &&
     !close(
@@ -664,8 +758,19 @@ export function buildWorkspaceSpec(input: unknown): WorkspaceSpec {
                 {
                   title: "RFS estimate",
                   headers: ["Metric", "Value"],
-                  rows: Object.entries(data["rinEstimate"] as Record<string, unknown>).map(
-                    ([key, item]) => row([key, value(item)]),
+                  rows: Object.entries(rin!).map(([key, item]) =>
+                    row(
+                      [
+                        key,
+                        rinFormulas[key]
+                          ? formula(
+                              rinFormulas[key],
+                              typeof item === "number" || typeof item === "string" ? item : "",
+                            )
+                          : value(item),
+                      ],
+                      { key: `rfs-${key}` },
+                    ),
                   ),
                 },
               ]
@@ -711,7 +816,7 @@ export function buildWorkspaceSpec(input: unknown): WorkspaceSpec {
           {
             title: "Program assumptions",
             headers: ["Input", "Value", "Unit", "Note"],
-            rows: programInputs,
+            rows: [...programInputs, ...rinInputs],
           },
           ...(baselineRows.length
             ? [
