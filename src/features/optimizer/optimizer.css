@@ -44,10 +44,14 @@
   border: 0;
   background: transparent;
   color: #225c85;
-  font: 700 15px "Instrument Sans", sans-serif;
+  font:
+    700 15px "Instrument Sans",
+    sans-serif;
   cursor: pointer;
 }
-.optimizer-history-back:hover { text-decoration: underline; }
+.optimizer-history-back:hover {
+  text-decoration: underline;
+}
 .opt-toolbar > div {
   display: flex;
   align-items: center;
@@ -108,7 +112,7 @@
   margin-bottom: 22px;
 }
 .opt-section-title h2 {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 20px;
   letter-spacing: -0.02em;
   font-weight: 650;
@@ -307,7 +311,7 @@
   font-size: 12px;
 }
 .opt-recommendation h2 {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 50px;
   line-height: 1.15;
   letter-spacing: -0.04em;
@@ -383,7 +387,7 @@
   color: #6c8393;
 }
 .opt-metric strong {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-size: 26px;
   letter-spacing: -0.03em;
   line-height: 1.15;
@@ -434,7 +438,7 @@
   margin-top: 18px !important;
 }
 .opt-tab-content h3 {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   font-weight: 650;
   font-size: 22px;
   letter-spacing: -0.025em;
@@ -635,7 +639,7 @@
   color: #678b79;
 }
 .opt-solver-answer strong {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   display: block;
   font-size: 28px;
   margin: 6px 0;

@@ -1,5 +1,4 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
 import { ArrowRight, Check, FileSpreadsheet, LockKeyhole, Sparkles } from "lucide-react";
 import { usePremium } from "@/features/premium/hooks/usePremium";
 import "@/features/premium/pricing.css";
@@ -25,7 +24,6 @@ const proFeatures = [
 ];
 
 function PricingPage() {
-  const [billing, setBilling] = useState<"monthly" | "annual">("annual");
   const access = usePremium();
   const proHref = access.signedIn
     ? "mailto:info@globalbioenergywatch.org?subject=CIVanta%20Pro%20access"
@@ -46,31 +44,11 @@ function PricingPage() {
             Calculate for free. Upgrade when you need deeper comparison, sensitivity and reports you
             can share.
           </p>
-          <div className="pricing-billing" role="group" aria-label="Preview billing period">
-            <button
-              type="button"
-              aria-pressed={billing === "monthly"}
-              onClick={() => setBilling("monthly")}
-            >
-              Monthly
-            </button>
-            <button
-              type="button"
-              aria-pressed={billing === "annual"}
-              onClick={() => setBilling("annual")}
-            >
-              Annual <span>Save $198</span>
-            </button>
-          </div>
-          <small className="pricing-preview-note">
-            Preview prices for product planning. No payment is collected on this page.
-          </small>
         </div>
 
         <div className="pricing-cards">
           <section className="pricing-card" aria-labelledby="free-plan-title">
             <div className="pricing-card-top">
-              <span>START EXPLORING</span>
               <h2 id="free-plan-title">Free</h2>
               <p>For your first pathway and estimate.</p>
             </div>
@@ -91,14 +69,10 @@ function PricingPage() {
           </section>
           <section className="pricing-card pricing-card-pro" aria-labelledby="pro-plan-title">
             <div className="pricing-card-top">
-              <span>FOR SERIOUS ANALYSIS</span>
               <h2 id="pro-plan-title">CIVanta Pro</h2>
               <p>For repeatable decisions and client-ready reporting.</p>
             </div>
-            <div className="pricing-price">
-              ${billing === "annual" ? "990" : "99"}{" "}
-              <small>/ {billing === "annual" ? "year" : "month"}</small>
-            </div>
+            <div className="pricing-price pricing-contact-price">Contact for Pricing</div>
             {access.loading ? (
               <span className="pricing-card-action pricing-free-action">Checking access…</span>
             ) : access.premium ? (
