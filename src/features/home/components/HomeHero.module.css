@@ -142,7 +142,7 @@
 }
 @media (min-width: 761px) and (min-height: 761px) {
   .layout {
-    padding-block: 12px;
+    padding-block: 20px;
   }
 }
 @media (min-width: 1500px) {

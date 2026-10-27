@@ -86,7 +86,11 @@ function calculate(s) {
   if (rfs && s.evMode === "custom" && s.fuel !== "rng") required.push("customEV");
   for (const k of required)
     if (typeof s[k] !== "number" || !Number.isFinite(s[k]))
-      errors.push(k + " must be a finite number.");
+      errors.push(
+        k === "benchmark" && s.year === 2027 && s.benchmarkMode === "custom"
+          ? "Enter a verified 2027 LCFS benchmark in gCO₂e/MJ."
+          : k + " must be a finite number.",
+      );
   if (s.quantity < 0) errors.push("Quantity cannot be negative.");
   if (s.fuel !== "rng" && s.energy <= 0) errors.push("Energy content must be positive.");
   if (lcfs && s.fuel === "rng" && s.lcfsBasisFactor <= 0)

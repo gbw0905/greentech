@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { policyStatusFor, type CountryProfile } from "@/features/policy/taxonomy";
-import { useCountryMandates, useGovernmentSites } from "../hooks/useCountryData";
 import { MAP_STATUS_COLORS } from "./map-presentation";
 import styles from "./CountrySummaryModal.module.css";
 
@@ -16,16 +15,11 @@ export function CountrySummaryModal({
   onRestoreFocus: () => void;
 }) {
   const status = policyStatusFor(country);
-  const { data: detailedMandates = [] } = useCountryMandates(country?.slug ?? "");
-  const { data: sources = [] } = useGovernmentSites(country?.slug ?? "");
   const fuelSummary = (pattern: RegExp) =>
     country?.mandates
       .filter((item) => pattern.test(item.label))
       .map((item) => item.value)
       .join(" · ") || "Not listed in this profile";
-  const regulators = country
-    ? [...new Set(detailedMandates.map((m) => m.compliance.administrator))]
-    : [];
 
   return (
     <Dialog open={!!country} onOpenChange={(open) => !open && onClose()}>
@@ -60,17 +54,8 @@ export function CountrySummaryModal({
                 </div>
               ))}
             </dl>
-            <p className={styles["regulator"]}>
-              {regulators.length ? "Regulator: " : "Official sources: "}
-              <strong>
-                {regulators.join(" · ") ||
-                  sources.map((s) => s.label).join(" · ") ||
-                  "Being compiled"}
-              </strong>
-            </p>
           </div>
           <footer className={styles["footer"]}>
-            <p>Summary snapshot; confirm against official sources.</p>
             <div>
               <Link to="/countries/$slug" params={{ slug: country.slug }} onClick={onClose}>
                 Full policy profile <ArrowRight size={15} aria-hidden="true" />

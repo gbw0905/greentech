@@ -1,5 +1,6 @@
 import type { LiveArticle, LiveVideo } from "@/features/videos/contracts";
 import { cacheGet, cacheSet } from "@/features/markets/server/market-cache.server";
+import { publishedAgeMinutes } from "@/features/videos/published-age";
 
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36";
@@ -48,9 +49,16 @@ export function collectYouTubeVideos(node: unknown, out: LiveVideo[], keyword: s
   for (const key of Object.keys(rec)) collectYouTubeVideos(rec[key], out, keyword);
 }
 
-async function searchYouTube(keyword: string, limit: number): Promise<LiveVideo[]> {
-  const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(keyword)}&sp=CAI%253D`;
+async function searchYouTube(
+  keyword: string,
+  limit: number,
+  recent: boolean,
+): Promise<LiveVideo[]> {
+  const after = new Date(Date.now() - 60 * 24 * 60 * 60_000).toISOString().slice(0, 10);
+  const query = recent ? `${keyword} after:${after}` : keyword;
+  const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}&sp=CAI%253D`;
   const res = await fetch(url, {
+    signal: AbortSignal.timeout(15_000),
     headers: { "user-agent": UA, "accept-language": "en-US,en;q=0.9" },
   });
   if (!res.ok) return [];
@@ -68,7 +76,10 @@ async function searchYouTube(keyword: string, limit: number): Promise<LiveVideo[
   }
   const out: LiveVideo[] = [];
   collectYouTubeVideos(data, out, keyword);
-  return out.slice(0, limit);
+  return out
+    .filter((video) => !recent || publishedAgeMinutes(video.published) <= 60 * 24 * 60)
+    .sort((a, b) => publishedAgeMinutes(a.published) - publishedAgeMinutes(b.published))
+    .slice(0, limit);
 }
 
 function decode(s: string) {
@@ -105,30 +116,30 @@ async function searchWeb(keyword: string, limit: number): Promise<LiveArticle[]>
   });
 }
 
-export async function fetchLiveMedia(keywords: string[], perKeyword = 6) {
+export async function fetchLiveMedia(keywords: string[], perKeyword = 6, refresh = false) {
   const key = `media:${keywords.join("|")}:${perKeyword}`;
-  const cached = cacheGet<{ videos: LiveVideo[]; articles: LiveArticle[] }>(key);
-  if (cached && Date.now() - cached.at < 30 * 60_000) {
+  const cached = cacheGet<{ videos: LiveVideo[] }>(key);
+  if (!refresh && cached && Date.now() - cached.at < 4 * 60_000) {
     return { ...cached.value, cachedAt: cached.at, stale: false };
   }
   try {
-    const results = await Promise.all(
-      keywords.map(async (k) => ({
-        videos: await searchYouTube(k, perKeyword).catch(() => []),
-        articles: await searchWeb(k, perKeyword).catch(() => []),
-      })),
+    const recent = await Promise.all(
+      keywords.map((keyword) => searchYouTube(keyword, perKeyword, true).catch(() => [])),
     );
-    const videos: LiveVideo[] = [];
-    const articles: LiveArticle[] = [];
-    for (const r of results) {
-      for (const v of r.videos) if (!videos.some((x) => x.id === v.id)) videos.push(v);
-      for (const a of r.articles) if (!articles.some((x) => x.url === a.url)) articles.push(a);
+    let videos = [...new Map(recent.flat().map((video) => [video.id, video])).values()];
+    if (!videos.length) {
+      const fallback = await Promise.all(
+        keywords.map((keyword) => searchYouTube(keyword, perKeyword, false).catch(() => [])),
+      );
+      videos = [...new Map(fallback.flat().map((video) => [video.id, video])).values()];
     }
-    if (videos.length || articles.length) cacheSet(key, { videos, articles });
-    return { videos, articles, cachedAt: Date.now(), stale: false };
+    videos.sort((a, b) => publishedAgeMinutes(a.published) - publishedAgeMinutes(b.published));
+    if (videos.length) cacheSet(key, { videos });
+    if (!videos.length && cached) return { ...cached.value, cachedAt: cached.at, stale: true };
+    return { videos, cachedAt: Date.now(), stale: false };
   } catch {
     if (cached) return { ...cached.value, cachedAt: cached.at, stale: true };
-    return { videos: [], articles: [], cachedAt: Date.now(), stale: true };
+    return { videos: [], cachedAt: Date.now(), stale: true };
   }
 }
 

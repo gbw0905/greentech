@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Users, Linkedin } from "lucide-react";
+import { Linkedin } from "lucide-react";
 import { InformationPage } from "@/components/InformationPage";
 
 const TITLE = "Team Members — Global Bioenergy Watch";
@@ -63,7 +63,6 @@ function TeamPage() {
   return (
     <InformationPage
       active="team"
-      icon={Users}
       title="Team members"
       subtitle="The people who build, curate, and verify the Global Bioenergy Watch desk."
     >

@@ -1,14 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  Compass,
-  Target,
-  Telescope,
-  ArrowRight,
-  FileCheck2,
-  ChartNoAxesCombined,
-  Globe2,
-  Sparkles,
-} from "lucide-react";
+import { Target, Telescope, FileCheck2, ChartNoAxesCombined, Globe2, Sparkles } from "lucide-react";
 import { InformationPage } from "@/components/InformationPage";
 
 const TITLE = "Mission & Vision — Global Bioenergy Watch";
@@ -35,7 +26,6 @@ function MissionVisionPage() {
   return (
     <InformationPage
       active="mission"
-      icon={Compass}
       title="Mission & vision"
       subtitle="Why Global Bioenergy Watch exists — and the standard we hold ourselves to every day."
     >
@@ -125,15 +115,6 @@ function MissionVisionPage() {
             </article>
           ))}
         </div>
-      </section>
-      <section className="cta">
-        <div>
-          <h2>Follow the sector, one brief a day</h2>
-          <p>AI-assisted policy and market summaries, delivered once a day.</p>
-        </div>
-        <a className="btn" href="#brief">
-          Get the daily brief <ArrowRight size={17} />
-        </a>
       </section>
     </InformationPage>
   );

@@ -240,15 +240,17 @@ export function OptimizerResults({
   const impact = Math.max(1, ...sens.flatMap((r) => [Math.abs(r.nbLo), Math.abs(r.nbHi)]));
   return (
     <div className="opt-results">
-      <section className="opt-recommendation" aria-label="Optimizer recommendation">
+      <section className="opt-recommendation" aria-label="Optimization scenario">
+        <span className="opt-scenario-kicker">OPTIMIZER · LHV BASIS</span>
+        <h2>Optimization scenario</h2>
+        <p>{pathwayFor(input.pathwayId).label}</p>
+      </section>
+      <section className="opt-result-card" aria-label="Optimizer recommendation">
         <div className="opt-recommend-top">
-          <span>
-            <Target size={16} />{" "}
-            {analysis.recommended
-              ? "LEAST-COST PLAN THAT MEETS YOUR TARGET"
-              : "LOWEST CI AVAILABLE"}
-          </span>
-          <span className="opt-plan-status">
+          <h3>Optimized carbon intensity</h3>
+          <span
+            className={`opt-plan-status${analysis.recommended ? "" : " opt-plan-status--unmet"}`}
+          >
             {analysis.recommended ? (
               <>
                 <Check size={13} /> Feasible
@@ -258,10 +260,14 @@ export function OptimizerResults({
             )}
           </span>
         </div>
-        <h2>
-          {number(focus.ci)} <span>gCO₂e/MJ</span>
-        </h2>
-        <p>{focus.name}</p>
+        <strong className="opt-result-value">{number(focus.ci)}</strong>
+        <p className="opt-result-unit">gCO₂e/MJ</p>
+        <p className="opt-result-plan">
+          <Target size={16} />{" "}
+          {analysis.recommended ? "Least-cost plan that meets your target" : "Lowest CI available"}
+          {" · "}
+          {focus.name}
+        </p>
         <div className="opt-plan-baseline">
           <span>
             Baseline <b>{number(analysis.baseline.ci)}</b>

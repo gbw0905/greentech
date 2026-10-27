@@ -32,7 +32,6 @@ function SupplyDirectoryPage() {
     <div className="supply-directory-page">
       <main className="supply-directory-main">
         <MotionReveal as="header" className="supply-directory-heading">
-          <span className="supply-directory-kicker">Supply &amp; producers</span>
           <h1>{TITLE}</h1>
           <p>{DESCRIPTION}</p>
         </MotionReveal>

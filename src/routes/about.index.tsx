@@ -1,15 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  Globe2,
-  ArrowRight,
-  Compass,
-  Users,
-  BarChart3,
-  GraduationCap,
-  BriefcaseBusiness,
-  Landmark,
-  Newspaper,
-} from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
+import { BarChart3, GraduationCap, BriefcaseBusiness, Landmark, Newspaper } from "lucide-react";
 import { InformationPage } from "@/components/InformationPage";
 
 const TITLE = "About Us — Global Bioenergy Watch";
@@ -36,7 +26,6 @@ function AboutPage() {
   return (
     <InformationPage
       active="about"
-      icon={Globe2}
       title="About Global Bioenergy Watch"
       subtitle="An independent policy and market intelligence desk for the global bioenergy sector — tracking what governments mandate and what markets do, in one place."
     >
@@ -100,30 +89,6 @@ function AboutPage() {
             </span>
           ))}
         </div>
-      </section>
-      <section className="even">
-        <Link to="/about/mission-vision" className="link-card group">
-          <span className="icon">
-            <Compass />
-          </span>
-          <h3>Mission &amp; vision</h3>
-          <p>Why this desk exists and where it is heading.</p>
-          <span className="go">
-            Read more
-            <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-          </span>
-        </Link>
-        <Link to="/about/team" className="link-card group">
-          <span className="icon">
-            <Users />
-          </span>
-          <h3>Team members</h3>
-          <p>The people behind the tracker.</p>
-          <span className="go">
-            Meet the team
-            <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-          </span>
-        </Link>
       </section>
     </InformationPage>
   );

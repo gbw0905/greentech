@@ -2,7 +2,6 @@ import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
-import { COUNTRIES } from "@/features/policy/taxonomy";
 
 export interface HomeStats {
   total: number;
@@ -32,22 +31,33 @@ export const getHomeStats = createServerFn({ method: "GET" }).handler(
     });
 
     // Exact database counts include updates beyond the 1,000-row display feed.
-    const [all, policy] = await Promise.all([
+    const [all, policy, countries] = await Promise.all([
       client.from("policy_updates").select("id", { count: "exact", head: true }),
       client
         .from("policy_updates")
         .select("id", { count: "exact", head: true })
         .neq("category", "market"),
+      client.from("country_profiles").select("id", { count: "exact", head: true }),
     ]);
-    if (all.error || policy.error || all.count === null || policy.count === null) {
+    if (
+      all.error ||
+      policy.error ||
+      countries.error ||
+      all.count === null ||
+      policy.count === null ||
+      countries.count === null
+    ) {
       throw new Error(
-        all.error?.message ?? policy.error?.message ?? "Policy counts are unavailable",
+        all.error?.message ??
+          policy.error?.message ??
+          countries.error?.message ??
+          "Home counts are unavailable",
       );
     }
 
     return {
       total: all.count,
-      countries: COUNTRIES.length,
+      countries: countries.count,
       policy: policy.count,
       market: all.count - policy.count,
     };

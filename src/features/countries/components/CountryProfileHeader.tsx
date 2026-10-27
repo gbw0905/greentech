@@ -2,12 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight, ExternalLink, FileText, Newspaper } from "lucide-react";
 import { useCountryMandates, useGovernmentSites } from "../hooks/useCountryData";
 import { CountryFlag } from "./CountryFlag";
-import {
-  policyStatusFor,
-  POLICY_STATUS_COLOR,
-  type CountryProfile,
-} from "@/features/policy/taxonomy";
-import type { CSSProperties } from "react";
+import type { CountryProfile } from "@/features/policy/taxonomy";
 
 export function CountryProfileHeader({
   country,
@@ -16,33 +11,13 @@ export function CountryProfileHeader({
   country: CountryProfile;
   section?: "overview" | "mandates" | "updates";
 }) {
-  const status = policyStatusFor(country);
   const { data: sources = [] } = useGovernmentSites(country.slug);
   const { data: mandates = [] } = useCountryMandates(country.slug);
   return (
     <header className="banner">
       <div className="wrap">
-        <nav className="crumbs" aria-label="Breadcrumb">
-          <Link to="/">Home</Link>
-          <span aria-hidden="true">/</span>
-          <Link to="/" hash="map">
-            Jurisdiction map
-          </Link>
-          <span aria-hidden="true">/</span>
-          <span aria-current="page">{country.name}</span>
-        </nav>
         <div className="hero-grid">
           <div>
-            <div className="hero-top">
-              <span className="eyebrow">Policy profile</span>
-              <span
-                className="status"
-                style={{ "--status-color": POLICY_STATUS_COLOR[status] } as CSSProperties}
-              >
-                <i aria-hidden="true" />
-                {status}
-              </span>
-            </div>
             <div className="hero-title">
               <span className="flag">
                 <CountryFlag slug={country.slug} />
@@ -50,11 +25,6 @@ export function CountryProfileHeader({
               <h1>{country.name}</h1>
             </div>
             <p className="hero-lede">{country.blurb}</p>
-            <div className="chips">
-              {country.frameworks.map((f) => (
-                <span key={f}>{f}</span>
-              ))}
-            </div>
             <section className="hero-evidence" aria-label="Explore this jurisdiction">
               <div className="hero-quick-links">
                 <Link to="/countries/$slug" params={{ slug: country.slug }} hash="mandates">

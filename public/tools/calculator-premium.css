@@ -67,9 +67,9 @@ body[data-plan="free"] #json:hover {
   background: #ffe9bb;
 }
 #fill-defaults {
-  background: #e8f2fb;
-  border-color: #bfd5e9;
-  color: #17476e;
+  background: white;
+  border-color: var(--line);
+  color: var(--ink);
 }
 .tabs {
   background: #edf2f6;
@@ -451,8 +451,16 @@ details[open] > summary {
   font-size: 13px;
   color: var(--muted);
 }
+.calculator-notices:has(#status:empty) {
+  display: none;
+}
 #autosave-status {
-  color: #286ba8;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 .calculator-notices #status {
   padding: 0;
@@ -534,6 +542,23 @@ body.tool-credit .toolbar {
   padding: 16px 18px;
   border-radius: 17px;
   box-shadow: 0 8px 30px #102d4309;
+}
+.scenario-options {
+  margin-bottom: 16px;
+  padding: 11px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: white;
+}
+.scenario-options summary {
+  color: #17476e;
+  font-weight: 650;
+  cursor: pointer;
+}
+.scenario-options .actions {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 12px;
 }
 body.tool-workspace .toolbar .actions:first-child,
 body.tool-credit .toolbar .tabs {

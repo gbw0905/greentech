@@ -1,9 +1,16 @@
 import { useEffect, useRef } from "react";
 import type { HomeStats } from "../home-stats";
+import type { RinTradingValue } from "../rin-trading-value";
 import { DottedPolicyGlobe } from "./DottedPolicyGlobe";
 import styles from "./HomeHero.module.css";
 
-export function HomeHero({ stats }: { stats: HomeStats | null }) {
+export function HomeHero({
+  stats,
+  rinTradingValue,
+}: {
+  stats: HomeStats | null;
+  rinTradingValue: RinTradingValue | null;
+}) {
   return (
     <section
       className={`${styles["hero"]} home-hero`}
@@ -56,11 +63,6 @@ export function HomeHero({ stats }: { stats: HomeStats | null }) {
             label: "Policy updates",
             note: "Classified policy updates in the archive.",
           },
-          {
-            value: stats?.market ?? null,
-            label: "Market updates",
-            note: "Classified market news in the archive.",
-          },
         ].map((stat) => (
           <div key={stat.label} className={styles["stat"]}>
             <dd>
@@ -70,6 +72,15 @@ export function HomeHero({ stats }: { stats: HomeStats | null }) {
             <p>{stat.note}</p>
           </div>
         ))}
+        <div className={styles["stat"]}>
+          <dd>{rinTradingValue ? `$${(rinTradingValue.usd / 1_000_000_000).toFixed(1)}B` : "—"}</dd>
+          <dt>US RIN trading value</dt>
+          <p>
+            {rinTradingValue
+              ? `${rinTradingValue.transferYear} YTD estimate · through ${new Date(`${rinTradingValue.through}T00:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })}${rinTradingValue.stale ? " (last available)" : ""}`
+              : "Data temporarily unavailable"}
+          </p>
+        </div>
       </dl>
     </section>
   );
