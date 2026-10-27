@@ -16,6 +16,7 @@ import { getErrorMessage } from "@/shared/errors";
 import { HomeHero } from "@/features/home/components/HomeHero";
 import { LatestUpdatesSection } from "@/features/home/components/LatestUpdatesSection";
 import { getHomeStats, homeStatsQuery } from "@/features/home/home-stats";
+import { getRinTradingValueFn, rinTradingValueQuery } from "@/features/home/rin-trading-value";
 
 const TITLE = "Global Bioenergy Watch | Worldwide Biofuel Policy Tracker";
 
@@ -24,13 +25,14 @@ const DESCRIPTION =
 
 export const Route = createFileRoute("/")({
   loader: async ({ context }) => {
-    const [{ feed }, market] = await Promise.all([
+    const [{ feed }, market, rinTradingValue] = await Promise.all([
       loadNavigationFeed(context.queryClient),
       getOilPricesFn().catch(() => null),
+      getRinTradingValueFn().catch(() => null),
     ]);
     // The first feed load can populate an empty archive; count after it completes.
     const stats = await getHomeStats().catch(() => null);
-    return { feed, market, stats };
+    return { feed, market, stats, rinTradingValue };
   },
   head: () => ({
     meta: [
@@ -76,10 +78,20 @@ function Index() {
 
 function Dashboard() {
   useVisitTracker();
-  const { feed: initialFeed, market: initialMarket, stats: initialStats } = Route.useLoaderData();
+  const {
+    feed: initialFeed,
+    market: initialMarket,
+    stats: initialStats,
+    rinTradingValue: initialRinTradingValue,
+  } = Route.useLoaderData();
   const { data: feed } = useQuery(feedQueryWithInitial(initialFeed));
   const { data: stats } = useQuery(
     initialStats ? { ...homeStatsQuery, initialData: initialStats } : homeStatsQuery,
+  );
+  const { data: rinTradingValue } = useQuery(
+    initialRinTradingValue
+      ? { ...rinTradingValueQuery, initialData: initialRinTradingValue }
+      : rinTradingValueQuery,
   );
   const data = feed ?? {
     updates: [],
@@ -97,7 +109,7 @@ function Dashboard() {
 
   return (
     <main>
-      <HomeHero stats={stats ?? null} />
+      <HomeHero stats={stats ?? null} rinTradingValue={rinTradingValue ?? null} />
 
       <section id="markets" className="benchmark-section" aria-labelledby="markets-title">
         <OilPricePanel initialMarket={initialMarket} />

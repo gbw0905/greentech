@@ -20,7 +20,7 @@ function ProfilePage() {
   const avatar = user?.avatar_url;
   return (
     <AccountLayout
-      title="My profile"
+      title="My Profile"
       description="Your account, calculation history and CIVanta access."
       section="profile"
     >

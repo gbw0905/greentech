@@ -891,10 +891,6 @@ function BiofuelStockWorkspace() {
               );
             })}
           </div>
-          <p className="stock-list-note">
-            Prices are shown in each listing currency. The ten companies are a curated list, not a
-            comparable price or market-cap ranking.
-          </p>
         </MotionReveal>
       </div>
     </div>
@@ -1057,6 +1053,10 @@ export function OilPricePanel({
           )}
           <div className="benchmark-layout">
             <div className="benchmark-cards" role="group" aria-label="Choose a benchmark">
+              <div className="benchmark-list-title" aria-hidden="true">
+                <span>Market</span>
+                <span>Price / 1D</span>
+              </div>
               {BENCHMARKS.map((benchmark, index) => {
                 const quote = quotes.find((item) => item.symbol === benchmark.symbol);
                 return (

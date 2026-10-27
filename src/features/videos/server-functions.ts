@@ -1,13 +1,16 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-const schema = z.object({ keywords: z.array(z.string().min(2).max(80)).min(1).max(12) });
+const schema = z.object({
+  keywords: z.array(z.string().min(2).max(80)).min(1).max(12),
+  refresh: z.boolean().optional(),
+});
 
 export const getLiveMediaFn = createServerFn({ method: "GET" })
   .validator((data: unknown) => schema.parse(data))
   .handler(async ({ data }) => {
     const { fetchLiveMedia } = await import("@/features/videos/server/search-videos.server");
-    return fetchLiveMedia(data.keywords, 6);
+    return fetchLiveMedia(data.keywords, 6, data.refresh);
   });
 
 const entityNewsSchema = z.object({

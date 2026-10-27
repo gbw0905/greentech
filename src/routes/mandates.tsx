@@ -113,7 +113,7 @@ function MandatesPage() {
   return (
     <IntelligencePage
       icon={Scale}
-      eyebrow="Global markets / Obligations & targets"
+      eyebrow=""
       title="Biofuel mandate tracker"
       subtitle="Understand what is required, where it applies and what comes next. Explore blending obligations, phase-in timelines and the primary sources behind each policy."
       className="intelligence-mandates"
@@ -121,7 +121,6 @@ function MandatesPage() {
         <>
           <strong>{MANDATES.length}</strong>
           <span>Tracked mandates</span>
-          <small>Source-linked policy records</small>
         </>
       }
     >
@@ -175,19 +174,6 @@ function MandatesPage() {
             options={MANDATE_STATUSES}
             onChange={(v) => setStatus(v as MandateStatus | "all")}
           />
-        </div>
-
-        <p className="mt-3 text-xs text-muted-foreground">
-          Showing {filtered.length} of {MANDATES.length} tracked mandates. Percentages are the
-          obligation as written in law — always verify against the primary document before using
-          them in a compliance decision.
-        </p>
-      </section>
-
-      <div className="intelligence-results-heading">
-        <h2>Mandate directory</h2>
-        <span role="status">
-          {filtered.length} policy records{" "}
           {(fuel !== "all" || status !== "all" || query) && (
             <button
               type="button"
@@ -201,7 +187,11 @@ function MandatesPage() {
               Clear filters <X size={13} />
             </button>
           )}
-        </span>
+        </div>
+      </section>
+
+      <div className="intelligence-results-heading">
+        <h2>Mandate directory</h2>
       </div>
       {filtered.length === 0 ? (
         <p className="rounded-lg border border-border bg-white p-6 text-sm text-muted-foreground shadow-sm">

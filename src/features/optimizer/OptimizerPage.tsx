@@ -1,7 +1,7 @@
 import { useRouterState } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { BookmarkPlus, Download, RotateCcw, Target } from "lucide-react";
+import { Target } from "lucide-react";
 import { z } from "zod";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { HistoryPanel } from "@/features/calculation-history/HistoryPanel";
@@ -139,7 +139,7 @@ export function OptimizerPage() {
     const timer = setTimeout(() => {
       try {
         localStorage.setItem(DRAFT_KEY, snapshot);
-        setDraftStatus("Inputs saved in this browser");
+        setDraftStatus("");
       } catch {
         setDraftStatus(
           "Browser storage is unavailable; keep this page open to retain your inputs.",
@@ -161,7 +161,11 @@ export function OptimizerPage() {
       if (window.history.state?.civantaHistory === "optimizer") window.history.back();
       else setShowHistory(false);
     } else {
-      window.history.pushState({ ...window.history.state, civantaHistory: "optimizer" }, "", window.location.href);
+      window.history.pushState(
+        { ...window.history.state, civantaHistory: "optimizer" },
+        "",
+        window.location.href,
+      );
       setShowHistory(true);
     }
   }
@@ -197,7 +201,9 @@ export function OptimizerPage() {
   async function saveScenario(name: string) {
     if (!preview.data) return;
     if (!user) {
-      setStatus("Sign in to save this scenario to your account. Your inputs remain in this browser.");
+      setStatus(
+        "Sign in to save this scenario to your account. Your inputs remain in this browser.",
+      );
       return;
     }
     const result = preview.data.focus;
@@ -231,11 +237,7 @@ export function OptimizerPage() {
   return (
     <main className="ci-workspace-page optimizer-page">
       <div className="ci-workspace-shell">
-        <CalculatorHeader
-          product="optimizer"
-          historyOpen={showHistory}
-          onHistory={toggleHistory}
-        />
+        <CalculatorHeader product="optimizer" historyOpen={showHistory} onHistory={toggleHistory} />
         <FloatingCalculatorBar
           visible={floating}
           title="Optimizer"
@@ -287,7 +289,6 @@ export function OptimizerPage() {
               disabled={!preview.data || save.isPending}
               onClick={() => setSaveOpen(true)}
             >
-              <BookmarkPlus size={14} />
               {save.isPending ? "Saving…" : "Save scenario"}
             </button>
             <button
@@ -299,38 +300,25 @@ export function OptimizerPage() {
                 setStatus("");
               }}
             >
-              <RotateCcw size={14} />
-              Reset defaults
+              Load example
             </button>
           </div>
           <div>
-            <span className="opt-draft-status">{draftStatus}</span>
+            {draftStatus && <span className="opt-draft-status">{draftStatus}</span>}
             {access.premium ? (
-              <>
-                <button
-                  type="button"
-                  disabled={!preview.data || exporting}
-                  onClick={() => void download("excel")}
-                >
-                  <Download size={14} /> {exporting ? "Exporting…" : "Download Excel"}
-                </button>
-                <button
-                  type="button"
-                  disabled={!preview.data || exporting}
-                  onClick={() => void download("csv")}
-                >
-                  Export CSV
-                </button>
-                <button type="button" onClick={() => window.print()}>
-                  Print / PDF
-                </button>
-              </>
+              <button
+                type="button"
+                disabled={!preview.data || exporting}
+                onClick={() => void download("excel")}
+              >
+                {exporting ? "Exporting…" : "Download Excel"}
+              </button>
             ) : (
               <a
                 className="opt-report-upgrade"
                 href={access.signedIn ? "/pricing" : "/auth?next=%2Fpricing"}
               >
-                <Download size={16} aria-hidden="true" /> Pro reports
+                Pro · Download Excel
               </a>
             )}
           </div>
@@ -347,7 +335,9 @@ export function OptimizerPage() {
         )}
         {showHistory && (
           <div>
-            <button type="button" className="optimizer-history-back" onClick={toggleHistory}>← Back to Optimizer</button>
+            <button type="button" className="optimizer-history-back" onClick={toggleHistory}>
+              ← Back to Optimizer
+            </button>
             <HistoryPanel
               kind="optimizer"
               onRestore={(id) => {
@@ -373,12 +363,6 @@ export function OptimizerPage() {
             }
           />
           <div className="opt-output" ref={resultRef}>
-            <div className="opt-live-label">
-              <span>
-                <i />
-                {lastRun === snapshot ? "Saved scenario" : "Live result"}
-              </span>
-            </div>
             {preview.data ? (
               <OptimizerResults input={input} analysis={preview.data} premium={access.premium} />
             ) : (
@@ -391,11 +375,6 @@ export function OptimizerPage() {
             )}
           </div>
         </div>
-        <p className="opt-footnote">
-          Screening estimate · Default factors and costs are illustrative. Confirm project data,
-          fuel eligibility and program rules before making an investment decision. See Evidence for
-          model details.
-        </p>
       </div>
     </main>
   );

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView, useReducedMotion } from "motion/react";
-import { ArrowLeft, ArrowRight } from "lucide-react";
 import { MotionReveal } from "@/components/MotionReveal";
 import biogas from "@/assets/topic-biogas.jpg";
 import ethanol from "@/assets/topic-ethanol.jpg";
@@ -174,22 +173,6 @@ export function IndustryCarousel() {
               From ethanol plants to biogas digesters, explore the facilities and technologies
               driving the global bioenergy transition.
             </p>
-          </div>
-          <div className="industry-navigation">
-            <button
-              type="button"
-              aria-label="Previous industry slide"
-              onClick={() => select(active - 1)}
-            >
-              <ArrowLeft size={20} />
-            </button>
-            <button
-              type="button"
-              aria-label="Next industry slide"
-              onClick={() => select(active + 1)}
-            >
-              <ArrowRight size={20} />
-            </button>
           </div>
         </MotionReveal>
         <MotionReveal delay={0.09}>

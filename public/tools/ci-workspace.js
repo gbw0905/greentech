@@ -39,7 +39,6 @@ window.addEventListener("message", (event) => {
   proAccess = event.data.premium === true;
   document.body.dataset.plan = proAccess ? "pro" : "free";
   $("export").textContent = proAccess ? "Download Excel" : "Pro · Download Excel";
-  $("json").textContent = proAccess ? "Export JSON" : "Pro · Export JSON";
   if (ran && !dirty) resultsNow();
 });
 if (window.parent !== window)
@@ -1423,18 +1422,6 @@ window.addEventListener("message", (event) => {
   )
     $("status").textContent = event.data.message;
 });
-$("json").addEventListener("click", () => {
-  if (!proAccess) {
-    requestUpgrade();
-    return;
-  }
-  if (!valid()) return;
-  download(
-    "CIVanta-CI-scenario.json",
-    JSON.stringify({ version: MODEL_VERSION, state, baseline }, null, 2),
-    "application/json",
-  );
-});
 let browserDraft = null;
 try {
   browserDraft = readDraft(localStorage, "gbw-ci-workspace-v1", (draft) => {
@@ -1466,7 +1453,6 @@ if (browserDraft) {
 render();
 if (browserDraft?.hadRun) {
   resultsNow();
-  $("status").textContent = "Previous inputs restored.";
 }
 const persistDraft = attachAutosave({
   key: "gbw-ci-workspace-v1",

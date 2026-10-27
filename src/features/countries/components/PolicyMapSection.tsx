@@ -18,10 +18,6 @@ export function PolicyMapSection({ counts }: { counts: Record<string, number> })
     >
       <div className="jurisdiction-inner">
         <MotionReveal as="header" className="jurisdiction-heading">
-          <span className="jurisdiction-kicker">
-            <i />
-            Jurisdiction map
-          </span>
           <h2 id="jurisdiction-title">
             Policy activity <span>by jurisdiction</span>
           </h2>
@@ -31,10 +27,6 @@ export function PolicyMapSection({ counts }: { counts: Record<string, number> })
           </p>
         </MotionReveal>
         <MotionReveal delay={0.09} className={`jurisdiction-map-frame ${styles["frame"]}`}>
-          <div className="jurisdiction-map-header">
-            <h3>Jurisdiction map</h3>
-            <span>Click a country for its summary</span>
-          </div>
           <WorldPolicyMap
             counts={counts}
             activeCountry={selected}

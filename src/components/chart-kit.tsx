@@ -778,7 +778,6 @@ export function ChartHeat({
                     }
                   : undefined
               }
-              title={`${item.label}${item.sub ? ` — ${item.sub}` : ""}: ${format(item.value)} ${unitLabel}${item.meta ? ` · ${item.meta}` : ""}`}
               aria-label={`${item.label}: ${format(item.value)} ${unitLabel}`}
               onMouseMove={(e) => {
                 const box = e.currentTarget.parentElement!.getBoundingClientRect();
@@ -840,10 +839,10 @@ export function ChartHeat({
 
         {hover && hovered ? (
           <div
-            className="chart-heat-tooltip pointer-events-none absolute z-20 w-64 max-w-[85%] rounded-sm border border-border bg-card p-3 shadow-lg"
+            className="chart-heat-tooltip pointer-events-none absolute z-30 w-72 max-w-[85%] border border-border bg-card p-4 shadow-lg"
             style={{
-              left: `min(${hover.x + 14}px, calc(100% - 17rem))`,
-              top: `min(${hover.y + 14}px, calc(100% - 9rem))`,
+              left: `clamp(8px, ${hover.x + 14}px, calc(100% - 19rem))`,
+              top: `clamp(8px, ${hover.y + 14}px, calc(100% - 19rem))`,
             }}
           >
             <div className="chart-label text-foreground">{hovered.label}</div>
@@ -1336,9 +1335,6 @@ export function ChartPanel({
           </div>
           {actions ? (
             <div className="dataset-actions grid grid-cols-2 items-center gap-2 border-t border-border/70 pt-3 sm:flex sm:justify-end [&>button]:h-10 [&>button]:w-full [&>button]:justify-center sm:[&>button]:w-auto">
-              <span className="label-mono col-span-2 mr-auto text-muted-foreground">
-                Download &amp; share
-              </span>
               {actions
                 ? isValidElement(actions)
                   ? cloneElement(actions as ReactElement<{ portalTarget?: HTMLElement | null }>, {

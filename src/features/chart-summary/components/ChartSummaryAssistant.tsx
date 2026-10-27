@@ -61,12 +61,12 @@ export function ChartSummaryAssistant({
   }
 
   const formPanel = (
-    <div className="mt-2 rounded-sm border border-border bg-background p-3">
+    <div className="mt-3 rounded-xl border border-border bg-background p-4">
       <p className="mb-2 text-sm text-muted-foreground">
         We write a full analyst summary of the rows and measure currently shown — including the data
         sources and references behind the figures — and email it to you.
       </p>
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-3">
         <input
           type="email"
           value={email}
@@ -79,20 +79,15 @@ export function ChartSummaryAssistant({
           type="button"
           onClick={send}
           disabled={sending || email.trim().length === 0}
-          className="inline-flex items-center gap-1.5 border border-ink bg-ink px-2.5 py-1.5 text-xs font-semibold text-ink-foreground transition-opacity hover:opacity-85 disabled:opacity-40"
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-ink bg-ink px-5 py-2 text-sm font-semibold text-ink-foreground transition-colors hover:bg-ink/85 disabled:opacity-40"
         >
-          {sending ? <Loader2 className="size-3.5 animate-spin" /> : <Mail className="size-3.5" />}
+          {sending ? <Loader2 className="size-4 animate-spin" /> : <Mail className="size-4" />}
           {sending ? "Writing and sending…" : "Send"}
         </button>
       </div>
 
       {error ? <p className="mt-2 text-sm font-semibold text-destructive">{error}</p> : null}
       {sent ? <p className="mt-2 text-xs font-semibold text-foreground">{sent}</p> : null}
-
-      <p className="mt-2 text-xs text-muted-foreground">
-        AI-generated from the figures shown in this chart. It may contain errors — always
-        cross-verify against the referenced primary sources.
-      </p>
     </div>
   );
 

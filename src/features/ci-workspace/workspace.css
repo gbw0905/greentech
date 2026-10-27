@@ -26,7 +26,7 @@
 .calculator-header {
   display: block;
   margin-bottom: 14px;
-  padding: 18px clamp(20px, 3vw, 40px) 0;
+  padding: 18px clamp(20px, 3vw, 40px);
   background: #fff;
   border: 1px solid #dce6e9;
   border-top: 4px solid var(--calculator-accent);
@@ -42,6 +42,13 @@
 }
 .calculator-heading-copy {
   min-width: 0;
+}
+.calculator-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 .calculator-back {
   display: inline-flex;
@@ -362,7 +369,9 @@
 }
 .scenario-save-dialog h2 {
   margin: 0 0 22px;
-  font: 700 28px/1.1 "Bricolage Grotesque", sans-serif;
+  font:
+    700 28px/1.1 "Bricolage Grotesque",
+    sans-serif;
 }
 .scenario-save-dialog label {
   display: block;
@@ -395,7 +404,9 @@
   border-radius: 9px;
   background: #fff;
   color: #17384f;
-  font: 700 14px "Instrument Sans", sans-serif;
+  font:
+    700 14px "Instrument Sans",
+    sans-serif;
   cursor: pointer;
 }
 .scenario-save-actions button[type="submit"] {
@@ -403,7 +414,10 @@
   background: #123b5a;
   color: #fff;
 }
-.scenario-save-actions button:disabled { opacity: 0.5; cursor: not-allowed; }
+.scenario-save-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 @media (max-width: 750px) {
   .calculator-floating-bar {
     gap: 10px;
