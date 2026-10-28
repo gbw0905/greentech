@@ -24,10 +24,12 @@ export function IntelligencePage({
     <main className={`intelligence-page ${className}`}>
       <MotionReveal as="header" className="intelligence-page-hero">
         <div className="intelligence-page-intro">
-          <span className="intelligence-page-eyebrow">
-            <Icon size={17} aria-hidden />
-            {eyebrow}
-          </span>
+          {eyebrow && (
+            <span className="intelligence-page-eyebrow">
+              <Icon size={17} aria-hidden />
+              {eyebrow}
+            </span>
+          )}
           <h1>{title}</h1>
           <p>{subtitle}</p>
         </div>

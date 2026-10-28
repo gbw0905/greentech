@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Users, Linkedin } from "lucide-react";
+import { Linkedin } from "lucide-react";
 import { InformationPage } from "@/components/InformationPage";
 
 const TITLE = "Team Members — Global Bioenergy Watch";
@@ -11,15 +11,12 @@ const LEADERSHIP = [
     name: "Syed Asiful Alam, PhD",
     role: "Founder & Editor",
     image: "/team/syed-asiful-alam.png",
-    description:
-      "Bioenergy policy, GHG sustainability, GIS & Remote Sensing, and life cycle analysis of renewable fuels and feedstocks.",
     url: "https://www.linkedin.com/in/asifulalam0905024/",
   },
   {
     name: "Chukwuemeka Valentine Okolo",
     role: "Contributor",
     image: "/team/chukwuemeka-okolo.jpg",
-    description: null,
     url: "https://www.linkedin.com/in/chukwuemeka-valentine-okolo-9332a2a7/",
   },
 ];
@@ -41,7 +38,7 @@ const DEVELOPMENT_TEAM = [
   {
     name: "Rakibul Islam",
     role: "UI/UX",
-    image: "/team/rakibul-islam-linkedin.jpg",
+    image: "/team/rakibul-islam-portrait.png",
     linkedinUrl: "https://www.linkedin.com/in/rakibul-islam-payel/",
   },
 ];
@@ -66,7 +63,6 @@ function TeamPage() {
   return (
     <InformationPage
       active="team"
-      icon={Users}
       title="Team members"
       subtitle="The people who build, curate, and verify the Global Bioenergy Watch desk."
     >
@@ -86,7 +82,6 @@ function TeamPage() {
               <div>
                 <h2>{member.name}</h2>
                 <span className="role">{member.role}</span>
-                {member.description && <p>{member.description}</p>}
                 <a
                   className="profile-link"
                   href={member.url}
@@ -105,7 +100,7 @@ function TeamPage() {
           {DEVELOPMENT_TEAM.map((member) => (
             <article className="member" key={member.name}>
               <img
-                className="av"
+                className={`av${member.name === "Rakibul Islam" ? " rakibul-portrait" : ""}`}
                 src={member.image}
                 alt={member.name}
                 width={92}
@@ -130,14 +125,6 @@ function TeamPage() {
             </article>
           ))}
         </section>
-        <article className="soonc">
-          <h2>More members coming soon</h2>
-          <p>
-            We are growing the desk. If you work in bioenergy research, policy analysis, or energy
-            journalism and want to contribute, reach out at{" "}
-            <a href="mailto:hello@globalbioenergywatch.com">hello@globalbioenergywatch.com</a>.
-          </p>
-        </article>
       </div>
     </InformationPage>
   );

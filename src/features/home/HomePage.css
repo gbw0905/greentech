@@ -1,7 +1,7 @@
 /* One content edge for every homepage section and its footer. */
 [data-home="true"] {
-  --home-content-width: 1176px;
-  --home-gutter: 32px;
+  --home-content-width: var(--site-content-width, 1240px);
+  --home-gutter: var(--site-gutter, 32px);
   --home-container-width: min(var(--home-content-width), calc(100% - 2 * var(--home-gutter)));
 }
 [data-home="true"] .home-hero,
@@ -25,14 +25,4 @@
 }
 [data-home="true"] .industry-section {
   padding-block: 36px;
-}
-@media (max-width: 1000px) {
-  [data-home="true"] {
-    --home-gutter: 24px;
-  }
-}
-@media (max-width: 620px) {
-  [data-home="true"] {
-    --home-gutter: 20px;
-  }
 }

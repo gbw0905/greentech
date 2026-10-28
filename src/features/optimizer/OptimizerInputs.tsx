@@ -1,4 +1,4 @@
-import { ChevronDown, SlidersHorizontal } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { MEASURES, PATHWAYS, type Inputs, type MeasureId } from "./engine";
 
 import { FIELD_LABELS, type NumericKey } from "./fields";
@@ -69,9 +69,7 @@ export function OptimizerInputs({
   return (
     <aside className="opt-inputs" aria-label="Optimizer inputs">
       <div className="opt-section-title">
-        <span className="opt-icon">
-          <SlidersHorizontal size={18} />
-        </span>
+        <span className="opt-icon">01</span>
         <div>
           <h2>Inputs & constraints</h2>
           <p>Shape your operating scenario</p>
@@ -98,7 +96,7 @@ export function OptimizerInputs({
           ["target", "benchmark", "ng", "kwh", "gridCi", "km", "feedstockAdj", "volumeMj"] as const
         ).map(field)}
       </div>
-      <details className="opt-details" open>
+      <details className="opt-details">
         <summary>
           Economic assumptions
           <ChevronDown size={15} />
@@ -113,9 +111,9 @@ export function OptimizerInputs({
           electricity volume; the base electricity price cancels in this comparison.
         </p>
       </details>
-      <details className="opt-details" open>
+      <details className="opt-details">
         <summary>
-          Measures to compare
+          Measures to compare · {selected.length} selected
           <ChevronDown size={15} />
         </summary>
         <p className="opt-note">

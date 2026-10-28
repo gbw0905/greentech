@@ -81,8 +81,6 @@ const CAPABILITIES = [
   },
 ] as const;
 
-const AUDIENCES = ["Analysts", "Researchers", "Investors", "Policymakers", "Journalists"];
-
 export function IntelligenceSection() {
   const reduced = useReducedMotion();
   const [open, setOpen] = useState<number | null>(0);
@@ -115,16 +113,6 @@ export function IntelligenceSection() {
               <br />
               <span>Every signal.</span>
             </h2>
-          </div>
-          <div className="intelligence-intro">
-            <p>
-              We connect policy, markets, companies, and careers to help you understand the forces
-              shaping the global bioenergy economy.
-            </p>
-            <span>
-              <i />
-              Continuously monitoring global developments
-            </span>
           </div>
         </MotionReveal>
         <div className="intelligence-grid">
@@ -230,17 +218,6 @@ export function IntelligenceSection() {
             </div>
           </div>
         </div>
-        <MotionReveal blur={0} className="intelligence-audience">
-          <p>Built for people who move the sector forward</p>
-          <div>
-            {AUDIENCES.map((audience) => (
-              <span key={audience}>{audience}</span>
-            ))}
-          </div>
-          <Link to="/about/mission-vision" aria-label="Read our mission and vision">
-            <ArrowRight size={18} />
-          </Link>
-        </MotionReveal>
       </section>
     </div>
   );

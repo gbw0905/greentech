@@ -1,11 +1,15 @@
 import { useEffect, useRef } from "react";
+import type { HomeStats } from "../home-stats";
+import type { RinTradingValue } from "../rin-trading-value";
 import { DottedPolicyGlobe } from "./DottedPolicyGlobe";
 import styles from "./HomeHero.module.css";
 
 export function HomeHero({
   stats,
+  rinTradingValue,
 }: {
-  stats: { total: number; countries: number; policy: number };
+  stats: HomeStats | null;
+  rinTradingValue: RinTradingValue | null;
 }) {
   return (
     <section
@@ -45,66 +49,52 @@ export function HomeHero({
       <dl className={`${styles["stats"]} home-container`}>
         {[
           {
-            value: stats.total,
+            value: stats?.total ?? null,
             label: "Updates tracked",
-            note: "Policy and market news, classified as it is published.",
+            note: "All policy and market updates in the archive.",
           },
           {
-            value: stats.countries,
+            value: stats?.countries ?? null,
             label: "Jurisdictions",
-            note: "Countries and regions, each with its own policy profile.",
+            note: "Countries and regions with a policy profile.",
           },
           {
-            value: stats.policy,
-            label: "Policy items",
-            note: "Mandates, incentives and rules you can filter by fuel type.",
-          },
-          {
-            value: 132.7,
-            prefix: "$",
-            suffix: "B",
-            decimals: 1,
-            label: "Market value",
-            note: "2026 global biofuels estimate.",
+            value: stats?.policy ?? null,
+            label: "Policy updates",
+            note: "Classified policy updates in the archive.",
           },
         ].map((stat) => (
           <div key={stat.label} className={styles["stat"]}>
             <dd>
-              <HeroStat
-                value={stat.value}
-                prefix={stat.prefix ?? ""}
-                suffix={stat.suffix ?? ""}
-                decimals={stat.decimals ?? 0}
-              />
+              <HeroStat value={stat.value} />
             </dd>
             <dt>{stat.label}</dt>
             <p>{stat.note}</p>
           </div>
         ))}
+        <div className={styles["stat"]}>
+          <dd>{rinTradingValue ? `$${(rinTradingValue.usd / 1_000_000_000).toFixed(1)}B` : "—"}</dd>
+          <dt>US RIN trading value</dt>
+          <p>
+            {rinTradingValue
+              ? `${rinTradingValue.transferYear} YTD estimate · through ${new Date(`${rinTradingValue.through}T00:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })}${rinTradingValue.stale ? " (last available)" : ""}`
+              : "Data temporarily unavailable"}
+          </p>
+        </div>
       </dl>
     </section>
   );
 }
 
-function HeroStat({
-  value,
-  prefix = "",
-  suffix = "",
-  decimals = 0,
-}: {
-  value: number;
-  prefix?: string;
-  suffix?: string;
-  decimals?: number;
-}) {
+function HeroStat({ value }: { value: number | null }) {
   const numberRef = useRef<HTMLSpanElement>(null);
   const animated = useRef(false);
-  const formatted = `${prefix}${value.toLocaleString("en-US", { maximumFractionDigits: decimals })}${suffix}`;
+  const formatted = value === null ? "—" : value.toLocaleString("en-US");
   useEffect(() => {
     const element = numberRef.current;
     if (!element) return;
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (animated.current || value <= 0 || media.matches) {
+    if (value === null || animated.current || value <= 0 || media.matches) {
       element.textContent = formatted;
       return;
     }
@@ -114,7 +104,7 @@ function HeroStat({
       started ??= now;
       const progress = Math.min(1, (now - started) / 1800);
       const count = value * (1 - (1 - progress) ** 3);
-      element.textContent = `${prefix}${count.toLocaleString("en-US", { maximumFractionDigits: decimals })}${suffix}`;
+      element.textContent = Math.round(count).toLocaleString("en-US");
       if (progress < 1) frame = requestAnimationFrame(draw);
       else {
         element.textContent = formatted;
@@ -143,7 +133,7 @@ function HeroStat({
       cancelAnimationFrame(frame);
       media.removeEventListener("change", finish);
     };
-  }, [value, prefix, suffix, decimals, formatted]);
+  }, [value, formatted]);
   return (
     <>
       <span aria-hidden="true" ref={numberRef}>

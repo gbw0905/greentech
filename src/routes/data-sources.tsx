@@ -174,9 +174,6 @@ function DataSourcesPage() {
       <main className="sources-main">
         <MotionReveal as="header" className="sources-hero">
           <div className="sources-hero-copy">
-            <span className="sources-eyebrow">
-              <BookOpen className="size-3.5" aria-hidden="true" /> Data & provenance
-            </span>
             <h1>
               Data sources <span>& methodology</span>
             </h1>
@@ -207,13 +204,6 @@ function DataSourcesPage() {
           </div>
         </MotionReveal>
 
-        <div className="sources-library-heading" id="dataset-library">
-          <div>
-            <p className="sources-kicker">The source registry</p>
-            <h2>Explore the datasets</h2>
-          </div>
-          <span>{DATASETS.length} datasets</span>
-        </div>
         <div className="sources-library-layout">
           <aside className="sources-sidebar">
             <nav className="sources-desktop-index" aria-label="Datasets">

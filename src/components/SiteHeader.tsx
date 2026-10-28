@@ -9,12 +9,13 @@ import "./SiteHeader.css";
 // Every item points to an existing route; reference placeholders are not carried over.
 const NAV_GROUPS = [
   {
-    label: "Benchmarks",
-    items: [],
-  },
-  {
     label: "Global Markets",
     items: [
+      {
+        to: "/",
+        hash: "markets",
+        label: "Benchmarks",
+      },
       {
         to: "/",
         hash: "map",
@@ -97,11 +98,11 @@ export function SiteHeader({
     const hash = hydrated ? locationHash : undefined;
     if (label === "Global Markets")
       return (
+        hash === "markets" ||
         hash === "map" ||
         hash === "updates" ||
         /^\/(countries|mandates|timeline|videos)(\/|$)/.test(pathname)
       );
-    if (label === "Benchmarks") return hash === "markets";
     if (label === "Datasets") return activeSection === "supply" || pathname === "/data-sources";
     if (label === "Products")
       return /^\/(civanta|credit-calculator|ci-calculator|ci-workspace|dairy-rng-calculator|my-results|document-analyzer)(\/|$)/.test(
@@ -134,11 +135,10 @@ export function SiteHeader({
                   value={group.label}
                   className="gbw-nav-group"
                 >
-                  {group.label === "Bioenergy Jobs" || group.label === "Benchmarks" ? (
+                  {group.label === "Bioenergy Jobs" ? (
                     <NavigationMenu.Link asChild>
                       <Link
-                        to={group.label === "Benchmarks" ? "/" : "/jobs"}
-                        hash={group.label === "Benchmarks" ? "markets" : ""}
+                        to="/jobs"
                         className="gbw-nav-trigger"
                         data-active={groupActive(group.label) || undefined}
                         onPointerEnter={() => setOpenGroup(null)}
@@ -205,11 +205,10 @@ export function SiteHeader({
           }}
         >
           {NAV_GROUPS.map((group) =>
-            group.label === "Bioenergy Jobs" || group.label === "Benchmarks" ? (
+            group.label === "Bioenergy Jobs" ? (
               <Link
                 key={group.label}
-                to={group.label === "Benchmarks" ? "/" : "/jobs"}
-                hash={group.label === "Benchmarks" ? "markets" : ""}
+                to="/jobs"
                 className="gbw-mobile-direct"
                 onClick={() => setMobileNavOpen(false)}
               >

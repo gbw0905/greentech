@@ -1,7 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { feedQuery } from "@/features/policy/feed-query";
 import "@/features/supply/components/DatasetPage.css";
 import { PageShell } from "@/components/PageShell";
 import {
@@ -67,33 +65,9 @@ export const Route = createFileRoute("/supply/$panel")({
   notFoundComponent: SupplyNotFound,
 });
 
-const DATASET_FOCUS: Record<PanelId, string> = {
-  stations: "Retail biofuel networks",
-  uco: "Waste oils & feedstocks",
-  ethanol: "Corn, cane & cellulosic ethanol",
-  biopower: "Biomass & renewable electricity",
-  rng: "Biogas & biomethane",
-  biochar: "Biochar & carbon removal",
-  pellets: "Industrial & heating pellets",
-  terminals: "Fuel storage & blending",
-  marine: "Marine fuels & bunkering",
-  oil: "Integrated energy companies",
-  saf: "Sustainable aviation fuel",
-  carriers: "Road, rail & shipping",
-  hydrogen: "Renewable & biomass hydrogen",
-  rlpg: "BioLPG & rDME",
-  methanol: "Biomass & renewable methanol",
-};
-
 function SupplyDatasetPage() {
   const { panelId } = Route.useLoaderData();
   const panel = SUPPLY_PANELS.find((p) => p.id === panelId)!;
-  const { data: feed } = useQuery(feedQuery);
-  const scannedAt = feed?.fetchedAt ? new Date(feed.fetchedAt) : null;
-  const scanLabel =
-    scannedAt && Number.isFinite(scannedAt.getTime())
-      ? `Last scan ${scannedAt.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" })}`
-      : "Latest verified snapshot";
   const accent =
     panelId === "rlpg" ? "LPG" : panelId === "hydrogen" ? "hydrogen" : panel.title.split(" ")[0]!;
   const [titleBefore, titleAfter] = panel.title.split(accent);
@@ -102,27 +76,12 @@ function SupplyDatasetPage() {
     <main className="dataset-page">
       <section className="dataset-hero" aria-labelledby="dataset-title">
         <div className="dataset-wrap">
-          <nav className="dataset-breadcrumbs" aria-label="Breadcrumb">
-            <Link to="/">Home</Link>
-            <span aria-hidden="true">/</span>
-            <Link to="/supply">Datasets</Link>
-            <span aria-hidden="true">/</span>
-            <span>Suppliers &amp; producers</span>
-          </nav>
-          <span className="dataset-eyebrow">Supply &amp; producers</span>
           <h1 id="dataset-title">
             {titleBefore}
             <em>{accent}</em>
             {titleAfter}
           </h1>
           <p className="dataset-description">{panel.blurb}</p>
-          <div className="dataset-badges">
-            <span>
-              <strong>{panel.stat}</strong> {panel.statLabel}
-            </span>
-            <span>{DATASET_FOCUS[panelId]}</span>
-            <span>{scanLabel}</span>
-          </div>
         </div>
       </section>
       <div className="dataset-content dataset-wrap">

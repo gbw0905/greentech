@@ -1,8 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FUEL_TYPES, type FuelType, type Region } from "@/features/policy/taxonomy";
+import { FUEL_TYPES, type FuelType } from "@/features/policy/taxonomy";
 import { LiveMediaFeed } from "@/features/videos/components/LiveMediaFeed";
-import { VideoLibrary } from "@/features/videos/components/VideoLibrary";
 import { VideoWatchView } from "@/features/videos/components/VideoWatchView";
 import { VideoHistory } from "@/features/videos/components/VideoHistory";
 import { useWatchHistory } from "@/features/videos/hooks/useWatchHistory";
@@ -41,8 +40,6 @@ function VideosPage() {
   useVisitTracker();
   const [fuels, setFuels] = useState<FuelType[]>([]);
   const [countries, setCountries] = useState<string[]>([]);
-  const [regions, setRegions] = useState<Region[]>([]);
-  const [policies, setPolicies] = useState<string[]>([]);
   const { watch, view } = Route.useSearch();
   const navigate = Route.useNavigate();
   const [openedVideo, setOpenedVideo] = useState<LiveVideo | null>(null);
@@ -106,15 +103,9 @@ function VideosPage() {
     setCountries((list) =>
       list.includes(slug) ? list.filter((value) => value !== slug) : [...list, slug],
     );
-  const toggleRegion = (r: Region) =>
-    setRegions((list) => (list.includes(r) ? list.filter((v) => v !== r) : [...list, r]));
-  const togglePolicy = (p: string) =>
-    setPolicies((list) => (list.includes(p) ? list.filter((v) => v !== p) : [...list, p]));
   const clearFilters = () => {
     setFuels([]);
     setCountries([]);
-    setRegions([]);
-    setPolicies([]);
   };
   return (
     <div className="videos-page">
@@ -165,10 +156,6 @@ function VideosPage() {
             onCountry={toggleCountry}
             fuels={fuels}
             onFuel={toggleFuel}
-            regions={regions}
-            onRegion={toggleRegion}
-            policies={policies}
-            onPolicy={togglePolicy}
             onClear={clearFilters}
           />
           <LiveMediaFeed
@@ -179,13 +166,6 @@ function VideosPage() {
             onVideosChange={setAvailableVideos}
           />
         </div>
-        <VideoLibrary
-          regions={regions}
-          fuels={fuels}
-          countries={countries}
-          policies={policies}
-          onSelectCountry={toggleCountry}
-        />
       </main>
     </div>
   );

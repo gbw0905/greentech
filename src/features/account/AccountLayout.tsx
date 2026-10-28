@@ -17,15 +17,19 @@ export function AccountLayout({
   return (
     <main className="account-page">
       <div className="account-shell">
-        <div className="account-breadcrumb">
-          <Link to="/">Home</Link>
-          <ChevronRight size={14} />
-          <span>My account</span>
-        </div>
+        {section !== "profile" && (
+          <div className="account-breadcrumb">
+            <Link to="/">Home</Link>
+            <ChevronRight size={14} />
+            <span>My account</span>
+          </div>
+        )}
         <header className="account-heading">
-          <span className="account-eyebrow">Your personal workspace</span>
+          {section !== "profile" && (
+            <span className="account-eyebrow">Your personal workspace</span>
+          )}
           <h1>{title}</h1>
-          <p>{description}</p>
+          {section !== "profile" && <p>{description}</p>}
         </header>
         <nav className="account-tabs" aria-label="Account pages">
           <Link to="/profile" aria-current={section === "profile" ? "page" : undefined}>

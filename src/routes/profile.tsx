@@ -16,17 +16,12 @@ export const Route = createFileRoute("/profile")({
 function ProfilePage() {
   const { user, loading } = useAuthSession();
   const access = usePremium();
-  const name = String(
-    user?.user_metadata["full_name"] ||
-      user?.user_metadata["name"] ||
-      user?.email?.split("@")[0] ||
-      "Member",
-  );
-  const avatar = user?.user_metadata["avatar_url"];
+  const name = user?.full_name || user?.email?.split("@")[0] || "Member";
+  const avatar = user?.avatar_url;
   return (
     <AccountLayout
-      title="My profile"
-      description="Your account details and a shortcut to your saved carbon intensity scenarios."
+      title="My Profile"
+      description="Your account, calculation history and CIVanta access."
       section="profile"
     >
       {loading ? (
@@ -61,29 +56,32 @@ function ProfilePage() {
                 <dt>Email address</dt>
                 <dd>{user.email}</dd>
               </div>
-              <div>
-                <dt>Member since</dt>
-                <dd>
-                  {new Date(user.created_at).toLocaleDateString("en-US", {
-                    month: "long",
-                    year: "numeric",
-                    timeZone: "UTC",
-                  })}
-                </dd>
-              </div>
+              {user.created_at && (
+                <div>
+                  <dt>Member since</dt>
+                  <dd>
+                    {new Date(user.created_at).toLocaleDateString("en-US", {
+                      month: "long",
+                      year: "numeric",
+                      timeZone: "UTC",
+                    })}
+                  </dd>
+                </div>
+              )}
             </dl>
           </section>
           <section className="account-card">
             <div className="account-icon">
               <LayoutDashboard size={24} />
             </div>
-            <h2>Your CI scenario library</h2>
+            <h2>Your CIVanta access</h2>
             <p>
-              Review the scenarios saved to your account and compare their carbon intensity with
-              regulatory benchmarks.
+              {access.premium
+                ? "Your Pro analysis and report downloads are active."
+                : "Your calculations save to your account. Upgrade for advanced comparisons and downloadable reports."}
             </p>
-            <Link to="/my-results" className="account-action">
-              View saved results
+            <Link to={access.premium ? "/my-results" : "/pricing"} className="account-action">
+              {access.premium ? "View saved results" : "Go for Pro plan"}
               <ArrowRight size={16} />
             </Link>
           </section>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ArrowDownRight, Check, Target } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NumberField } from "./OptimizerInputs";
+import { ProUpgrade } from "@/features/ci-workspace/ProUpgrade";
 import {
   regulatoryRows,
   sensitivity,
@@ -220,7 +221,15 @@ function TargetSolver({ input }: { input: Inputs }) {
     </section>
   );
 }
-export function OptimizerResults({ input, analysis }: { input: Inputs; analysis: Analysis }) {
+export function OptimizerResults({
+  input,
+  analysis,
+  premium,
+}: {
+  input: Inputs;
+  analysis: Analysis;
+  premium: boolean;
+}) {
   const [swing, setSwing] = useState(20);
   const focus = analysis.focus;
   const reduction =
@@ -231,15 +240,17 @@ export function OptimizerResults({ input, analysis }: { input: Inputs; analysis:
   const impact = Math.max(1, ...sens.flatMap((r) => [Math.abs(r.nbLo), Math.abs(r.nbHi)]));
   return (
     <div className="opt-results">
-      <section className="opt-recommendation" aria-label="Optimizer recommendation">
+      <section className="opt-recommendation" aria-label="Optimization scenario">
+        <span className="opt-scenario-kicker">OPTIMIZER · LHV BASIS</span>
+        <h2>Optimization scenario</h2>
+        <p>{pathwayFor(input.pathwayId).label}</p>
+      </section>
+      <section className="opt-result-card" aria-label="Optimizer recommendation">
         <div className="opt-recommend-top">
-          <span>
-            <Target size={16} />{" "}
-            {analysis.recommended
-              ? "LEAST-COST PLAN THAT MEETS YOUR TARGET"
-              : "LOWEST CI AVAILABLE"}
-          </span>
-          <span className="opt-plan-status">
+          <h3>Optimized carbon intensity</h3>
+          <span
+            className={`opt-plan-status${analysis.recommended ? "" : " opt-plan-status--unmet"}`}
+          >
             {analysis.recommended ? (
               <>
                 <Check size={13} /> Feasible
@@ -249,10 +260,14 @@ export function OptimizerResults({ input, analysis }: { input: Inputs; analysis:
             )}
           </span>
         </div>
-        <h2>
-          {number(focus.ci)} <span>gCO₂e/MJ</span>
-        </h2>
-        <p>{focus.name}</p>
+        <strong className="opt-result-value">{number(focus.ci)}</strong>
+        <p className="opt-result-unit">gCO₂e/MJ</p>
+        <p className="opt-result-plan">
+          <Target size={16} />{" "}
+          {analysis.recommended ? "Least-cost plan that meets your target" : "Lowest CI available"}
+          {" · "}
+          {focus.name}
+        </p>
         <div className="opt-plan-baseline">
           <span>
             Baseline <b>{number(analysis.baseline.ci)}</b>
@@ -298,9 +313,9 @@ export function OptimizerResults({ input, analysis }: { input: Inputs; analysis:
         <TabsList className="opt-tabs" aria-label="Optimizer analysis">
           {[
             ["overview", "Overview"],
-            ["cost", "Cost & CI"],
-            ["optimization", "Optimization"],
-            ["sensitivity", "Sensitivity"],
+            ["cost", premium ? "Cost & CI" : "Cost & CI · Pro"],
+            ["optimization", premium ? "Optimization" : "Optimization · Pro"],
+            ["sensitivity", premium ? "Sensitivity" : "Sensitivity · Pro"],
             ["regulatory", "Regulatory"],
             ["evidence", "Evidence"],
           ].map(([value, label]) => (
@@ -379,80 +394,109 @@ export function OptimizerResults({ input, analysis }: { input: Inputs; analysis:
           </div>
         </TabsContent>
         <TabsContent value="cost" className="opt-tab-content">
-          <h3>Cost versus carbon intensity</h3>
-          <p>
-            Green is the recommended plan; blue marks Pareto-efficient choices. Compare every
-            combination in the table below.
-          </p>
-          <CostPlot analysis={analysis} target={input.target} />
-          <ScenarioTable rows={analysis.all} target={input.target} />
+          {premium ? (
+            <>
+              <h3>Cost versus carbon intensity</h3>
+              <p>
+                Green is the recommended plan; blue marks Pareto-efficient choices. Compare every
+                combination in the table below.
+              </p>
+              <CostPlot analysis={analysis} target={input.target} />
+              <ScenarioTable rows={analysis.all} target={input.target} />
+            </>
+          ) : (
+            <ProUpgrade
+              title="Compare cost and CI together"
+              detail="Explore all measure combinations on an interactive chart and sortable table."
+            />
+          )}
         </TabsContent>
         <TabsContent value="optimization" className="opt-tab-content">
-          <h3>Find your operating setpoint</h3>
-          <TargetSolver input={input} />
-          <h3>All measure combinations</h3>
-          <p>
-            Sort by CI, capital, annualized cost or net benefit. The recommendation minimizes
-            annualized cost among the scenarios that meet your target.
-          </p>
-          <ScenarioTable rows={analysis.all} target={input.target} />
+          {premium ? (
+            <>
+              <h3>Find your operating setpoint</h3>
+              <TargetSolver input={input} />
+              <h3>All measure combinations</h3>
+              <p>
+                Sort by CI, capital, annualized cost or net benefit. The recommendation minimizes
+                annualized cost among the scenarios that meet your target.
+              </p>
+              <ScenarioTable rows={analysis.all} target={input.target} />
+            </>
+          ) : (
+            <ProUpgrade
+              title="Solve for the operating target"
+              detail="Find a workable setpoint and compare every measure combination."
+            />
+          )}
         </TabsContent>
         <TabsContent value="sensitivity" className="opt-tab-content">
-          <div className="opt-heading-inline">
-            <div>
-              <h3>What changes the outcome?</h3>
-              <p>One assumption changes at a time. Measures stay fixed to the recommended plan.</p>
-            </div>
-            <NumberField
-              label="Sensitivity range"
-              unit="± %"
-              value={swing}
-              min={0}
-              max={100}
-              onChange={(v) => setSwing(Number.isFinite(v) ? Math.max(0, Math.min(100, v)) : 0)}
-            />
-          </div>
-          <div className="opt-sensitivity">
-            {sens.map((r) => (
-              <div key={r.key}>
-                <span>{r.label}</span>
-                <div className="opt-sensitivity-track">
-                  <i style={{ width: `${(Math.abs(r.nbLo) / impact) * 46}%` }} />
-                  <b style={{ width: `${(Math.abs(r.nbHi) / impact) * 46}%` }} />
+          {premium ? (
+            <>
+              <div className="opt-heading-inline">
+                <div>
+                  <h3>What changes the outcome?</h3>
+                  <p>
+                    One assumption changes at a time. Measures stay fixed to the recommended plan.
+                  </p>
                 </div>
-                <small>
-                  {money(r.nbLo)} / {money(r.nbHi)}
-                </small>
+                <NumberField
+                  label="Sensitivity range"
+                  unit="± %"
+                  value={swing}
+                  min={0}
+                  max={100}
+                  onChange={(v) => setSwing(Number.isFinite(v) ? Math.max(0, Math.min(100, v)) : 0)}
+                />
               </div>
-            ))}
-          </div>
-          <div className="opt-table-wrap">
-            <table className="opt-table">
-              <caption>
-                Change versus the unvaried recommended scenario · −{swing}% / +{swing}%
-              </caption>
-              <thead>
-                <tr>
-                  <th scope="col">Assumption</th>
-                  <th scope="col">Δ CI low</th>
-                  <th scope="col">Δ CI high</th>
-                  <th scope="col">Δ net low · $/yr</th>
-                  <th scope="col">Δ net high · $/yr</th>
-                </tr>
-              </thead>
-              <tbody>
+              <div className="opt-sensitivity">
                 {sens.map((r) => (
-                  <tr key={r.key}>
-                    <th scope="row">{r.label}</th>
-                    <td>{number(r.ciLo, 3)}</td>
-                    <td>{number(r.ciHi, 3)}</td>
-                    <td>{money(r.nbLo)}</td>
-                    <td>{money(r.nbHi)}</td>
-                  </tr>
+                  <div key={r.key}>
+                    <span>{r.label}</span>
+                    <div className="opt-sensitivity-track">
+                      <i style={{ width: `${(Math.abs(r.nbLo) / impact) * 46}%` }} />
+                      <b style={{ width: `${(Math.abs(r.nbHi) / impact) * 46}%` }} />
+                    </div>
+                    <small>
+                      {money(r.nbLo)} / {money(r.nbHi)}
+                    </small>
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </div>
+              <div className="opt-table-wrap">
+                <table className="opt-table">
+                  <caption>
+                    Change versus the unvaried recommended scenario · −{swing}% / +{swing}%
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Assumption</th>
+                      <th scope="col">Δ CI low</th>
+                      <th scope="col">Δ CI high</th>
+                      <th scope="col">Δ net low · $/yr</th>
+                      <th scope="col">Δ net high · $/yr</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sens.map((r) => (
+                      <tr key={r.key}>
+                        <th scope="row">{r.label}</th>
+                        <td>{number(r.ciLo, 3)}</td>
+                        <td>{number(r.ciHi, 3)}</td>
+                        <td>{money(r.nbLo)}</td>
+                        <td>{money(r.nbHi)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          ) : (
+            <ProUpgrade
+              title="Understand what changes the outcome"
+              detail="Test the sensitivity of costs and carbon intensity to your assumptions."
+            />
+          )}
         </TabsContent>
         <TabsContent value="regulatory" className="opt-tab-content">
           <h3>Regulatory context</h3>

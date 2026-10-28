@@ -1,66 +1,9 @@
 import { useCallback, useRef, useState } from "react";
-import { ExternalLink, RefreshCw } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import "./EntityDetailSheet.css";
-import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { openEntityNews, type NewsTarget } from "@/features/markets/open-news";
-import { getEntityNewsFn } from "@/features/videos/server-functions";
-import { CERTIFICATION_NOTE, certificationFor } from "@/features/markets/certifications";
-
-/** Live headline list for the entity, fetched from the news index on open. */
-function EntityNews({ target }: { target: NewsTarget }) {
-  const fetchNews = useServerFn(getEntityNewsFn);
-  const query = target?.query ?? "";
-  const { data, isFetching, refetch } = useQuery({
-    queryKey: ["entity-news", query],
-    queryFn: () => fetchNews({ data: { query, limit: 8 } }),
-    enabled: query.length > 1,
-    staleTime: 10 * 60_000,
-  });
-  const articles = data?.articles ?? [];
-
-  return (
-    <div className="mt-5">
-      <div className="flex items-center justify-between gap-2">
-        <h5 className="chart-sub uppercase tracking-[0.12em] text-muted-foreground">Latest news</h5>
-        <button
-          type="button"
-          onClick={() => refetch()}
-          className="label-mono inline-flex items-center gap-1 text-muted-foreground hover:text-primary"
-        >
-          <RefreshCw className={`size-3 ${isFetching ? "animate-spin" : ""}`} /> Refresh
-        </button>
-      </div>
-      {isFetching && articles.length === 0 ? (
-        <p className="mt-2 text-sm text-muted-foreground">Loading headlines…</p>
-      ) : articles.length === 0 ? (
-        <p className="mt-2 text-sm text-muted-foreground">
-          No recent headlines found — open the full search below.
-        </p>
-      ) : (
-        <ul className="mt-2 divide-y divide-border border-y border-border">
-          {articles.map((a) => (
-            <li key={a.url}>
-              <a
-                href={a.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block py-2 text-sm/snug hover:text-primary"
-              >
-                {a.title}
-                <span className="label-mono mt-0.5 block text-muted-foreground">
-                  {a.source}
-                  {a.published ? ` · ${new Date(a.published).toLocaleDateString()}` : ""}
-                </span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
+import { certificationFor } from "@/features/markets/certifications";
 
 type Stat = { label: string; value: string; tone?: "default" | "up" | "down" | undefined };
 
@@ -302,10 +245,6 @@ export function EntityDetailSheet({
             </dl>
           </div>
         ))}
-
-        <p className="mt-4 text-xs/relaxed text-muted-foreground">{CERTIFICATION_NOTE}</p>
-
-        <EntityNews target={detail.news} />
 
         <button
           type="button"

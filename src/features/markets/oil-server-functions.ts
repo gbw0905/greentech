@@ -12,18 +12,30 @@ export type OilQuote = {
   unit: string;
   series: Array<{ t: number; c: number }>;
   updatedAt: number;
+  granularity?: string;
 };
 
 interface YahooOilChart {
   timestamp?: number[];
   indicators?: { quote?: Array<{ close?: Array<number | null> }> };
-  meta?: { regularMarketPrice?: number; chartPreviousClose?: number; currency?: string };
+  meta?: {
+    regularMarketPrice?: number;
+    chartPreviousClose?: number;
+    currency?: string;
+    regularMarketTime?: number;
+    dataGranularity?: string;
+  };
 }
 
-async function loadSymbol(symbol: string, label: string, unit: string): Promise<OilQuote | null> {
+async function loadSymbol(
+  symbol: string,
+  label: string,
+  unit: string,
+  range = "1mo",
+): Promise<OilQuote | null> {
   try {
     const res = await fetch(
-      `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=1mo&interval=1d`,
+      `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=${range}&interval=1d`,
       {
         headers: { "User-Agent": "Mozilla/5.0", Accept: "application/json" },
         signal: AbortSignal.timeout(10_000),
@@ -53,7 +65,10 @@ async function loadSymbol(symbol: string, label: string, unit: string): Promise<
       currency: r.meta?.currency ?? "USD",
       unit,
       series,
-      updatedAt: Date.now(),
+      granularity: r.meta?.dataGranularity ?? "1d",
+      updatedAt: r.meta?.regularMarketTime
+        ? r.meta.regularMarketTime * 1000
+        : (series.at(-1)?.t ?? Date.now()),
     };
   } catch {
     return null;
@@ -83,6 +98,85 @@ export const getOilPricesFn = createServerFn({ method: "GET" }).handler(async ()
   for (const f of fresh) if (!merged.some((m) => m.symbol === f.symbol)) merged.push(f);
   if (merged.length > 0) cacheSet("oil-prices", merged);
   return { quotes: merged, stale: true, asOf: cached?.at ?? Date.now() };
+});
+
+/** The ten listed biofuel businesses shown on the original Global Bioenergy Watch desk. */
+export const BIOFUEL_STOCKS = [
+  { symbol: "VLO", label: "Valero Energy", focus: "Ethanol · Renewable diesel" },
+  { symbol: "BG", label: "Bunge Global", focus: "Biodiesel · Renewable feedstocks" },
+  { symbol: "ADM", label: "Archer Daniels Midland", focus: "Ethanol · Biodiesel" },
+  { symbol: "DAR", label: "Darling Ingredients", focus: "Renewable diesel · SAF" },
+  { symbol: "NESTE.HE", label: "Neste", focus: "Renewable diesel · SAF" },
+  { symbol: "VBK.DE", label: "Verbio", focus: "Biodiesel · Ethanol · Biomethane" },
+  { symbol: "GPRE", label: "Green Plains", focus: "Ethanol" },
+  { symbol: "AMTX", label: "Aemetis", focus: "Ethanol · Biodiesel · RNG" },
+  { symbol: "GEVO", label: "Gevo", focus: "SAF · Renewable gasoline" },
+  { symbol: "ALTO", label: "Alto Ingredients", focus: "Ethanol" },
+] as const;
+
+export const MARKET_HISTORY_RANGES = ["3mo", "1y", "5y", "max"] as const;
+export type MarketHistoryRange = (typeof MARKET_HISTORY_RANGES)[number];
+
+/** Load longer history only for a selected market and timeframe. */
+export const getMarketHistoryFn = createServerFn({ method: "GET" })
+  .validator((input: unknown) => {
+    const value = input as { symbol?: unknown; range?: unknown } | null;
+    const symbol = value?.symbol;
+    const range = value?.range;
+    const allowed = [...MARKET_BENCHMARKS, ...BIOFUEL_STOCKS] as ReadonlyArray<{
+      symbol: string;
+      label: string;
+      unit?: string;
+    }>;
+    if (
+      typeof symbol !== "string" ||
+      !allowed.some((market) => market.symbol === symbol) ||
+      !MARKET_HISTORY_RANGES.includes(range as MarketHistoryRange)
+    ) {
+      throw new Error("Unsupported market or history range");
+    }
+    return { symbol, range: range as MarketHistoryRange };
+  })
+  .handler(async ({ data: { symbol, range } }) => {
+    const { cacheGet, cacheSet } = await import("./server/market-cache.server");
+    const cacheKey = `market-history:${symbol}:${range}`;
+    const cached = cacheGet<OilQuote>(cacheKey);
+    if (cached && Date.now() - cached.at < 5 * 60_000) {
+      return { quote: cached.value, stale: false };
+    }
+    const market = [...MARKET_BENCHMARKS, ...BIOFUEL_STOCKS].find((item) => item.symbol === symbol);
+    const quote = market
+      ? await loadSymbol(symbol, market.label, "unit" in market ? market.unit : "per share", range)
+      : null;
+    if (quote?.series.length) {
+      cacheSet(cacheKey, quote);
+      return { quote, stale: false };
+    }
+    return { quote: cached?.value ?? null, stale: true };
+  });
+
+export const getBiofuelStocksFn = createServerFn({ method: "GET" }).handler(async () => {
+  const { cacheGet, cacheSet } = await import("./server/market-cache.server");
+  const cached = cacheGet<OilQuote[]>("biofuel-stocks");
+  if (cached?.value.length === BIOFUEL_STOCKS.length && Date.now() - cached.at < 60_000) {
+    return { quotes: cached.value, stale: false, asOf: cached.at };
+  }
+  const fetched = await Promise.all(
+    BIOFUEL_STOCKS.map(({ symbol, label }) => loadSymbol(symbol, label, "per share")),
+  );
+  const fresh = fetched.filter((quote): quote is OilQuote => quote !== null);
+  if (fresh.length === BIOFUEL_STOCKS.length) {
+    cacheSet("biofuel-stocks", fresh);
+    return { quotes: fresh, stale: false, asOf: Date.now() };
+  }
+  const quotes = BIOFUEL_STOCKS.flatMap(({ symbol }) => {
+    const quote =
+      fresh.find((item) => item.symbol === symbol) ??
+      cached?.value.find((item) => item.symbol === symbol);
+    return quote ? [quote] : [];
+  });
+  if (quotes.length > 0) cacheSet("biofuel-stocks", quotes);
+  return { quotes, stale: true, asOf: cached?.at ?? Date.now() };
 });
 
 /** Listed oil & gas companies worldwide, by their primary listing (global coverage). */

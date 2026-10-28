@@ -186,6 +186,7 @@ export function collectYouTubeVideos(node: unknown, out: LiveVideo[], keyword: s
 async function searchYouTubeScrape(keyword: string, limit: number): Promise<LiveVideo[]> {
   const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(keyword)}&sp=CAI%253D`;
   const res = await fetch(url, {
+    signal: AbortSignal.timeout(15_000),
     headers: { "user-agent": UA, "accept-language": "en-US,en;q=0.9" },
   });
   if (!res.ok) return [];
@@ -203,7 +204,10 @@ async function searchYouTubeScrape(keyword: string, limit: number): Promise<Live
   }
   const out: LiveVideo[] = [];
   collectYouTubeVideos(data, out, keyword);
-  return out.slice(0, limit);
+  return out
+    .filter((video) => !recent || publishedAgeMinutes(video.published) <= 60 * 24 * 60)
+    .sort((a, b) => publishedAgeMinutes(a.published) - publishedAgeMinutes(b.published))
+    .slice(0, limit);
 }
 
 async function searchYouTube(keyword: string, limit: number): Promise<LiveVideo[]> {
@@ -265,17 +269,15 @@ export async function fetchLiveMedia(keywords: string[], perKeyword = 6) {
     return { ...cached.value, cachedAt: cached.fetchedAt, stale: false };
   }
   try {
-    const results = await Promise.all(
-      keywords.map(async (k) => ({
-        videos: await searchYouTube(k, perKeyword).catch(() => []),
-        articles: await searchWeb(k, perKeyword).catch(() => []),
-      })),
+    const recent = await Promise.all(
+      keywords.map((keyword) => searchYouTube(keyword, perKeyword, true).catch(() => [])),
     );
-    const videos: LiveVideo[] = [];
-    const articles: LiveArticle[] = [];
-    for (const r of results) {
-      for (const v of r.videos) if (!videos.some((x) => x.id === v.id)) videos.push(v);
-      for (const a of r.articles) if (!articles.some((x) => x.url === a.url)) articles.push(a);
+    let videos = [...new Map(recent.flat().map((video) => [video.id, video])).values()];
+    if (!videos.length) {
+      const fallback = await Promise.all(
+        keywords.map((keyword) => searchYouTube(keyword, perKeyword, false).catch(() => [])),
+      );
+      videos = [...new Map(fallback.flat().map((video) => [video.id, video])).values()];
     }
     if (videos.length || articles.length) {
       await cacheWrite(cacheKey, "youtube_search", { videos, articles }).catch(() => {});

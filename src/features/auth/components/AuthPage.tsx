@@ -5,7 +5,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { MotionReveal } from "@/components/MotionReveal";
 
-export function AuthPage({ initialMode = "signin", callbackError }: { initialMode?: "signin" | "signup"; callbackError?: string }) {
+export function AuthPage({
+  initialMode = "signin",
+  callbackError,
+  next,
+}: {
+  initialMode?: "signin" | "signup";
+  callbackError?: string;
+  next?: "/pricing";
+}) {
   const { user, loading, refreshSession } = useAuthSession();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">(initialMode);
@@ -25,9 +33,8 @@ export function AuthPage({ initialMode = "signin", callbackError }: { initialMod
   }
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/", replace: true });
-  }, [loading, user, navigate]);
-
+    if (!loading && user) navigate({ to: next ?? "/", replace: true });
+  }, [loading, user, navigate, next]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -62,7 +69,9 @@ export function AuthPage({ initialMode = "signin", callbackError }: { initialMod
     try {
       const { error: err } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo: `${window.location.origin}/api/auth/callback` },
+        options: {
+          redirectTo: `${window.location.origin}/api/auth/callback${next ? "?next=%2Fpricing" : ""}`,
+        },
       });
       if (err) throw err;
     } catch (err) {
@@ -75,7 +84,9 @@ export function AuthPage({ initialMode = "signin", callbackError }: { initialMod
     try {
       const { error: err } = await supabase.auth.signInWithOAuth({
         provider: "azure",
-        options: { redirectTo: `${window.location.origin}/api/auth/callback` },
+        options: {
+          redirectTo: `${window.location.origin}/api/auth/callback${next ? "?next=%2Fpricing" : ""}`,
+        },
       });
       if (err) throw err;
     } catch (err) {

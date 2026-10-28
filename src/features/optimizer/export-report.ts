@@ -1,3 +1,4 @@
+import { prepareOptimizerFormulas } from "./workbook-formulas";
 import { polishWorkbook, REPORT_FORMAT } from "@/features/ci-workspace/workbook-style";
 import { pathwayExportFilename } from "@/features/ci-workspace/export-filename";
 import { FIELD_LABELS } from "./fields";
@@ -130,7 +131,10 @@ export async function exportOptimizerReport(
         "Regulatory context",
         "2026 references shared with the CI Workspace. Numerical gaps do not establish eligibility.",
       ],
-      ["Sensitivity", "Fixed recommended measures; each assumption varied independently by ±20%."],
+      [
+        "Sensitivity",
+        "Current recommendation's measures held fixed within each independent ±20% comparison.",
+      ],
       ["Default pathway CI", pathway.ci],
     ],
   };
@@ -155,6 +159,7 @@ export async function exportOptimizerReport(
     book.created = new Date();
     book.addWorksheet("Overview");
     Object.entries(tables).forEach(([name, rows]) => book.addWorksheet(name).addRows(rows));
+    const applyFormulas = prepareOptimizerFormulas(book, input, analysis);
     await polishWorkbook(book, "CIVanta Optimizer", pathway.label, {
       metrics: [
         { label: "Optimized CI", value: focus.ci, unit: "gCO2e/MJ", format: REPORT_FORMAT.decimal },
@@ -182,6 +187,7 @@ export async function exportOptimizerReport(
         "See Scenario inputs, Scenarios, Abatement ranking, CI waterfall, Sensitivity, Regulatory context and Evidence for the complete report.",
       ],
     });
+    applyFormulas();
     const bytes = await book.xlsx.writeBuffer();
     blob = new Blob([new Uint8Array(bytes)], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

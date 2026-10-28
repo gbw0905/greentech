@@ -1,5 +1,5 @@
 /* Distribute space within navigation rather than leaving empty blocks beside it. */
-@media (min-width: 1200px) {
+@media (min-width: 1280px) {
   .gbw-header .gbw-header-inner {
     gap: 20px;
   }
@@ -31,7 +31,7 @@
 .gbw-nav-menu .gbw-nav-item strong {
   font-size: 16px;
 }
-@media (min-width: 1200px) and (max-width: 1350px) {
+@media (min-width: 1280px) and (max-width: 1350px) {
   .gbw-header .gbw-header-inner {
     gap: 12px;
     padding-inline: 24px;
@@ -45,7 +45,7 @@
     height: 48px;
   }
 }
-@media (max-width: 1199px) {
+@media (max-width: 1279px) {
   .gbw-header .gbw-brand {
     font-size: 21px;
     font-weight: 750;
@@ -112,7 +112,7 @@
 }
 
 /* Brand, six navigation items and account control share the same flexible gap. */
-@media (min-width: 1200px) {
+@media (min-width: 1280px) {
   .gbw-header .gbw-header-inner {
     justify-content: space-between;
     gap: 12px;
@@ -161,9 +161,11 @@
   padding: 12px;
   border-radius: 8px;
   cursor: pointer;
+  color: #0e2a43;
 }
-.gbw-profile-menu [role="menuitem"]:focus {
+.gbw-profile-menu [role="menuitem"]:is(:hover, :focus, [data-highlighted]) {
   background: #eef6f3;
+  color: #0e2a43;
 }
 @media (max-width: 480px) {
   .gbw-header .gbw-header-inner {
@@ -181,7 +183,7 @@
 }
 
 /* A little extra breathing room between the navigation and its outer controls. */
-@media (min-width: 1200px) {
+@media (min-width: 1280px) {
   .gbw-header .gbw-nav-group:first-child {
     margin-inline-start: 16px;
   }

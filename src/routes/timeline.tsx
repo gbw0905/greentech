@@ -107,10 +107,6 @@ function TimelinePage() {
         <>
           <strong>{updates.length.toLocaleString()}</strong>
           <span>Updates tracked</span>
-          <small>
-            <i className="intelligence-live-dot" />{" "}
-            {isFetching ? "Refreshing feed" : "Latest available scan"}
-          </small>
         </>
       }
     >

@@ -36,10 +36,7 @@ export function HistoryPanel({
             <Clock3 size={14} /> Calculation history
           </span>
           <h2>Your previous calculations</h2>
-          <p>
-            Saved to your account after each successful calculation. Open a run to restore its
-            inputs.
-          </p>
+          <p>Named scenarios you saved to your account. Open one to restore its inputs.</p>
         </div>
         {!kind && (
           <div className="history-filters" aria-label="Filter history">
@@ -83,11 +80,8 @@ export function HistoryPanel({
       ) : !runs.length ? (
         <div className="history-empty">
           <Clock3 size={28} />
-          <h3>Your next calculation starts your history.</h3>
-          <p>
-            Run a CI scenario, calculate Credit & RIN, or run the Optimizer. Each successful run is
-            saved automatically.
-          </p>
+          <h3>No saved scenarios yet.</h3>
+          <p>Choose Save scenario in any CIVanta tool to add one here.</p>
         </div>
       ) : (
         <div className="history-list">

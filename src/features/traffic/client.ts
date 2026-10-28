@@ -49,12 +49,12 @@ const EMPTY: TrafficStats = {
   top_sources: [],
 };
 
-export async function fetchTrafficStats(): Promise<TrafficStats> {
+export async function fetchTrafficStats(): Promise<TrafficStats | null> {
   try {
     const data = await getTrafficStatsFn();
-    if (!data) return EMPTY;
+    if (!data) return null;
     return { ...EMPTY, ...(data as unknown as TrafficStats) };
   } catch {
-    return EMPTY;
+    return null;
   }
 }

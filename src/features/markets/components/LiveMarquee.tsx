@@ -68,8 +68,8 @@ export function LiveMarquee({
 
   const quotes = oilData?.quotes ?? [];
   const latest = (feedData?.updates as PolicyUpdate[] | undefined)?.slice(0, 4) ?? [];
-  const liveNow = trafficData?.live_now ?? 0;
-  const totalViews = trafficData?.total_views ?? 0;
+  const liveNow = trafficData ? trafficData.live_now.toLocaleString() : "—";
+  const totalViews = trafficData ? trafficData.total_views.toLocaleString() : "—";
 
   const renderContent = (copy: string) => (
     <>
@@ -95,15 +95,6 @@ export function LiveMarquee({
           <span className="font-medium text-[#0e2a43]">{u.title}</span>
         </span>
       ))}
-
-      <span className="inline-flex shrink-0 items-center gap-1.5 px-[22px] text-[#4c6278]">
-        <span className="pulse-dot size-2 rounded-full bg-[#178a6b]" />
-        <span className="font-semibold text-[#0e2a43]">{liveNow}</span>
-        <span>viewing now</span>
-        <span className="mx-1 text-[#d6e1ea]">·</span>
-        <span className="tabular-nums">{totalViews.toLocaleString()}</span>
-        <span>total views</span>
-      </span>
     </>
   );
 
@@ -117,10 +108,23 @@ export function LiveMarquee({
     : "—";
 
   return (
-    <div className="flex h-[42px] items-stretch overflow-hidden border-b border-[#d6e1ea] bg-white font-['Instrument_Sans'] text-[14px]">
+    <div
+      role="region"
+      aria-label="Live market and policy updates"
+      className="site-ribbon flex h-[42px] items-stretch overflow-hidden border-b border-[#d6e1ea] bg-white font-['Instrument_Sans'] text-[14px]"
+    >
       <div className="relative z-10 flex shrink-0 items-center gap-2 border-r border-[#d6e1ea] bg-white px-5 font-semibold text-[#0e2a43]">
         <span className="pulse-dot size-[7px] rounded-full bg-[#178a6b]" />
         Markets
+      </div>
+      <div className="relative z-10 flex shrink-0 items-center gap-1.5 border-r border-[#d6e1ea] bg-white px-3 text-xs text-[#4c6278] sm:px-4">
+        <span className="font-semibold tabular-nums text-[#0e2a43]">{liveNow}</span>
+        <span className="hidden sm:inline">viewing now</span>
+        <span className="sm:hidden">now</span>
+        <span className="mx-0.5 text-[#b7c8d6]">·</span>
+        <span className="font-semibold tabular-nums text-[#0e2a43]">{totalViews}</span>
+        <span className="hidden sm:inline">total views</span>
+        <span className="sm:hidden">views</span>
       </div>
       <div className="min-w-0 flex-1 overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_40px,#000_calc(100%-40px),transparent)]">
         <div className="marquee-track h-full items-center">
@@ -129,7 +133,7 @@ export function LiveMarquee({
         </div>
       </div>
       <div className="relative z-10 hidden shrink-0 items-center gap-1.5 border-l border-[#d6e1ea] bg-white px-5 text-[#7b8ea0] min-[761px]:flex">
-        Last scan <span className="font-semibold text-[#4c6278]">{lastScan}</span>
+        Last Updated <span className="font-semibold text-[#4c6278]">{lastScan}</span>
       </div>
     </div>
   );

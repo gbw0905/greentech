@@ -8,6 +8,7 @@ export const Route = createFileRoute("/api/auth/callback")({
         const url = new URL(request.url);
         const code = url.searchParams.get("code");
         const origin = url.origin;
+        const next = url.searchParams.get("next") === "/pricing" ? "/pricing" : "/";
 
         if (!code) {
           return new Response(null, {
@@ -29,7 +30,10 @@ export const Route = createFileRoute("/api/auth/callback")({
         }
 
         return applyToResponse(
-          new Response(null, { status: 302, headers: { location: origin } }),
+          new Response(null, {
+            status: 302,
+            headers: { location: `${origin}${next === "/" ? "" : next}` },
+          }),
         );
       },
     },

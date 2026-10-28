@@ -2,7 +2,6 @@ import { loadNavigationFeed } from "@/features/policy/navigation-feed";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { MotionReveal } from "@/components/MotionReveal";
-import { LiveMarquee } from "@/features/markets/components/LiveMarquee";
 import { SupplyDirectory } from "@/features/supply/components/SupplyDirectory";
 import { feedQueryWithInitial } from "@/features/policy/feed-query";
 
@@ -31,10 +30,8 @@ function SupplyDirectoryPage() {
 
   return (
     <div className="supply-directory-page">
-      <LiveMarquee />
       <main className="supply-directory-main">
         <MotionReveal as="header" className="supply-directory-heading">
-          <span className="supply-directory-kicker">Supply &amp; producers</span>
           <h1>{TITLE}</h1>
           <p>{DESCRIPTION}</p>
         </MotionReveal>

@@ -235,7 +235,17 @@
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
   gap: 20px;
-  align-items: start;
+  align-items: stretch;
+}
+.desk-design .two > .card:last-child {
+  display: flex;
+  flex-direction: column;
+}
+.desk-design .two > .card:last-child .steps {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
 }
 .desk-design .even {
   display: grid;
@@ -713,6 +723,9 @@
 .desk-design .team-builders .av,
 .desk-design .team-leadership img.av {
   object-fit: cover;
+}
+.desk-design .team-builders .rakibul-portrait {
+  object-position: center 10%;
 }
 @media (max-width: 900px) {
   .desk-design .team-leadership {

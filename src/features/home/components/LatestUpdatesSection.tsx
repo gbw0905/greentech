@@ -155,10 +155,6 @@ export function LatestUpdatesSection({ updates }: { updates: PolicyUpdate[] }) {
           </div>
         </MotionReveal>
 
-        <p className="mt-3 text-xs font-medium text-[#7b8ea0]">
-          Showing {visibleUpdates.length} {visibleUpdates.length === 1 ? "update" : "updates"}
-        </p>
-
         {visibleUpdates.length > 0 ? (
           <div className="mt-3 grid gap-4 min-[901px]:grid-cols-[1.05fr_1fr]">
             <MotionReveal className="flex [&>a]:w-full">

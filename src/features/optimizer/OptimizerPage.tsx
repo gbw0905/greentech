@@ -1,7 +1,7 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { useRouterState } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
-import { Download, History, Play, RotateCcw, Target } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Target } from "lucide-react";
 import { z } from "zod";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { HistoryPanel } from "@/features/calculation-history/HistoryPanel";
@@ -12,6 +12,12 @@ import {
 import type { HistoryInput } from "@/features/calculation-history/contracts";
 import { OptimizerInputs } from "./OptimizerInputs";
 import { OptimizerResults } from "./OptimizerResults";
+import { CalculatorHeader } from "@/features/ci-workspace/CalculatorHeader";
+import { ScenarioSaveDialog } from "@/features/ci-workspace/ScenarioSaveDialog";
+import { FloatingCalculatorBar } from "@/features/ci-workspace/FloatingCalculatorBar";
+import { useFloatingBar } from "@/features/ci-workspace/useFloatingBar";
+import { usePremium } from "@/features/premium/hooks/usePremium";
+import { getPremiumStatusFn } from "@/features/premium/server-functions";
 import { analyze, defaultInputs, pathwayFor, type Inputs, type MeasureId } from "./engine";
 import "@/features/ci-workspace/workspace.css";
 import "./optimizer.css";
@@ -68,6 +74,7 @@ function parseSnapshot(value: unknown) {
   return { input: result.state as Inputs, selected: [...new Set(result.selected)] };
 }
 export function OptimizerPage() {
+  const access = usePremium();
   const { user } = useAuthSession();
   const client = useQueryClient();
   const search = useRouterState({ select: (state) => state.location.searchStr });
@@ -77,11 +84,24 @@ export function OptimizerPage() {
   const [draftReady, setDraftReady] = useState(false);
   const [draftStatus, setDraftStatus] = useState("");
   const [showHistory, setShowHistory] = useState(false);
+  const [saveOpen, setSaveOpen] = useState(false);
   const [restoreId, setRestoreId] = useState<string | null>(requestedId);
   const [status, setStatus] = useState("");
   const [failed, setFailed] = useState<HistoryInput | null>(null);
   const [exporting, setExporting] = useState(false);
   const [lastRun, setLastRun] = useState("");
+  const toolbarRef = useRef<HTMLDivElement>(null);
+  const workspaceRef = useRef<HTMLDivElement>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
+  const floating = useFloatingBar(() => {
+    const toolbar = toolbarRef.current;
+    const workspace = workspaceRef.current;
+    if (!toolbar || !workspace) return null;
+    return {
+      anchorBottom: toolbar.getBoundingClientRect().bottom,
+      endBottom: workspace.getBoundingClientRect().bottom,
+    };
+  });
   const preview = useMemo(() => {
     try {
       return { data: analyze(input, selected), error: "" };
@@ -119,7 +139,7 @@ export function OptimizerPage() {
     const timer = setTimeout(() => {
       try {
         localStorage.setItem(DRAFT_KEY, snapshot);
-        setDraftStatus("Inputs saved in this browser");
+        setDraftStatus("");
       } catch {
         setDraftStatus(
           "Browser storage is unavailable; keep this page open to retain your inputs.",
@@ -131,6 +151,24 @@ export function OptimizerPage() {
   useEffect(() => {
     setRestoreId(requestedId);
   }, [requestedId]);
+  useEffect(() => {
+    const closeHistoryOnBack = () => setShowHistory(false);
+    window.addEventListener("popstate", closeHistoryOnBack);
+    return () => window.removeEventListener("popstate", closeHistoryOnBack);
+  }, []);
+  function toggleHistory() {
+    if (showHistory) {
+      if (window.history.state?.civantaHistory === "optimizer") window.history.back();
+      else setShowHistory(false);
+    } else {
+      window.history.pushState(
+        { ...window.history.state, civantaHistory: "optimizer" },
+        "",
+        window.location.href,
+      );
+      setShowHistory(true);
+    }
+  }
   useEffect(() => {
     if (!restore.data) return;
     try {
@@ -149,41 +187,49 @@ export function OptimizerPage() {
     setFailed(null);
   }, [user?.id]);
   async function saveRun(payload: HistoryInput) {
-    setStatus("Saving this run to your account…");
+    setStatus("Saving this scenario to your account…");
     try {
       await save.mutateAsync(payload);
+      setLastRun(payload.snapshot);
       setFailed(null);
-      setStatus("Optimizer run saved to your account.");
+      setStatus("Scenario saved to your account.");
     } catch {
       setFailed(payload);
-      setStatus("Run complete, but account history could not be saved. Retry save below.");
+      setStatus("Scenario could not be saved to your account. Retry below.");
     }
   }
-  async function run() {
+  async function saveScenario(name: string) {
     if (!preview.data) return;
-    setLastRun(snapshot);
     if (!user) {
-      setStatus("Optimization complete. Sign in to save runs to your account.");
+      setStatus(
+        "Sign in to save this scenario to your account. Your inputs remain in this browser.",
+      );
       return;
     }
     const result = preview.data.focus;
     await saveRun({
       kind: "optimizer",
-      name: `${pathwayFor(input.pathwayId).label.slice(0, 85)} — optimizer`,
+      name,
       pathway: pathwayFor(input.pathwayId).label,
       snapshot,
       metrics: { ci: result.ci, lcfs: null, rins: null, value: result.netBenefit },
     });
   }
   async function download(format: "excel" | "csv") {
-    if (!preview.data) return;
+    if (!preview.data || !access.premium) return;
     setExporting(true);
     try {
+      const verified = await getPremiumStatusFn();
+      if (!verified.premium) throw new Error("Pro access is required to download reports.");
       const { exportOptimizerReport } = await import("./export-report");
       await exportOptimizerReport(input, preview.data, format);
       setStatus(`${format === "excel" ? "Excel" : "CSV"} report downloaded.`);
-    } catch {
-      setStatus("The report could not be exported. Please try again.");
+    } catch (error) {
+      setStatus(
+        error instanceof Error
+          ? error.message
+          : "The report could not be exported. Please try again.",
+      );
     } finally {
       setExporting(false);
     }
@@ -191,38 +237,59 @@ export function OptimizerPage() {
   return (
     <main className="ci-workspace-page optimizer-page">
       <div className="ci-workspace-shell">
-        <header className="calculator-header">
-          <div className="ci-workspace-heading">
-            <Link to="/civanta" className="calculator-back">
-              ← CIVanta
-            </Link>
-            <h1>
-              CIVanta <span>Optimizer</span>
-            </h1>
-            <p>Set your CI target. Compare measures. Find the least-cost plan.</p>
-          </div>
-          <nav className="calculator-subnav" aria-label="Calculator navigation">
-            <Link to="/ci-workspace">CI Workspace ↗</Link>
-            <Link to="/credit-calculator">Credit & RIN ↗</Link>
-            <button
-              type="button"
-              aria-expanded={showHistory}
-              onClick={() => setShowHistory(!showHistory)}
-            >
-              <History size={14} /> Calculation history
-            </button>
-          </nav>
-        </header>
-        <div className="opt-toolbar">
+        <CalculatorHeader product="optimizer" historyOpen={showHistory} onHistory={toggleHistory} />
+        <FloatingCalculatorBar
+          visible={floating}
+          title="Optimizer"
+          summary={
+            preview.data
+              ? {
+                  value: preview.data.focus.ci.toLocaleString("en-US", {
+                    maximumFractionDigits: 2,
+                  }),
+                  unit: "gCO₂e/MJ",
+                  detail: `Target ${input.target.toLocaleString("en-US", { maximumFractionDigits: 2 })} gCO₂e/MJ`,
+                  state: lastRun === snapshot ? "current" : "preview",
+                }
+              : {
+                  value: "—",
+                  unit: "gCO₂e/MJ",
+                  detail: preview.error,
+                  state: "invalid",
+                }
+          }
+          runLabel="Save scenario"
+          onRun={() => preview.data && setSaveOpen(true)}
+          onDetails={() =>
+            resultRef.current?.scrollIntoView({
+              behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+                ? "auto"
+                : "smooth",
+              block: "start",
+            })
+          }
+          disabled={!preview.data}
+          busy={save.isPending}
+        />
+        <ScenarioSaveDialog
+          open={saveOpen}
+          suggestedName={`${pathwayFor(input.pathwayId).label.slice(0, 85)} — optimizer`}
+          pending={save.isPending}
+          onClose={() => setSaveOpen(false)}
+          onSave={(name) => {
+            setSaveOpen(false);
+            void saveScenario(name);
+          }}
+        />
+        <div className="opt-toolbar" ref={toolbarRef}>
           <div>
             <button
               className="opt-primary"
               type="button"
               disabled={!preview.data || save.isPending}
-              onClick={() => void run()}
+              onClick={() => setSaveOpen(true)}
             >
-              <Play size={14} />
-              {save.isPending ? "Saving…" : "Run optimizer"}
+              {save.isPending ? "Saving…" : "Save scenario"}
             </button>
             <button
               type="button"
@@ -233,30 +300,27 @@ export function OptimizerPage() {
                 setStatus("");
               }}
             >
-              <RotateCcw size={14} />
-              Reset defaults
+              Load example
             </button>
           </div>
           <div>
-            <span className="opt-draft-status">{draftStatus}</span>
-            <button
-              type="button"
-              disabled={!preview.data || exporting}
-              onClick={() => void download("excel")}
-            >
-              <Download size={14} />
-              {exporting ? "Exporting…" : "Download Excel"}
-            </button>
-            <button
-              type="button"
-              disabled={!preview.data || exporting}
-              onClick={() => void download("csv")}
-            >
-              Export CSV
-            </button>
-            <button type="button" onClick={() => window.print()}>
-              Print / PDF
-            </button>
+            {draftStatus && <span className="opt-draft-status">{draftStatus}</span>}
+            {access.premium ? (
+              <button
+                type="button"
+                disabled={!preview.data || exporting}
+                onClick={() => void download("excel")}
+              >
+                {exporting ? "Exporting…" : "Download Excel"}
+              </button>
+            ) : (
+              <a
+                className="opt-report-upgrade"
+                href={access.signedIn ? "/pricing" : "/auth?next=%2Fpricing"}
+              >
+                Pro · Download Excel
+              </a>
+            )}
           </div>
         </div>
         {(status || restore.isError) && (
@@ -270,15 +334,20 @@ export function OptimizerPage() {
           </div>
         )}
         {showHistory && (
-          <HistoryPanel
-            kind="optimizer"
-            onRestore={(id) => {
-              setRestoreId(id);
-              setShowHistory(false);
-            }}
-          />
+          <div>
+            <button type="button" className="optimizer-history-back" onClick={toggleHistory}>
+              ← Back to Optimizer
+            </button>
+            <HistoryPanel
+              kind="optimizer"
+              onRestore={(id) => {
+                setRestoreId(id);
+                toggleHistory();
+              }}
+            />
+          </div>
         )}
-        <div className="opt-workspace">
+        <div className="opt-workspace" ref={workspaceRef}>
           <OptimizerInputs
             input={input}
             selected={selected}
@@ -293,20 +362,9 @@ export function OptimizerPage() {
               })
             }
           />
-          <div className="opt-output">
-            <div className="opt-live-label">
-              <span>
-                <i />
-                {lastRun === snapshot ? "Calculated run" : "Live scenario preview"}
-              </span>
-              <small>
-                {lastRun === snapshot
-                  ? "Inputs match your last run"
-                  : "Run optimizer to save this scenario to your account"}
-              </small>
-            </div>
+          <div className="opt-output" ref={resultRef}>
             {preview.data ? (
-              <OptimizerResults input={input} analysis={preview.data} />
+              <OptimizerResults input={input} analysis={preview.data} premium={access.premium} />
             ) : (
               <section className="opt-invalid" role="alert">
                 <Target size={28} />
@@ -317,11 +375,6 @@ export function OptimizerPage() {
             )}
           </div>
         </div>
-        <p className="opt-footnote">
-          Screening estimate · Default factors and costs are illustrative. Confirm project data,
-          fuel eligibility and program rules before making an investment decision. See Evidence for
-          model details.
-        </p>
       </div>
     </main>
   );

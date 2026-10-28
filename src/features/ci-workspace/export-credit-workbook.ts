@@ -1,3 +1,4 @@
+import { applyCreditFormulas } from "./credit-workbook-formulas";
 import { polishWorkbook, REPORT_FORMAT } from "./workbook-style";
 import { pathwayExportFilename } from "./export-filename";
 import { z } from "zod";
@@ -117,6 +118,11 @@ export async function exportCreditWorkbook(payload: unknown) {
     ["Source", "URL"],
     ...data.sources.map((source) => [source.title, source.url]),
   ]);
+  sheet("Conversion factors", [
+    ["Factor", "Value", "Unit"],
+    ["Btu to MJ", 0.00105505585262, "MJ/Btu"],
+    ["Litres per US gallon", 3.785411784, "L/US gal"],
+  ]);
   await polishWorkbook(
     workbook,
     "Credit & RIN planning estimate",
@@ -200,6 +206,7 @@ export async function exportCreditWorkbook(payload: unknown) {
         page.getCell(r, 2).numFmt = '$#,##0.00;[Red]($#,##0.00);"—"';
     }
   }
+  applyCreditFormulas(workbook, data.state, data.result);
   const bytes = await workbook.xlsx.writeBuffer();
   const url = URL.createObjectURL(
     new Blob([new Uint8Array(bytes)], {
