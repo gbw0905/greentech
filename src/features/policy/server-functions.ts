@@ -55,17 +55,38 @@ async function readFeed(): Promise<PolicyFeed> {
   };
 }
 
+const STALE_THRESHOLD = 4 * 60 * 60 * 1000; // 4 hours
+let lastBackgroundIngest = 0;
+
 export const getPolicyFeed = createServerFn({ method: "GET" }).handler(async () => {
   const feed = await readFeed();
-  if (feed.updates.length > 0) return feed;
-  // Cold start: fill the archive on the very first visit.
-  const { ingestPolicyUpdates } = await import("./server/policy-ingest.server");
-  try {
-    await ingestPolicyUpdates();
-  } catch (e) {
-    return { ...feed, error: e instanceof Error ? e.message : String(e) };
+
+  if (feed.updates.length === 0) {
+    // Cold start: fill the archive on the very first visit.
+    const { ingestPolicyUpdates } = await import("./server/policy-ingest.server");
+    try {
+      await ingestPolicyUpdates();
+    } catch (e) {
+      return { ...feed, error: e instanceof Error ? e.message : String(e) };
+    }
+    return readFeed();
   }
-  return readFeed();
+
+  // Smart refresh: if the newest item is older than 4 hours and we haven't
+  // recently kicked off an ingest, trigger one in the background so the next
+  // poll picks up fresh data. The current request returns immediately.
+  const newest = feed.updates[0]?.publishedAt ?? feed.updates[0]?.createdAt;
+  const age = newest ? Date.now() - new Date(newest).getTime() : Infinity;
+  const sinceLastIngest = Date.now() - lastBackgroundIngest;
+
+  if (age > STALE_THRESHOLD && sinceLastIngest > STALE_THRESHOLD) {
+    lastBackgroundIngest = Date.now();
+    import("./server/policy-ingest.server")
+      .then((m) => m.ingestPolicyUpdates())
+      .catch((e) => console.error("background policy ingest failed", e));
+  }
+
+  return feed;
 });
 
 export const refreshPolicyFeed = createServerFn({ method: "POST" }).handler(async () => {

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import {
   CheckCircle2,
   Circle,
@@ -20,6 +21,7 @@ import {
   type MandateFuel,
   type MandateStatus,
 } from "@/features/countries/mandates";
+import { loadMandates, mandatesQueryWithInitial } from "@/features/countries/mandates-query";
 
 const TITLE = "Biofuel mandate tracker — every active blending obligation | Global Bioenergy Watch";
 const DESCRIPTION =
@@ -27,6 +29,10 @@ const DESCRIPTION =
 const URL = "https://globalbioenergywatch.org/mandates";
 
 export const Route = createFileRoute("/mandates")({
+  loader: async ({ context }) => {
+    const { mandates } = await loadMandates(context.queryClient);
+    return { mandates };
+  },
   validateSearch: (search: Record<string, unknown>): { fuel?: MandateFuel | "all" } => ({
     fuel: MANDATE_FUELS.includes(search["fuel"] as MandateFuel)
       ? (search["fuel"] as MandateFuel)
@@ -84,6 +90,10 @@ export const Route = createFileRoute("/mandates")({
 function MandatesPage() {
   const { fuel = "all" } = Route.useSearch();
   const navigate = Route.useNavigate();
+  const { mandates: initialMandates } = Route.useLoaderData();
+  const { data: mandates } = useQuery(mandatesQueryWithInitial(initialMandates));
+  const allMandates = mandates ?? MANDATES;
+
   const setFuel = (value: MandateFuel | "all") => {
     void navigate({ search: { fuel: value }, replace: true, resetScroll: false });
   };
@@ -92,7 +102,7 @@ function MandatesPage() {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return MANDATES.filter((m) => {
+    return allMandates.filter((m) => {
       if (fuel !== "all" && !m.fuels.includes(fuel)) return false;
       if (status !== "all" && m.status !== status) return false;
       if (!q) return true;
@@ -102,13 +112,13 @@ function MandatesPage() {
         m.currentObligation.toLowerCase().includes(q)
       );
     });
-  }, [fuel, status, query]);
+  }, [fuel, status, query, allMandates]);
 
   const counts = useMemo(() => {
     const byStatus = new Map<MandateStatus, number>();
-    for (const m of MANDATES) byStatus.set(m.status, (byStatus.get(m.status) ?? 0) + 1);
+    for (const m of allMandates) byStatus.set(m.status, (byStatus.get(m.status) ?? 0) + 1);
     return byStatus;
-  }, []);
+  }, [allMandates]);
 
   return (
     <IntelligencePage
@@ -119,7 +129,7 @@ function MandatesPage() {
       className="intelligence-mandates"
       aside={
         <>
-          <strong>{MANDATES.length}</strong>
+          <strong>{allMandates.length}</strong>
           <span>Tracked mandates</span>
           <small>Source-linked policy records</small>
         </>
@@ -178,7 +188,7 @@ function MandatesPage() {
         </div>
 
         <p className="mt-3 text-xs text-muted-foreground">
-          Showing {filtered.length} of {MANDATES.length} tracked mandates. Percentages are the
+          Showing {filtered.length} of {allMandates.length} tracked mandates. Percentages are the
           obligation as written in law — always verify against the primary document before using
           them in a compliance decision.
         </p>

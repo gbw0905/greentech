@@ -1,8 +1,7 @@
 import type { HiringItem } from "@/features/jobs/contracts";
 import { cacheGet, cacheSet } from "@/features/markets/server/market-cache.server";
 
-const UA =
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36";
+const UA = "GlobalBioenergyWatch/1.0 (+https://globalbioenergywatch.org)";
 
 function decode(s: string) {
   return s

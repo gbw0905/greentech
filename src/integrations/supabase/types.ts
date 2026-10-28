@@ -172,6 +172,7 @@ export type Database = {
           keywords: string[]
           analysis: Json
           created_at: string
+          file_path: string | null
         }
         Insert: {
           id?: string
@@ -181,6 +182,7 @@ export type Database = {
           keywords?: string[]
           analysis: Json
           created_at?: string
+          file_path?: string | null
         }
         Update: {
           id?: string
@@ -190,6 +192,7 @@ export type Database = {
           keywords?: string[]
           analysis?: Json
           created_at?: string
+          file_path?: string | null
         }
         Relationships: []
       }
@@ -631,6 +634,27 @@ export type Database = {
           path?: string
           referrer?: string | null
           visitor_id?: string
+        }
+        Relationships: []
+      }
+      video_cache: {
+        Row: {
+          cache_key: string
+          kind: string
+          payload: Json
+          fetched_at: string
+        }
+        Insert: {
+          cache_key: string
+          kind: string
+          payload?: Json
+          fetched_at?: string
+        }
+        Update: {
+          cache_key?: string
+          kind?: string
+          payload?: Json
+          fetched_at?: string
         }
         Relationships: []
       }

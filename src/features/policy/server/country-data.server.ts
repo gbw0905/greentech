@@ -104,6 +104,41 @@ export async function getCountryMandates(slug: string): Promise<Mandate[]> {
   return MANDATES.filter((m) => m.countrySlug === slug);
 }
 
+export async function getAllMandates(): Promise<Mandate[]> {
+  try {
+    const { supabaseAdmin } = await import(
+      "@/integrations/supabase/client.server"
+    );
+    const { data } = await supabaseAdmin
+      .from("country_mandates")
+      .select("*")
+      .order("jurisdiction", { ascending: true });
+
+    if (data && data.length > 0) {
+      return data.map((m) => ({
+        id: m.id,
+        jurisdiction: m.jurisdiction,
+        countrySlug: m.country_slug,
+        instrument: m.instrument,
+        fuels: m.fuels as Mandate["fuels"],
+        status: m.status as Mandate["status"],
+        currentObligation: m.current_obligation,
+        requirements: m.requirements,
+        compliance: m.compliance as Mandate["compliance"],
+        timeline: (m.timeline as unknown as Mandate["timeline"]) ?? [],
+        sourceName: m.source_name ?? "",
+        sourceUrl: m.source_url ?? "",
+        officialSites: (m.official_sites as Mandate["officialSites"]) ?? [],
+        keywords: m.keywords ?? [],
+        lastReviewed: m.last_reviewed ?? "",
+      }));
+    }
+  } catch {
+    // fall through to static
+  }
+  return MANDATES;
+}
+
 export async function getGovernmentSites(
   slug: string,
 ): Promise<{ label: string; url: string }[]> {

@@ -20,14 +20,22 @@ export const Route = createFileRoute("/api/document-history-item")({
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const { data, error } = await supabaseAdmin
             .from("document_analyses")
-            .select("analysis")
+            .select("analysis, file_path")
             .eq("id", id)
             .eq("user_id", userId)
             .single();
           if (error || !data) {
             return Response.json({ error: "Analysis not found." }, { status: 404 });
           }
-          return Response.json(data.analysis);
+          let fileUrl: string | null = null;
+          if (data.file_path) {
+            const { data: signed } = await supabaseAdmin.storage
+              .from("doc")
+              .createSignedUrl(data.file_path, 60 * 60);
+            fileUrl = signed?.signedUrl ?? null;
+          }
+          const analysis = data.analysis as Record<string, unknown>;
+          return Response.json({ ...analysis, fileUrl });
         } catch (error) {
           console.error("document history item fetch failed", error);
           return Response.json({ error: "Failed to load analysis." }, { status: 500 });
