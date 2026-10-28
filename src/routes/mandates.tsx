@@ -210,11 +210,7 @@ function MandatesPage() {
               Clear filters <X size={13} />
             </button>
           )}
-        </div>
-      </section>
-
-      <div className="intelligence-results-heading">
-        <h2>Mandate directory</h2>
+        </span>
       </div>
       {filtered.length === 0 ? (
         <p className="rounded-lg border border-border bg-white p-6 text-sm text-muted-foreground shadow-sm">
