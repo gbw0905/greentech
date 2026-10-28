@@ -15,7 +15,7 @@ export const Route = createFileRoute("/api/document-history")({
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const { data, error } = await supabaseAdmin
             .from("document_analyses")
-            .select("id, file_name, file_type, keywords, created_at")
+            .select("id, file_name, file_type, keywords, created_at, file_path")
             .eq("user_id", userId)
             .order("created_at", { ascending: false })
             .limit(50);
@@ -41,12 +41,23 @@ export const Route = createFileRoute("/api/document-history")({
             return Response.json({ error: "Missing analysis id." }, { status: 400 });
           }
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          // Fetch the file_path before deleting so we can remove the stored file
+          const { data: row } = await supabaseAdmin
+            .from("document_analyses")
+            .select("file_path")
+            .eq("id", id)
+            .eq("user_id", userId)
+            .single();
           const { error } = await supabaseAdmin
             .from("document_analyses")
             .delete()
             .eq("id", id)
             .eq("user_id", userId);
           if (error) throw error;
+          // Clean up the stored file (best-effort)
+          if (row?.file_path) {
+            await supabaseAdmin.storage.from("doc").remove([row.file_path]).catch(() => {});
+          }
           return Response.json({ ok: true });
         } catch (error) {
           console.error("document history delete failed", error);

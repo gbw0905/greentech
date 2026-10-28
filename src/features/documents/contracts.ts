@@ -26,4 +26,5 @@ export type DocumentAnalysis = {
   };
   keywordCoverage: { supported: string[]; unsupported: string[] };
   analysisMode: "standard" | "expanded";
+  fileUrl?: string | null;
 };

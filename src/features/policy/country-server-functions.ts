@@ -14,6 +14,12 @@ export const getCountryMandatesFn = createServerFn({ method: "GET" })
     return getCountryMandates(slug);
   });
 
+export const getAllMandatesFn = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const { getAllMandates } = await import("./server/country-data.server");
+    return getAllMandates();
+  });
+
 export const getGovernmentSitesFn = createServerFn({ method: "GET" })
   .validator((slug: string) => slug)
   .handler(async ({ data: slug }) => {

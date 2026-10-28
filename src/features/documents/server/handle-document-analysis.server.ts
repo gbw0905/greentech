@@ -23,15 +23,31 @@ export async function handleDocumentAnalysis(request: Request): Promise<Response
     const { analyzeDocument } = await import("@/features/documents/server/analyze-document.server");
     const result = await analyzeDocument(file, query);
 
-    // Persist the analysis for the user's history (best-effort, don't block response)
+    // Persist the analysis and the original file for the user's history
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const ext = file.name.toLowerCase().split(".").pop() ?? "bin";
+      const analysisId = crypto.randomUUID();
+      const storagePath = `${userId}/${analysisId}.${ext}`;
+
+      // Upload the original file to the "doc" bucket
+      const fileBuffer = Buffer.from(await file.arrayBuffer());
+      const { error: uploadError } = await supabaseAdmin.storage
+        .from("doc")
+        .upload(storagePath, fileBuffer, {
+          contentType: file.type || "application/octet-stream",
+          upsert: false,
+        });
+      if (uploadError) console.error("failed to upload document file", uploadError);
+
       await supabaseAdmin.from("document_analyses").insert({
+        id: analysisId,
         user_id: userId,
         file_name: result.fileName,
         file_type: result.fileType,
         keywords: result.keywordsUsed,
         analysis: JSON.parse(JSON.stringify(result)),
+        file_path: uploadError ? null : storagePath,
       });
     } catch (saveError) {
       console.error("failed to save analysis history", saveError);

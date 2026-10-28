@@ -1,9 +1,143 @@
 import type { LiveArticle, LiveVideo } from "@/features/videos/contracts";
-import { cacheGet, cacheSet } from "@/features/markets/server/market-cache.server";
-import { publishedAgeMinutes } from "@/features/videos/published-age";
+import type { Json } from "@/integrations/supabase/types";
 
-const UA =
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36";
+const UA = "GlobalBioenergyWatch/1.0 (+https://globalbioenergywatch.org)";
+
+// ---------------------------------------------------------------------------
+// Supabase cache helpers
+// ---------------------------------------------------------------------------
+
+type CacheKind = "youtube_search" | "news_search" | "youtube_related";
+
+async function cacheRead<T>(key: string): Promise<{ value: T; fetchedAt: number } | null> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin
+    .from("video_cache")
+    .select("payload, fetched_at")
+    .eq("cache_key", key)
+    .maybeSingle();
+  if (!data) return null;
+  return { value: data.payload as T, fetchedAt: new Date(data.fetched_at).getTime() };
+}
+
+async function cacheWrite(key: string, kind: CacheKind, payload: unknown): Promise<void> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  await supabaseAdmin.from("video_cache").upsert(
+    { cache_key: key, kind, payload: payload as Json, fetched_at: new Date().toISOString() },
+    { onConflict: "cache_key" },
+  );
+}
+
+// ---------------------------------------------------------------------------
+// YouTube Data API v3
+// ---------------------------------------------------------------------------
+
+function youtubeApiKey(): string {
+  const key = process.env["YOUTUBE_API_KEY"];
+  if (!key) throw new Error("YOUTUBE_API_KEY is not set");
+  return key;
+}
+
+interface YTSearchItem {
+  id?: { videoId?: string };
+  snippet?: {
+    title?: string;
+    channelTitle?: string;
+    publishedAt?: string;
+    liveBroadcastContent?: string;
+    thumbnails?: { medium?: { url?: string } };
+  };
+}
+
+interface YTVideoItem {
+  id?: string;
+  contentDetails?: { duration?: string };
+}
+
+function parseIsoDuration(iso: string): string {
+  const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+  if (!m) return "";
+  const h = m[1] ? `${m[1]}:` : "";
+  const min = m[2] ?? "0";
+  const sec = (m[3] ?? "0").padStart(2, "0");
+  return h ? `${h}${min.padStart(2, "0")}:${sec}` : `${min}:${sec}`;
+}
+
+function relativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 60) return `${mins} minutes ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} day${days > 1 ? "s" : ""} ago`;
+  const weeks = Math.floor(days / 7);
+  if (weeks < 5) return `${weeks} week${weeks > 1 ? "s" : ""} ago`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months} month${months > 1 ? "s" : ""} ago`;
+  const years = Math.floor(days / 365);
+  return `${years} year${years > 1 ? "s" : ""} ago`;
+}
+
+async function searchYouTubeApi(keyword: string, limit: number): Promise<LiveVideo[]> {
+  const apiKey = youtubeApiKey();
+  const params = new URLSearchParams({
+    part: "snippet",
+    q: keyword,
+    type: "video",
+    order: "date",
+    maxResults: String(Math.min(limit, 50)),
+    relevanceLanguage: "en",
+    key: apiKey,
+  });
+  const res = await fetch(`https://www.googleapis.com/youtube/v3/search?${params}`, {
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!res.ok) return [];
+  const json = (await res.json()) as { items?: YTSearchItem[] };
+  const items = json.items ?? [];
+  const validItems = items.filter(
+    (item): item is YTSearchItem & { id: { videoId: string } } =>
+      typeof item.id?.videoId === "string" && /^[A-Za-z0-9_-]{11}$/.test(item.id.videoId),
+  );
+  if (!validItems.length) return [];
+
+  // Fetch durations in a single batch call (1 quota unit)
+  const ids = validItems.map((item) => item.id.videoId).join(",");
+  const detailParams = new URLSearchParams({
+    part: "contentDetails",
+    id: ids,
+    key: apiKey,
+  });
+  const detailRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?${detailParams}`, {
+    signal: AbortSignal.timeout(10_000),
+  });
+  const durations = new Map<string, string>();
+  if (detailRes.ok) {
+    const detailJson = (await detailRes.json()) as { items?: YTVideoItem[] };
+    for (const v of detailJson.items ?? []) {
+      if (v.id && v.contentDetails?.duration) {
+        durations.set(v.id, parseIsoDuration(v.contentDetails.duration));
+      }
+    }
+  }
+
+  return validItems.map((item) => ({
+    id: item.id.videoId,
+    title: item.snippet?.title ?? "Untitled",
+    channel: item.snippet?.channelTitle ?? "YouTube",
+    published: item.snippet?.publishedAt ? relativeTime(item.snippet.publishedAt) : "",
+    duration: durations.get(item.id.videoId) ?? "",
+    thumbnail: `https://i.ytimg.com/vi/${item.id.videoId}/mqdefault.jpg`,
+    url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+    keyword,
+    kind: "youtube" as const,
+  }));
+}
+
+// ---------------------------------------------------------------------------
+// YouTube HTML scraping fallback (used when API key is not set)
+// ---------------------------------------------------------------------------
 
 interface YouTubeText {
   simpleText?: string;
@@ -49,14 +183,8 @@ export function collectYouTubeVideos(node: unknown, out: LiveVideo[], keyword: s
   for (const key of Object.keys(rec)) collectYouTubeVideos(rec[key], out, keyword);
 }
 
-async function searchYouTube(
-  keyword: string,
-  limit: number,
-  recent: boolean,
-): Promise<LiveVideo[]> {
-  const after = new Date(Date.now() - 60 * 24 * 60 * 60_000).toISOString().slice(0, 10);
-  const query = recent ? `${keyword} after:${after}` : keyword;
-  const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}&sp=CAI%253D`;
+async function searchYouTubeScrape(keyword: string, limit: number): Promise<LiveVideo[]> {
+  const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(keyword)}&sp=CAI%253D`;
   const res = await fetch(url, {
     signal: AbortSignal.timeout(15_000),
     headers: { "user-agent": UA, "accept-language": "en-US,en;q=0.9" },
@@ -81,6 +209,17 @@ async function searchYouTube(
     .sort((a, b) => publishedAgeMinutes(a.published) - publishedAgeMinutes(b.published))
     .slice(0, limit);
 }
+
+async function searchYouTube(keyword: string, limit: number): Promise<LiveVideo[]> {
+  if (process.env["YOUTUBE_API_KEY"]) {
+    return searchYouTubeApi(keyword, limit);
+  }
+  return searchYouTubeScrape(keyword, limit);
+}
+
+// ---------------------------------------------------------------------------
+// Google News RSS (unchanged — RSS is stable and TOS-friendly)
+// ---------------------------------------------------------------------------
 
 function decode(s: string) {
   return s
@@ -116,11 +255,18 @@ async function searchWeb(keyword: string, limit: number): Promise<LiveArticle[]>
   });
 }
 
-export async function fetchLiveMedia(keywords: string[], perKeyword = 6, refresh = false) {
-  const key = `media:${keywords.join("|")}:${perKeyword}`;
-  const cached = cacheGet<{ videos: LiveVideo[] }>(key);
-  if (!refresh && cached && Date.now() - cached.at < 4 * 60_000) {
-    return { ...cached.value, cachedAt: cached.at, stale: false };
+// ---------------------------------------------------------------------------
+// Public API: fetchLiveMedia
+// ---------------------------------------------------------------------------
+
+const YOUTUBE_CACHE_TTL = 2 * 60 * 60_000; // 2 hours
+const NEWS_CACHE_TTL = 30 * 60_000; // 30 minutes
+
+export async function fetchLiveMedia(keywords: string[], perKeyword = 6) {
+  const cacheKey = `media:${keywords.sort().join("|")}:${perKeyword}`;
+  const cached = await cacheRead<{ videos: LiveVideo[]; articles: LiveArticle[] }>(cacheKey);
+  if (cached && Date.now() - cached.fetchedAt < YOUTUBE_CACHE_TTL) {
+    return { ...cached.value, cachedAt: cached.fetchedAt, stale: false };
   }
   try {
     const recent = await Promise.all(
@@ -133,29 +279,34 @@ export async function fetchLiveMedia(keywords: string[], perKeyword = 6, refresh
       );
       videos = [...new Map(fallback.flat().map((video) => [video.id, video])).values()];
     }
-    videos.sort((a, b) => publishedAgeMinutes(a.published) - publishedAgeMinutes(b.published));
-    if (videos.length) cacheSet(key, { videos });
-    if (!videos.length && cached) return { ...cached.value, cachedAt: cached.at, stale: true };
-    return { videos, cachedAt: Date.now(), stale: false };
+    if (videos.length || articles.length) {
+      await cacheWrite(cacheKey, "youtube_search", { videos, articles }).catch(() => {});
+    }
+    return { videos, articles, cachedAt: Date.now(), stale: false };
   } catch {
-    if (cached) return { ...cached.value, cachedAt: cached.at, stale: true };
-    return { videos: [], cachedAt: Date.now(), stale: true };
+    if (cached) return { ...cached.value, cachedAt: cached.fetchedAt, stale: true };
+    return { videos: [], articles: [], cachedAt: Date.now(), stale: true };
   }
 }
 
-/** Latest headlines for a single entity (company, airline, terminal…). */
+// ---------------------------------------------------------------------------
+// Public API: fetchEntityNews
+// ---------------------------------------------------------------------------
+
 export async function fetchEntityNews(query: string, limit = 8) {
-  const key = `entity-news:${query}:${limit}`;
-  const cached = cacheGet<{ articles: LiveArticle[] }>(key);
-  if (cached && Date.now() - cached.at < 20 * 60_000) {
-    return { articles: cached.value.articles, cachedAt: cached.at, stale: false };
+  const cacheKey = `entity-news:${query}:${limit}`;
+  const cached = await cacheRead<{ articles: LiveArticle[] }>(cacheKey);
+  if (cached && Date.now() - cached.fetchedAt < NEWS_CACHE_TTL) {
+    return { articles: cached.value.articles, cachedAt: cached.fetchedAt, stale: false };
   }
   try {
     const articles = await searchWeb(query, limit);
-    if (articles.length) cacheSet(key, { articles });
+    if (articles.length) {
+      await cacheWrite(cacheKey, "news_search", { articles }).catch(() => {});
+    }
     return { articles, cachedAt: Date.now(), stale: false };
   } catch {
-    if (cached) return { articles: cached.value.articles, cachedAt: cached.at, stale: true };
+    if (cached) return { articles: cached.value.articles, cachedAt: cached.fetchedAt, stale: true };
     return { articles: [] as LiveArticle[], cachedAt: Date.now(), stale: true };
   }
 }
