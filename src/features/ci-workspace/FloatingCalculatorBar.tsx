@@ -1,29 +1,27 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { ArrowDown, BookmarkPlus } from "lucide-react";
+import { Play, BookmarkPlus } from "lucide-react";
 
 export type FloatingSummary = {
   value: string;
   unit: string;
   detail: string;
-  state: "ready" | "current" | "stale" | "preview" | "invalid";
+  state: "ready" | "current" | "stale" | "preview" | "invalid" | "running";
 };
 
 export function FloatingCalculatorBar({
   visible,
   title,
   summary,
-  runLabel,
+  onSave,
   onRun,
-  onDetails,
   disabled = false,
   busy = false,
 }: {
   visible: boolean;
   title: string;
   summary: FloatingSummary;
-  runLabel: string;
+  onSave: () => void;
   onRun: () => void;
-  onDetails: () => void;
   disabled?: boolean;
   busy?: boolean;
 }) {
@@ -31,8 +29,9 @@ export function FloatingCalculatorBar({
   const status = {
     ready: "Awaiting inputs",
     current: "Saved",
-    stale: "Updating inputs",
-    preview: "Live result",
+    stale: "Run to update",
+    preview: "Calculated",
+    running: "Calculating…",
     invalid: "Check inputs",
   }[summary.state];
 
@@ -63,16 +62,21 @@ export function FloatingCalculatorBar({
             <small>{summary.detail}</small>
           </div>
           <div className="calculator-floating-actions">
-            <button type="button" className="calculator-floating-details" onClick={onDetails}>
-              <ArrowDown size={16} aria-hidden="true" /> Details
+            <button
+              type="button"
+              className="calculator-floating-save"
+              onClick={onSave}
+              disabled={disabled || busy || !["current", "preview"].includes(summary.state)}
+            >
+              <BookmarkPlus size={15} aria-hidden="true" /> Save scenario
             </button>
             <button
               type="button"
               className="calculator-floating-run"
               onClick={onRun}
-              disabled={disabled || busy}
+              disabled={busy}
             >
-              <BookmarkPlus size={15} aria-hidden="true" /> {busy ? "Saving…" : runLabel}
+              <Play size={15} aria-hidden="true" /> {busy ? "Running…" : "Run"}
             </button>
           </div>
         </motion.aside>

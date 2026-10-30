@@ -1,15 +1,15 @@
 import { useEffect, useRef } from "react";
 import type { HomeStats } from "../home-stats";
-import type { RinTradingValue } from "../rin-trading-value";
+import type { BioenergyMarketValue } from "../bioenergy-market-value";
 import { DottedPolicyGlobe } from "./DottedPolicyGlobe";
 import styles from "./HomeHero.module.css";
 
 export function HomeHero({
   stats,
-  rinTradingValue,
+  marketValue,
 }: {
   stats: HomeStats | null;
-  rinTradingValue: RinTradingValue | null;
+  marketValue: BioenergyMarketValue | null;
 }) {
   return (
     <section
@@ -22,7 +22,9 @@ export function HomeHero({
           <div className={styles["live"]}>Live policy and market intelligence</div>
           <h1 id="home-hero-title" className={styles["title"]}>
             <span>
-              <span>Global bioenergy policy</span>
+              <span>
+                Global <em className={styles["accent"]}>bioenergy</em> policy
+              </span>
             </span>
             <span>
               <span>and markets, in one place.</span>
@@ -50,8 +52,8 @@ export function HomeHero({
         {[
           {
             value: stats?.total ?? null,
-            label: "Updates tracked",
-            note: "All policy and market updates in the archive.",
+            label: "Updates in archive",
+            note: "Rolling 180 days · refreshed as sources are reviewed.",
           },
           {
             value: stats?.countries ?? null,
@@ -73,11 +75,15 @@ export function HomeHero({
           </div>
         ))}
         <div className={styles["stat"]}>
-          <dd>{rinTradingValue ? `$${(rinTradingValue.usd / 1_000_000_000).toFixed(1)}B` : "—"}</dd>
-          <dt>US RIN trading value</dt>
+          <dd>
+            {marketValue
+              ? `$${(marketValue.usd / 1_000_000_000).toLocaleString("en-US", { maximumFractionDigits: 1 })}B`
+              : "—"}
+          </dd>
+          <dt>Global bioenergy market</dt>
           <p>
-            {rinTradingValue
-              ? `${rinTradingValue.transferYear} YTD estimate · through ${new Date(`${rinTradingValue.through}T00:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })}${rinTradingValue.stale ? " (last available)" : ""}`
+            {marketValue
+              ? `${marketValue.year} annual market estimate`
               : "Data temporarily unavailable"}
           </p>
         </div>

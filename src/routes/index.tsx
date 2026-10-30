@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { feedQueryWithInitial } from "@/features/policy/feed-query";
 import { PolicyMapSection } from "@/features/countries/components/PolicyMapSection";
+import { ProgramRibbon } from "@/features/home/components/ProgramRibbon";
 
 import { OilPricePanel } from "@/features/markets/components/OilPricePanel";
 import { getOilPricesFn } from "@/features/markets/oil-server-functions";
@@ -16,7 +17,10 @@ import { getErrorMessage } from "@/shared/errors";
 import { HomeHero } from "@/features/home/components/HomeHero";
 import { LatestUpdatesSection } from "@/features/home/components/LatestUpdatesSection";
 import { getHomeStats, homeStatsQuery } from "@/features/home/home-stats";
-import { getRinTradingValueFn, rinTradingValueQuery } from "@/features/home/rin-trading-value";
+import {
+  BIOENERGY_MARKET_VALUE_BASELINE,
+  bioenergyMarketValueQuery,
+} from "@/features/home/bioenergy-market-value";
 
 const TITLE = "Global Bioenergy Watch | Worldwide Biofuel Policy Tracker";
 
@@ -25,14 +29,14 @@ const DESCRIPTION =
 
 export const Route = createFileRoute("/")({
   loader: async ({ context }) => {
-    const [{ feed }, market, rinTradingValue] = await Promise.all([
+    const [{ feed }, market] = await Promise.all([
       loadNavigationFeed(context.queryClient),
       getOilPricesFn().catch(() => null),
-      getRinTradingValueFn().catch(() => null),
     ]);
     // The first feed load can populate an empty archive; count after it completes.
     const stats = await getHomeStats().catch(() => null);
-    return { feed, market, stats, rinTradingValue };
+    // The annual report can take six seconds. Refresh it after hydration, not before first paint.
+    return { feed, market, stats, marketValue: BIOENERGY_MARKET_VALUE_BASELINE };
   },
   head: () => ({
     meta: [
@@ -82,16 +86,16 @@ function Dashboard() {
     feed: initialFeed,
     market: initialMarket,
     stats: initialStats,
-    rinTradingValue: initialRinTradingValue,
+    marketValue: initialMarketValue,
   } = Route.useLoaderData();
   const { data: feed } = useQuery(feedQueryWithInitial(initialFeed));
   const { data: stats } = useQuery(
     initialStats ? { ...homeStatsQuery, initialData: initialStats } : homeStatsQuery,
   );
-  const { data: rinTradingValue } = useQuery(
-    initialRinTradingValue
-      ? { ...rinTradingValueQuery, initialData: initialRinTradingValue }
-      : rinTradingValueQuery,
+  const { data: marketValue } = useQuery(
+    initialMarketValue
+      ? { ...bioenergyMarketValueQuery, initialData: initialMarketValue, initialDataUpdatedAt: 0 }
+      : bioenergyMarketValueQuery,
   );
   const data = feed ?? {
     updates: [],
@@ -109,12 +113,13 @@ function Dashboard() {
 
   return (
     <main>
-      <HomeHero stats={stats ?? null} rinTradingValue={rinTradingValue ?? null} />
+      <HomeHero stats={stats ?? null} marketValue={marketValue ?? null} />
 
       <section id="markets" className="benchmark-section" aria-labelledby="markets-title">
         <OilPricePanel initialMarket={initialMarket} />
       </section>
 
+      <ProgramRibbon />
       <PolicyMapSection counts={counts} />
 
       <LatestUpdatesSection updates={topFive} />

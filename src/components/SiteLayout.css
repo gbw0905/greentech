@@ -31,6 +31,7 @@
   :is(
     .jobs-main,
     .supply-directory-main,
+    .dataset-wrap,
     .sources-main,
     .information-main,
     .intelligence-page,
@@ -46,7 +47,7 @@
   padding-inline: 0;
   min-width: 0;
 }
-.site-shell :is(.desk-design .wrap, .dataset-wrap, .country-design .wrap) {
+.site-shell :is(.desk-design .wrap, .country-design .wrap) {
   width: min(var(--site-reading-width), calc(100% - 2 * var(--site-gutter)));
   max-width: var(--site-reading-width);
   margin-inline: auto;

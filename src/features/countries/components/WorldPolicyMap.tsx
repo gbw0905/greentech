@@ -35,9 +35,9 @@ interface MapShape {
 }
 const WIDTH = 900;
 const HEIGHT = 450;
-const MIN_ZOOM = 1;
-const MAX_ZOOM = 8;
 const INITIAL_VIEW: View = { z: 1.2, x: -WIDTH * 0.1, y: -8 };
+const MIN_ZOOM = INITIAL_VIEW.z;
+const MAX_ZOOM = 8;
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 const constrain = (view: View): View => ({
   ...view,
@@ -139,8 +139,6 @@ export function WorldPolicyMap({
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
-  const viewRef = useRef(view);
-  viewRef.current = view;
   const drag = useRef<{ start: Point; original: View; pointerId: number } | null>(null);
   const moved = useRef(false);
   const tooltipId = useId();
@@ -256,11 +254,11 @@ export function WorldPolicyMap({
     const node = containerRef.current;
     if (!node) return;
     const onWheel = (event: WheelEvent) => {
+      // Trackpad pinch emits a ctrl-modified wheel event; ordinary scrolling stays with the page.
+      if (!event.ctrlKey) return;
       if ((event.target as Element).closest(".jurisdiction-tooltip")) return;
       const delta =
         event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? node.clientHeight : 1);
-      // Let the page continue scrolling once the map has reached its minimum zoom.
-      if (delta > 0 && viewRef.current.z <= MIN_ZOOM) return;
       event.preventDefault();
       zoomAt(Math.exp(-delta * 0.0018), localPoint(event.clientX, event.clientY));
     };
@@ -362,7 +360,7 @@ export function WorldPolicyMap({
         <div
           ref={containerRef}
           className="jurisdiction-map-canvas"
-          data-zoom={view.z.toFixed(2)}
+          data-zoom={(view.z / INITIAL_VIEW.z).toFixed(2)}
           onPointerDown={(event) => {
             if (!event.isPrimary || event.button !== 0) return;
             keepTooltip();
@@ -578,7 +576,7 @@ export function WorldPolicyMap({
                 <Maximize2 size={13} aria-hidden="true" />
               </button>
             )}
-            <output aria-label="Map zoom">{view.z.toFixed(1)}×</output>
+            <output aria-label="Map zoom">{(view.z / INITIAL_VIEW.z).toFixed(1)}×</output>
           </div>
           {!features && (
             <div className="jurisdiction-map-message" role="status">
@@ -596,7 +594,7 @@ export function WorldPolicyMap({
             </span>
           ))}
         </div>
-        <p>Scroll to zoom · drag to pan · click for a country summary</p>
+        <p>Pinch or use buttons to zoom · drag to pan · click for a country summary</p>
       </footer>
     </>
   );

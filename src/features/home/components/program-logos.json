@@ -1,0 +1,94 @@
+[
+  {
+    "name": "US EPA (RFS)",
+    "src": "/program-logos/epa.svg"
+  },
+  {
+    "name": "CORSIA",
+    "src": "/program-logos/corsia.png"
+  },
+  {
+    "name": "ISCC",
+    "src": "/program-logos/iscc.webp"
+  },
+  {
+    "name": "45Z clean fuel production credit",
+    "src": "/program-logos/45z.png"
+  },
+  {
+    "name": "Verra",
+    "src": "/program-logos/verra.png"
+  },
+  {
+    "name": "CARB",
+    "src": "/program-logos/carb.webp"
+  },
+  {
+    "name": "REDcert",
+    "src": "/program-logos/redcert.svg"
+  },
+  {
+    "name": "Renewable Fuel Standard (RFS)",
+    "src": "/program-logos/rfs.png"
+  },
+  {
+    "name": "Isometric",
+    "src": "/program-logos/isometric.png"
+  },
+  {
+    "name": "Oregon Clean Fuels Program",
+    "src": "/program-logos/oregon-cfp.png"
+  },
+  {
+    "name": "Gold Standard",
+    "src": "/program-logos/gold-standard.png"
+  },
+  {
+    "name": "45Q carbon capture credit",
+    "src": "/program-logos/45q.png"
+  },
+  {
+    "name": "Climate Action Reserve",
+    "src": "/program-logos/climate-action-reserve.png"
+  },
+  {
+    "name": "Canada Clean Fuel Regulations",
+    "src": "/program-logos/cfr.jpeg"
+  },
+  {
+    "name": "Puro.earth",
+    "src": "/program-logos/puro.svg"
+  },
+  {
+    "name": "EU Union Database (UDB)",
+    "src": "/program-logos/udb.png"
+  },
+  {
+    "name": "Rainbow",
+    "src": "/program-logos/rainbow.png"
+  },
+  {
+    "name": "CleanCounts",
+    "src": "/program-logos/clean-counts.svg"
+  },
+  {
+    "name": "Roundtable on Sustainable Biomaterials (RSB)",
+    "src": "/program-logos/rsb.webp"
+  },
+  {
+    "name": "Emissions Trading System",
+    "src": "/program-logos/ets.svg"
+  },
+  {
+    "name": "CBAM",
+    "src": "/program-logos/cbam.png"
+  },
+  {
+    "name": "RHI",
+    "src": "/program-logos/rhi.webp"
+  },
+  {
+    "name": "UK renewable fuels",
+    "src": "/program-logos/uk-fuels.png"
+  }
+]

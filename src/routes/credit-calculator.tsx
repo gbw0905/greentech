@@ -25,11 +25,11 @@ function CreditCalculatorPage() {
   const [showHistory, setShowHistory] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
   const [suggestedName, setSuggestedName] = useState("Credit & RIN scenario");
-  const [height, setHeight] = useState(1800);
+  const [height, setHeight] = useState(800);
   const [summary, setSummary] = useState<FloatingSummary>({
     value: "—",
     unit: "",
-    detail: "Results update with your inputs",
+    detail: "Select Run to calculate",
     state: "ready",
   });
   const floating = useFloatingBar(() => {
@@ -62,11 +62,13 @@ function CreditCalculatorPage() {
     frameSizeObserver.current?.disconnect();
     const body = frame.current?.contentDocument?.body;
     if (!body) return;
+    const content = body.querySelector<HTMLElement>("main.wrap");
+    if (!content) return;
     const measure = () =>
-      setHeight(Math.min(60000, Math.max(800, Math.ceil(body.scrollHeight) + 8)));
+      setHeight(Math.min(60000, Math.max(320, Math.ceil(content.getBoundingClientRect().bottom) + 8)));
     measure();
     frameSizeObserver.current = new ResizeObserver(measure);
-    frameSizeObserver.current.observe(body);
+    frameSizeObserver.current.observe(content);
   };
   useEffect(() => {
     if (!access.loading)
@@ -91,13 +93,17 @@ function CreditCalculatorPage() {
       } else if (message.type === "civanta-upgrade-request") {
         window.location.assign(access.signedIn ? "/pricing" : "/auth?next=%2Fpricing");
       } else if (message.type === "civanta-save-request" && message.kind === "credit") {
-        setSuggestedName(typeof message.suggestedName === "string" ? message.suggestedName.slice(0, 100) : "Credit & RIN scenario");
+        setSuggestedName(
+          typeof message.suggestedName === "string"
+            ? message.suggestedName.slice(0, 100)
+            : "Credit & RIN scenario",
+        );
         setSaveOpen(true);
       } else if (message.type === "civanta-credit-height" && Number.isFinite(message.height))
-        setHeight(Math.max(800, Math.min(60000, Math.ceil(message.height) + 8)));
+        syncFrameSize();
       else if (message.type === "civanta-floating-summary" && message.kind === "credit") {
         if (Number.isFinite(message.height))
-          setHeight(Math.min(60000, Math.max(800, Math.ceil(message.height) + 8)));
+          syncFrameSize();
         const next = message.summary;
         if (
           next &&
@@ -107,7 +113,7 @@ function CreditCalculatorPage() {
           next.unit.length < 80 &&
           typeof next.detail === "string" &&
           next.detail.length < 240 &&
-          ["ready", "current", "stale", "preview", "invalid"].includes(next.state)
+          ["ready", "current", "stale", "preview", "invalid", "running"].includes(next.state)
         )
           setSummary(next);
       }
@@ -163,21 +169,30 @@ function CreditCalculatorPage() {
           visible={floating}
           title="Credit & RIN"
           summary={summary}
-          runLabel="Save scenario"
-          onRun={() =>
+          onSave={() =>
             frame.current?.contentWindow?.postMessage(
               { type: "civanta-floating-save-request" },
               window.location.origin,
             )
           }
-          onDetails={showResult}
+          onRun={() => {
+            showResult();
+            frame.current?.contentWindow?.postMessage(
+              { type: "civanta-floating-run-request" },
+              window.location.origin,
+            );
+          }}
+          busy={summary.state === "running"}
         />
         <ScenarioSaveDialog
           open={saveOpen}
           suggestedName={suggestedName}
           onClose={() => setSaveOpen(false)}
           onSave={(name) => {
-            frame.current?.contentWindow?.postMessage({ type: "civanta-save-confirm", kind: "credit", name }, window.location.origin);
+            frame.current?.contentWindow?.postMessage(
+              { type: "civanta-save-confirm", kind: "credit", name },
+              window.location.origin,
+            );
             setSaveOpen(false);
           }}
         />

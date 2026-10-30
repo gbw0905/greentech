@@ -66,7 +66,7 @@ export function VideoFilters({
         {FUEL_TYPES.map((f) => (
           <label className="videos-rail-item" key={f}>
             <input type="checkbox" checked={fuels.includes(f)} onChange={() => onFuel(f)} />
-            {f}
+            {f === "SAF" ? "Sustainable Aviation Fuel" : f}
           </label>
         ))}
       </FilterGroup>

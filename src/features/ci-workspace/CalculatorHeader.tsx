@@ -1,4 +1,4 @@
-import { ArrowRight, History, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, History, Sparkles } from "lucide-react";
 import { usePremium } from "@/features/premium/hooks/usePremium";
 
 type Product = "workspace" | "credit" | "optimizer";
@@ -6,15 +6,15 @@ type Product = "workspace" | "credit" | "optimizer";
 const products = {
   workspace: {
     label: "CI Workspace",
-    title: "Model a fuel pathway.",
+    title: "CI Scenario Workspace",
   },
   credit: {
     label: "Credit & RIN",
-    title: "Explore a fuel's potential value.",
+    title: "Credit and RIN Calculator",
   },
   optimizer: {
     label: "Optimizer",
-    title: "Find a better pathway.",
+    title: "CIVanta Optimizer",
   },
 } as const;
 
@@ -32,6 +32,9 @@ export function CalculatorHeader({
   return (
     <header className={`calculator-header calculator-header--${product}`}>
       <div className="calculator-heading-row">
+        <a className="calculator-back" href="/civanta">
+          <ArrowLeft size={17} aria-hidden="true" /> Back to CIVanta
+        </a>
         <div className="calculator-heading-copy">
           <h1>{current.title}</h1>
         </div>

@@ -10,6 +10,14 @@ const OUTPUTS = [
   ["Bioenergy careers", "#d4b46a"],
 ] as const;
 const SOURCES = ["Regulators", "Energy media", "Market data"];
+const OUTPUT_LABELS = [
+  ["Policy intelligence"],
+  ["Fuel & feedstock", "markets"],
+  ["Development", "tracker"],
+  ["Company", "intelligence"],
+  ["AI-powered", "briefings"],
+  ["Bioenergy careers"],
+];
 
 export function IntelligencePipeline({ active, running }: { active: number; running: boolean }) {
   const id = useId();
@@ -106,8 +114,16 @@ export function IntelligencePipeline({ active, running }: { active: number; runn
               <text className={styles["number"]} x={380} y={66 + i * 69}>
                 {String(i + 1).padStart(2, "0")}
               </text>
-              <text className={styles["label"]} x={406} y={66 + i * 69}>
-                {name}
+              <text
+                className={styles["label"]}
+                x={406}
+                y={(OUTPUT_LABELS[i]!.length > 1 ? 59 : 66) + i * 69}
+              >
+                {OUTPUT_LABELS[i]!.map((line, lineIndex) => (
+                  <tspan key={line} x={406} dy={lineIndex === 0 ? 0 : 16}>
+                    {line}
+                  </tspan>
+                ))}
               </text>
               {running &&
                 active === i &&

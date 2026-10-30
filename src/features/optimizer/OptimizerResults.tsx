@@ -240,11 +240,6 @@ export function OptimizerResults({
   const impact = Math.max(1, ...sens.flatMap((r) => [Math.abs(r.nbLo), Math.abs(r.nbHi)]));
   return (
     <div className="opt-results">
-      <section className="opt-recommendation" aria-label="Optimization scenario">
-        <span className="opt-scenario-kicker">OPTIMIZER · LHV BASIS</span>
-        <h2>Optimization scenario</h2>
-        <p>{pathwayFor(input.pathwayId).label}</p>
-      </section>
       <section className="opt-result-card" aria-label="Optimizer recommendation">
         <div className="opt-recommend-top">
           <h3>Optimized carbon intensity</h3>

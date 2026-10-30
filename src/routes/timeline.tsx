@@ -99,7 +99,7 @@ function TimelinePage() {
   return (
     <IntelligencePage
       icon={Radio}
-      eyebrow="Global markets / Latest intelligence"
+      eyebrow=""
       title="Policy update timeline"
       subtitle="Follow the decisions and market developments shaping global bioenergy. Filter the live feed by jurisdiction, fuel and the signals that matter to you."
       className="intelligence-timeline"

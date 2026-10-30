@@ -2,6 +2,8 @@
   --ink: #0e2a43;
   --leaf: #178a6b;
   --display: "Bricolage Grotesque", sans-serif;
+  --footer-columns: repeat(2, minmax(0, 1fr));
+  --footer-column-gap: 70px;
   background: radial-gradient(ellipse at top right, #164c51 0, transparent 55%), #0e2a43;
   color: #b6c9d6;
   font-family: "Instrument Sans", sans-serif;
@@ -15,9 +17,9 @@
 }
 .gbw-footer .footer-top {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: var(--footer-columns);
   align-items: start;
-  gap: 70px;
+  gap: var(--footer-column-gap);
   padding-bottom: 42px;
 }
 .gbw-footer .footer-logo {
@@ -163,8 +165,8 @@
 }
 .gbw-footer .footer-links {
   display: grid;
-  grid-template-columns: 1.25fr 1fr;
-  gap: 70px;
+  grid-template-columns: var(--footer-columns);
+  gap: var(--footer-column-gap);
   border-block: 1px solid #ffffff18;
   padding: 32px 0;
 }
@@ -223,12 +225,18 @@
   height: 16px;
 }
 .gbw-footer .footer-bottom {
+  display: grid;
+  grid-template-columns: var(--footer-columns);
+  align-items: center;
+  gap: var(--footer-column-gap);
+  padding-top: 24px;
+}
+.gbw-footer .footer-bottom-actions {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  padding-top: 24px;
+  min-width: 0;
 }
 .gbw-footer .footer-copy {
   font-size: 14px;
@@ -269,20 +277,17 @@
   scroll-margin-top: 90px;
 }
 @media (max-width: 800px) {
-  .gbw-footer .footer-top,
-  .gbw-footer .footer-links {
-    gap: 30px;
+  .gbw-footer {
+    --footer-column-gap: 30px;
+    --footer-columns: 1fr;
   }
-  .gbw-footer .footer-top {
-    grid-template-columns: 1fr;
+  .gbw-footer .footer-bottom-actions {
+    flex-wrap: wrap;
   }
 }
 @media (max-width: 540px) {
   .gbw-footer .footer-inner {
     padding: 42px 20px 24px;
-  }
-  .gbw-footer .footer-links {
-    grid-template-columns: 1fr;
   }
   .gbw-footer .footer-newsletter {
     padding: 20px;
@@ -296,10 +301,6 @@
   .gbw-footer .footer-form input {
     width: 100%;
     flex: none;
-  }
-  .gbw-footer .footer-bottom {
-    align-items: flex-start;
-    flex-direction: column;
   }
 }
 @media (prefers-reduced-motion: reduce) {

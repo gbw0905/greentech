@@ -1,0 +1,107 @@
+.program-ribbon {
+  padding-block: 40px;
+  border-block: 48px solid #fff;
+  background:
+    radial-gradient(#dfe9ef 0.8px, transparent 0.8px) 0 0 / 24px 24px,
+    #fff;
+}
+[data-home="true"] .benchmark-section:has(+ .program-ribbon) {
+  padding-bottom: 0;
+}
+[data-home="true"] .program-ribbon + .jurisdiction-section {
+  padding-top: 56px;
+  padding-bottom: 72px;
+}
+.program-ribbon-inner {
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: 28px;
+}
+.program-ribbon h2 {
+  margin: 0 0 22px;
+  font:
+    500 16px/1.4 "Instrument Sans",
+    sans-serif;
+  color: #5c7485;
+}
+.program-ribbon-window {
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, #000 5%, #000 95%, transparent);
+}
+.program-ribbon-window:focus-visible {
+  outline: 2px solid #178a73;
+  outline-offset: 6px;
+}
+.program-ribbon-track {
+  display: flex;
+  width: max-content;
+  animation: program-ribbon-scroll 95s linear infinite;
+}
+.program-ribbon-group {
+  display: flex;
+  align-items: center;
+  gap: 50px;
+  padding-right: 50px;
+}
+.program-ribbon-logo {
+  display: grid;
+  place-items: center;
+  width: 148px;
+  height: 68px;
+  flex: 0 0 auto;
+}
+.program-ribbon-logo img {
+  width: auto;
+  height: auto;
+  max-width: 148px;
+  max-height: 64px;
+  object-fit: contain;
+  opacity: 0.72;
+  transition:
+    opacity 0.25s,
+    transform 0.25s;
+}
+.program-ribbon-logo:hover img {
+  opacity: 1;
+  transform: translateY(-2px);
+}
+.program-ribbon-window:hover .program-ribbon-track,
+.program-ribbon-window:focus-within .program-ribbon-track {
+  animation-play-state: paused;
+}
+@keyframes program-ribbon-scroll {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@media (max-width: 640px) {
+  .program-ribbon {
+    border-block-width: 32px;
+    padding-block: 32px;
+  }
+  .program-ribbon-inner {
+    padding-inline: 20px;
+  }
+  .program-ribbon-group {
+    gap: 30px;
+    padding-right: 30px;
+  }
+  .program-ribbon-logo {
+    width: 120px;
+  }
+  .program-ribbon-logo img {
+    max-width: 120px;
+    max-height: 50px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .program-ribbon-track {
+    animation: none;
+  }
+  .program-ribbon-window {
+    overflow-x: auto;
+  }
+  .program-ribbon-group[aria-hidden="true"] {
+    display: none;
+  }
+}
