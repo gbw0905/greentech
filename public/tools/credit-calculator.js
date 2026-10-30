@@ -1,3 +1,4 @@
+import { createManualRun } from "./manual-run.mjs";
 import { readDraft, attachAutosave } from "./browser-draft.mjs";
 import {
   VERSION,
@@ -41,6 +42,11 @@ function floatingSummary(r, forcedState) {
   if (window.parent === window) return;
   const invalid = r.errors.length || r.rinError;
   const stateLabel = forcedState || (invalid ? "invalid" : committedSnapshot === JSON.stringify(state) ? "current" : "preview");
+  if (forcedState === "ready" || forcedState === "running") {
+    publishedFloatingSummary = { value: "—", unit: "", detail: forcedState === "running" ? "Calculating your scenario" : "Select Run to calculate", state: forcedState };
+    window.parent.postMessage({ type: "civanta-floating-summary", kind: "credit", summary: publishedFloatingSummary, height: document.documentElement.scrollHeight }, location.origin);
+    return;
+  }
   const both = state.mode === "both";
   const value = invalid
     ? "—"
@@ -71,6 +77,7 @@ let pendingFloatingInput = null;
 document.addEventListener("input", (event) => {
   if (!event.target.matches?.("#inputs input, #inputs select")) return;
   pendingFloatingInput = event.target;
+  manualRun.invalidate();
   if (publishedFloatingSummary)
     window.parent.postMessage(
       {
@@ -239,7 +246,8 @@ function render() {
     });
   results();
 }
-function results() {
+function results() { manualRun.update(); }
+function renderResults() {
   $("results").classList.remove("show-result-animation");
   const r = calculate(state),
     lcfs = state.mode !== "rfs",
@@ -251,8 +259,7 @@ function results() {
     return;
   }
   $("results").innerHTML =
-    `<section class="result-hero"><span class="eyebrow">SCENARIO ESTIMATE · ${state.year}</span><h2>From fuel to value.</h2><p>${FUELS[state.fuel].name} · ${fmt(state.quantity)} ${state.unit} for your reporting period</p></section>
- ${lcfs ? `<section class="metric"><div><span>LCFS ${r.lcfsTonnes < 0 ? "deficits" : "credits"}</span><em>${state.lcfsConfirmed ? "User-confirmed assumptions" : "Conditional estimate"}</em></div><strong class="${r.lcfsTonnes < 0 ? "negative" : ""}">${fmt(Math.abs(r.lcfsTonnes), 2)}<small>tonnes CO₂e</small></strong><div class="metric-foot"><span>${r.lcfsTonnes < 0 ? "Estimated acquisition cost" : "Gross credit value"}</span><b>${money(Math.abs(r.lcfsValue))}</b></div></section>` : ""}
+    ` ${lcfs ? `<section class="metric"><div><span>LCFS ${r.lcfsTonnes < 0 ? "deficits" : "credits"}</span><em>${state.lcfsConfirmed ? "User-confirmed assumptions" : "Conditional estimate"}</em></div><strong class="${r.lcfsTonnes < 0 ? "negative" : ""}">${fmt(Math.abs(r.lcfsTonnes), 2)}<small>tonnes CO₂e</small></strong><div class="metric-foot"><span>${r.lcfsTonnes < 0 ? "Estimated acquisition cost" : "Gross credit value"}</span><b>${money(Math.abs(r.lcfsValue))}</b></div></section>` : ""}
  ${rfs ? `<section class="metric"><div><span>RIN quantity ${state.dcode ? "· " + state.dcode : ""}</span><em>${state.rfsConfirmed ? "User-confirmed assumptions" : "Conditional estimate"}</em></div><strong>${fmt(r.rins)}<small>estimated gallon-RINs</small></strong>${r.rinError ? `<p class="note error-text">${r.rinError}</p>` : ""}<div class="metric-foot"><span>Gross RIN value</span><b>${money(r.rinValue)}</b></div></section>` : ""}
  ${state.mode === "both" ? `<section class="combined"><span>Combined gross value / net deficit cost</span><strong>${money(r.combined)}</strong><small>${r.combined === null ? "Confirm eligibility and entitlement for both programs to show a combined planning value." : "Assumes you hold both revenue streams. Excludes fees, taxes, revenue sharing and sale timing."}</small></section>` : ""}
  <section class="panel compact"><h3>Calculation trail</h3><dl><dt>Total fuel energy (LHV)</dt><dd>${fmt(r.energyMj, 2)} MJ</dd>${lcfs ? `<dt>LCFS-eligible energy</dt><dd>${fmt(r.lcfsEnergy, 2)} MJ</dd><dt>Benchmark × EER − pathway CI</dt><dd>${fmt(r.delta, 3)} gCO₂e/MJ</dd><dt>Signed credits / deficits</dt><dd>${fmt(r.lcfsTonnes, 4)} tonnes</dd>` : ""}${rfs ? `<dt>${state.fuel === "rng" ? "RNG energy per RIN" : "Equivalence value"}</dt><dd>${state.fuel === "rng" ? fmt(77000 * BTU_TO_MJ, 6) + " MJ LHV" : r.ev + " RINs/gal"}</dd>` : ""}</dl><details><summary>Equations & sources</summary><p>LCFS = (benchmark × EER − CI) × eligible fuel energy ÷ 1,000,000.</p><p>Liquid RIN estimate = eligible standardized renewable gallons × equivalence value. RNG RIN estimate = eligible biomethane Btu (LHV) ÷ 77,000.</p><p>Do not multiply the full CI difference by EER. Use an unadjusted pathway CI. Actual batch rounding and regulatory submissions are outside this planning estimate.</p>${SOURCES.map((x) => `<p><a href="${x.url}" target="_blank" rel="noopener noreferrer">${x.title} ↗</a></p>`).join("")}<p>Reviewed 1 October 2026 · Engine ${VERSION}. Energy-density and price presets are illustrative; the benchmark and equivalence values are source-based.</p></details></section>
@@ -270,6 +277,7 @@ function results() {
   floatingSummary(r);
 }
 $("export").addEventListener("click", () => {
+  if (!manualRun.isCurrent()) { $("status").textContent = "Select Run before downloading results."; return; }
   if (!proAccess) { requestUpgrade(); return; }
   const r = calculate(state);
   if (r.errors.length || r.rinError) {
@@ -323,6 +331,7 @@ window.addEventListener("message", (e) => {
     $("status").textContent = e.data.message;
 });
 $("reset").addEventListener("click", () => {
+  manualRun.invalidate();
   state = defaults();
   state.dcode = "D4";
   render();
@@ -331,6 +340,7 @@ $("reset").addEventListener("click", () => {
 });
 for (const b of document.querySelectorAll("[data-mode]"))
   b.addEventListener("click", () => {
+    manualRun.invalidate();
     state.mode = b.dataset.mode;
     setMode();
     render();
@@ -386,6 +396,28 @@ try {
     state.energy = Number(q.get("energy"));
 } catch {}
 setMode();
+function pendingResults() {
+  $("results").innerHTML = '<section class="calculator-run-state"><span class="calculator-run-ready" aria-hidden="true">↗</span><h2>Ready to calculate</h2><p>Review your inputs, then select Run to see your results.</p></section>';
+  floatingSummary({ errors: [] }, "ready");
+}
+const manualRun = createManualRun({
+  target: $("results"),
+  snapshot: () => JSON.stringify(state),
+  render: renderResults,
+  pending: pendingResults,
+  onBusy: (busy) => { $("run").disabled = busy; $("run").textContent = busy ? "Running…" : "Run"; },
+  onStart: () => floatingSummary({ errors: [] }, "running"),
+});
+function runCalculation() {
+  if (pendingFloatingInput?.isConnected) pendingFloatingInput.dispatchEvent(new Event("change", { bubbles: true }));
+  pendingFloatingInput = null;
+  manualRun.run();
+}
+$("run").addEventListener("click", runCalculation);
+window.addEventListener("message", (event) => {
+  if (event.source === window.parent && event.origin === location.origin && event.data?.type === "civanta-floating-run-request") runCalculation();
+});
+
 render();
 const inboundScenario = ["ci", "fuel", "quantity", "energy", "unit"].some((key) =>
   new URLSearchParams(location.search).has(key),
@@ -408,6 +440,7 @@ if (window.parent !== window && typeof ResizeObserver !== "undefined") {
 }
 
 $("save").addEventListener("click", () => {
+  if (!manualRun.isCurrent()) { $("status").textContent = "Select Run before saving this scenario."; return; }
   const r = calculate(state);
   results();
   if (r.errors.length) {
@@ -421,6 +454,7 @@ $("save").addEventListener("click", () => {
   window.parent.postMessage({ type: "civanta-save-request", kind: "credit", suggestedName: FUELS[state.fuel].name + " · " + state.year }, location.origin);
 });
 function persistScenario(name) {
+  if (!manualRun.isCurrent()) { $("status").textContent = "Select Run before saving this scenario."; return; }
   if (typeof name !== "string" || !name.trim() || name.trim().length > 100) return;
   const r = calculate(state);
   if (r.errors.length || r.rinError) {
@@ -503,11 +537,12 @@ window.addEventListener("message", (e) => {
       reply("Could not restore this run: " + result.errors[0]);
       return;
     }
+    manualRun.invalidate();
     state = structuredClone(saved);
     committedSnapshot = JSON.stringify(state);
     render();
     $("status").textContent =
-      "Inputs restored and recalculated. The original run remains in your history.";
+      "Inputs restored. Select Run to calculate. The original run remains in your history.";
     reply($("status").textContent);
   } catch {
     reply("Could not restore these saved inputs.");

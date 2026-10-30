@@ -33,11 +33,13 @@ export function FooterNewsletter() {
         <MultiSelectDropdown
           label="Country"
           icon={MapPin}
-          options={COUNTRIES.map((country) => ({
-            value: country.slug,
-            name: country.name,
-            label: country.name,
-          }))}
+          options={[...COUNTRIES]
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map((country) => ({
+              value: country.slug,
+              name: country.name,
+              label: country.name,
+            }))}
           selected={countries}
           onChange={(values) => {
             setCountries(values);
@@ -102,7 +104,7 @@ export function FooterNewsletter() {
           {message}
         </p>
       ) : (
-        <p className="footer-fine">No spam. Unsubscribe anytime.</p>
+        <p className="footer-fine">Unsubscribe anytime.</p>
       )}
     </section>
   );

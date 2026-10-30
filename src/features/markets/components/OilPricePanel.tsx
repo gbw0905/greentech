@@ -1031,7 +1031,7 @@ export function OilPricePanel({
           aria-controls="market-stocks-panel"
           onClick={() => setMarketView("stocks")}
         >
-          Biofuel stocks <span>10</span>
+          Biofuel stocks
         </button>
       </div>
       {marketView === "stocks" ? (

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="Logo_REDcert_EU" width="220" height="134.899" viewBox="0 0 220 134.899">
+  <defs>
+    <linearGradient id="linear-gradient" y1="0.5" x2="1" y2="0.5" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#b1c800"></stop>
+      <stop offset="0.186" stop-color="#acc600"></stop>
+      <stop offset="0.417" stop-color="#9dc107"></stop>
+      <stop offset="0.672" stop-color="#80b71b"></stop>
+      <stop offset="0.941" stop-color="#51a928"></stop>
+      <stop offset="1" stop-color="#41a62a"></stop>
+    </linearGradient>
+    <linearGradient id="linear-gradient-2" x1="0.404" y1="0.35" x2="0.631" y2="0.546" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#006ab3"></stop>
+      <stop offset="1" stop-color="#009ee0"></stop>
+    </linearGradient>
+  </defs>
+  <g id="Gruppe_40" data-name="Gruppe 40" transform="translate(126.931 45.507)">
+    <path id="Pfad_85" data-name="Pfad 85" d="M314.8,425.543q-5.459,0-5.46-5.859v-4.267q0-6.038,5.46-6.039h7.174v2.837h-7.1q-2.8,0-2.8,3.312v4.086q0,3.13,2.8,3.129h7.174v2.8H314.8Z" transform="translate(-309.341 -404.801)" fill="#707173"></path>
+    <path id="Pfad_86" data-name="Pfad 86" d="M326.436,425.544q-5.459,0-5.46-5.859v-4.45q0-5.859,5.46-5.858h3.935q5.495,0,5.5,5.858v3.372H323.634v1.006q0,3.13,2.8,3.129h8.921v2.8Zm6.811-10.379q0-3.13-2.838-3.129h-3.971q-2.8,0-2.8,3.129v1.043h9.612Z" transform="translate(-303.962 -404.802)" fill="#707173"></path>
+    <path id="Pfad_87" data-name="Pfad 87" d="M334.042,425.543V409.378h2.619v2.293a3.4,3.4,0,0,1,1.4-1.783,6.38,6.38,0,0,1,2.768-.509h3.821v2.837h-5.333a2.341,2.341,0,0,0-1.983.746,3.9,3.9,0,0,0-.564,2.347v10.234h-2.73Z" transform="translate(-297.922 -404.801)" fill="#707173"></path>
+    <path id="Pfad_88" data-name="Pfad 88" d="M348.839,426.99q-5.2,0-5.2-5.968V406.248H346.4v4.577h5.32v2.4H346.4v7.906q0,3.275,2.694,3.276h2.553v2.584h-2.809Z" transform="translate(-293.487 -406.248)" fill="#707173"></path>
+  </g>
+  <path id="Pfad_89" data-name="Pfad 89" d="M268.363,431.507v-7.455a3.462,3.462,0,0,0-.8-2.426,3.232,3.232,0,0,0-2.5-.873h-8.905v10.754h-6.014V400.93H265.55q4.22,0,6.282,1.819t2.06,5.893v3.138a7.976,7.976,0,0,1-.825,4.1,4.367,4.367,0,0,1-2.424,1.867,3.889,3.889,0,0,1,2.667,1.819,7.359,7.359,0,0,1,1.067,4.2v7.746h-6.014Zm-.048-21.6q0-2.86-2.765-2.862h-9.391v8.183h9.489a2.739,2.739,0,0,0,2.038-.655,2.664,2.664,0,0,0,.63-1.916V409.9Z" transform="translate(-209.775 -363.199)" stroke="#000" stroke-miterlimit="10" stroke-width="0.482"></path>
+  <path id="Pfad_90" data-name="Pfad 90" d="M270.6,431.507V400.93h21.308v6.112H276.618v6.339h8.989v5.19h-8.989V425.4h15.294v6.112H270.6Z" transform="translate(-200.317 -363.199)" stroke="#000" stroke-miterlimit="10" stroke-width="0.482"></path>
+  <path id="Pfad_91" data-name="Pfad 91" d="M288.689,431.507V400.93H304q9.217,0,9.217,9.265v12.048q0,9.265-9.459,9.265ZM307.2,410.195q0-3.152-3.2-3.153h-9.342V425.4h9.3q3.248,0,3.249-3.2v-12Z" transform="translate(-191.957 -363.199)" stroke="#000" stroke-miterlimit="10" stroke-width="0.482"></path>
+  <path id="Pfad_92" data-name="Pfad 92" d="M326.875,435.23c-11.084-3.223-62.105-3.932-55.906,38.259a124.952,124.952,0,0,1,23.835-18.65c-.425-3.255.054-10.607,1.579-14.25a33.924,33.924,0,0,0,1.009,12.726,93.689,93.689,0,0,1,13.111-6.291,236.55,236.55,0,0,0-21.75,16.376c4.543,2.849,9.439,4.308,15.192,5.39-5.074.695-14.589-1.256-18.1-2.854-6.408,5.722-11.173,11.039-10.335,13.456C314.675,496.251,327.134,446.77,326.875,435.23Z" transform="translate(-200.389 -347.96)" fill="url(#linear-gradient)"></path>
+  <path id="Pfad_93" data-name="Pfad 93" d="M286.441,507.582A44.267,44.267,0,0,1,284.4,491.81a45.737,45.737,0,0,1,2.695-14.895l0-.025a54.505,54.505,0,0,1-28.516-14.569c-20.124-19.748-19.011-50.744,2.489-69.23s55.24-17.462,75.365,2.285l.7.722a66.242,66.242,0,1,0-50.7,111.47Z" transform="translate(-222.537 -375.127)" fill="url(#linear-gradient-2)"></path>
+  <g id="Gruppe_41" data-name="Gruppe 41" transform="translate(190.316 33.98)">
+    <path id="Pfad_94" data-name="Pfad 94" d="M352.688,414.5V398.365H365.7v2.9H356.68v3.821h4.83v2.464h-4.83V411.6H365.7v2.9H352.688Z" transform="translate(-352.688 -398.365)" fill="#006ab3"></path>
+    <path id="Pfad_95" data-name="Pfad 95" d="M369.223,414.5q-6.056,0-6.055-4.236v-11.9h3.992v11.881q0,1.358,1.932,1.358H371.6q1.932,0,1.932-1.358V398.365h3.992v11.9q0,4.236-6.054,4.236Z" transform="translate(-347.843 -398.365)" fill="#006ab3"></path>
+  </g>
+</svg>

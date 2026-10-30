@@ -18,15 +18,11 @@ export function InformationPage({
   subtitle: string;
   children: ReactNode;
 }) {
-  const words = title.split(" ");
-  const accent = words.pop();
   return (
     <main className="desk-design">
       <header className="banner">
         <div className="wrap">
-          <h1>
-            {words.join(" ")} <em>{accent}</em>
-          </h1>
+          <h1>{title}</h1>
           <p className="hero-lede">{subtitle}</p>
           <nav className="tabs" aria-label="About the desk">
             {PAGES.map((page) => (

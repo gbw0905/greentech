@@ -26,3 +26,9 @@
 [data-home="true"] .industry-section {
   padding-block: 36px;
 }
+@media (min-width: 701px) {
+  [data-home="true"] .industry-thumbnails button {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}

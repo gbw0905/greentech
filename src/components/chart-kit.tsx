@@ -27,7 +27,6 @@ import {
   ReferenceDot,
   LineChart,
   Line,
-  Legend,
 } from "recharts";
 import { panelTrend, totalSeries } from "@/features/markets/history-series";
 import {
@@ -363,16 +362,21 @@ export function ChartTrend({ panel }: { panel: string }) {
 
   return (
     <div className="min-w-0">
-      <div className="mb-2 flex flex-wrap items-center gap-2">
+      <div
+        className="chart-trend-tabs mb-5 flex w-fit flex-wrap items-center gap-1 rounded-xl border border-border bg-surface-2 p-1"
+        role="group"
+        aria-label="Trend grouping"
+      >
         {(["series", "total"] as const).map((m) => (
           <button
             key={m}
             type="button"
             onClick={() => setMode(m)}
-            className={`label-mono border px-2.5 py-1 text-[0.875rem] uppercase tracking-[0.08em] transition-colors ${
+            aria-pressed={mode === m}
+            className={`rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors ${
               mode === m
-                ? "border-foreground bg-foreground text-background"
-                : "border-border text-muted-foreground hover:bg-foreground/[0.05]"
+                ? "bg-white text-foreground shadow-sm"
+                : "text-muted-foreground hover:bg-white/60"
             }`}
           >
             {m === "series" ? "By country / region" : "Sector total"}
@@ -382,7 +386,7 @@ export function ChartTrend({ panel }: { panel: string }) {
 
       <div className="h-[22rem] w-full min-w-0">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={rows} margin={{ top: 8, right: 12, bottom: 34, left: 4 }}>
+          <LineChart data={rows} margin={{ top: 12, right: 12, bottom: 24, left: 4 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
             <XAxis
               dataKey="year"
@@ -404,11 +408,6 @@ export function ChartTrend({ panel }: { panel: string }) {
               labelFormatter={(l) => `Year ${l}`}
               contentStyle={{ fontSize: 14 }}
             />
-            <Legend
-              wrapperStyle={{ fontSize: 14, paddingTop: 8 }}
-              iconType="plainline"
-              iconSize={18}
-            />
             {series.map((sr, i) => (
               <Line
                 key={sr.key}
@@ -427,6 +426,21 @@ export function ChartTrend({ panel }: { panel: string }) {
           </LineChart>
         </ResponsiveContainer>
       </div>
+      <ul
+        className="chart-trend-legend mt-6 mb-3 flex flex-wrap justify-center gap-x-5 gap-y-3 text-sm text-muted-foreground"
+        aria-label="Chart series"
+      >
+        {series.map((sr, index) => (
+          <li key={sr.key} className="flex items-center gap-2">
+            <span
+              className="h-0.5 w-5 rounded-full"
+              style={{ background: LINE_COLORS[index % LINE_COLORS.length] }}
+              aria-hidden="true"
+            />
+            {sr.label}
+          </li>
+        ))}
+      </ul>
 
       <div className="chart-axis mt-2 flex flex-wrap gap-x-4 gap-y-1">
         <span>X axis: Year (2000–2026)</span>
@@ -1263,7 +1277,7 @@ export function ChartPanel({
   return (
     <div className="dataset-chart-panel glass-panel rise flex h-full flex-col p-5">
       <div className="dataset-panel-heading mb-3 flex flex-wrap items-start justify-between gap-3">
-        <div className="max-w-3xl">
+        <div className="min-w-0 flex-1">
           <h2 className="dataset-panel-title flex items-center gap-2 font-display text-lg font-bold tracking-tight text-foreground">
             <Icon className="size-5 text-primary" />
             {title}

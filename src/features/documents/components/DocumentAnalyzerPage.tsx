@@ -21,6 +21,7 @@ import { SignInPrompt } from "@/features/auth/components/SignInPrompt";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import type { DocumentAnalysis } from "@/features/documents/contracts";
 import { DocumentViewer } from "./DocumentViewer";
+import "./document-analyzer.css";
 
 type HistoryEntry = {
   id: string;
@@ -108,9 +109,12 @@ export function DocumentAnalyzerPage() {
     setLoadingHistoryId(entry.id);
     setError("");
     try {
-      const response = await fetch(`/api/document-history-item?id=${encodeURIComponent(entry.id)}`, {
-        credentials: "same-origin",
-      });
+      const response = await fetch(
+        `/api/document-history-item?id=${encodeURIComponent(entry.id)}`,
+        {
+          credentials: "same-origin",
+        },
+      );
       if (!response.ok) throw new Error("Failed to load analysis.");
       const result = (await response.json()) as DocumentAnalysis;
       setAnalysis(result);
@@ -263,12 +267,14 @@ export function DocumentAnalyzerPage() {
           ) : (
             <>
               <form onSubmit={submit} className="analyzer-input-card">
-                {!authLoading && !signedIn ? (
-                  <SignInPrompt action="use the document analyzer" />
-                ) : null}
-                <div className="flex items-center gap-2">
+                <div className="analyzer-step-heading">
                   <Upload className="size-4 text-primary" />
                   <h2 className="font-display text-lg font-extrabold">1. Add a document</h2>
+                  {file && (
+                    <span className="analyzer-ready-label">
+                      <CheckCircle2 size={14} /> Ready
+                    </span>
+                  )}
                 </div>
                 <input
                   ref={inputRef}
@@ -286,13 +292,14 @@ export function DocumentAnalyzerPage() {
                   data-selected={!!file || undefined}
                   onDragOver={(event) => {
                     event.preventDefault();
-                    if (!loading) setDragging(true);
+                    if (!loading && signedIn && !authLoading) setDragging(true);
                   }}
                   onDragLeave={() => setDragging(false)}
                   onDrop={(event) => {
                     event.preventDefault();
                     setDragging(false);
-                    if (!loading) chooseFile(event.dataTransfer.files[0] ?? null);
+                    if (!loading && signedIn && !authLoading)
+                      chooseFile(event.dataTransfer.files[0] ?? null);
                   }}
                   onClick={() => inputRef.current?.click()}
                   className="analyzer-dropzone"
@@ -300,7 +307,7 @@ export function DocumentAnalyzerPage() {
                   <span className="analyzer-upload-icon">
                     {file ? <CheckCircle2 size={30} /> : <Upload size={30} />}
                   </span>
-                  <span className="mt-2 text-sm font-bold text-foreground">
+                  <span className="analyzer-file-name" title={file?.name}>
                     {file ? file.name : "Drop your document here"}
                   </span>
                   <span className="mt-1 text-xs text-muted-foreground">
@@ -329,7 +336,7 @@ export function DocumentAnalyzerPage() {
                     </button>
                   )}
                 </div>
-                <div className="mt-6 flex items-center gap-2">
+                <div className="analyzer-step-heading analyzer-keywords-heading">
                   <Search className="size-4 text-primary" />
                   <label htmlFor="analysis-query" className="font-display text-lg font-extrabold">
                     2. Enter at least 5 keywords
@@ -349,7 +356,9 @@ export function DocumentAnalyzerPage() {
                   id="analysis-query-help"
                   className="mt-2 flex justify-between gap-3 text-xs text-muted-foreground"
                 >
-                  <span>Separate keywords or short phrases with commas. Use 5–25 relevant terms.</span>
+                  <span>
+                    Separate keywords or short phrases with commas. Use 5–25 relevant terms.
+                  </span>
                   <span
                     className={
                       keywords.length >= 5 && keywords.length <= 25
@@ -391,7 +400,7 @@ export function DocumentAnalyzerPage() {
                     keywords.length < 5 ||
                     keywords.length > 25
                   }
-                  className="mt-5 w-full sm:w-auto"
+                  className="analyzer-submit mt-5 w-full sm:w-auto"
                 >
                   {loading ? (
                     <LoaderCircle className="size-4 animate-spin" />
@@ -402,8 +411,8 @@ export function DocumentAnalyzerPage() {
                 </Button>
                 <p className="mt-4 flex items-start gap-2 text-xs/relaxed text-muted-foreground">
                   <ShieldCheck className="mt-0.5 size-4 shrink-0" />
-                  Files are processed and stored securely. Analysis results and documents are saved to
-                  your history.
+                  Files are processed and stored securely. Analysis results and documents are saved
+                  to your history.
                 </p>
               </form>
 
@@ -452,7 +461,11 @@ export function DocumentAnalyzerPage() {
                               <FileText size={14} className="shrink-0 text-primary" />
                               <span className="truncate font-semibold">{entry.file_name}</span>
                               {entry.file_path ? (
-                                <Eye size={12} className="shrink-0 text-emerald-600" aria-label="Document preview available" />
+                                <Eye
+                                  size={12}
+                                  className="shrink-0 text-emerald-600"
+                                  aria-label="Document preview available"
+                                />
                               ) : null}
                             </span>
                             <span className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
@@ -506,8 +519,11 @@ export function DocumentAnalyzerPage() {
             </small>
           </div>
           {!analysis && !loading ? (
-            <div className="flex min-h-72 flex-col items-center justify-center text-center text-muted-foreground">
-              <FileSearch className="size-10 opacity-40" />
+            <div className="analyzer-empty-state flex min-h-72 flex-col items-center justify-center text-center text-muted-foreground">
+              <span className="analyzer-empty-icon">
+                <FileSearch size={36} />
+              </span>
+              <h3>Your next insight starts here</h3>
               <p className="mt-3 max-w-sm text-sm/relaxed">
                 Your briefing starts with your source. Add a document and five topics to see a
                 focused answer, key points and supporting references.
@@ -515,7 +531,7 @@ export function DocumentAnalyzerPage() {
             </div>
           ) : null}
           {loading ? (
-            <div className="flex min-h-72 flex-col items-center justify-center text-center">
+            <div className="analyzer-loading-state flex min-h-72 flex-col items-center justify-center text-center">
               <LoaderCircle className="size-9 animate-spin text-primary" />
               <p className="mt-3 text-sm font-semibold">Finding relevant passages…</p>
               <p className="mt-1 text-xs text-muted-foreground">
@@ -647,7 +663,9 @@ export function DocumentAnalyzerPage() {
                               : "border-primary bg-muted/50"
                           } ${hasViewer ? "cursor-pointer transition-colors hover:bg-emerald-50/60" : ""}`}
                         >
-                          <cite className={`text-xs font-bold not-italic ${isActive ? "text-emerald-700" : "text-primary"}`}>
+                          <cite
+                            className={`text-xs font-bold not-italic ${isActive ? "text-emerald-700" : "text-primary"}`}
+                          >
                             {citation.source}
                             {hasViewer ? (
                               <Eye size={12} className="ml-1.5 inline-block opacity-50" />

@@ -74,11 +74,6 @@ export function IntelligenceFooter() {
                 <Link to="/about/team">Team members</Link>
               </li>
               <li>
-                <Link to="/" hash="disclaimer">
-                  Method &amp; disclaimer
-                </Link>
-              </li>
-              <li>
                 <Link to="/jobs">Careers</Link>
               </li>
               <li>
@@ -117,27 +112,24 @@ export function IntelligenceFooter() {
         </nav>
         <div className="footer-bottom">
           <p className="footer-copy">© 2026 Global Bioenergy Watch. All rights reserved.</p>
-          <ul className="footer-legal">
-            <li>
-              <Link to="/privacy">Privacy policy</Link>
-            </li>
-            <li>
-              <Link to="/terms">Terms of use</Link>
-            </li>
-            <li>
-              <Link to="/privacy" hash="cookies">
-                Cookies
-              </Link>
-            </li>
-            <li>
-              <Link to="/" hash="disclaimer">
-                Disclaimer
-              </Link>
-            </li>
-          </ul>
-          <a className="footer-top-link" href="#top">
-            Back to top <ArrowUp />
-          </a>
+          <div className="footer-bottom-actions">
+            <ul className="footer-legal">
+              <li>
+                <Link to="/privacy">Privacy policy</Link>
+              </li>
+              <li>
+                <Link to="/terms">Terms of use</Link>
+              </li>
+              <li>
+                <Link to="/privacy" hash="cookies">
+                  Cookies
+                </Link>
+              </li>
+            </ul>
+            <a className="footer-top-link" href="#top">
+              Back to top <ArrowUp />
+            </a>
+          </div>
         </div>
       </div>
     </footer>

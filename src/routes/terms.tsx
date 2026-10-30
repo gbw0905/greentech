@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Scale } from "lucide-react";
-import { PageHeading, PageShell } from "@/components/PageShell";
+import { LegalPage } from "@/components/LegalPage";
 
 const TITLE = "Terms of Use — Global Bioenergy Watch";
 const DESCRIPTION =
@@ -24,14 +23,11 @@ export const Route = createFileRoute("/terms")({
 
 function TermsPage() {
   return (
-    <PageShell>
-      <PageHeading
-        icon={Scale}
-        title="Terms of Use"
-        subtitle="The rules and disclaimers that apply when you use the Global Bioenergy Watch website, data feeds, email summaries, and exports."
-      />
-
-      <section className="rounded-lg border border-border bg-white p-6 shadow-sm sm:p-8">
+    <LegalPage
+      title="Terms of Use"
+      subtitle="The rules and disclaimers that apply when you use the Global Bioenergy Watch website, data feeds, email summaries, and exports."
+    >
+      <section className="legal-document">
         <div className="space-y-6 text-sm/relaxed text-muted-foreground">
           <p className="font-semibold text-foreground">Last updated: September 2026</p>
 
@@ -396,6 +392,6 @@ function TermsPage() {
           </div>
         </div>
       </section>
-    </PageShell>
+    </LegalPage>
   );
 }

@@ -1,3 +1,5 @@
+import { renderCiFlow, bindCiFlow } from "./ci-flow.mjs";
+import { createManualRun } from "./manual-run.mjs";
 import { buildWorkspacePayload } from "./workspace-export.mjs";
 import { readDraft, attachAutosave } from "./browser-draft.mjs";
 import { activityToCi, changedInputs } from "./workspace-activity.mjs";
@@ -660,7 +662,7 @@ function markInvalidFields() {
     if (detail)
       detail.textContent = issues.length
       ? `${issues.length} ${issues.length === 1 ? "field needs" : "fields need"} a valid value. Start with ${issues[0].label}.`
-        : "Results update automatically with your entries.";
+        : "Select Run to calculate your entries.";
   }
   return issues;
 }
@@ -686,6 +688,9 @@ document.addEventListener("input", (event) => {
   if (!event.target.matches?.("#inputs input, #inputs select")) return;
   if (showInputErrors) markInvalidFields();
   pendingFloatingInput = event.target;
+  manualRun.invalidate();
+  const staleFlow = document.querySelector(".ci-flow-stale");
+  if (staleFlow) staleFlow.hidden = false;
   if (ran)
     floatingSummary(lastFloatingSummary
       ? { ...lastFloatingSummary, detail: "Updating inputs", state: "stale" }
@@ -806,25 +811,17 @@ function baselinePanel(result = null, base = null) {
     delta !== null
       ? `<dl><dt>Grid & renewable electricity contribution to change</dt><dd>${electricityDelta > 0 ? "+" : ""}${fmt(electricityDelta, 3)} gCO₂e/MJ</dd><dt>Changed inputs</dt><dd>${changesMarkup}</dd><dt>Additional annual cost</dt><dd>Not supplied in CI Workspace</dd><dt>Evidence to confirm</dt><dd>Factor source, date, geography, allocation and program eligibility</dd></dl>`
       : ""
-  }<details><summary>How to compare</summary><ol><li>Fill the inputs.</li><li>Click <b>Use as baseline</b>.</li><li>Change an input; the result updates automatically.</li></ol></details></section>`;
+  }<details><summary>How to compare</summary><ol><li>Fill the inputs.</li><li>Click <b>Use as baseline</b>.</li><li>Change an input, then click <b>Run</b> to compare.</li></ol></details></section>`;
 }
 function results() {
-  const result = assess(state);
-  if (!result.errors.length) {
-    resultsNow();
-    return;
-  }
-  ran = false;
-  dirty = false;
-  $("processFlow").innerHTML = "";
-  $("results").innerHTML = `${baselinePanel()}<section class="panel"><h2>Complete your inputs</h2><p class="note">Results appear automatically when the required values are ready.</p></section>`;
-  floatingSummary({ value: "—", unit: "gCO₂e/MJ", detail: "Complete inputs to see results", state: "ready" });
+  manualRun.update();
 }
 function refreshDisplay() {
   results();
 }
 document.addEventListener("click", (event) => {
   if (!event.target.closest?.("[data-save]")) return;
+  if (!manualRun.isCurrent()) { $("status").textContent = "Select Run before saving this scenario."; return; }
   if (!valid()) return;
   window.parent.postMessage({ type: "civanta-save-request", kind: "ci", suggestedName: state.name || `${assess(state).pathway.label} scenario` }, location.origin);
 });
@@ -909,6 +906,8 @@ document.addEventListener("click", (event) => {
   }
 });
 function resultsNow(focusInvalid = false) {
+  if (!manualRun.isCurrent()) { manualRun.update(); return; }
+  document.getElementById("ci-balanced-results")?.remove();
   ran = true;
   dirty = false;
   const r = assess(state);
@@ -930,9 +929,13 @@ function resultsNow(focusInvalid = false) {
   }
   showInputErrors = false;
   markInvalidFields();
-  $("processFlow").innerHTML = proAccess ? calculationFlow(r) : "";
   const b = baseline ? assess(baseline) : null;
   const base = b && !b.errors.length ? b : null;
+  $("processFlow").innerHTML = proAccess
+    ? renderCiFlow(r, { convert: cv, format: fmt, unit: ciLabel(), baseline: base })
+      + `<details class="panel ci-flow-breakdown"><summary>Stage breakdown</summary>${lifecyclePlot(r, base)}</details>`
+      + `<details class="ci-flow-ledger"><summary>Detailed lifecycle ledger</summary>${calculationFlow(r)}</details>`
+    : "";
   const sensitivity = state.dairy
     ? ["digesterGridKwh", "upgradingGridKwh", "digesterNgMmbtuHhv"].map((k) => ({
         label: dairyLabel(k),
@@ -974,7 +977,7 @@ function resultsNow(focusInvalid = false) {
     energy: String(fuel === "rng" ? 1055.05585262 : r.annualEnergyMj / state.annualVolume),
   });
   $("results").innerHTML =
-    `<section class="result-hero"><span class="eyebrow">MODELED CI · LHV BASIS</span><h2>${esc(state.name)}</h2><p>${esc(r.pathway.label)}</p></section><section class="metric"><div><span>Net lifecycle carbon intensity</span><em>Screening estimate</em></div><strong>${fmt(cv(r.ciTotal), 3)}<small>${ciLabel()} of finished fuel</small></strong><div class="metric-foot"><span>Gross emissions</span><b>${fmt(cv(r.grossCi), 3)}</b></div><div class="metric-foot"><span>Signed adjustments</span><b>${fmt(cv(r.creditsCi), 3)}</b></div><p class="note">${fmt(cv(r.grossCi), 3)} + (${fmt(cv(r.creditsCi), 3)}) = ${fmt(cv(r.ciTotal), 3)} ${ciLabel()}. Display rounding may affect the last decimal.</p></section>${baselinePanel(r, base)}${lifecyclePlot(r, base)}${proAccess ? `<details class="panel calculation-details"><summary>View calculation details <span>Activity, factors & stage formulas</span></summary>${stageCalc(r)}</details>` : ""}${(() => {
+    `<section class="metric"><div><span>Net lifecycle carbon intensity</span><em>Screening estimate</em></div><strong>${fmt(cv(r.ciTotal), 3)}<small>${ciLabel()} of finished fuel</small></strong><div class="metric-foot"><span>Gross emissions</span><b>${fmt(cv(r.grossCi), 3)}</b></div><div class="metric-foot"><span>Signed adjustments</span><b>${fmt(cv(r.creditsCi), 3)}</b></div><p class="note">${fmt(cv(r.grossCi), 3)} + (${fmt(cv(r.creditsCi), 3)}) = ${fmt(cv(r.ciTotal), 3)} ${ciLabel()}. Display rounding may affect the last decimal.</p></section>${baselinePanel(r, base)}${proAccess ? "" : lifecyclePlot(r, base)}${proAccess ? `<details class="panel calculation-details"><summary>View calculation details <span>Activity, factors & stage formulas</span></summary>${stageCalc(r)}</details>` : ""}${(() => {
       const sc = { 1: 0, 2: 0, 3: 0, adjustments: 0, unallocated: 0 };
       r.lineItems.forEach((line) => {
         for (const [key, value] of Object.entries(scopeContributions(line))) sc[key] += value;
@@ -1007,6 +1010,20 @@ function resultsNow(focusInvalid = false) {
       else state.programs[parts[1]] = parts[1] === "year" ? Number(v) : v;
       resultsNow();
     });
+  // Move existing secondary result cards into the shorter input column.
+  const inputColumn = $("inputs").parentElement;
+  const resultColumn = $("results").parentElement;
+  if (window.innerWidth > 900) {
+    const extra = document.createElement("div");
+    extra.id = "ci-balanced-results";
+    inputColumn.append(extra);
+    for (const card of [...$("results").children].reverse()) {
+      const difference = resultColumn.getBoundingClientRect().height - inputColumn.getBoundingClientRect().height;
+      const cardHeight = card.getBoundingClientRect().height + 20;
+      if (difference <= 80 || cardHeight >= difference || card.matches(".metric")) break;
+      extra.prepend(card);
+    }
+  }
   lastFloatingSummary = {
     value: fmt(cv(r.ciTotal), 3),
     unit: ciLabel(),
@@ -1277,6 +1294,7 @@ $("baseline").addEventListener("click", () => {
   $("status").textContent = "Baseline captured. Change an input to compare.";
 });
 function clearCalculatedView() {
+  manualRun.invalidate();
   ran = false;
   dirty = false;
   showInputErrors = false;
@@ -1368,11 +1386,12 @@ document.addEventListener("click", (e) => {
   if (t.dataset.histRestore) {
     const x = h.find((y) => y.id === t.dataset.histRestore);
     if (!x) return;
+    manualRun.invalidate();
     state = structuredClone(x.state);
     lastSavedSnapshot = JSON.stringify(state);
     render();
     resultsNow();
-    $("status").textContent = 'Run "' + x.name + '" restored.';
+    $("status").textContent = 'Inputs for "' + x.name + '" restored. Select Run to calculate.';
   } else if (t.dataset.histDel !== undefined) {
     histSave(h.filter((y) => y.id !== t.dataset.histDel));
     histRender();
@@ -1399,6 +1418,7 @@ document.addEventListener("click", (e) => {
 });
 histRender();
 $("export").addEventListener("click", () => {
+  if (!manualRun.isCurrent()) { $("status").textContent = "Select Run before downloading results."; return; }
   if (!proAccess) {
     requestUpgrade();
     return;
@@ -1450,10 +1470,31 @@ if (browserDraft) {
   if (savedUi && CI_UNITS[savedUi.ci] && MASS_UNITS[savedUi.mass]) Object.assign(ui, savedUi);
   $("baseline").textContent = baseline ? "Replace baseline" : "Use as baseline";
 }
-render();
-if (browserDraft?.hadRun) {
-  resultsNow();
+bindCiFlow($("processFlow"));
+function pendingResults() {
+  document.getElementById("ci-balanced-results")?.remove();
+  $("results").innerHTML = '<section class="calculator-run-state"><span class="calculator-run-ready" aria-hidden="true">↗</span><h2>Ready to calculate</h2><p>Review your inputs, then select Run to see your results.</p></section>';
+  ran = false; dirty = true; $("processFlow").innerHTML = ""; floatingSummary({ value: "—", unit: "gCO₂e/MJ", detail: "Select Run to calculate", state: "ready" });
 }
+const manualRun = createManualRun({
+  target: $("results"),
+  snapshot: () => JSON.stringify({ ...state, name: undefined }),
+  render: resultsNow,
+  pending: pendingResults,
+  onBusy: (busy) => { $("run").disabled = busy; $("run").textContent = busy ? "Running…" : "Run"; },
+  onStart: () => floatingSummary({ value: "—", unit: "gCO₂e/MJ", detail: "Calculating your scenario", state: "running" }),
+});
+function runCalculation() {
+  if (pendingFloatingInput?.isConnected) pendingFloatingInput.dispatchEvent(new Event("change", { bubbles: true }));
+  pendingFloatingInput = null;
+  manualRun.run();
+}
+$("run").addEventListener("click", runCalculation);
+window.addEventListener("message", (event) => {
+  if (event.source === window.parent && event.origin === location.origin && event.data?.type === "civanta-floating-run-request") runCalculation();
+});
+
+render();
 const persistDraft = attachAutosave({
   key: "gbw-ci-workspace-v1",
   snapshot: () => ({ state, baseline, ui, hadRun: ran }),
@@ -1468,8 +1509,9 @@ if (window.parent !== window && typeof ResizeObserver !== "undefined")
     ),
   ).observe(document.body);
 
-// Live calculation never writes history. Only the named save action does.
+// Calculation never writes history. Only the named save action does.
 function persistScenario(name) {
+  if (!manualRun.isCurrent()) { $("status").textContent = "Select Run before saving this scenario."; return; }
   if (typeof name !== "string" || !name.trim() || name.trim().length > 100) return;
   state.name = name.trim();
   const r = assess(state);
@@ -1551,6 +1593,7 @@ window.addEventListener("message", (e) => {
   try {
     const snap = e.data.snapshot;
     if (!snap?.state || typeof snap.state !== "object") throw new Error("Invalid saved scenario.");
+    manualRun.invalidate();
     state = structuredClone(snap.state);
     lastSavedSnapshot = JSON.stringify(state);
     baseline =
@@ -1562,7 +1605,7 @@ window.addEventListener("message", (e) => {
     resultsNow();
     const message = result.errors.length
       ? "Inputs restored. Review the highlighted values before calculating."
-      : "Inputs restored and recalculated with the current model. The original run remains in your history.";
+      : "Inputs restored. Select Run to calculate with the current model. The original run remains in your history.";
     $("status").textContent = message;
     reply(message);
   } catch {

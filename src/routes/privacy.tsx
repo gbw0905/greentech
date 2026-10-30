@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Shield } from "lucide-react";
-import { PageHeading, PageShell } from "@/components/PageShell";
+import { LegalPage } from "@/components/LegalPage";
 
 const TITLE = "Privacy Policy — Global Bioenergy Watch";
 const DESCRIPTION =
@@ -25,14 +24,11 @@ export const Route = createFileRoute("/privacy")({
 
 function PrivacyPage() {
   return (
-    <PageShell>
-      <PageHeading
-        icon={Shield}
-        title="Privacy Policy"
-        subtitle="How Global Bioenergy Watch collects, uses, stores and protects your data and cookies."
-      />
-
-      <section className="rounded-lg border border-border bg-white p-6 shadow-sm sm:p-8">
+    <LegalPage
+      title="Privacy Policy"
+      subtitle="How Global Bioenergy Watch collects, uses, stores and protects your data and cookies."
+    >
+      <section className="legal-document">
         <div className="space-y-6 text-sm/relaxed text-muted-foreground">
           <p className="font-semibold text-foreground">Last updated: September 2026</p>
 
@@ -291,6 +287,6 @@ function PrivacyPage() {
           </div>
         </div>
       </section>
-    </PageShell>
+    </LegalPage>
   );
 }

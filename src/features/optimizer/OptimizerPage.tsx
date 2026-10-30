@@ -1,6 +1,6 @@
 import { useRouterState } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Target } from "lucide-react";
 import { z } from "zod";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
@@ -18,7 +18,14 @@ import { FloatingCalculatorBar } from "@/features/ci-workspace/FloatingCalculato
 import { useFloatingBar } from "@/features/ci-workspace/useFloatingBar";
 import { usePremium } from "@/features/premium/hooks/usePremium";
 import { getPremiumStatusFn } from "@/features/premium/server-functions";
-import { analyze, defaultInputs, pathwayFor, type Inputs, type MeasureId } from "./engine";
+import {
+  analyze,
+  defaultInputs,
+  pathwayFor,
+  type Analysis,
+  type Inputs,
+  type MeasureId,
+} from "./engine";
 import "@/features/ci-workspace/workspace.css";
 import "./optimizer.css";
 
@@ -102,14 +109,52 @@ export function OptimizerPage() {
       endBottom: workspace.getBoundingClientRect().bottom,
     };
   });
-  const preview = useMemo(() => {
-    try {
-      return { data: analyze(input, selected), error: "" };
-    } catch (error) {
-      return { data: null, error: error instanceof Error ? error.message : "Check your inputs." };
-    }
-  }, [input, selected]);
   const snapshot = JSON.stringify({ version: 1, state: input, selected });
+  const [completed, setCompleted] = useState<{
+    snapshot: string;
+    input: Inputs;
+    data: Analysis;
+  } | null>(null);
+  const [runError, setRunError] = useState("");
+  const [running, setRunning] = useState(false);
+  const runTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const latestSnapshot = useRef(snapshot);
+  latestSnapshot.current = snapshot;
+  const preview = {
+    data: completed?.snapshot === snapshot ? completed.data : null,
+    error: runError,
+  };
+  useEffect(() => {
+    if (runTimer.current !== null) clearTimeout(runTimer.current);
+    setRunning(false);
+    setRunError("");
+    return () => {
+      if (runTimer.current !== null) clearTimeout(runTimer.current);
+    };
+  }, [snapshot]);
+  function runCalculation() {
+    if (runTimer.current !== null) clearTimeout(runTimer.current);
+    const requested = snapshot;
+    const runInput = structuredClone(input);
+    const runSelected = [...selected];
+    setRunning(true);
+    setRunError("");
+    runTimer.current = setTimeout(() => {
+      runTimer.current = null;
+      if (latestSnapshot.current !== requested) return;
+      try {
+        setCompleted({
+          snapshot: requested,
+          input: runInput,
+          data: analyze(runInput, runSelected),
+        });
+      } catch (error) {
+        setRunError(error instanceof Error ? error.message : "Check your inputs.");
+      } finally {
+        setRunning(false);
+      }
+    }, 650);
+  }
   const save = useMutation({
     mutationFn: (data: HistoryInput) => saveCalculationRunFn({ data }),
     onSuccess: () => client.invalidateQueries({ queryKey: ["calculation-history", user?.id] }),
@@ -174,10 +219,14 @@ export function OptimizerPage() {
     try {
       if (restore.data.kind !== "optimizer") throw new Error();
       const parsed = parseSnapshot(JSON.parse(restore.data.snapshot));
+      if (runTimer.current !== null) clearTimeout(runTimer.current);
+      setRunning(false);
+      setCompleted(null);
+      setRunError("");
       setInput(parsed.input);
       setSelected(parsed.selected);
       setLastRun(restore.data.snapshot);
-      setStatus("Saved optimizer run restored.");
+      setStatus("Saved inputs restored. Select Run to calculate.");
     } catch {
       setStatus("This saved run could not be restored in the optimizer.");
     }
@@ -242,34 +291,41 @@ export function OptimizerPage() {
           visible={floating}
           title="Optimizer"
           summary={
-            preview.data
+            completed && !running
               ? {
-                  value: preview.data.focus.ci.toLocaleString("en-US", {
+                  value: completed.data.focus.ci.toLocaleString("en-US", {
                     maximumFractionDigits: 2,
                   }),
                   unit: "gCO₂e/MJ",
-                  detail: `Target ${input.target.toLocaleString("en-US", { maximumFractionDigits: 2 })} gCO₂e/MJ`,
-                  state: lastRun === snapshot ? "current" : "preview",
+                  detail: `Target ${completed.input.target.toLocaleString("en-US", { maximumFractionDigits: 2 })} gCO₂e/MJ`,
+                  state:
+                    completed.snapshot !== snapshot
+                      ? "stale"
+                      : lastRun === snapshot
+                        ? "current"
+                        : "preview",
                 }
               : {
                   value: "—",
                   unit: "gCO₂e/MJ",
-                  detail: preview.error,
-                  state: "invalid",
+                  detail: running
+                    ? "Calculating your scenario"
+                    : preview.error || "Select Run to calculate",
+                  state: running ? "running" : preview.error ? "invalid" : "ready",
                 }
           }
-          runLabel="Save scenario"
-          onRun={() => preview.data && setSaveOpen(true)}
-          onDetails={() =>
+          onSave={() => preview.data && setSaveOpen(true)}
+          onRun={() => {
+            runCalculation();
             resultRef.current?.scrollIntoView({
               behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
                 ? "auto"
                 : "smooth",
               block: "start",
-            })
-          }
-          disabled={!preview.data}
-          busy={save.isPending}
+            });
+          }}
+          disabled={save.isPending}
+          busy={running}
         />
         <ScenarioSaveDialog
           open={saveOpen}
@@ -294,6 +350,10 @@ export function OptimizerPage() {
             <button
               type="button"
               onClick={() => {
+                if (runTimer.current !== null) clearTimeout(runTimer.current);
+                setRunning(false);
+                setCompleted(null);
+                setRunError("");
                 setInput(defaultInputs(input.pathwayId));
                 setSelected(["ppa", "rail"]);
                 setLastRun("");
@@ -304,6 +364,14 @@ export function OptimizerPage() {
             </button>
           </div>
           <div>
+            <button
+              type="button"
+              className="opt-primary"
+              disabled={running}
+              onClick={runCalculation}
+            >
+              {running ? "Running…" : "Run"}
+            </button>
             {draftStatus && <span className="opt-draft-status">{draftStatus}</span>}
             {access.premium ? (
               <button
@@ -363,14 +431,26 @@ export function OptimizerPage() {
             }
           />
           <div className="opt-output" ref={resultRef}>
-            {preview.data ? (
-              <OptimizerResults input={input} analysis={preview.data} premium={access.premium} />
+            {running ? (
+              <section className="calculator-run-state" role="status" aria-busy="true">
+                <span className="calculator-run-spinner" aria-hidden="true" />
+                <h2>Calculating your scenario</h2>
+                <p>Preparing your results…</p>
+              </section>
+            ) : completed ? (
+              <div className="calculator-results-enter">
+                <OptimizerResults
+                  input={completed.input}
+                  analysis={completed.data}
+                  premium={access.premium}
+                />
+              </div>
             ) : (
-              <section className="opt-invalid" role="alert">
+              <section className="calculator-run-state" role={preview.error ? "alert" : undefined}>
                 <Target size={28} />
-                <h2>Check your inputs</h2>
-                <p>{preview.error}</p>
-                <p>Your results will appear here once the inputs are valid.</p>
+                <h2>{preview.error ? "Check your inputs" : "Ready to calculate"}</h2>
+                {preview.error && <p>{preview.error}</p>}
+                <p>Review your inputs, then select Run to see your results.</p>
               </section>
             )}
           </div>

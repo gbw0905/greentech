@@ -4,6 +4,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>CIvanta · Credit & RIN Calculator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
       :root {
         --ink: #112b34;
@@ -441,15 +447,18 @@
     <main class="wrap">
       <h1>Credit & RIN Calculator</h1>
       <div class="toolbar">
-        <div class="tabs" aria-label="Calculation mode">
-          <button data-mode="both">Both programs</button>
-          <button data-mode="lcfs">LCFS credits</button><button data-mode="rfs">RFS RINs</button>
-        </div>
         <div class="actions">
           <button id="save" class="primary">Save scenario</button>
           <button id="reset">Load example</button>
+        </div>
+        <div class="actions">
+          <button id="run" class="primary" type="button">Run</button>
           <button id="export" class="primary">Pro · Download Excel</button>
         </div>
+      </div>
+      <div class="tabs" aria-label="Calculation mode">
+        <button data-mode="both">Both programs</button>
+        <button data-mode="lcfs">LCFS credits</button><button data-mode="rfs">RFS RINs</button>
       </div>
       <div class="calculator-notices">
         <span id="autosave-status" role="status" class="visually-hidden"

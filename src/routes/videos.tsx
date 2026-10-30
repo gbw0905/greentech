@@ -1,11 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FUEL_TYPES, type FuelType } from "@/features/policy/taxonomy";
+import { type FuelType } from "@/features/policy/taxonomy";
 import { LiveMediaFeed } from "@/features/videos/components/LiveMediaFeed";
 import { VideoWatchView } from "@/features/videos/components/VideoWatchView";
 import { VideoHistory } from "@/features/videos/components/VideoHistory";
 import { useWatchHistory } from "@/features/videos/hooks/useWatchHistory";
-import { History } from "lucide-react";
 import { VideoFilters } from "@/features/videos/components/VideoFilters";
 import "@/features/videos/videos.css";
 import { useVisitTracker } from "@/features/traffic/hooks/useVisitTracker";
@@ -131,25 +130,6 @@ function VideosPage() {
         <h1 id="video-page-title" className="sr-only">
           Bioenergy videos
         </h1>
-        <div className="videos-browse-toolbar">
-          <button type="button" onClick={showHistory}>
-            <History size={17} aria-hidden="true" /> History
-          </button>
-        </div>
-        <div className="videos-fuel-bar" role="group" aria-label="Filter videos by fuel type">
-          <span>Fuel type</span>
-          {FUEL_TYPES.map((f, index) => (
-            <button
-              key={f}
-              type="button"
-              aria-pressed={fuels.includes(f)}
-              onClick={() => toggleFuel(f)}
-              className={`videos-fuel-chip tone-${index % 3}${fuels.includes(f) ? " is-active" : ""}`}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
         <div className="videos-layout">
           <VideoFilters
             countries={countries}
@@ -164,6 +144,7 @@ function VideosPage() {
             selectedVideoId={watch ?? null}
             onPlayVideo={playVideo}
             onVideosChange={setAvailableVideos}
+            onHistory={showHistory}
           />
         </div>
       </main>

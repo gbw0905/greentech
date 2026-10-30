@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { motion, useInView, useReducedMotion } from "motion/react";
-import { PlayCircle, RefreshCw } from "lucide-react";
+import { PlayCircle, History } from "lucide-react";
 import { getLiveMediaFn } from "@/features/videos/server-functions";
 import { publishedAgeMinutes } from "@/features/videos/published-age";
 import { COUNTRIES, type FuelType } from "@/features/policy/taxonomy";
@@ -20,7 +20,7 @@ const FUEL_KEYWORD: Record<FuelType, string> = {
   Ethanol: "ethanol blending policy",
   Biodiesel: "biodiesel mandate",
   "Renewable Diesel": "renewable diesel HVO",
-  SAF: "sustainable aviation fuel mandate",
+  SAF: "sustainable aviation fuel",
   Biogas: "biomethane biogas policy",
   Feedstock: "biofuel feedstock supply",
 };
@@ -125,23 +125,30 @@ export function LiveMediaFeed({
   selectedVideoId = null,
   onPlayVideo,
   onVideosChange,
+  onHistory,
 }: {
   fuels: FuelType[];
   countries: string[];
   selectedVideoId?: string | null;
   onPlayVideo?: (video: LiveVideo) => void;
   onVideosChange?: (videos: LiveVideo[]) => void;
+  onHistory: () => void;
 }) {
   const keywords = useMemo(() => {
-    const topics = fuels.length ? fuels.map((f) => FUEL_KEYWORD[f]) : BASE_KEYWORDS;
+    const topics = fuels.length
+      ? fuels.flatMap((f) =>
+          f === "SAF"
+            ? [FUEL_KEYWORD[f], "sustainable aviation jet fuel", "aviation biofuel SAF"]
+            : [FUEL_KEYWORD[f]],
+        )
+      : BASE_KEYWORDS;
     const prefixes = countries.length ? countries.map((slug) => `${nameFor(slug)} `) : [""];
     return Array.from(
       new Set(prefixes.flatMap((prefix) => topics.map((topic) => `${prefix}${topic}`))),
     );
   }, [fuels, countries]);
   const fetchMedia = useServerFn(getLiveMediaFn);
-  const forceRefresh = useRef(false);
-  const { data, isFetching, isError, refetch } = useQuery({
+  const { data, isFetching, isError } = useQuery({
     queryKey: ["live-media", keywords],
     queryFn: async () => {
       // Keep every selected country in the search while respecting the API batch limit.
@@ -149,9 +156,7 @@ export function LiveMediaFeed({
         keywords.slice(index * 12, index * 12 + 12),
       );
       const results = await Promise.all(
-        batches.map((batch) =>
-          fetchMedia({ data: { keywords: batch, refresh: forceRefresh.current } }),
-        ),
+        batches.map((batch) => fetchMedia({ data: { keywords: batch, refresh: false } })),
       );
       return {
         videos: [
@@ -177,19 +182,8 @@ export function LiveMediaFeed({
           </h2>
           <p>Recent uploads for: {keywords.join(" · ")}</p>
         </div>
-        <button
-          type="button"
-          className="videos-refresh"
-          onClick={() => {
-            forceRefresh.current = true;
-            void refetch().finally(() => {
-              forceRefresh.current = false;
-            });
-          }}
-          disabled={isFetching}
-        >
-          <RefreshCw size={14} className={isFetching ? "videos-spinning" : ""} aria-hidden="true" />
-          {isFetching ? "Refreshing…" : "Refresh"}
+        <button type="button" className="videos-refresh" onClick={onHistory}>
+          <History size={16} aria-hidden="true" /> History
         </button>
       </header>
       {isFetching && videos.length === 0 && (
@@ -217,7 +211,7 @@ export function LiveMediaFeed({
       {!isFetching && videos.length === 0 && (
         <p className="videos-empty" role="status">
           {isError
-            ? "Video search is unavailable right now. Try Refresh."
+            ? "Video search is unavailable right now. Please try again shortly."
             : "No videos match this selection right now."}
         </p>
       )}

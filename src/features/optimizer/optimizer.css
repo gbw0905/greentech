@@ -658,7 +658,7 @@
 }
 .opt-solver-grid {
   display: grid;
-  grid-template-columns: 1.3fr 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
 }
 .opt-solver-answer {
@@ -837,10 +837,6 @@
 }
 @media (min-width: 1100px) {
   .opt-inputs {
-    max-height: calc(100svh - 112px);
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: #d4e4df transparent;
     position: sticky;
     top: 90px;
   }
@@ -871,7 +867,7 @@
     gap: 14px !important;
   }
   .opt-solver-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
   }
   .opt-solver-grid > :first-child {
     grid-column: 1/-1;
@@ -1141,6 +1137,9 @@
 .optimizer-page .opt-metric strong {
   font-weight: 700;
   font-size: 26px;
+}
+.optimizer-page :is(.opt-icon, .opt-result-value, .opt-metric strong, .opt-plan-baseline b, .opt-solver-answer strong, .opt-waterfall-row strong, .opt-table td:not(:first-child)) {
+  font-family: "Bricolage Grotesque", sans-serif;
 }
 .optimizer-page .opt-metric small {
   font-size: 13px;
