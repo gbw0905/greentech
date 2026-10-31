@@ -1,4 +1,5 @@
 import type { LiveArticle, LiveVideo } from "@/features/videos/contracts";
+import { publishedAgeMinutes } from "@/features/videos/published-age";
 import type { Json } from "@/integrations/supabase/types";
 
 const UA = "GlobalBioenergyWatch/1.0 (+https://globalbioenergywatch.org)";
@@ -22,10 +23,12 @@ async function cacheRead<T>(key: string): Promise<{ value: T; fetchedAt: number 
 
 async function cacheWrite(key: string, kind: CacheKind, payload: unknown): Promise<void> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  await supabaseAdmin.from("video_cache").upsert(
-    { cache_key: key, kind, payload: payload as Json, fetched_at: new Date().toISOString() },
-    { onConflict: "cache_key" },
-  );
+  await supabaseAdmin
+    .from("video_cache")
+    .upsert(
+      { cache_key: key, kind, payload: payload as Json, fetched_at: new Date().toISOString() },
+      { onConflict: "cache_key" },
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -183,7 +186,11 @@ export function collectYouTubeVideos(node: unknown, out: LiveVideo[], keyword: s
   for (const key of Object.keys(rec)) collectYouTubeVideos(rec[key], out, keyword);
 }
 
-async function searchYouTubeScrape(keyword: string, limit: number): Promise<LiveVideo[]> {
+async function searchYouTubeScrape(
+  keyword: string,
+  limit: number,
+  recent: boolean,
+): Promise<LiveVideo[]> {
   const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(keyword)}&sp=CAI%253D`;
   const res = await fetch(url, {
     signal: AbortSignal.timeout(15_000),
@@ -210,11 +217,15 @@ async function searchYouTubeScrape(keyword: string, limit: number): Promise<Live
     .slice(0, limit);
 }
 
-async function searchYouTube(keyword: string, limit: number): Promise<LiveVideo[]> {
+async function searchYouTube(
+  keyword: string,
+  limit: number,
+  recent: boolean,
+): Promise<LiveVideo[]> {
   if (process.env["YOUTUBE_API_KEY"]) {
     return searchYouTubeApi(keyword, limit);
   }
-  return searchYouTubeScrape(keyword, limit);
+  return searchYouTubeScrape(keyword, limit, recent);
 }
 
 // ---------------------------------------------------------------------------
@@ -262,11 +273,11 @@ async function searchWeb(keyword: string, limit: number): Promise<LiveArticle[]>
 const YOUTUBE_CACHE_TTL = 2 * 60 * 60_000; // 2 hours
 const NEWS_CACHE_TTL = 30 * 60_000; // 30 minutes
 
-export async function fetchLiveMedia(keywords: string[], perKeyword = 6) {
+export async function fetchLiveMedia(keywords: string[], perKeyword = 6, refresh = false) {
   const cacheKey = `media:${keywords.sort().join("|")}:${perKeyword}`;
-  const cached = await cacheRead<{ videos: LiveVideo[]; articles: LiveArticle[] }>(cacheKey);
-  if (cached && Date.now() - cached.fetchedAt < YOUTUBE_CACHE_TTL) {
-    return { ...cached.value, cachedAt: cached.fetchedAt, stale: false };
+  const cached = await cacheRead<{ videos: LiveVideo[] }>(cacheKey);
+  if (!refresh && cached && Date.now() - cached.fetchedAt < YOUTUBE_CACHE_TTL) {
+    return { videos: cached.value.videos, cachedAt: cached.fetchedAt, stale: false };
   }
   try {
     const recent = await Promise.all(
@@ -279,13 +290,13 @@ export async function fetchLiveMedia(keywords: string[], perKeyword = 6) {
       );
       videos = [...new Map(fallback.flat().map((video) => [video.id, video])).values()];
     }
-    if (videos.length || articles.length) {
-      await cacheWrite(cacheKey, "youtube_search", { videos, articles }).catch(() => {});
+    if (videos.length) {
+      await cacheWrite(cacheKey, "youtube_search", { videos }).catch(() => {});
     }
-    return { videos, articles, cachedAt: Date.now(), stale: false };
+    return { videos, cachedAt: Date.now(), stale: false };
   } catch {
-    if (cached) return { ...cached.value, cachedAt: cached.fetchedAt, stale: true };
-    return { videos: [], articles: [], cachedAt: Date.now(), stale: true };
+    if (cached) return { videos: cached.value.videos, cachedAt: cached.fetchedAt, stale: true };
+    return { videos: [] as LiveVideo[], cachedAt: Date.now(), stale: true };
   }
 }
 
