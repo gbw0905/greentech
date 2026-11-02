@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { TrendingDown, TrendingUp } from "lucide-react";
 import { getOilPricesFn } from "@/features/markets/oil-server-functions";
-import { fetchTrafficStats } from "@/features/traffic/client";
 import { feedQuery } from "@/features/policy/feed-query";
 import type { PolicyUpdate } from "@/features/policy/contracts";
 
@@ -54,13 +53,6 @@ export function LiveMarquee({
     staleTime: 30_000,
   });
 
-  const { data: trafficData } = useQuery({
-    queryKey: ["traffic-stats"],
-    queryFn: fetchTrafficStats,
-    refetchInterval: 30_000,
-    staleTime: 15_000,
-  });
-
   const { data: feedData } = useQuery({
     ...feedQuery,
     refetchInterval: 60_000,
@@ -68,8 +60,6 @@ export function LiveMarquee({
 
   const quotes = oilData?.quotes ?? [];
   const latest = (feedData?.updates as PolicyUpdate[] | undefined)?.slice(0, 4) ?? [];
-  const liveNow = trafficData ? trafficData.live_now.toLocaleString() : "—";
-  const totalViews = trafficData ? trafficData.total_views.toLocaleString() : "—";
 
   const renderContent = (copy: string) => (
     <>
@@ -116,15 +106,6 @@ export function LiveMarquee({
       <div className="relative z-10 flex shrink-0 items-center gap-2 border-r border-[#d6e1ea] bg-white px-5 font-semibold text-[#0e2a43]">
         <span className="pulse-dot size-[7px] rounded-full bg-[#178a6b]" />
         Markets
-      </div>
-      <div className="relative z-10 flex shrink-0 items-center gap-1.5 border-r border-[#d6e1ea] bg-white px-3 text-xs text-[#4c6278] sm:px-4">
-        <span className="font-semibold tabular-nums text-[#0e2a43]">{liveNow}</span>
-        <span className="hidden sm:inline">viewing now</span>
-        <span className="sm:hidden">now</span>
-        <span className="mx-0.5 text-[#b7c8d6]">·</span>
-        <span className="font-semibold tabular-nums text-[#0e2a43]">{totalViews}</span>
-        <span className="hidden sm:inline">total views</span>
-        <span className="sm:hidden">views</span>
       </div>
       <div className="min-w-0 flex-1 overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_40px,#000_calc(100%-40px),transparent)]">
         <div className="marquee-track h-full items-center">
