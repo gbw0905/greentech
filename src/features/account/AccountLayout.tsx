@@ -17,7 +17,7 @@ export function AccountLayout({
   return (
     <main className="account-page">
       <div className="account-shell">
-        {section !== "profile" && (
+        {section === "results" && (
           <div className="account-breadcrumb">
             <Link to="/">Home</Link>
             <ChevronRight size={14} />
@@ -25,30 +25,32 @@ export function AccountLayout({
           </div>
         )}
         <header className="account-heading">
-          {section !== "profile" && (
+          {section === "results" && (
             <span className="account-eyebrow">Your personal workspace</span>
           )}
           <h1>{title}</h1>
-          {section !== "profile" && <p>{description}</p>}
+          {section === "results" && <p>{description}</p>}
         </header>
-        <nav className="account-tabs" aria-label="Account pages">
-          <Link to="/profile" aria-current={section === "profile" ? "page" : undefined}>
-            <UserRound size={17} />
-            My profile
-          </Link>
-          <Link to="/my-results" aria-current={section === "results" ? "page" : undefined}>
-            <LayoutDashboard size={17} />
-            Saved CI results
-          </Link>
-          <Link to="/calculation-history" aria-current={section === "history" ? "page" : undefined}>
-            <Clock3 size={17} />
-            Calculation history
-          </Link>
-          <Link to="/civanta" className="account-tools-link">
-            Explore CIVanta
-            <ArrowRight size={16} />
-          </Link>
-        </nav>
+        {section === "results" && (
+          <nav className="account-tabs" aria-label="Account pages">
+            <Link to="/profile">
+              <UserRound size={17} />
+              My profile
+            </Link>
+            <Link to="/my-results" aria-current="page">
+              <LayoutDashboard size={17} />
+              Saved CI results
+            </Link>
+            <Link to="/calculation-history">
+              <Clock3 size={17} />
+              Calculation history
+            </Link>
+            <Link to="/civanta" className="account-tools-link">
+              Explore CIVanta
+              <ArrowRight size={16} />
+            </Link>
+          </nav>
+        )}
         <div className="account-content">{children}</div>
       </div>
     </main>

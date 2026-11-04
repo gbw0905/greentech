@@ -8,6 +8,7 @@ function harness(t) {
   let rendered = 0;
   let pending = 0;
   let busy = false;
+  let ready = false;
   let html = "";
   let writes = 0;
   const attributes = new Map();
@@ -35,6 +36,9 @@ function harness(t) {
       target.innerHTML = "Ready to calculate";
     },
     onStart() {},
+    onReady(value) {
+      ready = value;
+    },
     onBusy: (value) => {
       busy = value;
     },
@@ -46,7 +50,7 @@ function harness(t) {
     change(value) {
       input = value;
     },
-    counts: () => ({ rendered, pending, busy, writes }),
+    counts: () => ({ rendered, pending, busy, writes, ready }),
   };
 }
 
@@ -95,5 +99,26 @@ test("a changed snapshot cannot publish even if an input event was missed", (t) 
   h.change("changed");
   t.mock.timers.tick(650);
   assert.equal(h.counts().rendered, 0);
+  assert.equal(h.controller.isCurrent(), false);
+});
+
+test("actions unlock after Run and lock on edit or Clear", (t) => {
+  const h = harness(t);
+  h.controller.update();
+  assert.equal(h.counts().ready, false);
+  h.controller.run();
+  assert.equal(h.counts().ready, false);
+  t.mock.timers.tick(650);
+  assert.equal(h.counts().ready, true);
+  h.change("edited");
+  h.controller.invalidate();
+  assert.equal(h.counts().ready, false);
+  assert.equal(h.target.innerHTML, "Result for first");
+  h.controller.run();
+  h.controller.clear();
+  t.mock.timers.tick(1000);
+  assert.equal(h.counts().ready, false);
+  assert.equal(h.counts().busy, false);
+  assert.equal(h.target.innerHTML, "Ready to calculate");
   assert.equal(h.controller.isCurrent(), false);
 });

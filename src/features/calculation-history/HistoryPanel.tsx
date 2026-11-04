@@ -1,8 +1,16 @@
 import { Link } from "@tanstack/react-router";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Clock3, ArrowUpRight } from "lucide-react";
+import {
+  Clock3,
+  ArrowUpRight,
+  FileSpreadsheet,
+  LockKeyhole,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
+import { usePremium } from "@/features/premium/hooks/usePremium";
 import { listCalculationRunsFn } from "./server-functions";
 import "./history.css";
 export function HistoryPanel({
@@ -16,28 +24,38 @@ export function HistoryPanel({
 }) {
   const { user, loading } = useAuthSession();
   const [filter, setFilter] = useState<"all" | "ci" | "credit" | "optimizer">(kind ?? "all");
-  const query = useInfiniteQuery({
-    queryKey: ["calculation-history", user?.id, filter],
-    initialPageParam: null as string | null,
-    queryFn: ({ pageParam }) =>
-      listCalculationRunsFn({
-        data: { before: pageParam, kind: filter === "all" ? undefined : filter },
-      }),
-    getNextPageParam: (last) => last.next ?? undefined,
+  const access = usePremium();
+  const [page, setPage] = useState(0);
+  const [exporting, setExporting] = useState<string | null>(null);
+  const [exportError, setExportError] = useState("");
+  const query = useQuery({
+    queryKey: ["calculation-history", user?.id, filter, page],
+    queryFn: () =>
+      listCalculationRunsFn({ data: { page, kind: filter === "all" ? undefined : filter } }),
     enabled: Boolean(user),
   });
-  const allRuns = query.data?.pages.flatMap((page) => page.runs) ?? [];
+  const allRuns = query.data?.runs ?? [];
   const runs = preview ? allRuns.slice(0, 5) : allRuns;
+  const totalPages = Math.max(1, Math.ceil((query.data?.total ?? 0) / 15));
+  async function download(id: string) {
+    setExporting(id);
+    setExportError("");
+    try {
+      const { exportSavedRun } = await import("./export-saved-run");
+      await exportSavedRun(id);
+    } catch (error) {
+      setExportError(
+        error instanceof Error
+          ? error.message
+          : "Could not download this report. Please try again.",
+      );
+    } finally {
+      setExporting(null);
+    }
+  }
   return (
     <section className="history-panel" aria-label="Calculation history">
       <div className="history-heading">
-        <div>
-          <span className="history-eyebrow">
-            <Clock3 size={14} /> Calculation history
-          </span>
-          <h2>Your previous calculations</h2>
-          <p>Named scenarios you saved to your account. Open one to restore its inputs.</p>
-        </div>
         {!kind && (
           <div className="history-filters" aria-label="Filter history">
             {(["all", "ci", "credit", "optimizer"] as const).map((value) => (
@@ -45,7 +63,10 @@ export function HistoryPanel({
                 key={value}
                 type="button"
                 aria-pressed={value === filter}
-                onClick={() => setFilter(value)}
+                onClick={() => {
+                  setFilter(value);
+                  setPage(0);
+                }}
               >
                 {value === "all"
                   ? "All runs"
@@ -59,6 +80,11 @@ export function HistoryPanel({
           </div>
         )}
       </div>
+      {exportError && (
+        <p role="alert" className="history-export-error">
+          {exportError}
+        </p>
+      )}
       {loading || (user && query.isLoading) ? (
         <p role="status">Loading your history…</p>
       ) : !user ? (
@@ -127,27 +153,65 @@ export function HistoryPanel({
                   </>
                 )}
               </div>
-              {onRestore ? (
-                <button type="button" className="history-open" onClick={() => onRestore(run.id)}>
-                  Restore run
-                  <ArrowUpRight size={16} />
-                </button>
-              ) : (
-                <Link
-                  className="history-open"
-                  to={
-                    run.kind === "ci"
-                      ? "/ci-workspace"
-                      : run.kind === "optimizer"
-                        ? "/civanta/optimizer"
-                        : "/credit-calculator"
-                  }
-                  search={{ run: run.id }}
-                >
-                  Open run
-                  <ArrowUpRight size={16} />
-                </Link>
-              )}
+              <div className="history-run-actions">
+                {!access.premium ? (
+                  <>
+                    <button
+                      type="button"
+                      className="history-open"
+                      disabled
+                      title="CIVanta Pro required"
+                    >
+                      <LockKeyhole size={15} /> Open run
+                    </button>
+                    <button
+                      type="button"
+                      className="history-open"
+                      disabled
+                      title="CIVanta Pro required"
+                    >
+                      <LockKeyhole size={15} /> Download Excel
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {onRestore ? (
+                      <button
+                        type="button"
+                        className="history-open"
+                        onClick={() => onRestore(run.id)}
+                      >
+                        Restore run
+                        <ArrowUpRight size={16} />
+                      </button>
+                    ) : (
+                      <Link
+                        className="history-open"
+                        to={
+                          run.kind === "ci"
+                            ? "/ci-workspace"
+                            : run.kind === "optimizer"
+                              ? "/civanta/optimizer"
+                              : "/credit-calculator"
+                        }
+                        search={{ run: run.id }}
+                      >
+                        Open run
+                        <ArrowUpRight size={16} />
+                      </Link>
+                    )}
+                    <button
+                      type="button"
+                      className="history-open"
+                      disabled={exporting !== null}
+                      onClick={() => void download(run.id)}
+                    >
+                      <FileSpreadsheet size={16} />
+                      {exporting === run.id ? "Downloading…" : "Download Excel"}
+                    </button>
+                  </>
+                )}
+              </div>
             </article>
           ))}
         </div>
@@ -158,15 +222,27 @@ export function HistoryPanel({
           <ArrowUpRight size={16} />
         </Link>
       )}
-      {!preview && query.hasNextPage && (
-        <button
-          className="history-open"
-          type="button"
-          disabled={query.isFetchingNextPage}
-          onClick={() => void query.fetchNextPage()}
-        >
-          {query.isFetchingNextPage ? "Loading…" : "Load older calculations"}
-        </button>
+      {!preview && user && (page > 0 || (query.data?.total ?? 0) > 15) && (
+        <nav className="history-pagination" aria-label="History pages">
+          <button
+            type="button"
+            disabled={page === 0 || query.isFetching}
+            onClick={() => setPage(page - 1)}
+          >
+            <ChevronLeft size={17} /> Previous
+          </button>
+          <span role="status">
+            Page {page + 1}
+            {query.data ? ` of ${totalPages}` : ""}
+          </span>
+          <button
+            type="button"
+            disabled={query.isFetching || !query.data || page + 1 >= totalPages}
+            onClick={() => setPage(page + 1)}
+          >
+            Next <ChevronRight size={17} />
+          </button>
+        </nav>
       )}
     </section>
   );

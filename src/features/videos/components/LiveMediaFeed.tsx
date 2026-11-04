@@ -132,7 +132,7 @@ export function LiveMediaFeed({
   selectedVideoId?: string | null;
   onPlayVideo?: (video: LiveVideo) => void;
   onVideosChange?: (videos: LiveVideo[]) => void;
-  onHistory: () => void;
+  onHistory?: () => void;
 }) {
   const keywords = useMemo(() => {
     const topics = fuels.length
@@ -182,9 +182,11 @@ export function LiveMediaFeed({
           </h2>
           <p>Recent uploads for: {keywords.join(" · ")}</p>
         </div>
-        <button type="button" className="videos-refresh" onClick={onHistory}>
-          <History size={16} aria-hidden="true" /> History
-        </button>
+        {onHistory && (
+          <button type="button" className="videos-refresh" onClick={onHistory}>
+            <History size={16} aria-hidden="true" /> History
+          </button>
+        )}
       </header>
       {isFetching && videos.length === 0 && (
         <div role="status">

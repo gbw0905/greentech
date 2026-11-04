@@ -1,4 +1,4 @@
-import { createCookieClient } from "@/integrations/supabase/cookie-client.server";
+import { createCookieClient } from "../../../integrations/supabase/cookie-client.server.ts";
 
 export async function userIdFromRequest(request: Request): Promise<string | null> {
   try {

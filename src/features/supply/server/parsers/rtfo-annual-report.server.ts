@@ -65,33 +65,43 @@ async function fetchText(url: string): Promise<string> {
 }
 
 function latestReportUrl(collectionUrl: string, html: string): string {
-  const candidates = [...html.matchAll(/href=["']([^"']*rtfo-statistics-(20\d{2})-final-report[^"']*)["']/gi)]
-    .map((match) => ({
-      url: new URL(decodeHtml(match[1]), collectionUrl).toString(),
-      year: Number(match[2]),
-    }))
+  const candidates = [
+    ...html.matchAll(/href=["']([^"']*rtfo-statistics-(20\d{2})-final-report[^"']*)["']/gi),
+  ]
+    .flatMap((match) =>
+      match[1]
+        ? [
+            {
+              url: new URL(decodeHtml(match[1]), collectionUrl).toString(),
+              year: Number(match[2]),
+            },
+          ]
+        : [],
+    )
     .filter((match) => Number.isFinite(match.year))
     .sort((a, b) => b.year - a.year);
 
-  const report = candidates.find((candidate) => /\/statistics\//i.test(candidate.url)) ?? candidates[0];
+  const report =
+    candidates.find((candidate) => /\/statistics\//i.test(candidate.url)) ?? candidates[0];
   if (!report) throw new Error("Could not find a GOV.UK RTFO final report link.");
   return report.url;
 }
 
 function parseReportMetrics(reportText: string, fallbackYear: number): ReportMetric {
-  const totalMatch =
-    reportText.match(
-      /([\d,.]+)\s*(billion|million)\s+litres(?:\s+\(equivalent\))?\s+of\s+verified\s+renewable\s+fuel\s+supplied\s+in\s+(20\d{2})/i,
-    ) ??
-    reportText.match(
-      /in\s+(20\d{2})[^.]{0,120}?([\d,.]+)\s*(billion|million)\s+litres(?:\s+\(equivalent\))?\s+of\s+verified\s+renewable\s+fuel/i,
-    );
+  const amountFirst = reportText.match(
+    /([\d,.]+)\s*(billion|million)\s+litres(?:\s+\(equivalent\))?\s+of\s+verified\s+renewable\s+fuel\s+supplied\s+in\s+(20\d{2})/i,
+  );
+  const yearFirst = amountFirst
+    ? null
+    : reportText.match(
+        /in\s+(20\d{2})[^.]{0,120}?([\d,.]+)\s*(billion|million)\s+litres(?:\s+\(equivalent\))?\s+of\s+verified\s+renewable\s+fuel/i,
+      );
 
-  const reportingYear = totalMatch
-    ? Number(totalMatch[3] ?? totalMatch[1])
-    : fallbackYear;
-  const totalAmount = totalMatch ? parseNumber(totalMatch[1].startsWith("20") ? totalMatch[2] : totalMatch[1]) : null;
-  const totalUnit = totalMatch ? (totalMatch[1].startsWith("20") ? totalMatch[3] : totalMatch[2]) : "";
+  const year = amountFirst?.[3] ?? yearFirst?.[1];
+  const amount = amountFirst?.[1] ?? yearFirst?.[2];
+  const reportingYear = year ? Number(year) : fallbackYear;
+  const totalAmount = amount ? parseNumber(amount) : null;
+  const totalUnit = amountFirst?.[2] ?? yearFirst?.[3] ?? "";
 
   const ucoMatch = reportText.match(
     /UCO\s*\(Used cooking oil\)\s+from\s+([^()]+?)\s+\(([\d,.]+)\s*million\s+litres/i,
@@ -132,7 +142,11 @@ function observation(
   };
 }
 
-function entityFor(source: SupplySourceRegistryEntry, reportUrl: string, metrics: ReportMetric): ParsedSupplyEntity | null {
+function entityFor(
+  source: SupplySourceRegistryEntry,
+  reportUrl: string,
+  metrics: ReportMetric,
+): ParsedSupplyEntity | null {
   if (source.datasetId === "fuel-stations" && metrics.totalRenewableFuelMl !== null) {
     return {
       name: "UK RTFO renewable transport fuel market",

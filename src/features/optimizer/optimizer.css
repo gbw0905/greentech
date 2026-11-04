@@ -837,8 +837,7 @@
 }
 @media (min-width: 1100px) {
   .opt-inputs {
-    position: sticky;
-    top: 90px;
+    position: static;
   }
 }
 @media (max-width: 1050px) {
@@ -1138,7 +1137,16 @@
   font-weight: 700;
   font-size: 26px;
 }
-.optimizer-page :is(.opt-icon, .opt-result-value, .opt-metric strong, .opt-plan-baseline b, .opt-solver-answer strong, .opt-waterfall-row strong, .opt-table td:not(:first-child)) {
+.optimizer-page
+  :is(
+    .opt-icon,
+    .opt-result-value,
+    .opt-metric strong,
+    .opt-plan-baseline b,
+    .opt-solver-answer strong,
+    .opt-waterfall-row strong,
+    .opt-table td:not(:first-child)
+  ) {
   font-family: "Bricolage Grotesque", sans-serif;
 }
 .optimizer-page .opt-metric small {
@@ -1207,4 +1215,25 @@
   .optimizer-page .opt-report-upgrade {
     display: none !important;
   }
+}
+
+.optimizer-page .opt-field input[aria-invalid="true"] {
+  border: 2px solid #c63f54;
+  background: #fff6f7;
+  box-shadow: 0 0 0 3px #c63f5417;
+}
+.optimizer-page .opt-field .field-validation {
+  color: #a52c41;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.optimizer-page .calculator-run-state.validation-summary {
+  min-height: 0;
+  align-items: flex-start;
+  text-align: left;
+  border: 1px solid #e8b1b9;
+  background: #fff9fa;
+  padding: 28px;
 }
