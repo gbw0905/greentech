@@ -1244,6 +1244,7 @@ export function ChartPanel({
   viewLabel = "View",
   status,
   footnote,
+  sourceMeta,
   filters,
   actions,
 
@@ -1267,6 +1268,7 @@ export function ChartPanel({
   viewLabel?: string;
   status?: string;
   footnote?: string;
+  sourceMeta?: React.ReactNode;
   /** Optional buttons (e.g. export) rendered in the header. */
   actions?: React.ReactNode;
   /** Optional filter/search bar rendered between the header and the chart. */
@@ -1374,6 +1376,8 @@ export function ChartPanel({
           {footnote}
         </p>
       ) : null}
+
+      {sourceMeta}
 
       {title ? (
         <>

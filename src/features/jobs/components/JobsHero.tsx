@@ -6,9 +6,6 @@ export function JobsHero() {
   return (
     <header className="jobs-hero">
       <MotionReveal className="jobs-hero-copy">
-        <span className="jobs-eyebrow">
-          <i /> Bioenergy careers desk
-        </span>
         <h1>
           <span className="jobs-title-line">
             <span>Biofuel and</span>

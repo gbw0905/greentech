@@ -1,5 +1,5 @@
 import { createManualRun } from "./manual-run.mjs";
-import { readDraft, attachAutosave } from "./browser-draft.mjs";
+import { attachAutosave } from "./browser-draft.mjs";
 import {
   VERSION,
   BTU_TO_MJ,
@@ -25,7 +25,15 @@ window.addEventListener("message", (event) => {
 });
 if (window.parent !== window) window.parent.postMessage({ type: "civanta-access-request" }, location.origin);
 document.getElementById("credit-pro-cta")?.addEventListener("click", requestUpgrade);
-let state = defaults();
+function blankCreditScenario() {
+  const initial = defaults();
+  const blank = Object.fromEntries(Object.entries(initial).map(([key, value]) => [key,
+    typeof value === "number" && key !== "year" ? NaN : typeof value === "boolean" ? false : value,
+  ]));
+  blank.benchmarkMode = "custom";
+  return blank;
+}
+let state = blankCreditScenario();
 let committedSnapshot = null;
 let publishedFloatingSummary = null;
 const fmt = (n, d = 0) =>
@@ -78,6 +86,7 @@ document.addEventListener("input", (event) => {
   if (!event.target.matches?.("#inputs input, #inputs select")) return;
   pendingFloatingInput = event.target;
   manualRun.invalidate();
+  markCreditFields();
   if (publishedFloatingSummary)
     window.parent.postMessage(
       {
@@ -93,7 +102,7 @@ document.addEventListener("change", (event) => {
   if (event.target === pendingFloatingInput) pendingFloatingInput = null;
 });
 function field(id, label, value, help = "", min = "", step = "any") {
-  return `<label class="field">${label}<input id="${id}" type="number" value="${value}" step="${step}" ${min !== "" ? `min="${min}"` : ""}><small>${help}</small></label>`;
+  return `<label class="field">${label}<input id="${id}" type="number" value="${Number.isFinite(value) ? value : ""}" step="${step}" ${min !== "" ? `min="${min}"` : ""}><small>${help}</small></label>`;
 }
 function select(id, label, options, value, help = "") {
   return `<label class="field">${label}<select id="${id}">${options.map(([v, t]) => `<option value="${v}" ${v === String(value) ? "selected" : ""}>${t}</option>`).join("")}</select><small>${help}</small></label>`;
@@ -246,18 +255,63 @@ function render() {
     });
   results();
 }
-function results() { manualRun.update(); }
+let showInputErrors = false;
+function markCreditFields() {
+  for (const hint of $("inputs").querySelectorAll(".field-validation")) hint.remove();
+  const issues = [];
+  for (const input of $("inputs").querySelectorAll("input[type='number']")) {
+    input.removeAttribute("aria-invalid");
+    input.removeAttribute("aria-describedby");
+    input.closest(".field")?.classList.remove("field-has-error");
+    if (!showInputErrors) continue;
+    const number = Number(input.value);
+    const positive = ["energy", "eer", "lcfsBasisFactor", "hhvToLhv", "customEV"].includes(input.id);
+    const max = input.id.endsWith("Share") ? 100 : input.id === "hhvToLhv" ? 1 : input.id === "customEV" ? 5 : null;
+    const message = !input.value.trim() || !Number.isFinite(number) || input.validity.badInput
+      ? "Required — enter a number (use 0 if none)."
+      : positive && number <= 0 ? "Enter a value greater than 0."
+      : input.min !== "" && number < Number(input.min) ? `Enter ${input.min} or a higher value.`
+      : max !== null && number > max ? `Enter ${max} or a lower value.` : "";
+    if (!message) continue;
+    const hint = document.createElement("small");
+    hint.id = `credit-validation-${input.id}`;
+    hint.className = "field-validation";
+    hint.textContent = message;
+    input.insertAdjacentElement("afterend", hint);
+    input.setAttribute("aria-invalid", "true");
+    input.setAttribute("aria-describedby", hint.id);
+    input.closest(".field")?.classList.add("field-has-error");
+    issues.push(input);
+  }
+  const summary = $("results").querySelector(".validation-summary");
+  if (summary) {
+    summary.querySelector("h2").textContent = issues.length ? "Complete the highlighted inputs" : "Inputs ready to check";
+    summary.querySelector("p").textContent = issues.length
+      ? `${issues.length} ${issues.length === 1 ? "field needs" : "fields need"} a valid value.`
+      : "Select Run to check your entries.";
+  }
+  return issues;
+}
+function results() { markCreditFields(); manualRun.update(); }
 function renderResults() {
   $("results").classList.remove("show-result-animation");
   const r = calculate(state),
     lcfs = state.mode !== "rfs",
     rfs = state.mode !== "lcfs";
   if (r.errors.length) {
+    showInputErrors = true;
+    const issues = markCreditFields();
     $("results").innerHTML =
-      `<section class="panel error" role="alert"><h2>Check your inputs</h2><ul>${r.errors.map((x) => `<li>${x}</li>`).join("")}</ul></section>`;
+      `<section class="panel error validation-summary" role="alert"><h2>Complete the highlighted inputs</h2><p>${issues.length ? `${issues.length} ${issues.length === 1 ? "field needs" : "fields need"} a valid value.` : "Review the selected fuel and reporting settings."}</p><p class="note">Enter 0 where an activity does not apply, then select Run again.</p></section>`;
+    if (issues[0]) requestAnimationFrame(() => {
+      issues[0].focus({ preventScroll: true });
+      issues[0].scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+    });
     floatingSummary(r);
     return;
   }
+  showInputErrors = false;
+  markCreditFields();
   $("results").innerHTML =
     ` ${lcfs ? `<section class="metric"><div><span>LCFS ${r.lcfsTonnes < 0 ? "deficits" : "credits"}</span><em>${state.lcfsConfirmed ? "User-confirmed assumptions" : "Conditional estimate"}</em></div><strong class="${r.lcfsTonnes < 0 ? "negative" : ""}">${fmt(Math.abs(r.lcfsTonnes), 2)}<small>tonnes CO₂e</small></strong><div class="metric-foot"><span>${r.lcfsTonnes < 0 ? "Estimated acquisition cost" : "Gross credit value"}</span><b>${money(Math.abs(r.lcfsValue))}</b></div></section>` : ""}
  ${rfs ? `<section class="metric"><div><span>RIN quantity ${state.dcode ? "· " + state.dcode : ""}</span><em>${state.rfsConfirmed ? "User-confirmed assumptions" : "Conditional estimate"}</em></div><strong>${fmt(r.rins)}<small>estimated gallon-RINs</small></strong>${r.rinError ? `<p class="note error-text">${r.rinError}</p>` : ""}<div class="metric-foot"><span>Gross RIN value</span><b>${money(r.rinValue)}</b></div></section>` : ""}
@@ -332,6 +386,7 @@ window.addEventListener("message", (e) => {
 });
 $("reset").addEventListener("click", () => {
   manualRun.invalidate();
+  showInputErrors = false;
   state = defaults();
   state.dcode = "D4";
   render();
@@ -350,20 +405,6 @@ function setMode() {
     b.classList.toggle("active", b.dataset.mode === state.mode);
     b.setAttribute("aria-pressed", String(b.dataset.mode === state.mode));
   }
-}
-let browserDraft = null;
-try {
-  browserDraft = readDraft(localStorage, "gbw-credit-v1", (draft) => {
-    const candidate = draft?.state ?? draft;
-    return (
-      candidate &&
-      Object.hasOwn(FUELS, candidate.fuel) &&
-      ["both", "lcfs", "rfs"].includes(candidate.mode)
-    );
-  });
-  if (browserDraft) state = { ...defaults(), ...(browserDraft.state ?? browserDraft) };
-} catch {
-  /* Storage may be disabled in this browser. */
 }
 try {
   const q = new URLSearchParams(location.search);
@@ -406,6 +447,7 @@ const manualRun = createManualRun({
   render: renderResults,
   pending: pendingResults,
   onBusy: (busy) => { $("run").disabled = busy; $("run").textContent = busy ? "Running…" : "Run"; },
+  onReady: (ready) => { const r = ready ? calculate(state) : null; const enabled = Boolean(r && !r.errors.length && !r.rinError); $("save").disabled = !enabled; $("export").disabled = !enabled; },
   onStart: () => floatingSummary({ errors: [] }, "running"),
 });
 function runCalculation() {
@@ -413,20 +455,29 @@ function runCalculation() {
   pendingFloatingInput = null;
   manualRun.run();
 }
+document.addEventListener("input", (event) => { if (event.target.closest?.("#inputs")) $("clear").disabled = false; });
+document.addEventListener("change", (event) => { if (event.target.closest?.("#inputs")) $("clear").disabled = false; });
+$("reset").addEventListener("click", () => { $("clear").disabled = false; });
+$("clear").addEventListener("click", () => {
+  showInputErrors = false;
+  state = blankCreditScenario();
+  state.benchmarkMode = "custom";
+  manualRun.clear();
+  render();
+  $("clear").disabled = true;
+  $("status").textContent = "Inputs cleared. Enter your values or load an example.";
+});
 $("run").addEventListener("click", runCalculation);
 window.addEventListener("message", (event) => {
   if (event.source === window.parent && event.origin === location.origin && event.data?.type === "civanta-floating-run-request") runCalculation();
 });
 
 render();
-const inboundScenario = ["ci", "fuel", "quantity", "energy", "unit"].some((key) =>
-  new URLSearchParams(location.search).has(key),
-);
 attachAutosave({
   key: "gbw-credit-v1",
   snapshot: () => ({ state }),
-  pending: inboundScenario ? null : browserDraft?.pending,
-  restored: Boolean(browserDraft) && !inboundScenario,
+  pending: null,
+  restored: false,
 });
 // Resize the optional same-origin React frame after edits and on mobile.
 if (window.parent !== window && typeof ResizeObserver !== "undefined") {
@@ -539,6 +590,7 @@ window.addEventListener("message", (e) => {
     }
     manualRun.invalidate();
     state = structuredClone(saved);
+    $("clear").disabled = false;
     committedSnapshot = JSON.stringify(state);
     render();
     $("status").textContent =

@@ -33,17 +33,11 @@ function PricingPage() {
     <main className="civanta-pricing">
       <div className="pricing-shell">
         <div className="pricing-hero">
-          <Link to="/civanta" className="pricing-back">
-            ← CIVanta suite
-          </Link>
           <span className="pricing-eyebrow">
             <Sparkles size={16} aria-hidden="true" /> CIVanta Pro
           </span>
-          <h1>Turn a useful result into a decision you can defend.</h1>
-          <p>
-            Calculate for free. Upgrade when you need deeper comparison, sensitivity and reports you
-            can share.
-          </p>
+          <h1>Choose your plan.</h1>
+          <p>Start free. Get more with Pro.</p>
         </div>
 
         <div className="pricing-cards">
@@ -113,10 +107,6 @@ function PricingPage() {
             <p>Units, methods and important warnings stay visible in the Free tools.</p>
           </div>
         </div>
-        <p className="pricing-footnote">
-          Estimates are planning tools, not a regulatory certification or a guarantee of credit
-          eligibility. Subscription checkout is not yet connected; request access to discuss Pro.
-        </p>
       </div>
     </main>
   );

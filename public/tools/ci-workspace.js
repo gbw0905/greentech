@@ -1,7 +1,7 @@
 import { renderCiFlow, bindCiFlow } from "./ci-flow.mjs";
 import { createManualRun } from "./manual-run.mjs";
 import { buildWorkspacePayload } from "./workspace-export.mjs";
-import { readDraft, attachAutosave } from "./browser-draft.mjs";
+import { attachAutosave } from "./browser-draft.mjs";
 import { activityToCi, changedInputs } from "./workspace-activity.mjs";
 import {
   __modules,
@@ -144,7 +144,7 @@ const pathwaySelect = () => {
       ([k, a]) =>
         `<optgroup label="${esc(k)}">${a.map((p) => `<option value="${esc(p.id)}" ${p.id === state.pathwayId ? "selected" : ""}>${esc(p.id === "rng-dairy" ? "Dairy RNG — farm calculator" : p.label)}</option>`).join("")}</optgroup>`,
     )
-    .join("")}</select><small>Switching pathways loads that fuel’s illustrative example inputs. Review them before running.</small></label>`;
+    .join("")}</select><small>Choose a pathway, then enter your values or select Load example.</small></label>`;
 };
 const select = (id, label, items, value, help = "") =>
   `<label class="field">${label}<select id="${id}">${items.map(([v, t]) => `<option value="${esc(v)}" ${v === value ? "selected" : ""}>${esc(t)}</option>`).join("")}</select><small>${help}</small></label>`;
@@ -1294,7 +1294,7 @@ $("baseline").addEventListener("click", () => {
   $("status").textContent = "Baseline captured. Change an input to compare.";
 });
 function clearCalculatedView() {
-  manualRun.invalidate();
+  manualRun.clear();
   ran = false;
   dirty = false;
   showInputErrors = false;
@@ -1305,15 +1305,14 @@ function clearCalculatedView() {
 }
 function selectPathway(pathwayId) {
   if (pathwayId === state.pathwayId) return;
-  // Pathway-specific example data is safer than carrying another fuel's inputs.
-  // Keep Clear inputs as the explicit way to start from an empty scenario.
-  state = newScenario(pathwayId, state.region);
+  // A pathway change starts an empty inventory for the selected fuel.
+  state = blankScenario(pathwayId, state.region);
   baseline = null;
   $("baseline").textContent = "Use as baseline";
   clearCalculatedView();
   render();
   $("status").textContent =
-    "Illustrative example values loaded. Review and replace them with your data.";
+    "Enter your values or select Load example for this pathway.";
 }
 $("reset").addEventListener("click", () => {
   state = blankScenario(state.pathwayId, state.region);
@@ -1321,9 +1320,13 @@ $("reset").addEventListener("click", () => {
   $("baseline").textContent = "Use as baseline";
   clearCalculatedView();
   render();
+  $("reset").disabled = true;
   $("status").textContent = "Inputs cleared. Enter your values or fill with default values.";
 });
+document.addEventListener("input", (event) => { if (event.target.closest?.("#inputs")) $("reset").disabled = false; });
+document.addEventListener("change", (event) => { if (event.target.closest?.("#inputs")) $("reset").disabled = false; });
 $("fill-defaults").addEventListener("click", () => {
+  $("reset").disabled = false;
   state = newScenario(state.pathwayId, state.region);
   prepareInputModes();
   clearCalculatedView();
@@ -1388,6 +1391,7 @@ document.addEventListener("click", (e) => {
     if (!x) return;
     manualRun.invalidate();
     state = structuredClone(x.state);
+    $("reset").disabled = false;
     lastSavedSnapshot = JSON.stringify(state);
     render();
     resultsNow();
@@ -1442,34 +1446,6 @@ window.addEventListener("message", (event) => {
   )
     $("status").textContent = event.data.message;
 });
-let browserDraft = null;
-try {
-  browserDraft = readDraft(localStorage, "gbw-ci-workspace-v1", (draft) => {
-    const candidate = draft?.state;
-    return (
-      candidate &&
-      typeof candidate === "object" &&
-      (candidate.pathwayId === "rng-dairy" || PRESETS.some((p) => p.id === candidate.pathwayId)) &&
-      candidate.energy &&
-      candidate.factors &&
-      candidate.direct &&
-      ELECTRICITY_REGIONS.some((r) => r.id === candidate.region) &&
-      (candidate.pathwayId !== "rng-dairy" || candidate.dairy?.inventory?.livestock)
-    );
-  });
-} catch {
-  /* Storage may be disabled in this browser. */
-}
-if (browserDraft) {
-  state = browserDraft.state;
-  baseline =
-    browserDraft.baseline && !assess(browserDraft.baseline).errors.length
-      ? browserDraft.baseline
-      : null;
-  const savedUi = browserDraft.ui;
-  if (savedUi && CI_UNITS[savedUi.ci] && MASS_UNITS[savedUi.mass]) Object.assign(ui, savedUi);
-  $("baseline").textContent = baseline ? "Replace baseline" : "Use as baseline";
-}
 bindCiFlow($("processFlow"));
 function pendingResults() {
   document.getElementById("ci-balanced-results")?.remove();
@@ -1482,6 +1458,7 @@ const manualRun = createManualRun({
   render: resultsNow,
   pending: pendingResults,
   onBusy: (busy) => { $("run").disabled = busy; $("run").textContent = busy ? "Running…" : "Run"; },
+  onReady: (ready) => { const enabled = ready && !assess(state).errors.length; $("save").disabled = !enabled; $("export").disabled = !enabled; },
   onStart: () => floatingSummary({ value: "—", unit: "gCO₂e/MJ", detail: "Calculating your scenario", state: "running" }),
 });
 function runCalculation() {
@@ -1498,8 +1475,8 @@ render();
 const persistDraft = attachAutosave({
   key: "gbw-ci-workspace-v1",
   snapshot: () => ({ state, baseline, ui, hadRun: ran }),
-  pending: browserDraft?.pending,
-  restored: Boolean(browserDraft),
+  pending: null,
+  restored: false,
 });
 if (window.parent !== window && typeof ResizeObserver !== "undefined")
   new ResizeObserver(() =>
@@ -1595,6 +1572,7 @@ window.addEventListener("message", (e) => {
     if (!snap?.state || typeof snap.state !== "object") throw new Error("Invalid saved scenario.");
     manualRun.invalidate();
     state = structuredClone(snap.state);
+    $("reset").disabled = false;
     lastSavedSnapshot = JSON.stringify(state);
     baseline =
       snap.baseline && !assess(snap.baseline).errors.length ? structuredClone(snap.baseline) : null;

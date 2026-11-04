@@ -27,7 +27,7 @@ function AboutPage() {
     <InformationPage
       active="about"
       title="About Global Bioenergy Watch"
-      subtitle="An independent policy and market intelligence desk for the global bioenergy sector — tracking what governments mandate and what markets do, in one place."
+      subtitle="Independent insights on global bioenergy policy and markets."
     >
       <section className="two">
         <article className="card">

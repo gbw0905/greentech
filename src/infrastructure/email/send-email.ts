@@ -12,7 +12,7 @@ export type SendTemplateEmailResult =
   { sent: true } | { sent: false; reason: "recipient_suppressed" };
 
 export interface SendTemplateEmailOptions {
-  templateData?: Record<string, any>;
+  templateData?: Record<string, unknown>;
   /** Dedupes retries of the same logical send; defaults to a random UUID (no dedupe). */
   idempotencyKey?: string;
   replyTo?: string;
@@ -61,9 +61,7 @@ export async function sendTemplateEmail(
     html,
     text,
     replyTo: options.replyTo || SENDER_EMAIL,
-    headers: options.idempotencyKey
-      ? { "X-Entity-Ref-ID": options.idempotencyKey }
-      : undefined,
+    ...(options.idempotencyKey ? { headers: { "X-Entity-Ref-ID": options.idempotencyKey } } : {}),
   });
 
   if (error) {

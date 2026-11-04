@@ -303,26 +303,31 @@ tbody tr:nth-child(even) {
 .error-text {
   color: #b83d58;
 }
-body.tool-workspace .field-has-error input[aria-invalid="true"] {
+body.tool-workspace .field-has-error input[aria-invalid="true"],
+body.tool-credit .field-has-error input[aria-invalid="true"] {
   border: 2px solid #c63f54;
   background: #fff6f7;
   box-shadow: 0 0 0 3px #c63f5417;
 }
-body.tool-workspace .field-has-error input[aria-invalid="true"]:focus {
+body.tool-workspace .field-has-error input[aria-invalid="true"]:focus,
+body.tool-credit .field-has-error input[aria-invalid="true"]:focus {
   outline-color: #c63f54;
   box-shadow: 0 0 0 4px #c63f5426;
 }
-body.tool-workspace .field .field-validation {
+body.tool-workspace .field .field-validation,
+body.tool-credit .field .field-validation {
   color: #a52c41;
   font-size: 13px;
   font-weight: 700;
   line-height: 1.35;
 }
-body.tool-workspace .validation-summary {
+body.tool-workspace .validation-summary,
+body.tool-credit .validation-summary {
   border-color: #e8b1b9;
   background: #fff9fa;
 }
-body.tool-workspace .validation-summary p {
+body.tool-workspace .validation-summary p,
+body.tool-credit .validation-summary p {
   margin: 10px 0 0;
 }
 summary:focus-visible,
@@ -1256,4 +1261,13 @@ body.tool-credit :is(input[type="number"], .step, .metric > strong, .metric-foot
 @media (prefers-reduced-motion: reduce) {
   .ci-flow-svg { animation: none; }
   .ci-flow-link { transition: none; }
+}
+
+/* Disabled actions remain visibly locked until their prerequisites are met. */
+body.tool-workspace .toolbar button:disabled,
+body.tool-credit .toolbar button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }

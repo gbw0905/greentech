@@ -1,7 +1,6 @@
 import { useRouterState } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { Target } from "lucide-react";
 import { z } from "zod";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { HistoryPanel } from "@/features/calculation-history/HistoryPanel";
@@ -80,14 +79,24 @@ function parseSnapshot(value: unknown) {
   const result = snapshotSchema.parse(value);
   return { input: result.state as Inputs, selected: [...new Set(result.selected)] };
 }
+function emptyInputs(pathwayId?: string): Inputs {
+  const input = defaultInputs(pathwayId);
+  for (const key of numericKeys) input[key] = NaN;
+  for (const cost of Object.values(input.costs)) {
+    cost.capex = NaN;
+    cost.opex = NaN;
+  }
+  return input;
+}
 export function OptimizerPage() {
   const access = usePremium();
   const { user } = useAuthSession();
   const client = useQueryClient();
   const search = useRouterState({ select: (state) => state.location.searchStr });
   const requestedId = new URLSearchParams(search).get("run");
-  const [input, setInput] = useState<Inputs>(() => defaultInputs());
-  const [selected, setSelected] = useState<MeasureId[]>(["ppa", "rail"]);
+  const [input, setInput] = useState<Inputs>(() => emptyInputs());
+  const [selected, setSelected] = useState<MeasureId[]>([]);
+  const [clearable, setClearable] = useState(false);
   const [draftReady, setDraftReady] = useState(false);
   const [draftStatus, setDraftStatus] = useState("");
   const [showHistory, setShowHistory] = useState(false);
@@ -115,6 +124,7 @@ export function OptimizerPage() {
     input: Inputs;
     data: Analysis;
   } | null>(null);
+  const [showInputErrors, setShowInputErrors] = useState(false);
   const [runError, setRunError] = useState("");
   const [running, setRunning] = useState(false);
   const runTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -132,11 +142,25 @@ export function OptimizerPage() {
       if (runTimer.current !== null) clearTimeout(runTimer.current);
     };
   }, [snapshot]);
+  useEffect(() => {
+    if (!runError) return;
+    const first = document.querySelector<HTMLInputElement>(".opt-inputs [aria-invalid='true']");
+    if (!first) return;
+    for (let node = first.parentElement; node; node = node.parentElement) {
+      if (node instanceof HTMLDetailsElement) node.open = true;
+    }
+    first.focus({ preventScroll: true });
+    first.scrollIntoView({
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      block: "center",
+    });
+  }, [runError]);
   function runCalculation() {
     if (runTimer.current !== null) clearTimeout(runTimer.current);
     const requested = snapshot;
     const runInput = structuredClone(input);
     const runSelected = [...selected];
+    setShowInputErrors(true);
     setRunning(true);
     setRunError("");
     runTimer.current = setTimeout(() => {
@@ -166,18 +190,7 @@ export function OptimizerPage() {
     retry: false,
   });
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(DRAFT_KEY);
-      if (stored) {
-        const parsed = parseSnapshot(JSON.parse(stored));
-        setInput(parsed.input);
-        setSelected(parsed.selected);
-      }
-    } catch {
-      setDraftStatus("The previous browser draft could not be restored.");
-    } finally {
-      setDraftReady(true);
-    }
+    setDraftReady(true);
   }, []);
   useEffect(() => {
     if (!draftReady) return;
@@ -222,7 +235,9 @@ export function OptimizerPage() {
       if (runTimer.current !== null) clearTimeout(runTimer.current);
       setRunning(false);
       setCompleted(null);
+      setShowInputErrors(false);
       setRunError("");
+      setClearable(true);
       setInput(parsed.input);
       setSelected(parsed.selected);
       setLastRun(restore.data.snapshot);
@@ -353,7 +368,9 @@ export function OptimizerPage() {
                 if (runTimer.current !== null) clearTimeout(runTimer.current);
                 setRunning(false);
                 setCompleted(null);
+                setShowInputErrors(false);
                 setRunError("");
+                setClearable(true);
                 setInput(defaultInputs(input.pathwayId));
                 setSelected(["ppa", "rail"]);
                 setLastRun("");
@@ -361,6 +378,24 @@ export function OptimizerPage() {
               }}
             >
               Load example
+            </button>
+            <button
+              type="button"
+              disabled={!clearable}
+              onClick={() => {
+                if (runTimer.current !== null) clearTimeout(runTimer.current);
+                setRunning(false);
+                setCompleted(null);
+                setShowInputErrors(false);
+                setRunError("");
+                setClearable(false);
+                setInput(emptyInputs(input.pathwayId));
+                setSelected([]);
+                setLastRun("");
+                setStatus("");
+              }}
+            >
+              Clear
             </button>
           </div>
           <div>
@@ -380,6 +415,10 @@ export function OptimizerPage() {
                 onClick={() => void download("excel")}
               >
                 {exporting ? "Exporting…" : "Download Excel"}
+              </button>
+            ) : !preview.data || running ? (
+              <button type="button" disabled>
+                Pro · Download Excel
               </button>
             ) : (
               <a
@@ -417,18 +456,21 @@ export function OptimizerPage() {
         )}
         <div className="opt-workspace" ref={workspaceRef}>
           <OptimizerInputs
+            showErrors={showInputErrors && !running}
             input={input}
             selected={selected}
-            onChange={setInput}
-            onSelected={setSelected}
-            onPathway={(id) =>
-              setInput({
-                ...defaultInputs(id),
-                costs: input.costs,
-                creditPrice: input.creditPrice,
-                volumeMj: input.volumeMj,
-              })
-            }
+            onChange={(value) => {
+              setClearable(true);
+              setInput(value);
+            }}
+            onSelected={(value) => {
+              setClearable(true);
+              setSelected(value);
+            }}
+            onPathway={(id) => {
+              setClearable(true);
+              setInput(emptyInputs(id));
+            }}
           />
           <div className="opt-output" ref={resultRef}>
             {running ? (
@@ -437,7 +479,7 @@ export function OptimizerPage() {
                 <h2>Calculating your scenario</h2>
                 <p>Preparing your results…</p>
               </section>
-            ) : completed ? (
+            ) : completed && !preview.error ? (
               <div className="calculator-results-enter">
                 <OptimizerResults
                   input={completed.input}
@@ -446,11 +488,21 @@ export function OptimizerPage() {
                 />
               </div>
             ) : (
-              <section className="calculator-run-state" role={preview.error ? "alert" : undefined}>
-                <Target size={28} />
-                <h2>{preview.error ? "Check your inputs" : "Ready to calculate"}</h2>
-                {preview.error && <p>{preview.error}</p>}
-                <p>Review your inputs, then select Run to see your results.</p>
+              <section
+                className={`calculator-run-state${preview.error ? " validation-summary" : ""}`}
+                role={preview.error ? "alert" : undefined}
+              >
+                {!preview.error && (
+                  <span className="calculator-run-ready" aria-hidden="true">
+                    ↗
+                  </span>
+                )}
+                <h2>{preview.error ? "Complete the highlighted inputs" : "Ready to calculate"}</h2>
+                <p>
+                  {preview.error
+                    ? "Check the highlighted fields, then select Run again. Enter 0 where an activity does not apply."
+                    : "Review your inputs, then select Run to see your results."}
+                </p>
               </section>
             )}
           </div>
