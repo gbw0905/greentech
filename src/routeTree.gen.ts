@@ -40,6 +40,7 @@ import { Route as AboutTeamRouteImport } from './routes/about.team'
 import { Route as AlertsConfirmRouteImport } from './routes/alerts.confirm'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiDocumentAnalyzeRouteImport } from './routes/api/document-analyze'
+import { Route as ApiDocumentExplainRouteImport } from './routes/api/document-explain'
 import { Route as ApiDocumentHistoryRouteImport } from './routes/api/document-history'
 import { Route as ApiDocumentHistoryItemRouteImport } from './routes/api/document-history-item'
 import { Route as AssistantThreadIdRouteImport } from './routes/assistant.$threadId'
@@ -222,6 +223,11 @@ const ApiDocumentAnalyzeRoute = ApiDocumentAnalyzeRouteImport.update({
   path: '/api/document-analyze',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiDocumentExplainRoute = ApiDocumentExplainRouteImport.update({
+  id: '/api/document-explain',
+  path: '/api/document-explain',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiDocumentHistoryRoute = ApiDocumentHistoryRouteImport.update({
   id: '/api/document-history',
   path: '/api/document-history',
@@ -390,6 +396,7 @@ export interface FileRoutesByFullPath {
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/api/chat': typeof ApiChatRoute
   '/api/document-analyze': typeof ApiDocumentAnalyzeRoute
+  '/api/document-explain': typeof ApiDocumentExplainRoute
   '/api/document-history': typeof ApiDocumentHistoryRoute
   '/api/document-history-item': typeof ApiDocumentHistoryItemRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
@@ -448,6 +455,7 @@ export interface FileRoutesByTo {
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/api/chat': typeof ApiChatRoute
   '/api/document-analyze': typeof ApiDocumentAnalyzeRoute
+  '/api/document-explain': typeof ApiDocumentExplainRoute
   '/api/document-history': typeof ApiDocumentHistoryRoute
   '/api/document-history-item': typeof ApiDocumentHistoryItemRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
@@ -507,6 +515,7 @@ export interface FileRoutesById {
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/api/chat': typeof ApiChatRoute
   '/api/document-analyze': typeof ApiDocumentAnalyzeRoute
+  '/api/document-explain': typeof ApiDocumentExplainRoute
   '/api/document-history': typeof ApiDocumentHistoryRoute
   '/api/document-history-item': typeof ApiDocumentHistoryItemRoute
   '/assistant/$threadId': typeof AssistantThreadIdRoute
@@ -568,6 +577,7 @@ export interface FileRouteTypes {
     | '/alerts/confirm'
     | '/api/chat'
     | '/api/document-analyze'
+    | '/api/document-explain'
     | '/api/document-history'
     | '/api/document-history-item'
     | '/assistant/$threadId'
@@ -626,6 +636,7 @@ export interface FileRouteTypes {
     | '/alerts/confirm'
     | '/api/chat'
     | '/api/document-analyze'
+    | '/api/document-explain'
     | '/api/document-history'
     | '/api/document-history-item'
     | '/assistant/$threadId'
@@ -684,6 +695,7 @@ export interface FileRouteTypes {
     | '/alerts/confirm'
     | '/api/chat'
     | '/api/document-analyze'
+    | '/api/document-explain'
     | '/api/document-history'
     | '/api/document-history-item'
     | '/assistant/$threadId'
@@ -742,6 +754,7 @@ export interface RootRouteChildren {
   AlertsConfirmRoute: typeof AlertsConfirmRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiDocumentAnalyzeRoute: typeof ApiDocumentAnalyzeRoute
+  ApiDocumentExplainRoute: typeof ApiDocumentExplainRoute
   ApiDocumentHistoryRoute: typeof ApiDocumentHistoryRoute
   ApiDocumentHistoryItemRoute: typeof ApiDocumentHistoryItemRoute
   CivantaOptimizerRoute: typeof CivantaOptimizerRoute
@@ -983,6 +996,13 @@ declare module '@tanstack/react-router' {
       path: '/api/document-analyze'
       fullPath: '/api/document-analyze'
       preLoaderRoute: typeof ApiDocumentAnalyzeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/document-explain': {
+      id: '/api/document-explain'
+      path: '/api/document-explain'
+      fullPath: '/api/document-explain'
+      preLoaderRoute: typeof ApiDocumentExplainRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/document-history': {
@@ -1241,6 +1261,7 @@ const rootRouteChildren: RootRouteChildren = {
   AlertsConfirmRoute: AlertsConfirmRoute,
   ApiChatRoute: ApiChatRoute,
   ApiDocumentAnalyzeRoute: ApiDocumentAnalyzeRoute,
+  ApiDocumentExplainRoute: ApiDocumentExplainRoute,
   ApiDocumentHistoryRoute: ApiDocumentHistoryRoute,
   ApiDocumentHistoryItemRoute: ApiDocumentHistoryItemRoute,
   CivantaOptimizerRoute: CivantaOptimizerRoute,

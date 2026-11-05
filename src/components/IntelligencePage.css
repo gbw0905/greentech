@@ -806,7 +806,11 @@
   background: #f2f7fa;
 }
 
-/* Viewer shell */
+/* Viewer shell — sticky wrapper that also anchors the explain UI */
+.doc-viewer-shell {
+  position: sticky;
+  top: 90px;
+}
 .doc-viewer {
   display: flex;
   flex-direction: column;
@@ -815,8 +819,6 @@
   background: #fff;
   overflow: hidden;
   max-height: calc(100vh - 180px);
-  position: sticky;
-  top: 90px;
 }
 .doc-viewer-toolbar {
   display: flex;
@@ -992,6 +994,283 @@ mark.doc-viewer-text-highlight {
   margin: 0;
 }
 
+/* Selectable PDF text layer (pdf.js TextLayer) */
+.doc-viewer-page .textLayer {
+  position: absolute;
+  inset: 0;
+  overflow: clip;
+  line-height: 1;
+  text-align: initial;
+  text-size-adjust: none;
+  forced-color-adjust: none;
+  transform-origin: 0 0;
+  caret-color: CanvasText;
+  z-index: 0;
+}
+.doc-viewer-page .textLayer :is(span, br) {
+  color: transparent;
+  position: absolute;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0% 0%;
+}
+.doc-viewer-page .textLayer span.markedContent {
+  top: 0;
+  height: 0;
+}
+.doc-viewer-page .textLayer ::selection {
+  background: rgba(22, 135, 111, 0.28);
+}
+.doc-viewer-page .textLayer br::selection {
+  background: transparent;
+}
+.doc-viewer-page .textLayer .endOfContent {
+  display: block;
+  position: absolute;
+  inset: 100% 0 0;
+  z-index: 0;
+  cursor: default;
+  user-select: none;
+}
+.doc-viewer-page .textLayer.selecting .endOfContent {
+  top: 0;
+}
+
+/* DOCX / text: let the document fill the scroll area */
+.doc-viewer-html-scroll {
+  align-items: stretch;
+}
+
+/* XLSX worksheet table */
+.doc-viewer-sheet-scroll {
+  align-items: stretch;
+  padding: 0;
+  background: #fff;
+}
+.doc-viewer-sheet-tabs {
+  display: flex;
+  gap: 4px;
+  min-width: 0;
+  overflow-x: auto;
+}
+.doc-viewer-sheet-tabs button {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border: 1px solid #d6e1ea;
+  border-radius: 6px;
+  background: #fff;
+  color: #597087;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.doc-viewer-sheet-tabs button[aria-selected="true"] {
+  border-color: #16876f;
+  background: #e3f3ed;
+  color: #116a57;
+}
+.doc-viewer-sheet-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #597087;
+}
+.doc-viewer-sheet {
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 12.5px;
+  color: #0e2a43;
+  min-width: 100%;
+}
+.doc-viewer-sheet th,
+.doc-viewer-sheet td {
+  border-right: 1px solid #e4ebf0;
+  border-bottom: 1px solid #e4ebf0;
+  padding: 5px 9px;
+  text-align: left;
+  vertical-align: top;
+  max-width: 280px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.doc-viewer-sheet thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #f3f6f8;
+  color: #7890a3;
+  font-weight: 600;
+  text-align: center;
+}
+.doc-viewer-sheet tbody th {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: #f8fafb;
+  color: #7890a3;
+  font-weight: 600;
+  text-align: right;
+}
+.doc-viewer-sheet thead th:first-child {
+  left: 0;
+  z-index: 3;
+}
+.doc-viewer-sheet tr.doc-viewer-row-highlight td {
+  background: rgba(255, 213, 0, 0.3);
+}
+.doc-viewer-sheet-empty {
+  padding: 16px;
+  font-size: 13px;
+  color: #7890a3;
+}
+
+/* Select text → Explain */
+.doc-explain-trigger {
+  position: absolute;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 11px;
+  transform: translateX(-50%);
+  border: 0;
+  border-radius: 100px;
+  background: #102f46;
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 650;
+  box-shadow: 0 6px 18px rgba(16, 47, 70, 0.28);
+  cursor: pointer;
+  animation: doc-explain-trigger-in 0.15s ease-out;
+}
+.doc-explain-trigger:hover {
+  background: #175570;
+}
+.doc-explain-card {
+  position: absolute;
+  z-index: 25;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  max-height: 58%;
+  overflow-y: auto;
+  padding: 14px 16px 16px;
+  border: 1px solid #d6e1ea;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 14px 40px rgba(16, 47, 70, 0.2);
+  color: #0e2a43;
+  animation: doc-explain-in 0.2s ease-out;
+}
+.doc-explain-card header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.doc-explain-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #178a6b;
+}
+.doc-explain-actions {
+  display: flex;
+  gap: 4px;
+}
+.doc-explain-actions button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #e4ebf0;
+  border-radius: 7px;
+  background: #fff;
+  color: #597087;
+  cursor: pointer;
+}
+.doc-explain-actions button:hover {
+  background: #f2f7fa;
+}
+.doc-explain-card blockquote {
+  margin: 10px 0 12px;
+  padding: 8px 12px;
+  border-left: 2px solid #16876f;
+  background: #f3f9f7;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #536f82;
+  overflow-wrap: anywhere;
+}
+.doc-explain-body {
+  display: grid;
+  gap: 10px;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+.doc-explain-summary {
+  font-weight: 650;
+}
+.doc-explain-body h4 {
+  margin-bottom: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #7890a3;
+}
+.doc-explain-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+}
+.doc-explain-chips span {
+  padding: 2px 8px;
+  border-radius: 100px;
+  background: #e3f3ed;
+  color: #116a57;
+  font-size: 11.5px;
+  font-weight: 650;
+}
+.doc-explain-body dl {
+  display: grid;
+  gap: 6px;
+}
+.doc-explain-body dt {
+  font-weight: 650;
+}
+.doc-explain-body dd {
+  margin: 0;
+  color: #536f82;
+}
+.doc-explain-status,
+.doc-explain-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #597087;
+}
+.doc-explain-error {
+  color: #b3263c;
+}
+@keyframes doc-explain-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+@keyframes doc-explain-trigger-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 4px);
+  }
+}
+
 /* Loading / error states */
 .doc-viewer-loading,
 .doc-viewer-error {
@@ -1020,8 +1299,11 @@ mark.doc-viewer-text-highlight {
   .analyzer-workspace--viewer {
     grid-template-columns: 1fr;
   }
+  .doc-viewer-shell {
+    position: relative;
+    top: auto;
+  }
   .doc-viewer {
-    position: static;
     max-height: 60vh;
   }
   .mandate-detail-columns {

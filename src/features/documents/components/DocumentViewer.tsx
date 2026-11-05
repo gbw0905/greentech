@@ -1,17 +1,35 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type RefObject,
+} from "react";
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, FileText, Loader2 } from "lucide-react";
+import { cellText } from "@/features/documents/cell-text";
+import { SelectionExplain, type ExplainContext } from "./SelectionExplain";
+import { clearHighlights, highlightExcerpt } from "./text-match";
+
+export type ActiveReference = { page: number; excerpt: string; source: string };
 
 interface DocumentViewerProps {
   /** A File object (fresh upload) or a signed URL string (from history). */
   source: File | string;
   fileType: string;
-  /** When set, the viewer scrolls to this page and highlights the excerpt. */
-  activeReference: { page: number; excerpt: string } | null;
+  /** When set, the viewer scrolls to this reference and highlights the excerpt. */
+  activeReference: ActiveReference | null;
+  /** Enables "select text → Explain" when provided. */
+  explainContext?: ExplainContext;
 }
 
 type PDFDoc = {
   numPages: number;
   getPage(num: number): Promise<PDFPage>;
+};
+
+type PDFTextContent = {
+  items: Array<{ str: string; transform: number[]; width: number; height: number }>;
 };
 
 type PDFPage = {
@@ -20,21 +38,39 @@ type PDFPage = {
     canvasContext: CanvasRenderingContext2D;
     viewport: { width: number; height: number };
   }): { promise: Promise<void> };
-  getTextContent(): Promise<{
-    items: Array<{ str: string; transform: number[]; width: number; height: number }>;
-  }>;
+  getTextContent(): Promise<PDFTextContent>;
 };
 
 const SCALES = [0.6, 0.8, 1.0, 1.25, 1.5, 2.0];
 const DEFAULT_SCALE_INDEX = 2;
 
-export function DocumentViewer({ source, fileType, activeReference }: DocumentViewerProps) {
-  const isPdf = fileType.toLowerCase() === "pdf";
-  const isDocx = fileType.toLowerCase() === "docx";
+async function readArrayBuffer(source: File | string) {
+  if (source instanceof File) return source.arrayBuffer();
+  const res = await fetch(source);
+  if (!res.ok) throw new Error(`Could not download the document (${res.status}).`);
+  return res.arrayBuffer();
+}
 
-  if (isPdf) return <PdfViewer source={source} activeReference={activeReference} />;
-  if (isDocx) return <DocxViewer source={source} activeReference={activeReference} />;
-  return <TextViewer source={source} activeReference={activeReference} />;
+export function DocumentViewer({
+  source,
+  fileType,
+  activeReference,
+  explainContext,
+}: DocumentViewerProps) {
+  const type = fileType.toLowerCase();
+  return (
+    <SelectionExplain context={explainContext}>
+      {type === "pdf" ? (
+        <PdfViewer source={source} activeReference={activeReference} />
+      ) : type === "docx" ? (
+        <DocxViewer source={source} activeReference={activeReference} />
+      ) : type === "xlsx" ? (
+        <XlsxViewer source={source} activeReference={activeReference} />
+      ) : (
+        <TextViewer source={source} fileType={type} activeReference={activeReference} />
+      )}
+    </SelectionExplain>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -46,7 +82,7 @@ function PdfViewer({
   activeReference,
 }: {
   source: File | string;
-  activeReference: { page: number; excerpt: string } | null;
+  activeReference: ActiveReference | null;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const pageRefs = useRef<Map<number, HTMLDivElement>>(new Map());
@@ -56,9 +92,6 @@ function PdfViewer({
   const [scaleIndex, setScaleIndex] = useState(DEFAULT_SCALE_INDEX);
   const scale = SCALES[scaleIndex]!;
   const [currentPage, setCurrentPage] = useState(1);
-  const [highlightRects, setHighlightRects] = useState<
-    { page: number; rects: DOMRect[] }
-  >({ page: 0, rects: [] });
 
   // Load PDF document
   useEffect(() => {
@@ -94,7 +127,9 @@ function PdfViewer({
         }
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [source]);
 
   // Track current page via scroll position
@@ -123,16 +158,13 @@ function PdfViewer({
     }
   }, [activeReference, pdf]);
 
-  const goToPage = useCallback(
-    (page: number) => {
-      const el = pageRefs.current.get(page);
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "start" });
-        setCurrentPage(page);
-      }
-    },
-    [],
-  );
+  const goToPage = useCallback((page: number) => {
+    const el = pageRefs.current.get(page);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      setCurrentPage(page);
+    }
+  }, []);
 
   if (loading) {
     return (
@@ -204,9 +236,7 @@ function PdfViewer({
             pageNumber={num}
             scale={scale}
             highlight={
-              activeReference && activeReference.page === num
-                ? activeReference.excerpt
-                : null
+              activeReference && activeReference.page === num ? activeReference.excerpt : null
             }
             onMount={(el) => {
               if (el) pageRefs.current.set(num, el);
@@ -238,6 +268,7 @@ function PdfPageCanvas({
 }) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const textLayerRef = useRef<HTMLDivElement>(null);
   const [rendered, setRendered] = useState(false);
   const renderIdRef = useRef(0);
 
@@ -264,10 +295,29 @@ function PdfPageCanvas({
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
       await page.render({ canvasContext: ctx, viewport }).promise;
-      if (!cancelled && id === renderIdRef.current) setRendered(true);
-    })();
+      if (cancelled || id !== renderIdRef.current) return;
+      setRendered(true);
 
-    return () => { cancelled = true; };
+      // Invisible, selectable text over the canvas so passages can be
+      // selected and explained.
+      const textLayer = textLayerRef.current;
+      if (!textLayer) return;
+      const { TextLayer } = await import("pdfjs-dist");
+      const textContent = await page.getTextContent();
+      if (cancelled || id !== renderIdRef.current) return;
+      textLayer.replaceChildren();
+      await new TextLayer({
+        textContentSource: textContent as never,
+        container: textLayer,
+        viewport: viewport as never,
+      }).render();
+    })().catch(() => {
+      // A cancelled render or missing text layer only loses selection.
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [pdf, pageNumber, scale]);
 
   // Text-based highlight overlay
@@ -342,8 +392,14 @@ function PdfPageCanvas({
         let h = itemH * scale;
 
         // Clamp to canvas bounds
-        if (x < 0) { w += x; x = 0; }
-        if (y < 0) { h += y; y = 0; }
+        if (x < 0) {
+          w += x;
+          x = 0;
+        }
+        if (y < 0) {
+          h += y;
+          y = 0;
+        }
         w = Math.min(w, canvasW - x);
         h = Math.min(h, canvasH - y);
         if (w <= 0 || h <= 0) continue;
@@ -358,7 +414,9 @@ function PdfPageCanvas({
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [highlight, rendered, pdf, pageNumber, scale]);
 
   return (
@@ -366,11 +424,62 @@ function PdfPageCanvas({
       ref={wrapperRef}
       className="doc-viewer-page"
       data-page={pageNumber}
+      data-explain-context={`Page ${pageNumber}`}
+      style={
+        {
+          "--total-scale-factor": scale,
+          "--scale-round-x": "1px",
+          "--scale-round-y": "1px",
+        } as CSSProperties
+      }
     >
       <canvas ref={canvasRef} />
-      <span className="doc-viewer-page-label">Page {pageNumber}</span>
+      <div ref={textLayerRef} className="textLayer" />
+      <span className="doc-viewer-page-label" data-match-skip>
+        Page {pageNumber}
+      </span>
     </div>
   );
+}
+
+// ---------------------------------------------------------------------------
+// Shared pieces for the HTML-based viewers
+// ---------------------------------------------------------------------------
+
+function ViewerLoading({ label = "Loading document…" }: { label?: string }) {
+  return (
+    <div className="doc-viewer-loading">
+      <Loader2 className="size-8 animate-spin text-primary" />
+      <p>{label}</p>
+    </div>
+  );
+}
+
+function ViewerError({ message }: { message: string }) {
+  return (
+    <div className="doc-viewer-error">
+      <FileText className="size-8 text-muted-foreground" />
+      <p>{message}</p>
+    </div>
+  );
+}
+
+/** Highlight the active excerpt inside `containerRef` and scroll to it. */
+function useExcerptHighlight(
+  containerRef: RefObject<HTMLElement | null>,
+  activeReference: ActiveReference | null,
+  ready: unknown,
+) {
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || !ready) return;
+    if (!activeReference?.excerpt.trim()) {
+      clearHighlights(container);
+      return;
+    }
+    const mark = highlightExcerpt(container, activeReference.excerpt);
+    mark?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [containerRef, activeReference, ready]);
 }
 
 // ---------------------------------------------------------------------------
@@ -382,7 +491,7 @@ function DocxViewer({
   activeReference,
 }: {
   source: File | string;
-  activeReference: { page: number; excerpt: string } | null;
+  activeReference: ActiveReference | null;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [html, setHtml] = useState("");
@@ -395,13 +504,7 @@ function DocxViewer({
     setError("");
     (async () => {
       try {
-        let buffer: ArrayBuffer;
-        if (source instanceof File) {
-          buffer = await source.arrayBuffer();
-        } else {
-          const res = await fetch(source);
-          buffer = await res.arrayBuffer();
-        }
+        const buffer = await readArrayBuffer(source);
         const mammoth = await import("mammoth");
         const result = await mammoth.convertToHtml({ arrayBuffer: buffer });
         if (!cancelled) {
@@ -415,82 +518,214 @@ function DocxViewer({
         }
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [source]);
 
-  // Highlight excerpt in the rendered HTML
-  useEffect(() => {
-    if (!activeReference?.excerpt || !containerRef.current) return;
-    const container = containerRef.current;
-    const excerpt = activeReference.excerpt.trim();
-    if (!excerpt) return;
+  useExcerptHighlight(containerRef, activeReference, !loading && html);
 
-    // Clear previous highlights
-    container.querySelectorAll("mark.doc-viewer-text-highlight").forEach((el) => {
-      const parent = el.parentNode;
-      if (parent) {
-        parent.replaceChild(document.createTextNode(el.textContent || ""), el);
-        parent.normalize();
-      }
-    });
-
-    // Walk text nodes and find the excerpt
-    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
-    let fullText = "";
-    const nodes: { node: Text; start: number }[] = [];
-    while (walker.nextNode()) {
-      const node = walker.currentNode as Text;
-      nodes.push({ node, start: fullText.length });
-      fullText += node.textContent || "";
-    }
-
-    const searchText = excerpt.toLowerCase().slice(0, 80);
-    const idx = fullText.toLowerCase().indexOf(searchText);
-    if (idx === -1) return;
-
-    // Find the node containing the match start
-    for (const { node, start } of nodes) {
-      const nodeText = node.textContent || "";
-      const nodeEnd = start + nodeText.length;
-      if (idx >= start && idx < nodeEnd) {
-        const offset = idx - start;
-        const matchLen = Math.min(searchText.length, nodeText.length - offset);
-        const range = document.createRange();
-        range.setStart(node, offset);
-        range.setEnd(node, offset + matchLen);
-        const mark = document.createElement("mark");
-        mark.className = "doc-viewer-text-highlight";
-        range.surroundContents(mark);
-        mark.scrollIntoView({ behavior: "smooth", block: "center" });
-        break;
-      }
-    }
-  }, [activeReference]);
-
-  if (loading) {
-    return (
-      <div className="doc-viewer-loading">
-        <Loader2 className="size-8 animate-spin text-primary" />
-        <p>Loading document…</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="doc-viewer-error">
-        <FileText className="size-8 text-muted-foreground" />
-        <p>{error}</p>
-      </div>
-    );
-  }
+  if (loading) return <ViewerLoading />;
+  if (error) return <ViewerError message={error} />;
 
   return (
     <div className="doc-viewer">
       <div className="doc-viewer-toolbar">
         <span className="doc-viewer-file-badge">DOCX</span>
       </div>
-      <div ref={containerRef} className="doc-viewer-pages doc-viewer-html" dangerouslySetInnerHTML={{ __html: html }} />
+      <div className="doc-viewer-pages doc-viewer-html-scroll">
+        <div
+          ref={containerRef}
+          className="doc-viewer-html"
+          data-explain-context="Document"
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// XLSX Viewer — renders each worksheet as a table via exceljs
+// ---------------------------------------------------------------------------
+
+type SheetData = {
+  name: string;
+  columns: number;
+  rows: { number: number; cells: string[] }[];
+  totalRows: number;
+};
+
+const MAX_SHEET_ROWS = 2_000;
+const MAX_SHEET_COLUMNS = 60;
+
+function columnLabel(index: number) {
+  let label = "";
+  for (let n = index + 1; n > 0; n = Math.floor((n - 1) / 26)) {
+    label = String.fromCharCode(65 + ((n - 1) % 26)) + label;
+  }
+  return label;
+}
+
+/** "Sheet “Q1 data”, section 2" → "Q1 data" */
+function referenceSheet(reference: ActiveReference | null) {
+  return reference?.source.match(/Sheet “(.+?)”/)?.[1] ?? null;
+}
+
+/** Spreadsheet excerpts carry the extractor's "Row N:" labels and " | " separators. */
+const prepareSheetExcerpt = (excerpt: string) =>
+  excerpt.replace(/Row \d+:/gi, " ").replace(/\|/g, " ");
+
+function XlsxViewer({
+  source,
+  activeReference,
+}: {
+  source: File | string;
+  activeReference: ActiveReference | null;
+}) {
+  const tableRef = useRef<HTMLDivElement>(null);
+  const [sheets, setSheets] = useState<SheetData[]>([]);
+  const [activeSheet, setActiveSheet] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError("");
+    setActiveSheet(0);
+    (async () => {
+      try {
+        const buffer = await readArrayBuffer(source);
+        const mod = await import("exceljs");
+        const ExcelJS = (mod.default ?? mod) as typeof mod.default;
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(buffer);
+        const loaded: SheetData[] = [];
+        workbook.eachSheet((sheet) => {
+          const data: SheetData = { name: sheet.name, columns: 0, rows: [], totalRows: 0 };
+          sheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+            data.totalRows += 1;
+            if (data.rows.length >= MAX_SHEET_ROWS) return;
+            const cells = (row.values as Parameters<typeof cellText>[0][])
+              .slice(1, MAX_SHEET_COLUMNS + 1)
+              .map(cellText);
+            data.columns = Math.max(data.columns, cells.length);
+            data.rows.push({ number: rowNumber, cells });
+          });
+          loaded.push(data);
+        });
+        if (!cancelled) {
+          setSheets(loaded);
+          setLoading(false);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Failed to load spreadsheet.");
+          setLoading(false);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [source]);
+
+  // A new reference may point at another worksheet: switch to it first.
+  useEffect(() => {
+    const name = referenceSheet(activeReference);
+    const target = name ? sheets.findIndex((sheet) => sheet.name === name) : -1;
+    if (target !== -1) setActiveSheet(target);
+  }, [activeReference, sheets]);
+
+  useEffect(() => {
+    const container = tableRef.current;
+    if (!container) return;
+    clearHighlights(container);
+    container
+      .querySelectorAll(".doc-viewer-row-highlight")
+      .forEach((row) => row.classList.remove("doc-viewer-row-highlight"));
+    if (!activeReference) return;
+    const name = referenceSheet(activeReference);
+    if (name && sheets[activeSheet]?.name !== name) return;
+
+    const mark = highlightExcerpt(container, activeReference.excerpt, prepareSheetExcerpt);
+    if (mark) {
+      mark.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    // Fall back to the row the excerpt names when the cell text differs.
+    const rowNumber = activeReference.excerpt.match(/Row (\d+)/i)?.[1];
+    const row = rowNumber ? container.querySelector(`tr[data-row="${rowNumber}"]`) : null;
+    if (row) {
+      row.classList.add("doc-viewer-row-highlight");
+      row.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [activeReference, activeSheet, sheets]);
+
+  if (loading) return <ViewerLoading label="Loading spreadsheet…" />;
+  if (error) return <ViewerError message={error} />;
+
+  const sheet = sheets[activeSheet];
+
+  return (
+    <div className="doc-viewer">
+      <div className="doc-viewer-toolbar">
+        <span className="doc-viewer-file-badge">XLSX</span>
+        {sheets.length > 1 ? (
+          <div className="doc-viewer-sheet-tabs" role="tablist" aria-label="Worksheets">
+            {sheets.map((item, index) => (
+              <button
+                key={item.name}
+                type="button"
+                role="tab"
+                aria-selected={index === activeSheet}
+                onClick={() => setActiveSheet(index)}
+              >
+                {item.name}
+              </button>
+            ))}
+          </div>
+        ) : sheet ? (
+          <span className="doc-viewer-sheet-name">{sheet.name}</span>
+        ) : null}
+      </div>
+      <div className="doc-viewer-pages doc-viewer-sheet-scroll">
+        {!sheet || !sheet.rows.length ? (
+          <p className="doc-viewer-sheet-empty">This sheet has no data.</p>
+        ) : (
+          <div ref={tableRef} data-explain-context={`Sheet “${sheet.name}”`}>
+            <table className="doc-viewer-sheet">
+              <thead data-match-skip>
+                <tr>
+                  <th />
+                  {Array.from({ length: sheet.columns }, (_, index) => (
+                    <th key={index}>{columnLabel(index)}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {sheet.rows.map((row) => (
+                  <tr key={row.number} data-row={row.number}>
+                    <th scope="row" data-match-skip>
+                      {row.number}
+                    </th>
+                    {Array.from({ length: sheet.columns }, (_, index) => (
+                      <td key={index}>{row.cells[index] ?? ""}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {sheet.totalRows > sheet.rows.length ? (
+              <p className="doc-viewer-sheet-empty" data-match-skip>
+                Showing the first {sheet.rows.length.toLocaleString()} of{" "}
+                {sheet.totalRows.toLocaleString()} rows.
+              </p>
+            ) : null}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -501,90 +736,64 @@ function DocxViewer({
 
 function TextViewer({
   source,
+  fileType,
   activeReference,
 }: {
   source: File | string;
-  activeReference: { page: number; excerpt: string } | null;
+  fileType: string;
+  activeReference: ActiveReference | null;
 }) {
   const containerRef = useRef<HTMLPreElement>(null);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setError("");
     (async () => {
       try {
-        let content: string;
-        if (source instanceof File) {
-          content = await source.text();
-        } else {
-          const res = await fetch(source);
-          content = await res.text();
-        }
+        const content = new TextDecoder("utf-8", { fatal: false }).decode(
+          await readArrayBuffer(source),
+        );
         if (!cancelled) {
           setText(content);
           setLoading(false);
         }
-      } catch {
+      } catch (err) {
         if (!cancelled) {
-          setText("Failed to load file.");
+          setError(err instanceof Error ? err.message : "Failed to load file.");
           setLoading(false);
         }
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [source]);
 
-  // Highlight excerpt
-  useEffect(() => {
-    if (!activeReference?.excerpt || !containerRef.current) return;
-    const container = containerRef.current;
+  useExcerptHighlight(containerRef, activeReference, !loading && text);
 
-    // Clear previous
-    container.querySelectorAll("mark.doc-viewer-text-highlight").forEach((el) => {
-      const parent = el.parentNode;
-      if (parent) {
-        parent.replaceChild(document.createTextNode(el.textContent || ""), el);
-        parent.normalize();
-      }
-    });
-
-    const searchText = activeReference.excerpt.trim().slice(0, 80);
-    const idx = text.toLowerCase().indexOf(searchText.toLowerCase());
-    if (idx === -1) return;
-
-    // Re-render with highlight
-    const before = text.slice(0, idx);
-    const match = text.slice(idx, idx + searchText.length);
-    const after = text.slice(idx + searchText.length);
-    container.innerHTML = "";
-    container.appendChild(document.createTextNode(before));
-    const mark = document.createElement("mark");
-    mark.className = "doc-viewer-text-highlight";
-    mark.textContent = match;
-    container.appendChild(mark);
-    container.appendChild(document.createTextNode(after));
-    mark.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [activeReference, text]);
-
-  if (loading) {
-    return (
-      <div className="doc-viewer-loading">
-        <Loader2 className="size-8 animate-spin text-primary" />
-        <p>Loading file…</p>
-      </div>
-    );
-  }
+  if (loading) return <ViewerLoading label="Loading file…" />;
+  if (error) return <ViewerError message={error} />;
 
   return (
     <div className="doc-viewer">
       <div className="doc-viewer-toolbar">
-        <span className="doc-viewer-file-badge">TXT</span>
+        <span className="doc-viewer-file-badge">{fileType || "TXT"}</span>
       </div>
-      <pre ref={containerRef} className="doc-viewer-pages doc-viewer-text">
-        {text}
-      </pre>
+      <div className="doc-viewer-pages doc-viewer-html-scroll">
+        {/* Keyed so a new file remounts instead of patching highlighted DOM. */}
+        <pre
+          key={text}
+          ref={containerRef}
+          className="doc-viewer-text"
+          data-explain-context="Document"
+        >
+          {text}
+        </pre>
+      </div>
     </div>
   );
 }

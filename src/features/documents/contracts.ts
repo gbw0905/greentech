@@ -28,3 +28,23 @@ export type DocumentAnalysis = {
   analysisMode: "standard" | "expanded";
   fileUrl?: string | null;
 };
+
+export type ExplainSelectionRequest = {
+  selection: string;
+  /** Text surrounding the selection in the rendered document. */
+  context: string;
+  /** Human label for where the selection sits, e.g. "Page 3" or "Sheet “Q1”". */
+  location: string;
+  fileName: string;
+  keywords: string[];
+  /** The analysis briefing, so the explanation stays in the same frame. */
+  briefing: string;
+};
+
+export type SelectionExplanation = {
+  summary: string;
+  explanation: string;
+  relevance: string;
+  relatedKeywords: string[];
+  terms: { term: string; meaning: string }[];
+};
