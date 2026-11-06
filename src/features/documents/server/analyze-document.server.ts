@@ -1,6 +1,7 @@
 import "@/infrastructure/telemetry/error-capture";
 
 import type ExcelJS from "exceljs";
+import { cellText } from "@/features/documents/cell-text";
 import type { DocumentAnalysis } from "@/features/documents/contracts";
 
 export const MAX_FILE_BYTES = 15 * 1024 * 1024;
@@ -65,19 +66,6 @@ async function extractDocx(buffer: Buffer): Promise<Section[]> {
   const mammoth = await import("mammoth");
   const result = await mammoth.extractRawText({ buffer });
   return splitText(result.value, "Document");
-}
-
-function cellText(value: ExcelJS.CellValue): string {
-  if (value == null) return "";
-  if (value instanceof Date) return value.toISOString();
-  if (typeof value === "object") {
-    if ("text" in value && typeof value.text === "string") return value.text;
-    if ("result" in value) return String(value.result ?? "");
-    if ("richText" in value && Array.isArray(value.richText)) {
-      return value.richText.map((item) => item.text).join("");
-    }
-  }
-  return String(value);
 }
 
 async function extractWorkbook(buffer: Buffer): Promise<Section[]> {
@@ -212,7 +200,7 @@ function selectEvidence(sections: Section[], keywords: string[]) {
   };
 }
 
-function responseText(payload: unknown): string {
+export function responseText(payload: unknown): string {
   const data = payload as {
     candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
   };
@@ -224,7 +212,7 @@ function responseText(payload: unknown): string {
   );
 }
 
-function tokenUsage(payload: unknown) {
+export function tokenUsage(payload: unknown) {
   const usage = (
     payload as {
       usageMetadata?: {

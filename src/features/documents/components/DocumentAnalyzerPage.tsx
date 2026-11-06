@@ -20,7 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { SignInPrompt } from "@/features/auth/components/SignInPrompt";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import type { DocumentAnalysis } from "@/features/documents/contracts";
-import { DocumentViewer } from "./DocumentViewer";
+import { DocumentViewer, type ActiveReference } from "./DocumentViewer";
 import "./document-analyzer.css";
 
 type HistoryEntry = {
@@ -63,7 +63,7 @@ export function DocumentAnalyzerPage() {
   // Document viewer state
   const [viewerSource, setViewerSource] = useState<File | string | null>(null);
   const [viewerFileType, setViewerFileType] = useState("pdf");
-  const [activeRef, setActiveRef] = useState<{ page: number; excerpt: string } | null>(null);
+  const [activeRef, setActiveRef] = useState<ActiveReference | null>(null);
 
   // History state
   const [history, setHistory] = useState<HistoryEntry[]>([]);
@@ -224,7 +224,7 @@ export function DocumentAnalyzerPage() {
 
   const handleCitationClick = (citation: { source: string; excerpt: string }) => {
     const page = parseSourcePage(citation.source);
-    setActiveRef({ page, excerpt: citation.excerpt });
+    setActiveRef({ page, excerpt: citation.excerpt, source: citation.source });
   };
 
   return (
@@ -255,13 +255,19 @@ export function DocumentAnalyzerPage() {
                   New analysis
                 </button>
                 <span className="text-xs text-muted-foreground">
-                  <Eye size={13} className="inline-block" /> Click a reference to jump to it
+                  <Eye size={13} className="inline-block" /> Click a reference to jump to it ·
+                  select text to explain it
                 </span>
               </div>
               <DocumentViewer
                 source={viewerSource}
                 fileType={viewerFileType}
                 activeReference={activeRef}
+                explainContext={{
+                  fileName: analysis.fileName,
+                  keywords: analysis.keywordsUsed,
+                  briefing: analysis.answer,
+                }}
               />
             </>
           ) : (
@@ -644,7 +650,7 @@ export function DocumentAnalyzerPage() {
                     {analysis.citations.map((citation, index) => {
                       const isActive =
                         activeRef?.excerpt === citation.excerpt &&
-                        activeRef?.page === parseSourcePage(citation.source);
+                        activeRef?.source === citation.source;
                       return (
                         <blockquote
                           key={`${citation.source}-${index}`}
