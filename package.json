@@ -11,6 +11,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
+    "test": "node --test \"tests/*.test.mjs\"",
     "test:calculators": "node --test tests/calculators.test.mjs",
     "test:optimizer": "node --test tests/optimizer.test.mjs"
   },

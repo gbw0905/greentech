@@ -16,14 +16,20 @@ Continue developing this project in the [Lovable editor](https://lovable.dev/pro
 
 ## Development
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Use Node.js 24 and npm to match the pull request test environment.
 
 ```sh
 git clone <this-repository-url>
 cd <repository-name>
-npm i
+npm ci
 npm run dev
 ```
+
+Run the root regression suite with `npm test`. It covers calculator and
+optimizer results, workbook exports, request authentication, and the UK RTFO
+parser without production credentials. GitHub runs the same suite on pull
+requests targeting `main`. The separate `remotion/` package is not part of
+this check.
 
 ## Architecture and database
 
