@@ -1,46 +1,45 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowUpRight, Linkedin, Mail, UsersRound } from "lucide-react";
+import { Linkedin } from "lucide-react";
 import { InformationPage } from "@/components/InformationPage";
-import "./about-team.css";
 
-const TITLE = "Our Team — Global Bioenergy Watch";
+const TITLE = "Team Members — Global Bioenergy Watch";
 const DESCRIPTION =
-  "Meet the research, leadership, and technology contributors behind Global Bioenergy Watch and CIVanta.";
+  "Meet the people behind Global Bioenergy Watch, the independent bioenergy policy and market intelligence desk.";
 
-type TeamMember = {
-  name: string;
-  role: string;
-  image: string;
-  linkedin: string;
-  expertise?: string;
-};
+const LEADERSHIP = [
+  {
+    name: "Syed Asiful Alam, PhD",
+    role: "Founder",
+    image: "/team/syed-asiful-alam.png",
+    url: "https://www.linkedin.com/in/asifulalam0905024/",
+  },
+];
 
-const FOUNDER: TeamMember = {
-  name: "Syed Asiful Alam, PhD",
-  role: "Founder & Editor",
-  image: "/team/syed-asiful-alam.png",
-  linkedin: "https://www.linkedin.com/in/asifulalam0905024/",
-  expertise: "Bioenergy · Lifecycle assessment · Low-carbon fuels",
-};
-
-const PRODUCT_TEAM: TeamMember[] = [
+// Local copies of each member's LinkedIn profile portrait.
+const DEVELOPMENT_TEAM = [
   {
     name: "Shahnaeous Ali",
     role: "Lead Developer",
     image: "/team/shahnaeous-ali-linkedin.jpg",
-    linkedin: "https://www.linkedin.com/in/shahneous-ali-0b3a53349/",
+    linkedinUrl: "https://www.linkedin.com/in/shahneous-ali-0b3a53349/",
   },
   {
     name: "Muhammad Asif",
     role: "Developer",
     image: "/team/muhammad-asif-linkedin.png",
-    linkedin: "https://www.linkedin.com/in/asifhasan973/",
+    linkedinUrl: "https://www.linkedin.com/in/asifhasan973/",
   },
   {
     name: "Rakibul Islam",
     role: "UI/UX",
     image: "/team/rakibul-islam-portrait.png",
-    linkedin: "https://www.linkedin.com/in/rakibul-islam-payel/",
+    linkedinUrl: "https://www.linkedin.com/in/rakibul-islam-payel/",
+  },
+  {
+    name: "Jubaed Islam",
+    role: "Media Administrator",
+    image: null,
+    linkedinUrl: "https://www.linkedin.com/in/jubaed-islam-587213354/",
   },
 ];
 
@@ -60,99 +59,93 @@ export const Route = createFileRoute("/about/team")({
   component: TeamPage,
 });
 
-function ProfileLink({ member }: { member: TeamMember }) {
-  return (
-    <a
-      className="gbw-team-social"
-      href={member.linkedin}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label={`View ${member.name}'s LinkedIn profile`}
-    >
-      <Linkedin size={17} aria-hidden="true" />
-      <span>LinkedIn</span>
-      <ArrowUpRight size={14} aria-hidden="true" />
-    </a>
-  );
-}
-
-function TeamCard({ member }: { member: TeamMember }) {
-  return (
-    <article className="gbw-team-card">
-      <div className="gbw-team-portrait">
-        <img src={member.image} alt={member.name} width={320} height={320} loading="lazy" decoding="async" />
-      </div>
-      <div className="gbw-team-card-body">
-        <h3>{member.name}</h3>
-        <p className="gbw-team-role">{member.role}</p>
-        <ProfileLink member={member} />
-      </div>
-    </article>
-  );
-}
-
 function TeamPage() {
   return (
     <InformationPage
       active="team"
-      title="The people behind GBW"
-      subtitle="Research, policy intelligence, and technology working together to advance sustainable bioenergy."
+      title="Team members"
+      subtitle="The people who build, curate, and verify the Global Bioenergy Watch desk."
     >
-      <div className="gbw-team">
-        <section className="gbw-team-intro" aria-label="Team overview">
-          <p className="gbw-team-eyebrow"><UsersRound size={15} aria-hidden="true" /> People & purpose</p>
-          <h2>Built on scientific expertise. Connected through technology.</h2>
-          <p>
-            Global Bioenergy Watch brings together research contributors and product builders
-            to make bioenergy information and low-carbon fuel analysis more accessible.
-          </p>
+      <div className="team-page">
+        <section className="team-leadership" aria-label="Founder">
+          {LEADERSHIP.map((member) => (
+            <article className="member lead" key={member.name}>
+              <img
+                className="av"
+                src={member.image}
+                alt={member.name}
+                width={112}
+                height={112}
+                loading="lazy"
+                decoding="async"
+              />
+              <div>
+                <h2>{member.name}</h2>
+                <span className="role">{member.role}</span>
+                <a
+                  className="profile-link"
+                  href={member.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${member.name} on LinkedIn`}
+                >
+                  <Linkedin size={15} aria-hidden="true" />
+                  LinkedIn profile
+                </a>
+              </div>
+            </article>
+          ))}
         </section>
-
-        <section className="gbw-team-section" aria-labelledby="gbw-leadership">
-          <header className="gbw-team-section-header">
-            <span className="gbw-team-index">01 / Leadership</span>
-            <h2 id="gbw-leadership">Leadership</h2>
-          </header>
-          <article className="gbw-team-founder">
-            <div className="gbw-team-founder-photo">
-              <img src={FOUNDER.image} alt={FOUNDER.name} width={420} height={420} loading="lazy" decoding="async" />
-            </div>
-            <div className="gbw-team-founder-content">
-              <p className="gbw-team-eyebrow">Founder</p>
-              <h3>{FOUNDER.name}</h3>
-              <p className="gbw-team-role">{FOUNDER.role}</p>
-              <p className="gbw-team-expertise">{FOUNDER.expertise}</p>
-              <p className="gbw-team-description">
-                Guiding GBW's research-led approach to bioenergy policy, market intelligence,
-                lifecycle assessment, and low-carbon fuel analysis.
-              </p>
-              <ProfileLink member={FOUNDER} />
-            </div>
-          </article>
+        <section className="team-builders" aria-label="Development, design and media team">
+          {DEVELOPMENT_TEAM.map((member) => (
+            <article className="member" key={member.name}>
+              {member.image ? (
+                <img
+                  className={`av${member.name === "Rakibul Islam" ? " rakibul-portrait" : ""}`}
+                  src={member.image}
+                  alt={member.name}
+                  width={92}
+                  height={92}
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                <div
+                  className="av"
+                  role="img"
+                  aria-label={`Portrait placeholder for ${member.name}`}
+                  style={{
+                    width: 92,
+                    height: 92,
+                    display: "grid",
+                    placeItems: "center",
+                    borderRadius: "50%",
+                    background: "var(--surface-2)",
+                    color: "var(--foreground)",
+                    fontWeight: 800,
+                    fontSize: "1.4rem",
+                  }}
+                >
+                  JI
+                </div>
+              )
+              <h3>{member.name}</h3>
+              <span className="role">{member.role}</span>
+              <div className="team-profile-links">
+                <a
+                  className="profile-link"
+                  href={member.linkedinUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${member.name} on LinkedIn`}
+                >
+                  <Linkedin size={15} aria-hidden="true" />
+                  LinkedIn
+                </a>
+              </div>
+            </article>
+          ))}
         </section>
-        <section className="gbw-team-section" aria-labelledby="gbw-product">
-          <header className="gbw-team-section-header">
-            <span className="gbw-team-index">02 / Technology</span>
-            <h2 id="gbw-product">Technology & product development</h2>
-            <p>Building the digital experiences and research tools behind GBW and CIVanta.</p>
-          </header>
-          <div className="gbw-team-grid">
-            {PRODUCT_TEAM.map((member) => <TeamCard member={member} key={member.name} />)}
-          </div>
-        </section>
-
-        <aside className="gbw-team-collaborate" aria-label="Collaborate with GBW">
-          <div>
-            <p className="gbw-team-eyebrow">Research & collaboration</p>
-            <h2>Interested in working with GBW?</h2>
-            <p>Connect with us about bioenergy research, market intelligence, and potential collaboration.</p>
-          </div>
-          <a href="mailto:info@globalbioenergywatch.org">
-            <Mail size={17} aria-hidden="true" />
-            Contact GBW
-            <ArrowUpRight size={16} aria-hidden="true" />
-          </a>
-        </aside>
       </div>
     </InformationPage>
   );
