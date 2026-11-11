@@ -23,15 +23,6 @@ const FOUNDER: TeamMember = {
   expertise: "Bioenergy · Lifecycle assessment · Low-carbon fuels",
 };
 
-const RESEARCH_TEAM: TeamMember[] = [
-  {
-    name: "Chukwuemeka Valentine Okolo",
-    role: "Contributor",
-    image: "/team/chukwuemeka-okolo.jpg",
-    linkedin: "https://www.linkedin.com/in/chukwuemeka-valentine-okolo-9332a2a7/",
-  },
-];
-
 const PRODUCT_TEAM: TeamMember[] = [
   {
     name: "Shahnaeous Ali",
@@ -139,21 +130,9 @@ function TeamPage() {
             </div>
           </article>
         </section>
-
-        <section className="gbw-team-section" aria-labelledby="gbw-research">
-          <header className="gbw-team-section-header">
-            <span className="gbw-team-index">02 / Research</span>
-            <h2 id="gbw-research">Research & contributors</h2>
-            <p>Developing and sharing evidence-based perspectives on bioenergy and sustainability.</p>
-          </header>
-          <div className="gbw-team-grid">
-            {RESEARCH_TEAM.map((member) => <TeamCard member={member} key={member.name} />)}
-          </div>
-        </section>
-
         <section className="gbw-team-section" aria-labelledby="gbw-product">
           <header className="gbw-team-section-header">
-            <span className="gbw-team-index">03 / Technology</span>
+            <span className="gbw-team-index">02 / Technology</span>
             <h2 id="gbw-product">Technology & product development</h2>
             <p>Building the digital experiences and research tools behind GBW and CIVanta.</p>
           </header>
