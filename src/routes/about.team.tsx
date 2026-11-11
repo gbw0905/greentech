@@ -9,7 +9,7 @@ const DESCRIPTION =
 const LEADERSHIP = [
   {
     name: "Syed Asiful Alam, PhD",
-    role: "Founder & Editor",
+    role: "Founder",
     image: "/team/syed-asiful-alam.png",
     url: "https://www.linkedin.com/in/asifulalam0905024/",
   },
@@ -34,6 +34,12 @@ const DEVELOPMENT_TEAM = [
     role: "UI/UX",
     image: "/team/rakibul-islam-portrait.png",
     linkedinUrl: "https://www.linkedin.com/in/rakibul-islam-payel/",
+  },
+  {
+    name: "Jubaed Islam",
+    role: "Media Administrator",
+    image: null,
+    linkedinUrl: "https://www.linkedin.com/in/jubaed-islam-587213354/",
   },
 ];
 
@@ -90,18 +96,39 @@ function TeamPage() {
             </article>
           ))}
         </section>
-        <section className="team-builders" aria-label="Development and design team">
+        <section className="team-builders" aria-label="Development, design and media team">
           {DEVELOPMENT_TEAM.map((member) => (
             <article className="member" key={member.name}>
-              <img
-                className={`av${member.name === "Rakibul Islam" ? " rakibul-portrait" : ""}`}
-                src={member.image}
-                alt={member.name}
-                width={92}
-                height={92}
-                loading="lazy"
-                decoding="async"
-              />
+              {member.image ? (
+                <img
+                  className={`av${member.name === "Rakibul Islam" ? " rakibul-portrait" : ""}`}
+                  src={member.image}
+                  alt={member.name}
+                  width={92}
+                  height={92}
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                <div
+                  className="av"
+                  role="img"
+                  aria-label={`Portrait placeholder for ${member.name}`}
+                  style={{
+                    width: 92,
+                    height: 92,
+                    display: "grid",
+                    placeItems: "center",
+                    borderRadius: "50%",
+                    background: "var(--surface-2)",
+                    color: "var(--foreground)",
+                    fontWeight: 800,
+                    fontSize: "1.4rem",
+                  }}
+                >
+                  JI
+                </div>
+              )
               <h3>{member.name}</h3>
               <span className="role">{member.role}</span>
               <div className="team-profile-links">
