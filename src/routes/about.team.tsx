@@ -128,7 +128,7 @@ function TeamPage() {
                 >
                   JI
                 </div>
-              )
+              )}
               <h3>{member.name}</h3>
               <span className="role">{member.role}</span>
               <div className="team-profile-links">
