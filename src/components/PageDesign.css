@@ -726,12 +726,22 @@
   flex-wrap: wrap;
   column-gap: 20px;
 }
-.desk-design .team-builders .av,
-.desk-design .team-leadership img.av {
-  object-fit: cover;
+/* Text-only team cards: match alignment and spacing without portraits. */
+.desk-design .team-page .member {
+  justify-content: center;
+  min-height: 170px;
 }
-.desk-design .team-builders .rakibul-portrait {
-  object-position: center 10%;
+.desk-design .team-page .member h3 {
+  margin-top: 0;
+}
+.desk-design .team-page .member.lead {
+  flex-direction: column;
+  text-align: center;
+  align-items: center;
+  gap: 10px;
+}
+.desk-design .team-page .member.lead .profile-link {
+  margin-inline: auto;
 }
 @media (max-width: 900px) {
   .desk-design .team-leadership {
