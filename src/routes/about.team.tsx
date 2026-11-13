@@ -13,6 +13,12 @@ const LEADERSHIP = [
     image: "/team/syed-asiful-alam.png",
     url: "https://www.linkedin.com/in/asifulalam0905024/",
   },
+  {
+    name: "Chukwuemeka Valentine Okolo",
+    role: "Contributor",
+    image: "/team/chukwuemeka-okolo.jpg",
+    url: "https://www.linkedin.com/in/chukwuemeka-valentine-okolo-9332a2a7/",
+  },
 ];
 
 // Local copies of each member's LinkedIn profile portrait.
@@ -67,7 +73,7 @@ function TeamPage() {
       subtitle="The people who build, curate, and verify the Global Bioenergy Watch desk."
     >
       <div className="team-page">
-        <section className="team-leadership" aria-label="Founder">
+        <section className="team-leadership" aria-label="Founder and contributor">
           {LEADERSHIP.map((member) => (
             <article className="member lead" key={member.name}>
               <img
