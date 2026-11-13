@@ -30,7 +30,7 @@ function PrivacyPage() {
     >
       <section className="legal-document">
         <div className="space-y-6 text-sm/relaxed text-muted-foreground">
-          <p className="font-semibold text-foreground">Last updated: September 2026</p>
+          <p className="font-semibold text-foreground">Last updated: November 2026</p>
 
           <div>
             <h2 className="font-display text-lg font-extrabold tracking-tight text-foreground">
@@ -98,6 +98,12 @@ function PrivacyPage() {
                 <strong>Analytics cookies.</strong> Help us count visits, measure traffic sources,
                 and understand how users move through the Site. These are generally first-party or
                 privacy-focused analytics tools.
+              </li>
+              <li>
+                <strong>PostHog analytics (when enabled).</strong> We use PostHog to measure
+                anonymous page views and navigation on public GBW pages. The integration
+                disables session recording, click and form autocapture, and browser
+                persistence. Calculator inputs and authentication pages are not tracked.
               </li>
               <li>
                 <strong>Functional storage.</strong> Local storage may be used to cache calculator

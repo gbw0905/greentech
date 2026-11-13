@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { useMatches, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { PageMotion } from "@/components/PageMotion";
+import { PostHogPageviews } from "@/features/analytics/PostHogPageviews";
 import { SiteHeader } from "@/components/SiteHeader";
 import { IntelligenceFooter } from "@/components/IntelligenceFooter";
 import { feedQueryWithInitial } from "@/features/policy/feed-query";
@@ -25,6 +26,7 @@ export function SiteLayout({ children }: { children: ReactNode }) {
       id="top"
       className="site-shell flex min-h-screen flex-col"
     >
+      <PostHogPageviews />
       <div className="site-chrome">
         <SiteHeader
           activeSection={
