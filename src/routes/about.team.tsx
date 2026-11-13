@@ -10,41 +10,35 @@ const LEADERSHIP = [
   {
     name: "Syed Asiful Alam, PhD",
     role: "Founder",
-    image: "/team/syed-asiful-alam.png",
     url: "https://www.linkedin.com/in/asifulalam0905024/",
   },
   {
     name: "Chukwuemeka Valentine Okolo",
-    role: "Contributor",
-    image: "/team/chukwuemeka-okolo.jpg",
+    role: "Analyst",
     url: "https://www.linkedin.com/in/chukwuemeka-valentine-okolo-9332a2a7/",
   },
 ];
 
-// Local copies of each member's LinkedIn profile portrait.
+// Development, design and media contributors.
 const DEVELOPMENT_TEAM = [
   {
     name: "Shahnaeous Ali",
     role: "Lead Developer",
-    image: "/team/shahnaeous-ali-linkedin.jpg",
     linkedinUrl: "https://www.linkedin.com/in/shahneous-ali-0b3a53349/",
   },
   {
     name: "Muhammad Asif",
     role: "Developer",
-    image: "/team/muhammad-asif-linkedin.png",
     linkedinUrl: "https://www.linkedin.com/in/asifhasan973/",
   },
   {
     name: "Rakibul Islam",
     role: "UI/UX",
-    image: "/team/rakibul-islam-portrait.png",
     linkedinUrl: "https://www.linkedin.com/in/rakibul-islam-payel/",
   },
   {
     name: "Jubaed Islam",
     role: "Media Administrator",
-    image: null,
     linkedinUrl: "https://www.linkedin.com/in/jubaed-islam-587213354/",
   },
 ];
@@ -73,18 +67,9 @@ function TeamPage() {
       subtitle="The people who build, curate, and verify the Global Bioenergy Watch desk."
     >
       <div className="team-page">
-        <section className="team-leadership" aria-label="Founder and contributor">
+        <section className="team-leadership" aria-label="Founder and analyst">
           {LEADERSHIP.map((member) => (
             <article className="member lead" key={member.name}>
-              <img
-                className="av"
-                src={member.image}
-                alt={member.name}
-                width={112}
-                height={112}
-                loading="lazy"
-                decoding="async"
-              />
               <div>
                 <h2>{member.name}</h2>
                 <span className="role">{member.role}</span>
@@ -105,36 +90,6 @@ function TeamPage() {
         <section className="team-builders" aria-label="Development, design and media team">
           {DEVELOPMENT_TEAM.map((member) => (
             <article className="member" key={member.name}>
-              {member.image ? (
-                <img
-                  className={`av${member.name === "Rakibul Islam" ? " rakibul-portrait" : ""}`}
-                  src={member.image}
-                  alt={member.name}
-                  width={92}
-                  height={92}
-                  loading="lazy"
-                  decoding="async"
-                />
-              ) : (
-                <div
-                  className="av"
-                  role="img"
-                  aria-label={`Portrait placeholder for ${member.name}`}
-                  style={{
-                    width: 92,
-                    height: 92,
-                    display: "grid",
-                    placeItems: "center",
-                    borderRadius: "50%",
-                    background: "var(--surface-2)",
-                    color: "var(--foreground)",
-                    fontWeight: 800,
-                    fontSize: "1.4rem",
-                  }}
-                >
-                  JI
-                </div>
-              )}
               <h3>{member.name}</h3>
               <span className="role">{member.role}</span>
               <div className="team-profile-links">
