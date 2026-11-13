@@ -78,9 +78,25 @@ function initAnonymousPostHog(token: string): PostHogQueue {
     // auth tokens, email addresses, or URL search/query parameters.
     before_send: (event: { event: string; properties?: Record<string, unknown> }) => {
       if (event.event !== "$pageview") return null;
+      const props = event.properties ?? {};
+      // Preserve only navigation/session/device/source fields needed for web analytics.
+      // Never forward raw referrer URLs, query strings, DOM content, or form values.
+      const allow = [
+        "$session_id", "$window_id", "$device_type", "$browser", "$os",
+        "$referring_domain", "$initial_referring_domain",
+        "utm_source", "utm_medium", "utm_campaign",
+        "$utm_source", "$utm_medium", "$utm_campaign",
+      ];
+      const safe: Record<string, unknown> = {};
+      for (const key of allow) {
+        if (typeof props[key] === "string" || typeof props[key] === "number") {
+          safe[key] = props[key];
+        }
+      }
       return {
         ...event,
         properties: {
+          ...safe,
           $current_url: `${window.location.origin}${window.location.pathname}`,
           $host: window.location.hostname,
           $pathname: window.location.pathname,
