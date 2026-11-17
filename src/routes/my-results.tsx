@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { usePostHog } from "@posthog/react";
 import { LayoutDashboard, Trash2, ArrowRight } from "lucide-react";
 import { AccountLayout } from "@/features/account/AccountLayout";
 import { usePremium } from "@/features/premium/hooks/usePremium";
@@ -42,6 +43,7 @@ function savingPct(run: SavedCiRun, p: SavedProgram) {
 function MyResultsPage() {
   const { signedIn, premium, loading } = usePremium();
   const queryClient = useQueryClient();
+  const posthog = usePostHog();
 
   const {
     data: runs,
@@ -56,7 +58,10 @@ function MyResultsPage() {
 
   const remove = useMutation({
     mutationFn: (id: string) => deleteCiRunFn({ data: { id } }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["ci-runs"] }),
+    onSuccess: () => {
+      posthog.capture("ci_run_deleted");
+      return queryClient.invalidateQueries({ queryKey: ["ci-runs"] });
+    },
   });
 
   const list = runs ?? [];

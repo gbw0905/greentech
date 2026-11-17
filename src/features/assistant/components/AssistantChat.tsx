@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useChat } from "@ai-sdk/react";
+import { usePostHog } from "@posthog/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import {
   Conversation,
@@ -53,6 +54,7 @@ export function AssistantChat({
   const guestSessionId = useRef(crypto.randomUUID()).current;
   const chatId = threadId ?? guestSessionId;
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const posthog = usePostHog();
 
   const { messages, sendMessage, status, error } = useChat({
     id: chatId,
@@ -71,10 +73,11 @@ export function AssistantChat({
     (text: string) => {
       const value = text.trim();
       if (!value || busy) return;
+      posthog.capture("assistant_message_sent");
       void sendMessage({ text: value });
       requestAnimationFrame(() => inputRef.current?.focus());
     },
-    [busy, sendMessage],
+    [busy, posthog, sendMessage],
   );
 
   const errorMessage = useMemo(() => {

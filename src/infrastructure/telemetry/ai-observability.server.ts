@@ -11,7 +11,7 @@ const projectToken =
 const host = process.env.VITE_PUBLIC_POSTHOG_HOST ?? import.meta.env.VITE_PUBLIC_POSTHOG_HOST;
 
 export const posthogSpanProcessor = projectToken
-  ? new PostHogSpanProcessor({ projectToken, host })
+  ? new PostHogSpanProcessor({ projectToken, host, privacyMode: false })
   : null;
 
 if (!projectToken) {

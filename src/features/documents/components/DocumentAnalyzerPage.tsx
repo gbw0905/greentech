@@ -14,6 +14,7 @@ import {
   Eye,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { usePostHog } from "@posthog/react";
 import { IntelligencePage } from "@/components/IntelligencePage";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -52,6 +53,7 @@ function parseSourcePage(source: string): number {
 
 export function DocumentAnalyzerPage() {
   const { signedIn, loading: authLoading } = useAuthSession();
+  const posthog = usePostHog();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -199,9 +201,13 @@ export function DocumentAnalyzerPage() {
             error: `Document analysis failed on the server (${response.status}). Check the Vercel function logs for /api/document-analyze.`,
           } as DocumentAnalysis & { error?: string });
       if (!response.ok) throw new Error(payload.error || "Analysis failed.");
-      setAnalysis(payload);
       // Keep the file object for the viewer
       const ext = file.name.toLowerCase().split(".").pop() ?? "pdf";
+      posthog.capture("document_analysis_completed", {
+        document_type: ext,
+        keyword_count: keywords.length,
+      });
+      setAnalysis(payload);
       setViewerSource(file);
       setViewerFileType(ext);
       fetchHistory();

@@ -20,6 +20,7 @@ export function getPostHogClient() {
     posthogClient = new PostHog(token, {
       host: process.env.VITE_PUBLIC_POSTHOG_HOST ?? import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
       enableExceptionAutocapture: true,
+      privacyMode: false,
       flushAt: 1,
       flushInterval: 0,
       requestTimeout: 2000,

@@ -1,16 +1,21 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { usePostHog } from "@posthog/react";
 import { Check, Loader2, Mail } from "lucide-react";
 import { requestPolicyBrief } from "@/features/alerts/server-functions";
 
 export function BriefRequestButton({ updateId }: { updateId: string }) {
   const request = useServerFn(requestPolicyBrief);
+  const posthog = usePostHog();
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
 
   const mutation = useMutation({
     mutationFn: (input: { email: string; updateId: string }) => request({ data: input }),
+    onSuccess: (result) => {
+      if (result.status === "sent") posthog.capture("brief_request_completed");
+    },
   });
 
   const status = mutation.data?.status;
