@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
+import { usePostHog } from "@posthog/react";
 import { Download, Lock } from "lucide-react";
 import { downloadBrandedCsv, type BrandedExport } from "@/shared/export/branded-export";
 import { SignInPrompt } from "@/features/auth/components/SignInPrompt";
@@ -17,6 +18,7 @@ export function ExportCsvButton({
   portalTarget?: HTMLElement | null;
 }) {
   const { signedIn, loading } = useAuthSession();
+  const posthog = usePostHog();
   const [askSignIn, setAskSignIn] = useState(false);
 
   const prompt =
@@ -32,6 +34,7 @@ export function ExportCsvButton({
             return;
           }
           downloadBrandedCsv(build());
+          posthog.capture("csv_export_downloaded");
         }}
         disabled={disabled || loading}
         title={signedIn ? "Download the current view as CSV" : "Sign in to download CSV"}

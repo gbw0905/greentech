@@ -3,6 +3,7 @@ import "@/infrastructure/telemetry/error-capture";
 import type ExcelJS from "exceljs";
 import { cellText } from "@/features/documents/cell-text";
 import type { DocumentAnalysis } from "@/features/documents/contracts";
+import { captureGeminiGeneration } from "@/infrastructure/telemetry/ai-observability.server";
 
 export const MAX_FILE_BYTES = 15 * 1024 * 1024;
 const MAX_EXTRACTED_CHARS = 500_000;
@@ -231,7 +232,11 @@ export function tokenUsage(payload: unknown) {
   };
 }
 
-export async function analyzeDocument(file: File, query: string): Promise<DocumentAnalysis> {
+export async function analyzeDocument(
+  file: File,
+  query: string,
+  distinctId?: string,
+): Promise<DocumentAnalysis> {
   const apiKey = process.env["GEMINI_API_KEY"];
   if (!apiKey) throw new Error("GEMINI_API_KEY is not configured on the server.");
   const keywords = parseKeywords(query);
@@ -273,6 +278,7 @@ DOCUMENT EVIDENCE:
 ${evidenceText}`;
 
   const model = process.env["GEMINI_TEXT_MODEL"] || "gemini-3.8-flash";
+  const startedAt = Date.now();
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
     {
@@ -327,6 +333,16 @@ ${evidenceText}`;
   const responsePayload = await response.json();
   const raw = responseText(responsePayload);
   if (!raw) throw new Error("Gemini returned an empty response.");
+  await captureGeminiGeneration({
+    spanName: "document_analysis",
+    model,
+    input: prompt,
+    output: raw,
+    response: responsePayload,
+    startedAt,
+    distinctId,
+    maxTokens: 4096,
+  });
   let parsed: Pick<
     DocumentAnalysis,
     "found" | "answer" | "keyPoints" | "citations" | "connections"

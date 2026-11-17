@@ -2,6 +2,7 @@
 
 import { sourcesFor } from "@/shared/data/data-sources";
 import type { SummaryRequest } from "@/features/chart-summary/contracts";
+import { captureGeminiGeneration } from "@/infrastructure/telemetry/ai-observability.server";
 
 const MODEL = "gemini-3.8-flash";
 
@@ -40,10 +41,15 @@ function prompt(r: SummaryRequest) {
   ].join("\n");
 }
 
-export async function generateChartSummary(req: SummaryRequest): Promise<string> {
+export async function generateChartSummary(
+  req: SummaryRequest,
+  distinctId?: string,
+): Promise<string> {
   const apiKey = process.env["GEMINI_API_KEY"];
   if (!apiKey) throw new Error("AI is not configured for this site.");
 
+  const input = prompt(req);
+  const startedAt = Date.now();
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`,
     {
@@ -57,7 +63,7 @@ export async function generateChartSummary(req: SummaryRequest): Promise<string>
             },
           ],
         },
-        contents: [{ role: "user", parts: [{ text: prompt(req) }] }],
+        contents: [{ role: "user", parts: [{ text: input }] }],
       }),
     },
   );
@@ -74,5 +80,14 @@ export async function generateChartSummary(req: SummaryRequest): Promise<string>
   };
   const text = json.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
   if (!text) throw new Error("The summary came back empty — please try again.");
+  await captureGeminiGeneration({
+    spanName: "chart_summary",
+    model: MODEL,
+    input,
+    output: text,
+    response: json,
+    startedAt,
+    distinctId,
+  });
   return text;
 }

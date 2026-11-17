@@ -50,7 +50,8 @@ export function AssistantChat({
   onActivity?: () => void;
   compact?: boolean;
 }) {
-  const chatId = threadId ?? "guest";
+  const guestSessionId = useRef(crypto.randomUUID()).current;
+  const chatId = threadId ?? guestSessionId;
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const { messages, sendMessage, status, error } = useChat({

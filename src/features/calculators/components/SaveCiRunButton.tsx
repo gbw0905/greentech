@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import { usePostHog } from "@posthog/react";
 import { Check, Save } from "lucide-react";
 import { saveCiRunFn, type SavedProgram } from "@/features/calculators/server-functions";
 
@@ -23,13 +24,22 @@ export function SaveCiRunButton({ build }: { build: () => CiRunPayload }) {
   const [name, setName] = useState("");
   const [saved, setSaved] = useState(false);
   const queryClient = useQueryClient();
+  const posthog = usePostHog();
 
   const save = useMutation({
     mutationFn: async () => {
       const payload = build();
-      return saveCiRunFn({ data: { ...payload, name: name.trim() || payload.pathwayLabel } });
+      await saveCiRunFn({
+        data: { ...payload, name: name.trim() || payload.pathwayLabel },
+      });
+      return payload;
     },
-    onSuccess: () => {
+    onSuccess: (payload) => {
+      posthog.capture("ci_run_saved", {
+        pathway_id: payload.pathwayId,
+        program_count: payload.programs.length,
+        ci_total: payload.ciTotal,
+      });
       setSaved(true);
       setName("");
       queryClient.invalidateQueries({ queryKey: ["ci-runs"] });
