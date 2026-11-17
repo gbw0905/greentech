@@ -1,4 +1,5 @@
 import type { TablesUpdate } from "@/integrations/supabase/types";
+import { captureGeminiGeneration } from "@/infrastructure/telemetry/ai-observability.server";
 
 const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 
@@ -62,6 +63,7 @@ Respond with valid JSON only, no markdown.`;
     if (!apiKey) return { slug, ok: false, fieldsUpdated: [], error: "no GEMINI_API_KEY" };
 
     const model = "gemini-3.8-flash";
+    const startedAt = Date.now();
     const res = await fetch(
       `${GEMINI_URL}/${model}:generateContent?key=${apiKey}`,
       {
@@ -81,6 +83,16 @@ Respond with valid JSON only, no markdown.`;
 
     const json = await res.json();
     const raw = json.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
+    await captureGeminiGeneration({
+      spanName: "country_profile_enrichment",
+      model,
+      input: prompt,
+      output: raw,
+      response: json,
+      startedAt,
+      maxTokens: 1024,
+      temperature: 0.2,
+    });
     const cleaned = raw.replace(/```json\n?|\n?```/g, "").trim();
     const updates = JSON.parse(cleaned);
 

@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { captureGeminiGeneration } from "@/infrastructure/telemetry/ai-observability.server";
 
 export interface MarketOutlookPoint {
   t: number;
@@ -53,6 +54,7 @@ export const marketOutlookFn = createServerFn({ method: "POST" })
     ].join("\n");
 
     const model = "gemini-3.8-flash";
+    const startedAt = Date.now();
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
       {
@@ -83,5 +85,14 @@ export const marketOutlookFn = createServerFn({ method: "POST" })
     };
     const text = json.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
     if (!text) throw new Error("The outlook came back empty — please try again.");
+    await captureGeminiGeneration({
+      spanName: "market_outlook",
+      model,
+      input: userPrompt,
+      output: text,
+      response: json,
+      startedAt,
+      distinctId: context.userId,
+    });
     return { outlook: text };
   });

@@ -2,6 +2,7 @@ import "@/infrastructure/telemetry/error-capture";
 
 import type { ExplainSelectionRequest, SelectionExplanation } from "@/features/documents/contracts";
 import { responseText } from "@/features/documents/server/analyze-document.server";
+import { captureGeminiGeneration } from "@/infrastructure/telemetry/ai-observability.server";
 
 const MAX_SELECTION_CHARS = 2_000;
 const MAX_CONTEXT_CHARS = 6_000;
@@ -30,7 +31,10 @@ function parseRequest(body: unknown): ExplainSelectionRequest {
   };
 }
 
-export async function explainSelection(body: unknown): Promise<SelectionExplanation> {
+export async function explainSelection(
+  body: unknown,
+  distinctId?: string,
+): Promise<SelectionExplanation> {
   const apiKey = process.env["GEMINI_API_KEY"];
   if (!apiKey) throw new Error("GEMINI_API_KEY is not configured on the server.");
   const request = parseRequest(body);
@@ -61,6 +65,7 @@ SELECTION:
 ${request.selection}`;
 
   const model = process.env["GEMINI_TEXT_MODEL"] || "gemini-3.8-flash";
+  const startedAt = Date.now();
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
     {
@@ -98,8 +103,19 @@ ${request.selection}`;
     const detail = (await response.text()).slice(0, 500);
     throw new Error(`Gemini request failed (${response.status}): ${detail}`);
   }
-  const raw = responseText(await response.json());
+  const responsePayload = await response.json();
+  const raw = responseText(responsePayload);
   if (!raw) throw new Error("Gemini returned an empty response.");
+  await captureGeminiGeneration({
+    spanName: "document_selection_explanation",
+    model,
+    input: prompt,
+    output: raw,
+    response: responsePayload,
+    startedAt,
+    distinctId,
+    maxTokens: 2048,
+  });
   let parsed: Partial<SelectionExplanation>;
   try {
     parsed = JSON.parse(raw) as typeof parsed;
@@ -139,7 +155,7 @@ export async function handleExplainSelection(request: Request): Promise<Response
     }
     const { assertAiQuota } = await import("@/infrastructure/ai/quota.server");
     assertAiQuota(`document-explain:${userId}`, 10);
-    const result = await explainSelection(await request.json());
+    const result = await explainSelection(await request.json(), userId);
     return Response.json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Explanation failed.";

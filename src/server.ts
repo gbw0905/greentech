@@ -1,6 +1,12 @@
+import "./infrastructure/telemetry/ai-observability.server";
 import "./infrastructure/telemetry/error-capture";
 
 import { consumeLastCapturedError } from "./infrastructure/telemetry/error-capture";
+import {
+  logServerEntryInitialized,
+  logSsrFallbackRendered,
+  logSsrRequestFailed,
+} from "./infrastructure/telemetry/posthog-logs.server";
 import { renderErrorPage } from "@/shared/errors/error-page";
 
 type ServerEntry = {
@@ -11,9 +17,10 @@ let serverEntryPromise: Promise<ServerEntry> | undefined;
 
 async function getServerEntry(): Promise<ServerEntry> {
   if (!serverEntryPromise) {
-    serverEntryPromise = import("@tanstack/react-start/server-entry").then(
-      (m) => (m.default ?? m) as ServerEntry,
-    );
+    serverEntryPromise = import("@tanstack/react-start/server-entry").then((m) => {
+      logServerEntryInitialized();
+      return (m.default ?? m) as ServerEntry;
+    });
   }
   return serverEntryPromise;
 }
@@ -29,6 +36,7 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   if (!isH3SwallowedErrorBody(body)) return response;
 
   console.error(consumeLastCapturedError() ?? new Error(`h3 swallowed SSR error: ${body}`));
+  logSsrFallbackRendered();
   return new Response(renderErrorPage(), {
     status: 500,
     headers: { "content-type": "text/html; charset=utf-8" },
@@ -52,6 +60,7 @@ export default {
       return await normalizeCatastrophicSsrResponse(response);
     } catch (error) {
       console.error(error);
+      logSsrRequestFailed();
       return new Response(renderErrorPage(), {
         status: 500,
         headers: { "content-type": "text/html; charset=utf-8" },

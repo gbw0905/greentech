@@ -1,6 +1,7 @@
 // Generates and caches AI briefs for policy/market updates.
 
 import type { BriefSource } from "@/features/alerts/contracts";
+import { captureGeminiGeneration } from "@/infrastructure/telemetry/ai-observability.server";
 
 const MODEL = "gemini-3.8-flash";
 
@@ -28,6 +29,8 @@ export async function getOrCreateBrief(update: BriefSource): Promise<string> {
   const apiKey = process.env["GEMINI_API_KEY"];
   if (!apiKey) throw new Error("GEMINI_API_KEY is not configured");
 
+  const input = prompt(update);
+  const startedAt = Date.now();
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`,
     {
@@ -41,7 +44,7 @@ export async function getOrCreateBrief(update: BriefSource): Promise<string> {
             },
           ],
         },
-        contents: [{ role: "user", parts: [{ text: prompt(update) }] }],
+        contents: [{ role: "user", parts: [{ text: input }] }],
       }),
     },
   );
@@ -56,6 +59,14 @@ export async function getOrCreateBrief(update: BriefSource): Promise<string> {
   };
   const text = json.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
   if (!text) throw new Error("AI brief returned empty text");
+  await captureGeminiGeneration({
+    spanName: "policy_brief",
+    model: MODEL,
+    input,
+    output: text,
+    response: json,
+    startedAt,
+  });
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   await supabaseAdmin
