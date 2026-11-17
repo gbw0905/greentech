@@ -47,6 +47,10 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   useEffect(() => {
     console.error("Root error boundary caught:", error);
     posthog.captureException(error);
+    posthog.logger.error("root_error_boundary_rendered", {
+      error_type: error instanceof Error ? error.name : "unknown_error",
+      recovery_available: true,
+    });
   }, [error, posthog]);
 
   return (
@@ -61,6 +65,9 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
+              posthog.logger.info("root_error_recovery_requested", {
+                recovery_method: "router_invalidate",
+              });
               router.invalidate();
               reset();
             }}
@@ -193,6 +200,10 @@ function RootShell({ children }: { children: ReactNode }) {
               defaults: "2026-08-30",
               capture_exceptions: true,
               debug: import.meta.env.DEV,
+              logs: {
+                serviceName: "global-bioenergy-watch-web",
+                environment: import.meta.env.MODE,
+              },
               tracing_headers:
                 typeof window !== "undefined" ? [window.location.hostname] : [],
             }}

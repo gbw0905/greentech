@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { usePostHog } from "@posthog/react";
 import { type FuelType } from "@/features/policy/taxonomy";
 import { LiveMediaFeed } from "@/features/videos/components/LiveMediaFeed";
 import { VideoWatchView } from "@/features/videos/components/VideoWatchView";
@@ -37,6 +38,7 @@ export const Route = createFileRoute("/videos")({
 
 function VideosPage() {
   useVisitTracker();
+  const posthog = usePostHog();
   const [fuels, setFuels] = useState<FuelType[]>([]);
   const [countries, setCountries] = useState<string[]>([]);
   const { watch, view } = Route.useSearch();
@@ -82,6 +84,7 @@ function VideosPage() {
   }, [watch, view]);
   const playVideo = (video: LiveVideo) => {
     if (!/^[\w-]{11}$/.test(video.id)) return;
+    posthog.capture("video_watched", { video_kind: video.kind });
     if (!watch && view !== "history") {
       lastVideoTrigger.current =
         document.activeElement instanceof HTMLElement ? document.activeElement : null;

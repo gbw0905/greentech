@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { usePostHog } from "@posthog/react";
 import { Copy, Check, Loader2, Sparkles, X } from "lucide-react";
 import type { ExplainSelectionRequest, SelectionExplanation } from "@/features/documents/contracts";
 import { readableText } from "./text-match";
@@ -51,6 +52,7 @@ export function SelectionExplain({
   context: ExplainContext | undefined;
   children: ReactNode;
 }) {
+  const posthog = usePostHog();
   const shellRef = useRef<HTMLDivElement>(null);
   const cache = useRef(new Map<string, SelectionExplanation>());
   const requestId = useRef(0);
@@ -94,6 +96,9 @@ export function SelectionExplain({
   const explain = async () => {
     if (!pending || !context) return;
     const { selection, location } = pending;
+    posthog.capture("document_selection_explained", {
+      selection_length: selection.length,
+    });
     const body: ExplainSelectionRequest = {
       selection,
       context: pending.context,
