@@ -254,3 +254,99 @@
     transform: none;
   }
 }
+
+
+/* Unified CIVanta studio preview – original tools remain available below. */
+.civanta-page--studio {
+  display: block;
+  min-height: 0;
+  background: #f4f9f7;
+  background-image: none;
+  color: #123540;
+  padding: 30px 22px 64px;
+}
+.civanta-page--studio .civanta-shell { max-width: 1520px; }
+.civanta-page--studio .civanta-intro {
+  padding: 4px 0 21px;
+  border-bottom: 1px solid #d9e8e0;
+  color: #123540;
+}
+.civanta-page--studio .civanta-intro h1 { font-size: clamp(36px,4vw,53px); }
+.civanta-page--studio .civanta-intro h1 > span { color: #08785a; }
+.civanta-page--studio .civanta-description { color: #5a7675; font-size: 17px; }
+.civanta-page--studio .civanta-history-link {
+  background: #fff;
+  border: 1px solid #c5ddd4;
+  color: #126b55;
+  font-size: 14px;
+}
+.civanta-page--studio .civanta-history-link:hover { background: #e9f5ee; }
+.civanta-studio-section { margin-top: 22px; }
+.civanta-studio-section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  padding: 0 4px 17px;
+}
+.civanta-studio-section-heading h2 {
+  margin: 0 0 4px;
+  color: #133940;
+  font-size: clamp(21px,2.7vw,28px);
+  line-height: 1.22;
+}
+.civanta-studio-section-heading p {
+  max-width: 830px;
+  margin: 0;
+  color: #59736d;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.civanta-studio-section-heading > span {
+  display: inline-flex;
+  border-radius: 99px;
+  padding: 7px 12px;
+  background: #e8f2ed;
+  border: 1px solid #c3ded0;
+  color: #166c54;
+  font-size: 12px;
+  font-weight: 700;
+}
+.civanta-studio-frame {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid #d7e9e0;
+  border-radius: 18px;
+  background: white;
+  box-shadow: 0 12px 45px rgb(13 79 52 / 6%);
+}
+.civanta-studio-disclaimer {
+  color: #4d6967;
+  font-size: 13px;
+  line-height: 1.65;
+  margin: 12px 4px 24px;
+}
+.civanta-legacy-tools {
+  background: white;
+  padding: 17px 20px 24px;
+  border: 1px solid #d6e6e0;
+  border-radius: 15px;
+  margin-top: 20px;
+}
+.civanta-legacy-tools summary {
+  cursor: pointer;
+  font-weight: 750;
+  color: #15664e;
+}
+.civanta-page--studio .civanta-legacy-tools .civanta-tool {
+  min-height: 245px;
+  box-shadow: 0 10px 25px rgb(11 43 42 / 8%);
+}
+@media (max-width: 760px) {
+  .civanta-page--studio { padding: 16px 10px 40px; }
+  .civanta-studio-section-heading { padding-inline: 4px; }
+  .civanta-studio-frame { border-radius: 12px; }
+  .civanta-legacy-tools { padding: 15px 13px 18px; }
+}
