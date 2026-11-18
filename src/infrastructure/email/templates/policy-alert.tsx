@@ -18,6 +18,8 @@ interface Props {
   dateLabel?: string;
   items?: Item[];
   unsubscribeUrl?: string;
+  /** Reuse the exact newsletter design for the editorial desk daily flyer. */
+  edition?: "subscriber" | "desk-flyer";
 }
 
 const WEB_URL = "https://www.globalbioenergywatch.org";
@@ -125,7 +127,8 @@ function UpdateContent({
   );
 }
 
-const PolicyAlert = ({ dateLabel = "", items = [], unsubscribeUrl }: Props) => {
+export const PolicyAlert = ({ dateLabel = "", items = [], unsubscribeUrl, edition = "subscriber" }: Props) => {
+  const isDeskFlyer = edition === "desk-flyer";
   const featured = items.slice(0, 2);
   const remaining = items.slice(2);
   const unsubscribeLink = safeUrl(unsubscribeUrl);
@@ -135,7 +138,7 @@ const PolicyAlert = ({ dateLabel = "", items = [], unsubscribeUrl }: Props) => {
         <style>{'@media only screen and (max-width:540px){.gbw-photo{display:none!important;width:0!important;max-width:0!important;overflow:hidden!important}.gbw-editorial{width:100%!important}.gbw-headline{font-size:34px!important;line-height:1.09!important}}'}</style>
       </Head>
       <Preview>
-        {"The Bioenergy Brief: " + items.length + " updates | " + dateLabel}
+        {(isDeskFlyer ? "GBW Daily Flyer: " : "The Bioenergy Brief: ") + items.length + " updates | " + dateLabel}
       </Preview>
       <Body style={styles.page}>
         <Container style={styles.container}>
@@ -160,14 +163,15 @@ const PolicyAlert = ({ dateLabel = "", items = [], unsubscribeUrl }: Props) => {
               </td>
               <td className="gbw-editorial" valign="top"
                 style={{ padding: "28px 25px 15px", verticalAlign: "top", backgroundColor: GREEN }}>
-                <Text style={styles.eyebrow}>POLICY  |  MARKETS  |  SUSTAINABLE FUELS</Text>
+                <Text style={styles.eyebrow}>{isDeskFlyer ? "DAILY FLYER  |  POLICY  |  MARKETS" : "POLICY  |  MARKETS  |  SUSTAINABLE FUELS"}</Text>
                 <Heading as="h1" className="gbw-headline" style={styles.darkTitle}>
-                  The Daily Bioenergy Brief.
+                  {isDeskFlyer ? "The Daily Bioenergy Flyer." : "The Daily Bioenergy Brief."}
                 </Heading>
                 <Text style={styles.issue}>{dateLabel || "Global edition"}</Text>
                 <Text style={styles.intro}>
-                  Renewable fuel policy, market dynamics and compliance developments,
-                  brought together in one concise daily intelligence digest.
+                  {isDeskFlyer
+                    ? "Your editorial desk roundup of bioenergy policy and market headlines. Review each original source before sharing or publishing."
+                    : "Renewable fuel policy, market dynamics and compliance developments, brought together in one concise daily intelligence digest."}
                 </Text>
                 {featured.map((item, index) => (
                   <UpdateContent key={index} item={item} index={index} dark={true} />
@@ -186,17 +190,16 @@ const PolicyAlert = ({ dateLabel = "", items = [], unsubscribeUrl }: Props) => {
           </Section>
           <Section style={styles.footer}>
             <Text style={styles.footerText}>
-              You are receiving this message because you subscribed to Global Bioenergy
-              Watch's daily policy and market brief. These summaries may be AI-assisted
-              and can contain errors or omissions. Verify numbers, effective dates and
-              compliance requirements against the original authority before acting.
+              {isDeskFlyer
+                ? "This daily flyer is prepared for the GBW editorial desk. Summaries may be AI-assisted and can contain errors or omissions. Verify the original sources before posting, citing figures, or acting on regulatory information."
+                : "You are receiving this message because you subscribed to Global Bioenergy Watch\'s daily policy and market brief. These summaries may be AI-assisted and can contain errors or omissions. Verify numbers, effective dates and compliance requirements against the original authority before acting."}
             </Text>
             <Text style={styles.footerText}>
               Global Bioenergy Watch · <Link href={WEB_URL} style={styles.footerLink}>
                 globalbioenergywatch.org
               </Link>
             </Text>
-            {unsubscribeLink ? (
+            {!isDeskFlyer && unsubscribeLink ? (
               <Text style={styles.footerText}>
                 Prefer not to receive these?{" "}
                 <Link href={unsubscribeLink} style={styles.footerLink}>
