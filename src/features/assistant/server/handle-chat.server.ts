@@ -3,7 +3,6 @@ import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from 
 import { ASSISTANT_MODEL, SYSTEM_PROMPT, assistantTools } from "./assistant.server";
 import { userIdFromRequest } from "@/features/auth/server/user-from-request.server";
 import { assertAiQuota } from "@/infrastructure/ai/quota.server";
-import { posthogSpanProcessor } from "@/infrastructure/telemetry/ai-observability.server";
 
 function firstText(message: UIMessage | undefined) {
   if (!message) return "";
@@ -100,8 +99,6 @@ export async function handleChatRequest(request: Request) {
         if (userId && threadId) await persist(userId, threadId, finalMessages);
       } catch (e) {
         console.error("assistant persist failed", e);
-      } finally {
-        if (posthogSpanProcessor) await posthogSpanProcessor.forceFlush().catch(() => {});
       }
     },
   });
