@@ -59,6 +59,37 @@ export const confirmAlertSubscription = createServerFn({ method: "GET" })
     return { ok: true as const, email: rows[0]!.email };
   });
 
+const unsubscribeSchema = z.object({
+  token: z.string().regex(/^[a-f0-9]{48}$/i, "Invalid subscription link"),
+});
+
+/**
+ * Changes a confirmed subscriber back to an unconfirmed state and rotates the
+ * bearer token, preventing old email links from being reused.
+ *
+ * Deliberately POST-only: link-scanning bots that prefetch an email URL must
+ * not trigger an unsubscribe.
+ */
+export const unsubscribeFromAlerts = createServerFn({ method: "POST" })
+  .validator((data: unknown) => unsubscribeSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { randomBytes } = await import("node:crypto");
+    const { data: row, error } = await supabaseAdmin
+      .from("alert_subscribers")
+      .update({
+        confirmed_at: null,
+        confirm_token: randomBytes(24).toString("hex"),
+      })
+      .eq("confirm_token", data.token)
+      .not("confirmed_at", "is", null)
+      .select("id")
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    return { ok: Boolean(row) };
+  });
+
 const briefSchema = z.object({
   email: z.string().trim().email().max(255),
   updateId: z.string().uuid(),
