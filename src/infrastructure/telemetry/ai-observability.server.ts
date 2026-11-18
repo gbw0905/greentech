@@ -1,45 +1,7 @@
-import { OpenTelemetry } from "@ai-sdk/otel";
-import { NodeSDK } from "@opentelemetry/sdk-node";
-import { resourceFromAttributes } from "@opentelemetry/resources";
-import { PostHogSpanProcessor } from "@posthog/ai/otel";
-import { registerTelemetry } from "ai";
+// Keep direct Gemini generation event capture available without optional OTel packages.
+// The OpenTelemetry bridge can be restored after its dependencies are installed
+// and a separate preview deployment is validated.
 import { getPostHogClient } from "@/infrastructure/telemetry/posthog.server";
-
-const projectToken =
-  process.env.VITE_PUBLIC_POSTHOG_PROJECT_TOKEN ??
-  import.meta.env.VITE_PUBLIC_POSTHOG_PROJECT_TOKEN;
-const host = process.env.VITE_PUBLIC_POSTHOG_HOST ?? import.meta.env.VITE_PUBLIC_POSTHOG_HOST;
-
-export const posthogSpanProcessor = projectToken
-  ? new PostHogSpanProcessor({ projectToken, host })
-  : null;
-
-if (!projectToken) {
-  if (import.meta.env.DEV) {
-    console.warn(
-      "VITE_PUBLIC_POSTHOG_PROJECT_TOKEN variable required by PostHog is missing or un-configured, this causes events to be silently missed. This error stops appearing once VITE_PUBLIC_POSTHOG_PROJECT_TOKEN is configured",
-    );
-  }
-} else if (posthogSpanProcessor) {
-  const sdk = new NodeSDK({
-    resource: resourceFromAttributes({
-      "service.name": "global-bioenergy-watch",
-    }),
-    spanProcessors: [posthogSpanProcessor],
-  });
-  sdk.start();
-
-  registerTelemetry(
-    new OpenTelemetry({
-      enrichSpan: ({ runtimeContext }) => ({
-        "posthog.distinct_id":
-          typeof runtimeContext?.distinctId === "string" ? runtimeContext.distinctId : undefined,
-        "$ai_session_id":
-          typeof runtimeContext?.sessionId === "string" ? runtimeContext.sessionId : undefined,
-      }),
-    }),
-  );
-}
 
 type GeminiUsagePayload = {
   usageMetadata?: {
