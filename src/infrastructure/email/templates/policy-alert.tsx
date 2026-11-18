@@ -1,19 +1,6 @@
 import React from "react";
 import {
-  Body,
-  Button,
-  Column,
-  Container,
-  Head,
-  Heading,
-  Hr,
-  Html,
-  Img,
-  Link,
-  Preview,
-  Row,
-  Section,
-  Text,
+  Body, Button, Container, Head, Heading, Html, Img, Link, Preview, Section, Text,
 } from "@react-email/components";
 import type { TemplateEntry } from "../registry";
 
@@ -27,7 +14,6 @@ interface Item {
   category?: string;
   publishedAt?: string;
 }
-
 interface Props {
   dateLabel?: string;
   items?: Item[];
@@ -35,213 +21,195 @@ interface Props {
 }
 
 const WEB_URL = "https://www.globalbioenergywatch.org";
-const LOGO_URL = `${WEB_URL}/icon-192.png`;
+const LOGO_URL = WEB_URL + "/email/gbw-official-wordmark-hq.jpg";
+const PHOTO_URL = WEB_URL + "/email/gbw-industrial-agriculture-hq.jpg";
+const GREEN = "#073b29";
 
-// Keep all key presentation styles inline for Outlook and Gmail compatibility.
 const styles = {
-  body: {
-    margin: "0",
-    padding: "24px 8px",
-    backgroundColor: "#f4f7f9",
-    fontFamily: "Arial, Helvetica, sans-serif",
-    color: "#15262d",
+  page: {
+    margin: "0", padding: "22px 8px", backgroundColor: "#e9f0eb",
+    fontFamily: "Arial, Helvetica, sans-serif", color: "#152e23",
   },
   container: {
-    maxWidth: "620px",
-    margin: "0 auto",
+    maxWidth: "620px", margin: "0 auto", border: "1px solid #d6e3da",
     backgroundColor: "#ffffff",
-    border: "1px solid #e0e9e8",
   },
-  header: {
-    padding: "23px 24px 20px",
-    borderBottom: "3px solid #08785a",
+  logoHeader: { padding: "18px 24px 17px", backgroundColor: "#ffffff" },
+  logo: { display: "block", width: "330px", maxWidth: "100%", height: "auto" },
+  darkTitle: {
+    fontSize: "42px", lineHeight: "1.06", color: "#f5fbf7",
+    margin: "12px 0 15px", fontWeight: 700, letterSpacing: "-1.3px",
   },
-  logoColumn: { width: "56px", verticalAlign: "middle" as const },
-  logo: { width: "44px", height: "44px", borderRadius: "8px", display: "block" },
-  brand: {
-    color: "#102d2a",
-    fontSize: "18px",
-    fontWeight: 800,
-    lineHeight: "23px",
-    margin: "0 0 3px",
-  },
-  brandSub: {
-    color: "#527066",
-    fontSize: "10px",
-    letterSpacing: "1.3px",
-    fontWeight: 700,
-    lineHeight: "15px",
-    margin: "0",
-  },
-  intro: { padding: "22px 24px 11px" },
   eyebrow: {
-    fontSize: "11px",
-    lineHeight: "17px",
-    color: "#0b785b",
-    fontWeight: 700,
-    letterSpacing: "0.8px",
-    textTransform: "uppercase" as const,
-    margin: "0 0 10px",
+    fontSize: "10px", color: "#b9ddc9", fontWeight: 700,
+    letterSpacing: "1.3px", lineHeight: "16px", margin: "0 0 13px",
   },
-  heading: {
-    fontSize: "27px",
-    lineHeight: "34px",
-    color: "#142823",
-    margin: "0 0 10px",
-    fontWeight: 800,
+  intro: { fontSize: "14px", color: "#d2e3d8", lineHeight: "22px", margin: "0 0 18px" },
+  issue: { fontSize: "12px", color: "#e5f2eb", margin: "0 0 19px" },
+  feature: {
+    padding: "17px 0 11px", borderTop: "1px solid #678a7a", margin: "0",
   },
-  introText: { fontSize: "14px", lineHeight: "22px", color: "#526761", margin: "0" },
-  card: {
-    margin: "12px 24px",
-    padding: "17px 19px 19px",
-    border: "1px solid #dbe9e3",
-    borderLeft: "4px solid #0c8969",
-    backgroundColor: "#ffffff",
+  num: {
+    fontSize: "10px", color: "#b9ddc9", letterSpacing: "1px",
+    fontWeight: 700, margin: "0 0 7px", lineHeight: "16px",
   },
-  cardMeta: {
-    color: "#176b55",
-    fontSize: "10px",
-    lineHeight: "16px",
-    letterSpacing: "0.6px",
-    fontWeight: 700,
-    textTransform: "uppercase" as const,
-    margin: "0 0 8px",
+  featureTitle: {
+    fontSize: "18px", color: "#ffffff", lineHeight: "25px",
+    fontWeight: 700, margin: "0 0 8px",
   },
-  cardTitle: {
-    color: "#152a25",
-    fontSize: "18px",
-    lineHeight: "25px",
-    fontWeight: 700,
-    margin: "0 0 9px",
+  featureText: {
+    fontSize: "13px", color: "#d8e8de", lineHeight: "20px", margin: "0 0 10px",
   },
-  cardSummary: {
-    color: "#3b504c",
-    fontSize: "14px",
-    lineHeight: "22px",
-    margin: "0 0 12px",
+  featureMeta: {
+    fontSize: "11px", color: "#c5ddcf", lineHeight: "17px", margin: "0 0 9px",
   },
-  cardSource: { color: "#61756f", fontSize: "11px", lineHeight: "17px", margin: "0 0 11px" },
-  sourceLink: { fontSize: "13px", fontWeight: 700, color: "#0a7054", textDecoration: "underline" },
-  action: { padding: "14px 24px 23px" },
-  actionButton: {
-    padding: "12px 18px",
-    color: "#ffffff",
-    backgroundColor: "#08785a",
-    fontSize: "13px",
-    fontWeight: 700,
-    borderRadius: "5px",
+  featureLink: { fontSize: "12px", color: "#effaf2", textDecoration: "underline", fontWeight: 700 },
+  bottomCard: {
+    padding: "20px 26px", borderBottom: "1px solid #b5c9bd",
+    backgroundColor: "#f3f8f5",
   },
-  footer: { padding: "20px 24px 22px", backgroundColor: "#f4f8f6" },
-  footText: {
-    color: "#5b6c68",
-    fontSize: "11px",
-    lineHeight: "18px",
-    margin: "0 0 10px",
+  bottomTitle: {
+    fontSize: "18px", color: "#123b29", lineHeight: "24px",
+    fontWeight: 700, margin: "0 0 8px",
   },
-  footerLink: { color: "#0a7054", fontSize: "11px", textDecoration: "underline" },
+  bottomText: { fontSize: "13px", lineHeight: "20px", color: "#385747", margin: "0 0 10px" },
+  action: { padding: "23px 26px", backgroundColor: "#e5f2e9" },
+  button: {
+    padding: "12px 17px", backgroundColor: GREEN, color: "#ffffff",
+    fontSize: "13px", fontWeight: 700, borderRadius: "3px",
+  },
+  footer: { padding: "20px 26px", backgroundColor: "#ffffff" },
+  footerText: {
+    fontSize: "11px", color: "#55685b", lineHeight: "18px", margin: "0 0 10px",
+  },
+  footerLink: { fontSize: "11px", color: "#145f46", textDecoration: "underline" },
 };
 
-// Never put malformed or unsupported protocols into an email link.
-function httpLink(value?: string): string | null {
+function safeUrl(value?: string): string | null {
   if (!value) return null;
   try {
     const parsed = new URL(value);
-    return parsed.protocol === "https:" || parsed.protocol === "http:" ? parsed.href : null;
-  } catch {
-    return null;
-  }
+    return parsed.protocol === "http:" || parsed.protocol === "https:" ? parsed.href : null;
+  } catch { return null; }
 }
 
-const PolicyAlert = ({ dateLabel = "", items = [], unsubscribeUrl }: Props) => (
-  <Html lang="en" dir="ltr">
-    <Head />
-    <Preview>{`GBW Daily Brief: ${items.length} policy and market updates`}</Preview>
-    <Body style={styles.body}>
-      <Container style={styles.container}>
-        <Section style={styles.header}>
-          <Row>
-            <Column style={styles.logoColumn}>
-              <Img src={LOGO_URL} alt="Global Bioenergy Watch globe logo" style={styles.logo} />
-            </Column>
-            <Column>
-              <Text style={styles.brand}>Global Bioenergy Watch</Text>
-              <Text style={styles.brandSub}>POLICY &amp; MARKET INTELLIGENCE</Text>
-            </Column>
-          </Row>
-        </Section>
+function UpdateContent({
+  item, index, dark,
+}: { item: Item; index: number; dark: boolean }) {
+  const href = safeUrl(item.url);
+  const type = item.category === "market" ? "MARKET" : "POLICY";
+  const metadata = [
+    item.countryName, item.source ? "Source: " + item.source : "",
+    ...(item.fuels ?? []), item.publishedAt,
+  ].filter(Boolean).join(" · ");
+  return (
+    <Section style={dark ? styles.feature : styles.bottomCard}>
+      <Text style={styles.num}>
+        {String(index + 1).padStart(2, "0")} / {type} INTELLIGENCE
+      </Text>
+      <Heading as="h2" style={dark ? styles.featureTitle : styles.bottomTitle}>
+        {item.title || "New bioenergy update"}
+      </Heading>
+      {item.summary ? (
+        <Text style={dark ? styles.featureText : styles.bottomText}>{item.summary}</Text>
+      ) : null}
+      {metadata ? (
+        <Text style={dark ? styles.featureMeta : styles.bottomText}>{metadata}</Text>
+      ) : null}
+      {href ? (
+        <Link href={href} style={dark ? styles.featureLink : styles.footerLink}>
+          Read original source →
+        </Link>
+      ) : null}
+    </Section>
+  );
+}
 
-        <Section style={styles.intro}>
-          <Img
-            src={LOGO_URL}
-            alt="Global Bioenergy Watch globe logo"
-            width="70"
-            height="70"
-            style={{ display: "block", margin: "0 auto 16px", borderRadius: "14px" }}
-          />
-          <Text style={styles.eyebrow}>Daily subscriber briefing · {dateLabel}</Text>
-          <Heading as="h1" style={styles.heading}>The Bioenergy Brief</Heading>
-          <Text style={styles.introText}>
-            {items.length} new {items.length === 1 ? "development" : "developments"} matched your
-            policy and fuel-market coverage. Read the summary, then follow each original source
-            for full details.
-          </Text>
-        </Section>
+const PolicyAlert = ({ dateLabel = "", items = [], unsubscribeUrl }: Props) => {
+  const featured = items.slice(0, 2);
+  const remaining = items.slice(2);
+  const unsubscribeLink = safeUrl(unsubscribeUrl);
+  return (
+    <Html lang="en" dir="ltr">
+      <Head>
+        <style>{'@media only screen and (max-width:540px){.gbw-photo{display:none!important;width:0!important;max-width:0!important;overflow:hidden!important}.gbw-editorial{width:100%!important}.gbw-headline{font-size:34px!important;line-height:1.09!important}}'}</style>
+      </Head>
+      <Preview>
+        {"The Bioenergy Brief: " + items.length + " updates | " + dateLabel}
+      </Preview>
+      <Body style={styles.page}>
+        <Container style={styles.container}>
+          <Section style={styles.logoHeader}>
+            <Img
+              src={LOGO_URL}
+              width={330}
+              height={103}
+              alt="Global Bioenergy Watch — Policy | Markets | Sustainable Fuels"
+              style={styles.logo}
+            />
+          </Section>
 
-        {items.map((item, index) => {
-          const href = httpLink(item.url);
-          const category = item.category === "market" ? "Market" : "Policy";
-          const details = [item.countryName, ...(item.fuels ?? []), item.publishedAt]
-            .filter(Boolean)
-            .join(" · ");
-          return (
-            <Section key={`${item.url ?? item.title ?? "update"}-${index}`} style={styles.card}>
-              <Text style={styles.cardMeta}>
-                {String(index + 1).padStart(2, "0")} / {category} update
-                {item.countryName ? ` · ${item.countryName}` : ""}
-              </Text>
-              <Heading as="h2" style={styles.cardTitle}>{item.title || "New bioenergy update"}</Heading>
-              {item.summary ? <Text style={styles.cardSummary}>{item.summary}</Text> : null}
-              {details || item.source ? (
-                <Text style={styles.cardSource}>
-                  {[item.source ? `Source: ${item.source}` : "", details].filter(Boolean).join(" | ")}
+          <table role="presentation" width="100%" cellPadding={0} cellSpacing={0}
+            style={{ borderCollapse: "collapse", width: "100%", backgroundColor: GREEN }}>
+            <tbody><tr>
+              <td className="gbw-photo" width="126" valign="top"
+                style={{ width: "126px", verticalAlign: "top", backgroundColor: "#c6cdd0" }}>
+                <Img src={PHOTO_URL} width={126} height={697}
+                  alt="Industrial bioenergy facility and agricultural field"
+                  style={{ display: "block", width: "126px", height: "auto" }} />
+              </td>
+              <td className="gbw-editorial" valign="top"
+                style={{ padding: "28px 25px 15px", verticalAlign: "top", backgroundColor: GREEN }}>
+                <Text style={styles.eyebrow}>POLICY  |  MARKETS  |  SUSTAINABLE FUELS</Text>
+                <Heading as="h1" className="gbw-headline" style={styles.darkTitle}>
+                  The Daily Bioenergy Brief.
+                </Heading>
+                <Text style={styles.issue}>{dateLabel || "Global edition"}</Text>
+                <Text style={styles.intro}>
+                  Renewable fuel policy, market dynamics and compliance developments,
+                  brought together in one concise daily intelligence digest.
                 </Text>
-              ) : null}
-              {href ? <Link href={href} style={styles.sourceLink}>Read original source →</Link> : null}
-            </Section>
-          );
-        })}
+                {featured.map((item, index) => (
+                  <UpdateContent key={index} item={item} index={index} dark={true} />
+                ))}
+              </td>
+            </tr></tbody>
+          </table>
 
-        <Section style={styles.action}>
-          <Button href={`${WEB_URL}/timeline`} style={styles.actionButton}>
-            Explore the global policy timeline
-          </Button>
-        </Section>
-        <Hr style={{ margin: "0", borderColor: "#dce7e2" }} />
-        <Section style={styles.footer}>
-          <Text style={styles.footText}>
-            You are receiving this email because you subscribed to Global Bioenergy Watch's daily
-            policy and market updates. Summaries may be AI-assisted and can contain errors or
-            omissions; confirm regulatory requirements, dates and figures with the original
-            authority before relying on them.
-          </Text>
-          <Text style={styles.footText}>
-            Global Bioenergy Watch · <Link href={WEB_URL} style={styles.footerLink}>
-              globalbioenergywatch.org
-            </Link>
-          </Text>
-          {httpLink(unsubscribeUrl) ? (
-            <Text style={{ ...styles.footText, margin: "0" }}>
-              No longer want these emails?{" "}
-              <Link href={httpLink(unsubscribeUrl)!} style={styles.footerLink}>
-                Unsubscribe from daily briefs
+          {remaining.map((item, index) => (
+            <UpdateContent key={index + 2} item={item} index={index + 2} dark={false} />
+          ))}
+          <Section style={styles.action}>
+            <Button href={WEB_URL + "/timeline"} style={styles.button}>
+              Explore the global policy timeline →
+            </Button>
+          </Section>
+          <Section style={styles.footer}>
+            <Text style={styles.footerText}>
+              You are receiving this message because you subscribed to Global Bioenergy
+              Watch's daily policy and market brief. These summaries may be AI-assisted
+              and can contain errors or omissions. Verify numbers, effective dates and
+              compliance requirements against the original authority before acting.
+            </Text>
+            <Text style={styles.footerText}>
+              Global Bioenergy Watch · <Link href={WEB_URL} style={styles.footerLink}>
+                globalbioenergywatch.org
               </Link>
             </Text>
-          ) : null}
-        </Section>
-      </Container>
-    </Body>
-  </Html>
-);
+            {unsubscribeLink ? (
+              <Text style={styles.footerText}>
+                Prefer not to receive these?{" "}
+                <Link href={unsubscribeLink} style={styles.footerLink}>
+                  Unsubscribe from daily briefs
+                </Link>
+              </Text>
+            ) : null}
+          </Section>
+        </Container>
+      </Body>
+    </Html>
+  );
+};
 
 export const template = {
   component: PolicyAlert,
@@ -250,32 +218,34 @@ export const template = {
     const date = String(data["dateLabel"] || new Date().toLocaleDateString("en-GB", {
       day: "numeric", month: "short", year: "numeric", timeZone: "UTC",
     }));
-    return `GBW Daily Brief | ${date} | ${items.length} updates`;
+    return "GBW Daily Brief | " + date + " | " + items.length + " updates";
   },
-  displayName: "Daily policy and market subscriber brief",
+  displayName: "High-resolution daily policy and market brief",
   previewData: {
     dateLabel: "Tuesday, 17 November 2026",
-    unsubscribeUrl: `${WEB_URL}/alerts/unsubscribe?token=preview-token`,
+    unsubscribeUrl: WEB_URL + "/alerts/unsubscribe?token=preview-token",
     items: [
       {
-        title: "Illustrative biofuel blending policy update",
+        title: "Illustrative renewable fuel blending policy update",
         url: "https://example.com/policy",
-        summary: "A government is considering adjustments to its renewable-fuel blending obligations. The exact proposal, timeline and obligations should be checked against the official announcement.",
-        source: "Official agency",
-        countryName: "United States",
-        fuels: ["Ethanol", "Biodiesel"],
-        category: "policy",
+        summary: "An illustrative update showing how changes to renewable fuel blending requirements, compliance timing and affected parties will appear in the daily subscriber edition.",
+        source: "Policy authority", countryName: "United States",
+        fuels: ["Ethanol", "Biodiesel"], category: "policy",
         publishedAt: "17 Nov 2026",
       },
       {
         title: "Illustrative sustainable aviation fuel supply announcement",
         url: "https://example.com/market",
-        summary: "A producer announced a possible expansion in sustainable aviation fuel supply. Verify production capacity and commercialization status with the source.",
-        source: "Producer announcement",
-        countryName: "Global",
-        fuels: ["SAF"],
-        category: "market",
-        publishedAt: "16 Nov 2026",
+        summary: "A sample market note on potential SAF supply, offtake arrangements and delivery constraints, with primary-source links in real editions.",
+        source: "Producer announcement", countryName: "Global",
+        fuels: ["SAF"], category: "market", publishedAt: "17 Nov 2026",
+      },
+      {
+        title: "Illustrative compliance methodology watch",
+        url: "https://example.com/methodology",
+        summary: "A sample alert about carbon-intensity methodology and documentation requirements. Actual summaries will cite the applicable official sources.",
+        source: "Regulatory update", countryName: "European Union",
+        fuels: ["Renewable diesel"], category: "policy", publishedAt: "16 Nov 2026",
       },
     ],
   },
