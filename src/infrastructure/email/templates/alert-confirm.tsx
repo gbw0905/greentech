@@ -2,14 +2,12 @@ import React from "react";
 import {
   Body,
   Button,
-  Column,
   Container,
   Head,
   Heading,
   Html,
   Img,
   Preview,
-  Row,
   Section,
   Text,
 } from "@react-email/components";
@@ -70,25 +68,13 @@ const AlertConfirm = ({ confirmUrl = "#", fuels = [], countries = [] }: Props) =
     <Body style={page}>
       <Container style={container}>
         <Section style={header}>
-          <Row>
-            <Column style={{ width: "56px", verticalAlign: "middle" }}>
-              <Img
-                src={`${site}/icon-192.png`}
-                alt="Global Bioenergy Watch globe logo"
-                width="44"
-                height="44"
-                style={{ display: "block", borderRadius: "8px" }}
-              />
-            </Column>
-            <Column>
-              <Text style={{ color: "#102d2a", fontSize: "18px", fontWeight: 800, margin: "0 0 3px" }}>
-                Global Bioenergy Watch
-              </Text>
-              <Text style={{ color: "#527066", fontSize: "10px", letterSpacing: "1.3px", fontWeight: 700, margin: "0" }}>
-                POLICY &amp; MARKET INTELLIGENCE
-              </Text>
-            </Column>
-          </Row>
+          <Img
+            src={site + "/email/gbw-official-wordmark-hq.jpg"}
+            alt="Global Bioenergy Watch — Policy | Markets | Sustainable Fuels"
+            width="330"
+            height="103"
+            style={{ display: "block", width: "330px", maxWidth: "100%", height: "auto" }}
+          />
         </Section>
         <Section style={body}>
           <Text style={{ color: "#08785a", fontSize: "11px", letterSpacing: "0.8px", fontWeight: 700, margin: "0 0 8px" }}>
