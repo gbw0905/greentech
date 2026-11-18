@@ -8,7 +8,7 @@ export async function sendDailyAlertDigest(): Promise<Response> {
 
   const { data: updates, error: updateError } = await supabaseAdmin
     .from("policy_updates")
-    .select("id,url,title,summary,source,country_slug,country_name,fuels,created_at")
+    .select("id,url,title,summary,source,country_slug,country_name,fuels,category,published_at,created_at")
     .gte("created_at", since)
     .order("created_at", { ascending: false })
     .limit(60);
@@ -20,7 +20,7 @@ export async function sendDailyAlertDigest(): Promise<Response> {
 
   const { data: subscribers, error: subscriberError } = await supabaseAdmin
     .from("alert_subscribers")
-    .select("id,email,fuels,countries")
+    .select("id,email,fuels,countries,confirm_token")
     .eq("cadence", "daily")
     .not("confirmed_at", "is", null);
 
@@ -69,10 +69,18 @@ export async function sendDailyAlertDigest(): Promise<Response> {
       continue;
     }
 
+    if (!subscriber.confirm_token) {
+      skipped += 1;
+      continue;
+    }
+    const unsubscribeUrl =
+      `https://www.globalbioenergywatch.org/alerts/unsubscribe?token=${encodeURIComponent(subscriber.confirm_token)}`;
+
     try {
       const result = await sendTemplateEmail("policy-alert", subscriber.email, {
         templateData: {
           dateLabel,
+          unsubscribeUrl,
           items: matched.map((update) => ({
             title: update.title,
             url: update.url,
@@ -80,9 +88,19 @@ export async function sendDailyAlertDigest(): Promise<Response> {
             source: update.source ?? "",
             countryName: update.country_name,
             fuels: update.fuels ?? [],
+            category: update.category ?? "policy",
+            publishedAt: update.published_at
+              ? new Date(update.published_at).toLocaleDateString("en-GB", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                  timeZone: "UTC",
+                })
+              : undefined,
           })),
         },
         idempotencyKey: `policy-alert-daily-${subscriber.id}-${dayKey}`,
+        unsubscribeUrl,
       });
 
       if (!result.sent) {
