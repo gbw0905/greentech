@@ -171,6 +171,13 @@ const PolicyAlert = ({ dateLabel = "", items = [], unsubscribeUrl }: Props) => (
         </Section>
 
         <Section style={styles.intro}>
+          <Img
+            src={LOGO_URL}
+            alt="Global Bioenergy Watch globe logo"
+            width="70"
+            height="70"
+            style={{ display: "block", margin: "0 auto 16px", borderRadius: "14px" }}
+          />
           <Text style={styles.eyebrow}>Daily subscriber briefing · {dateLabel}</Text>
           <Heading as="h1" style={styles.heading}>The Bioenergy Brief</Heading>
           <Text style={styles.introText}>
