@@ -49,6 +49,7 @@ const NAV_GROUPS = [
     label: "Products",
     items: [
       { to: "/civanta", label: "CIVanta" },
+      { to: "/civanta-new", label: "CIVanta New" },
       { to: "/document-analyzer", label: "Policy Document Analyzer" },
     ],
   },
@@ -105,7 +106,7 @@ export function SiteHeader({
       );
     if (label === "Datasets") return activeSection === "supply" || pathname === "/data-sources";
     if (label === "Products")
-      return /^\/(civanta|credit-calculator|ci-calculator|ci-workspace|dairy-rng-calculator|my-results|document-analyzer)(\/|$)/.test(
+      return /^\/(civanta|civanta-new|credit-calculator|ci-calculator|ci-workspace|dairy-rng-calculator|my-results|document-analyzer)(\/|$)/.test(
         pathname,
       );
     if (label === "Bioenergy Jobs") return activeSection === "jobs" || pathname === "/jobs";

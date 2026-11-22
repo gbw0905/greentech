@@ -17,6 +17,7 @@ import { Route as CalculationHistoryRouteImport } from './routes/calculation-his
 import { Route as CiCalculatorRouteImport } from './routes/ci-calculator'
 import { Route as CiWorkspaceRouteImport } from './routes/ci-workspace'
 import { Route as CivantaRouteImport } from './routes/civanta'
+import { Route as CivantaNewRouteImport } from './routes/civanta-new'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CreditCalculatorRouteImport } from './routes/credit-calculator'
 import { Route as DairyRngCalculatorRouteImport } from './routes/dairy-rng-calculator'
@@ -106,6 +107,11 @@ const CiWorkspaceRoute = CiWorkspaceRouteImport.update({
 const CivantaRoute = CivantaRouteImport.update({
   id: '/civanta',
   path: '/civanta',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CivantaNewRoute = CivantaNewRouteImport.update({
+  id: '/civanta-new',
+  path: '/civanta-new',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -374,6 +380,7 @@ export interface FileRoutesByFullPath {
   '/ci-calculator': typeof CiCalculatorRoute
   '/ci-workspace': typeof CiWorkspaceRoute
   '/civanta': typeof CivantaRoute
+  '/civanta-new': typeof CivantaNewRoute
   '/contact': typeof ContactRoute
   '/credit-calculator': typeof CreditCalculatorRoute
   '/dairy-rng-calculator': typeof DairyRngCalculatorRoute
@@ -433,6 +440,7 @@ export interface FileRoutesByTo {
   '/ci-calculator': typeof CiCalculatorRoute
   '/ci-workspace': typeof CiWorkspaceRoute
   '/civanta': typeof CivantaRoute
+  '/civanta-new': typeof CivantaNewRoute
   '/contact': typeof ContactRoute
   '/credit-calculator': typeof CreditCalculatorRoute
   '/dairy-rng-calculator': typeof DairyRngCalculatorRoute
@@ -493,6 +501,7 @@ export interface FileRoutesById {
   '/ci-calculator': typeof CiCalculatorRoute
   '/ci-workspace': typeof CiWorkspaceRoute
   '/civanta': typeof CivantaRoute
+  '/civanta-new': typeof CivantaNewRoute
   '/contact': typeof ContactRoute
   '/credit-calculator': typeof CreditCalculatorRoute
   '/dairy-rng-calculator': typeof DairyRngCalculatorRoute
@@ -555,6 +564,7 @@ export interface FileRouteTypes {
     | '/ci-calculator'
     | '/ci-workspace'
     | '/civanta'
+    | '/civanta-new'
     | '/contact'
     | '/credit-calculator'
     | '/dairy-rng-calculator'
@@ -614,6 +624,7 @@ export interface FileRouteTypes {
     | '/ci-calculator'
     | '/ci-workspace'
     | '/civanta'
+    | '/civanta-new'
     | '/contact'
     | '/credit-calculator'
     | '/dairy-rng-calculator'
@@ -673,6 +684,7 @@ export interface FileRouteTypes {
     | '/ci-calculator'
     | '/ci-workspace'
     | '/civanta'
+    | '/civanta-new'
     | '/contact'
     | '/credit-calculator'
     | '/dairy-rng-calculator'
@@ -734,6 +746,7 @@ export interface RootRouteChildren {
   CiCalculatorRoute: typeof CiCalculatorRoute
   CiWorkspaceRoute: typeof CiWorkspaceRoute
   CivantaRoute: typeof CivantaRoute
+  CivantaNewRoute: typeof CivantaNewRoute
   ContactRoute: typeof ContactRoute
   CreditCalculatorRoute: typeof CreditCalculatorRoute
   DairyRngCalculatorRoute: typeof DairyRngCalculatorRoute
@@ -835,6 +848,13 @@ declare module '@tanstack/react-router' {
       path: '/civanta'
       fullPath: '/civanta'
       preLoaderRoute: typeof CivantaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/civanta-new': {
+      id: '/civanta-new'
+      path: '/civanta-new'
+      fullPath: '/civanta-new'
+      preLoaderRoute: typeof CivantaNewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -1241,6 +1261,7 @@ const rootRouteChildren: RootRouteChildren = {
   CiCalculatorRoute: CiCalculatorRoute,
   CiWorkspaceRoute: CiWorkspaceRoute,
   CivantaRoute: CivantaRoute,
+  CivantaNewRoute: CivantaNewRoute,
   ContactRoute: ContactRoute,
   CreditCalculatorRoute: CreditCalculatorRoute,
   DairyRngCalculatorRoute: DairyRngCalculatorRoute,
