@@ -33,13 +33,42 @@ body.plant-list-open:not(.embedded) {
     var(--review-right) var(--review-bottom), var(--review-left) var(--review-bottom),
     var(--review-left) var(--review-top), 0 0);
 }
-.civanta-host:not([data-workspace-ready]) > iframe { visibility: hidden; }
-@media (prefers-reduced-motion: no-preference) {
-  .civanta-host[data-workspace-ready] > iframe { animation: civanta-workspace-enter 220ms ease-out; }
+.civanta-host:not([data-workspace-ready]) { position: relative; }
+.civanta-host:not([data-workspace-ready]) > iframe {
+  position: absolute;
+  inset: 0;
+  visibility: hidden;
 }
-@keyframes civanta-workspace-enter {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.civanta-workspace-status {
+  min-height: 500px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 8px;
+  padding: 24px;
+  text-align: center;
+}
+.civanta-workspace-status p { font-size: 16px; }
+.civanta-workspace-spinner {
+  width: 30px;
+  height: 30px;
+  margin-top: 4px;
+  border: 3px solid #bdded6;
+  border-top-color: #08765a;
+  border-radius: 50%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .civanta-workspace-spinner { animation: civanta-workspace-spin .8s linear infinite; }
+}
+@keyframes civanta-workspace-spin { to { transform: rotate(1turn); } }
+
+.civanta-workspace-status button {
+  margin-top: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: #123b5a;
+  color: #fff;
+  font-weight: 700;
 }
 
 .civanta-quick-actions {

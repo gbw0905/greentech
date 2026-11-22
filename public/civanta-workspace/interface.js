@@ -1,6 +1,5 @@
 (() => {
   const svg = window.civantaIcons;
-  const motion = window.Motion;
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
   const glyphs = {
     "🌽": "Wheat", "🛢️": "Fuel", "🌱": "Leaf", "✈️": "Plane", "♻️": "Recycle",
@@ -20,6 +19,7 @@
   };
 
   function reveal(element, delay = 0) {
+    const motion = window.Motion;
     if (!reducedMotion.matches && motion?.animate && element) {
       motion.animate(element, { opacity: [0, 1], transform: ["translateY(8px)", "translateY(0)"] }, {
         duration: 0.32, delay, ease: [0.22, 1, 0.36, 1]

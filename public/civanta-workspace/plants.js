@@ -237,5 +237,10 @@
  try { openId = sessionStorage.getItem(activeKey); } catch {}
  const previous = openId && plants.find(plant => plant.id === openId);
  if (previous) openPlant(previous,true);
- document.body.dataset.workspaceReady = '';
+ document.addEventListener('DOMContentLoaded', () => {
+  document.body.dataset.workspaceReady = '';
+  if (window.parent !== window) {
+   window.parent.postMessage({type: 'civanta-workspace-ready'}, location.origin);
+  }
+ }, {once: true});
 })();
