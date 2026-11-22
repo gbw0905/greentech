@@ -1,0 +1,119 @@
+@import url("./civanta-fonts.css?v=2");
+
+:root {
+  --civanta-review-shade: #102d4052;
+  --civanta-font: "Bricolage Digits", "Instrument Sans", system-ui, sans-serif;
+}
+
+.civanta-host,
+.civanta-quick-actions,
+.civanta-quick-actions button {
+  font-family: var(--civanta-font);
+}
+
+.civanta-host[data-portfolio],
+body.plant-list-open:not(.embedded) {
+  background: linear-gradient(105deg, #0a2d33f5 0%, #0b333cbb 53%, #0d333f91 100%),
+    #10383f url("./civanta-landscape.jpg") center 52% / cover no-repeat;
+}
+
+@media (max-width: 680px) {
+  .civanta-host[data-portfolio],
+  body.plant-list-open:not(.embedded) { background-position: center, 61% center; }
+}
+
+/* The iframe draws its own backdrop. This layer covers the rest of the site. */
+.civanta-review-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--civanta-review-shade);
+  clip-path: polygon(evenodd, 0 0, 100% 0, 100% 100%, 0 100%, 0 0,
+    var(--review-left) var(--review-top), var(--review-right) var(--review-top),
+    var(--review-right) var(--review-bottom), var(--review-left) var(--review-bottom),
+    var(--review-left) var(--review-top), 0 0);
+}
+.civanta-host:not([data-workspace-ready]) > iframe { visibility: hidden; }
+@media (prefers-reduced-motion: no-preference) {
+  .civanta-host[data-workspace-ready] > iframe { animation: civanta-workspace-enter 220ms ease-out; }
+}
+@keyframes civanta-workspace-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.civanta-quick-actions {
+  position: fixed;
+  z-index: 40;
+  inset-inline: 0;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: min(var(--site-content-width, 1240px), calc(100% - 24px));
+  margin-inline: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 9px 19px;
+  padding: 10px 12px;
+  border: 1px solid #bbd4e8;
+  border-radius: 12px;
+  background: #fffffff2;
+  color: #102d43;
+  backdrop-filter: blur(18px);
+  font-size: 16.8px;
+  line-height: 1.3;
+  box-shadow: 0 2px 12px #102d4012;
+}
+.civanta-quick-actions [hidden],
+.civanta-quick-actions[hidden] { display: none; }
+
+.civanta-quick-metrics, .civanta-quick-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 5px 12px;
+}
+.civanta-quick-metrics span { color: #45677d; }
+.civanta-quick-metrics strong {
+  margin-inline-start: 4px;
+  color: #102d43;
+  font-size: clamp(20px, 2vw, 25px);
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.civanta-quick-metrics small { font-size: 13px; color: #45677d; }
+.civanta-quick-metrics .has-reduction { color: #08765a; }
+.civanta-quick-metrics .has-increase { color: #b42318; }
+.civanta-quick-metrics [data-quick-scenario] { color: #176e56; }
+
+.civanta-quick-buttons { gap: 6px; }
+.civanta-quick-actions button {
+  min-height: 43px;
+  padding: 6px 11px;
+  border: 1px solid #c9dce9;
+  border-radius: 8px;
+  background: #fff;
+  color: #153951;
+  font-size: 15.6px;
+  font-weight: 700;
+}
+.civanta-quick-actions button[data-primary] { border-color: #123b5a; background: #123b5a; color: #fff; }
+.civanta-quick-actions button:hover:not(:disabled) { background: #e8f2fb; }
+.civanta-quick-actions button[data-primary]:hover:not(:disabled) { background: #205b88; }
+.civanta-quick-actions button:disabled { opacity: .56; cursor: not-allowed; }
+.civanta-quick-actions button:focus-visible { outline: 2px solid #268582; outline-offset: 2px; }
+.civanta-quick-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  .civanta-quick-actions { gap: 6px; }
+  .civanta-quick-metrics, .civanta-quick-buttons { flex-basis: 100%; }
+}
