@@ -20,14 +20,13 @@ import {
 import { ghgSavingsMt, GHG_NOTE } from "@/shared/ghg-savings";
 import { GhgEmptyNotice } from "@/components/GhgEmptyNotice";
 import {
-  detailTone,
   useEntityDetail,
   type GraphContext,
 } from "@/features/markets/components/EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/features/markets/entity-logos";
 import { MARINE_TICKERS } from "@/features/markets/entity-tickers";
-import { priceMeta, priceTone, useEntityQuotes } from "@/features/markets/hooks/useEntityQuotes";
+import { listingMeta } from "@/features/markets/lib/listing";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/features/markets/market-caps";
 import { COUNTRY_NAME_FLAG } from "@/features/policy/taxonomy";
@@ -745,7 +744,7 @@ const ENTITIES: MarineEntity[] = [
   },
 ];
 
-type Metric = "volume" | "reach" | "blend" | "price" | "marketcap" | "ghg";
+type Metric = "volume" | "reach" | "blend" | "marketcap" | "ghg";
 
 const METRICS: Record<
   Metric,
@@ -777,13 +776,6 @@ const METRICS: Record<
     help: "Typical blend level offered or bunkered — B24 and B30 dominate today, with a few fully renewable marine fuels at 100%.",
     decimals: 0,
     value: (e) => e.blendPct,
-  },
-  price: {
-    label: "Share price (listing currency)",
-    unit: "share price, primary listing currency",
-    help: "Latest traded share price on the entity's primary listing. Private, state-owned and cargo-owner entities have no listing and sit at the end.",
-    decimals: 2,
-    value: () => 0,
   },
   marketcap: {
     label: "Market cap (approx.)",
@@ -846,7 +838,8 @@ function dynamicEntity(row: SupplyEntityRow): MarineEntity | null {
     row.metadata["role"] === "Port market" || row.entityType === "port-market"
       ? "Port market"
       : "Supplier";
-  const latestMonth = typeof row.metadata["latestMonth"] === "string" ? row.metadata["latestMonth"] : "";
+  const latestMonth =
+    typeof row.metadata["latestMonth"] === "string" ? row.metadata["latestMonth"] : "";
 
   return {
     name: row.name,
@@ -870,7 +863,9 @@ function mergeDynamicEntities(payload: SupplyDatasetPayload | undefined): {
   latestIngestFinishedAt: string | null;
   stale: boolean | null;
 } {
-  const dynamic = (payload?.rows ?? []).map(dynamicEntity).filter((e): e is MarineEntity => Boolean(e));
+  const dynamic = (payload?.rows ?? [])
+    .map(dynamicEntity)
+    .filter((e): e is MarineEntity => Boolean(e));
   if (dynamic.length === 0) {
     return {
       entities: ENTITIES,
@@ -928,7 +923,6 @@ export function MarineBiofuelPanel() {
   const [metricKey, setMetricKey] = useState<Metric>("volume");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
-  const { get } = useEntityQuotes();
   const { data: dynamicPayload } = useQuery({
     queryKey: ["supply-dataset", DYNAMIC_DATASET_ID],
     queryFn: () => getSupplyDatasetFn({ data: { datasetId: DYNAMIC_DATASET_ID } }),
@@ -937,8 +931,7 @@ export function MarineBiofuelPanel() {
   const dynamic = useMemo(() => mergeDynamicEntities(dynamicPayload), [dynamicPayload]);
   const entities = dynamic.entities;
   const metric = METRICS[metricKey];
-  const valueOf = (e: MarineEntity) =>
-    metricKey === "price" ? (get(MARINE_TICKERS[e.name])?.price ?? 0) : metric.value(e);
+  const valueOf = (e: MarineEntity) => metric.value(e);
 
   const f = useChartFilter(entities, {
     text: (e) => `${e.name} ${e.country} ${e.role} ${e.note}`,
@@ -961,8 +954,7 @@ export function MarineBiofuelPanel() {
     size: axes.size.value(e),
     group: e.role,
     logo: entityLogoByName(e.name),
-    meta: priceMeta(get(MARINE_TICKERS[e.name])),
-    changePct: get(MARINE_TICKERS[e.name])?.changePct,
+    meta: listingMeta(MARINE_TICKERS[e.name]),
     newsTarget: { name: e.name, query: `"${e.name}" ${NEWS_SUFFIX}` },
   }));
 
@@ -972,9 +964,7 @@ export function MarineBiofuelPanel() {
     sub: `${e.role} · ${e.note}`,
     value: valueOf(e),
     logo: entityLogoByName(e.name),
-    meta: priceMeta(get(MARINE_TICKERS[e.name])),
-    tone: priceTone(get(MARINE_TICKERS[e.name])),
-    changePct: get(MARINE_TICKERS[e.name])?.changePct,
+    meta: listingMeta(MARINE_TICKERS[e.name]),
   }));
   const newsMap = Object.fromEntries(
     rows.map((e) => [e.name, { name: e.name, query: `"${e.name}" ${NEWS_SUFFIX}` }]),
@@ -995,7 +985,6 @@ export function MarineBiofuelPanel() {
   const onSelect = detail.onSelect((t) => {
     const e = rows.find((r) => r.name === t?.name);
     if (!e) return null;
-    const q = get(MARINE_TICKERS[e.name]);
     return {
       name: e.name,
       sub: `${e.flag} ${e.country} · ${e.role}`,
@@ -1006,15 +995,10 @@ export function MarineBiofuelPanel() {
         { label: "Ports / vessels", value: fmt(e.reach, 0) },
         {
           label: "Typical blend",
-          value: e.blendReported === false ? "Not reported by this source" : `${fmt(e.blendPct, 0)}%`,
+          value:
+            e.blendReported === false ? "Not reported by this source" : `${fmt(e.blendPct, 0)}%`,
         },
         { label: "Ticker", value: MARINE_TICKERS[e.name] ?? "Not listed" },
-        { label: "Share price", value: q ? fmt(q.price, 2) : "—" },
-        {
-          label: "1-day change",
-          value: q ? `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%` : "—",
-          tone: detailTone(q?.changePct),
-        },
         {
           label: "Market cap (approx.)",
           value: marketCapLabel(MARINE_TICKERS[e.name]) ?? "Private / state-owned",
@@ -1067,13 +1051,10 @@ export function MarineBiofuelPanel() {
                   "Ports / vessels",
                   "Typical blend %",
                   "Ticker",
-                  "Share price",
-                  "1-day change %",
                   "Market cap (approx., USD bn)",
                   "Note",
                 ],
                 rows: ranked.map((e) => {
-                  const q = get(MARINE_TICKERS[e.name]);
                   return [
                     e.name,
                     e.role,
@@ -1082,8 +1063,6 @@ export function MarineBiofuelPanel() {
                     e.reach,
                     e.blendReported === false ? "" : e.blendPct,
                     MARINE_TICKERS[e.name] ?? "",
-                    q ? q.price.toFixed(2) : "",
-                    q ? q.changePct.toFixed(2) : "",
                     marketCapLabel(MARINE_TICKERS[e.name]) ?? "",
                     e.note,
                   ];
@@ -1124,8 +1103,9 @@ export function MarineBiofuelPanel() {
             <p className="label-mono mt-2 text-xs text-muted-foreground">
               MPA Singapore rows: {dynamic.dynamicCount} port-market entity ·{" "}
               {reportingYearLabel(dynamic.reportingYears)} · ingested{" "}
-              {formatFreshnessDate(dynamic.latestIngestFinishedAt)} · {freshnessLabel(dynamic.stale)} ·{" "}
-              fallback entity rows reviewed {dynamicPayload?.registry?.lastReviewed ?? "not recorded"} ·{" "}
+              {formatFreshnessDate(dynamic.latestIngestFinishedAt)} ·{" "}
+              {freshnessLabel(dynamic.stale)} · fallback entity rows reviewed{" "}
+              {dynamicPayload?.registry?.lastReviewed ?? "not recorded"} ·{" "}
               <Link
                 to="/data-sources"
                 hash={DYNAMIC_DATASET_ID}

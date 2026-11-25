@@ -33,11 +33,3 @@ export interface JobBoard {
   domain: string;
   url: (query: JobQuery) => string;
 }
-
-export interface HiringItem {
-  title: string;
-  source: string;
-  published: string;
-  url: string;
-  keyword: string;
-}

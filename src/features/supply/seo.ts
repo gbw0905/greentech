@@ -15,7 +15,7 @@ export const SUPPLY_SEO: Record<PanelId, SupplySeo> = {
   stations: {
     title: "Global Biofuel Station Networks — Ethanol, Biodiesel & Renewable Diesel Retail",
     description:
-      "Directory of 100+ retail fuel networks selling ethanol, biodiesel, renewable diesel and renewable gas worldwide, with market caps, share prices and regional coverage.",
+      "Directory of 100+ retail fuel networks selling ethanol, biodiesel, renewable diesel and renewable gas worldwide, with market caps and regional coverage.",
     keywords:
       "biofuel stations, ethanol retail networks, biodiesel stations, renewable diesel retail, E85 stations, alternative fuel stations",
   },
@@ -76,16 +76,16 @@ export const SUPPLY_SEO: Record<PanelId, SupplySeo> = {
       "marine biofuel, biofuel bunker suppliers, B24 B30 bunker, biofuel shipping, sustainable marine fuel",
   },
   oil: {
-    title: "Oil Companies in Biofuels — Live Share Prices & Production Capacity",
+    title: "Oil Companies in Biofuels — Production Capacity & Market Caps",
     description:
-      "47 global oil majors and refiners with live share prices, market caps and annual biofuel production capacity — tracked across every major exchange.",
+      "47 global oil majors and refiners with approximate market caps and annual production capacity, from company reports.",
     keywords:
-      "oil companies biofuel, refiner share prices, renewable diesel capacity, oil majors SAF, energy company market cap",
+      "oil companies biofuel, refiner capacity, renewable diesel capacity, oil majors SAF, energy company market cap",
   },
   saf: {
     title: "SAF Airlines — Carriers with the Largest Sustainable Aviation Fuel Uplift",
     description:
-      "Airlines with the largest sustainable aviation fuel (SAF) uplift worldwide — offtake agreements, blend targets, market caps and share prices.",
+      "Airlines with the largest sustainable aviation fuel (SAF) uplift worldwide — offtake agreements, blend targets and market caps.",
     keywords:
       "SAF airlines, sustainable aviation fuel offtake, airline SAF agreements, aviation biofuel carriers",
   },
@@ -99,7 +99,7 @@ export const SUPPLY_SEO: Record<PanelId, SupplySeo> = {
   hydrogen: {
     title: "Renewable Hydrogen Producers — Global Green Hydrogen & Electrolyser Projects",
     description:
-      "Global directory of renewable hydrogen producers: electrolytic green hydrogen output, electrolyser capacity, production routes, market caps and live share prices.",
+      "Global directory of renewable hydrogen producers: electrolytic green hydrogen output, electrolyser capacity, production routes and market caps.",
     keywords:
       "renewable hydrogen producers, green hydrogen companies, electrolyser capacity, green ammonia projects, hydrogen production capacity",
   },

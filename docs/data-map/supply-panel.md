@@ -32,7 +32,7 @@ The approved sources and which parser each one uses are set in `src/shared/data/
 | Piece | Shows | Comes from | How it gets here | Refreshes | Status |
 |---|---|---|---|---|---|
 | Title, blurb, measure names | e.g. "Ethanol output (Ml/yr)" | Each panel file (`TITLE`, `METRICS`) | Hand-written | When code changes | ⚪ |
-| Status label (only Ethanol, Biochar, Oil) | "N source-backed entities" / "Curated fallback data", or "Live" / "Last close" for Oil | Counted from the Supabase rows; Oil uses the Yahoo result | Parser / Live | On page load | 🟢 (Oil 🔴) |
+| Status label (only Ethanol, Biochar, Oil) | "N source-backed entities" / "Curated fallback data"; Oil shows "Company reports" | Counted from the Supabase rows; Oil's label is fixed text | Parser / Hand-written | On page load | 🟢 |
 | Search + filter drop-downs | Narrows the list | Visitor typing; options built from the rows shown | User input (browser only, not saved) | Instantly | 🟢 |
 | Export CSV | Downloads the rows on screen | Same data as the chart | User input | On click | follows the data |
 | Email summary | An analyst-style write-up of the current view, emailed to you | Gemini (`chart-summary.server.ts`) writes it, then it is sent by email. Needs sign-in | AI | On click | 🟡 |
@@ -45,7 +45,7 @@ The approved sources and which parser each one uses are set in `src/shared/data/
 | Piece | Shows | Comes from | How it gets here | Refreshes | Status |
 |---|---|---|---|---|---|
 | Company rows and their main numbers | Capacity, volume, plants, etc. | Hand-written list in the panel file, with parser rows mixed in where the panel supports it (see each panel below) | Hand-written + Parser | When code changes / when the daily job re-parses | ⚪ / 🟢 |
-| Measure "Share price (listing currency)" and the "+1.2%" next to names | Latest price and 1-day change | Yahoo Finance `query1` chart API (`entity-quotes.server.ts`). Ticker per company is typed in `entity-tickers.ts`. If Yahoo fails, the server reuses its last good copy from memory | Live | Every 5 min in the browser | 🔴 |
+| Meta line under each name | Ticker and approximate market cap (e.g. "XOM · $450bn"), or "Private / state-owned" | `listingMeta()` in `src/features/markets/lib/listing.ts`. Ticker per company is typed in `entity-tickers.ts`, market cap comes from `market-caps.ts`. **Live share prices and 1-day changes were removed from all 15 panels** | Hand-written | Only when someone edits it | ⚪ |
 | Measure "Market cap (approx.)" | USD billions | `MARKET_CAP_USD_BN` in `src/features/markets/market-caps.ts` | Hand-written | Only when someone edits it | ⚪ |
 | Measure "GHG savings (reported)" | Mt CO₂e avoided. Only about 10 named companies have a figure; the rest show "Not reported" | `src/shared/ghg-savings.ts` | Hand-written | Only when someone edits it | ⚪ |
 | Company logos | Brand logo in tiles | Logo.dev (`img.logo.dev`) via `entity-logos.ts`. If there is no Logo.dev key, falls back to Google's favicon service, then a plain building icon | Live (image link) | Each view | 🟢 (Google favicon fallback 🟡) |
@@ -53,17 +53,17 @@ The approved sources and which parser each one uses are set in `src/shared/data/
 | "Location map" view | Bubbles per country | Country from the rows; world outline from `/world-110m.json` (bundled with the site) | Hand-written | When code changes | 🟢 |
 
 ### 4. Company detail pop-out (click any tile, bar, dot or row)
-**What the user sees:** A side sheet with logo, country, note, key stats, ticker, share price, 1-day change, market cap, an "Environmental compliance & certification" block, "Graph values for this entry" (rank, share, range), "Active filters when clicked", and a **"More news for <company>"** button.
+**What the user sees:** A side sheet with logo, country, note, key stats, ticker, market cap, an "Environmental compliance & certification" block, "Graph values for this entry" (rank, share, range), "Active filters when clicked", and a **"More news for <company>"** button.
 
 | Piece | Shows | Comes from | How it gets here | Refreshes | Status |
 |---|---|---|---|---|---|
 | Key stats, note | Same numbers as the chart row | Panel file (or parser row) | Hand-written / Parser | — | ⚪ / 🟢 |
-| Ticker / share price / 1-day change / market cap | as above | `entity-tickers.ts`, Yahoo Finance, `market-caps.ts` | Hand-written / Live | Every 5 min | ⚪ / 🔴 |
+| Ticker / market cap | as above | `entity-tickers.ts`, `market-caps.ts` | Hand-written | Only when someone edits it | ⚪ |
 | Certification block | Schemes such as ISCC, RSB, SBP, or "No published certification found" | `src/features/markets/certifications.ts` | Hand-written | Only when someone edits it | ⚪ |
 | Rank / share / range / standing | Worked out from what is on the chart | Calculated in the browser (`EntityDetailSheet.tsx`) | Calculated from the data shown | Instantly | follows the data |
 | "More news for …" button | Opens a **Google News search in a new tab**. No headlines are shown on our page | `openEntityNews` in `src/features/markets/open-news.ts` | Link only | — | 🟢 |
 
-Note: these pages do **not** use `fetchEntityNews` (Google News RSS headlines). The server function that wraps it, `getEntityNewsFn`, is not called anywhere in the app.
+Note: the Google News RSS headline fetcher (`fetchEntityNews` / `getEntityNewsFn`) was deleted. The button above is a plain link only.
 
 **Code:** `src/features/markets/components/EntityDetailSheet.tsx`
 
@@ -74,7 +74,7 @@ Note: these pages do **not** use `fetchEntityNews` (Google News RSS headlines). 
 |---|---|---|---|---|---|
 | Footnote text | Where the numbers come from + market-cap disclaimer. In most panels it switches wording once parser rows exist | Panel file | Hand-written | When code changes | ⚪ |
 | "Figures as reported for … · last reviewed …" | Reporting year and review date | `reportingYear`, `lastReviewed` in `provenance.ts` | Hand-written | Only when someone edits it | ⚪ |
-| "Data sources & references" list | Org, title, year, link for each source (Yahoo Finance is listed as a source for most datasets) | `provenance.ts` via `sourcesFor()` in `src/shared/data/data-sources.ts` | Hand-written | When code changes | ⚪ |
+| "Data sources & references" list | Org, title, year, link for each source (Yahoo Finance is no longer listed; `provenance.ts` has no market-quote source) | `provenance.ts` via `sourcesFor()` in `src/shared/data/data-sources.ts` | Hand-written | When code changes | ⚪ |
 
 ### 6. "Source-backed facts (N entities, M observations)" (fold-out box at the bottom)
 **What the user sees:** A collapsed box. Opened, it is a table with columns Entity, Metric, Value, Year, Confidence, Source (web domain), Basis. It is hidden when there is no data in Supabase.
@@ -131,7 +131,7 @@ Chart: **"Global electricity generators using biofuel"** · file `BioPowerGenera
 | Piece | Shows | Comes from | How it gets here | Refreshes | Status |
 |---|---|---|---|---|---|
 | 74 generators, "Biofuel capacity (MW)", "Biofuel generation (GWh/yr)" | Main chart | `GENERATORS` list | Hand-written | When code changes | ⚪ |
-| Country-level bioenergy capacity + generation | "<Country> bioenergy power market" rows (`capacityMw`, `generationGwh`) | Ember yearly electricity CSV (`biopower-ember-yearly`) | Parser, every 7 days | Daily job | 🟢 |
+| Country-level bioenergy capacity + generation | "<Country> bioenergy power market" rows (`capacityMw`, `generationGwh`) | Ember yearly electricity global CSV (`release_generation_yearly_global.csv`; the old long-format file stopped updating and was replaced 16 Nov 2026), each country's latest year (`biopower-ember-yearly`) | Parser, every 7 days | Daily job | 🟢 |
 | ↳ in the chart? | **No.** The chart stays 100% hand-written. Ember rows appear only in "Source-backed facts"; the footnote says so | | | | |
 | Snapshot only | IRENA capacity statistics 2025, IEA Bioenergy country reports | `source-page-snapshot` | Parser (no numbers) | Daily job | 🟢 |
 | Trend line | Yes (IRENA, IEA figures typed in) | `history-series.ts` | Hand-written | — | ⚪ |
@@ -203,8 +203,8 @@ Chart: **"Top global oil companies"** · file `src/features/markets/components/O
 
 | Piece | Shows | Comes from | How it gets here | Refreshes | Status |
 |---|---|---|---|---|---|
-| Which companies appear (47) | Company names + tickers | `OIL_STOCKS` in `src/features/markets/oil-server-functions.ts` | Hand-written | When code changes | ⚪ |
-| Share price, 1-day change, status "Live"/"Last close" | Price per company. **The rows themselves come from this call**, so if Yahoo returns nothing (and the server has no cached copy) the chart is empty | Yahoo Finance `query1` (`getOilStocksFn`) | Live | Every 5 min | 🔴 |
+| Which companies appear (47) | Company names + tickers. **The rows now come from this hand-written list**, not from a live call | `OIL_COMPANIES` in `src/features/markets/oil-companies.ts` | Hand-written | When code changes | ⚪ |
+| Metrics | "Annual capacity", "Market cap (approx.)", "GHG savings (reported)". No share price or 1-day change | See the rows below | Hand-written | When code changes | ⚪ |
 | "Annual capacity (MMboe/yr)" | Output per company | `CAPACITY` map in the panel file | Hand-written | When code changes | ⚪ |
 | Country, market cap | Country / USD bn | `COMPANY_COUNTRY`, `MARKETCAP_TICKER` in the panel → `market-caps.ts` | Hand-written | When code changes | ⚪ |
 | Logos | Logo per ticker | Logo.dev via `entityLogo()` | Live (image link) | — | 🟢 |
@@ -278,7 +278,9 @@ Chart: **"Global bio-methanol producers"** · file `BioMethanolPanel.tsx`
 ## Problems spotted
 - **The freshness line never shows.** Ethanol, Bio-power, Biochar, Marine, RNG and Pellets build a line like "EIA rows: reporting year 2024 · ingested 12 Oct 2026 · fresh · fallback rows reviewed …". They pass it as a `sourceMeta` prop, but `ChartPanel` in `src/components/chart-kit.tsx` does not accept or display that prop. Visitors never see when parsed data was last updated or whether it is "refresh due".
 - **The Oil companies sources are never refreshed by the daily job.** All of its sources are snapshot-only "manual" pages. `supplyFreshness` treats "manual" as never stale, so `refreshStaleSupplyDatasets` always skips `oil-companies`.
-- **The whole Oil page depends on Yahoo Finance (🔴).** The company rows are built from the Yahoo response, not from a hand-written list of rows. If Yahoo blocks the server (and there is no cached copy in memory), the chart is empty.
+- **The Oil page no longer uses Yahoo Finance.** Rows come from the hand-written `oil-companies.ts`. The trade-off: everything on it (capacity, market cap, GHG) only changes when someone edits code.
+- **Share prices are gone from every supply panel.** The old feed was unlicensed. Charts and detail sheets show ticker and approximate market cap only, and the data-sources page and email summaries were reworded to match.
+- **Snapshot parser no longer keeps page text.** `source-page-snapshot` stores the page title, size and a SHA-256 content hash (to spot changes), not a text excerpt of the publisher's page.
 - **The Hydrogen footnote is wrong.** It says "chart capacities remain fallback data until a dedicated project-capacity parser is wired", but the `hydrogen-iea-projects` parser exists and its `capacityKtY` rows are merged into the chart.
 - **The Terminals chart mixes two different kinds of number.** The EIA rows measure tank **storage size** (a one-time stock, March 2024, report discontinued). They are plotted on the same "Blending capacity (k m³/yr)" scale as the hand-written annual operator figures, and they include a "total" row that adds up the other four.
 - **The snapshot rows clutter the facts box.** On every panel, "Source-backed facts" lists rows like "U.S. Securities and Exchange Commission source snapshot — Approved source reachable — 1 — boolean". These are website-uptime checks, not supply facts.
@@ -287,5 +289,5 @@ Chart: **"Global bio-methanol producers"** · file `BioMethanolPanel.tsx`
 - **Some card counts on `/supply` are out of date:** Oil says "20 listed majors" but 47 are loaded; Hydrogen says 64 but 66 are listed (see `supply.md`).
 
 ---
-Status key: 🟢 our own data, official/open data, or licensed API · 🟡 allowed with care (RSS headlines, AI-written text, copyrighted report figures) · 🔴 not allowed / risky (Yahoo Finance `query1`, YouTube scraping) · ⚪ hand-written in code (needs manual updates)
+Status key: 🟢 our own data, official/open data, or licensed API · 🟡 allowed with care (RSS headlines, AI-written text, copyrighted report figures) · 🔴 not allowed / risky (none at the moment; the old Yahoo Finance `query1` and YouTube scraping were removed) · ⚪ hand-written in code (needs manual updates)
 "How it gets here" must be one of: **Live** (fetched when someone opens the page) · **Daily job** (`/api/public/scheduled-jobs`, 00:17 UTC) · **Parser** (supply ingestion) · **Hand-written** (hard-coded in a file) · **User input** (calculators/forms, saved to account or browser) · **AI** (Gemini) · **Own tracking** (Supabase traffic etc.)

@@ -19,14 +19,13 @@ import {
 import { ghgSavingsMt, GHG_NOTE } from "@/shared/ghg-savings";
 import { GhgEmptyNotice } from "@/components/GhgEmptyNotice";
 import {
-  detailTone,
   useEntityDetail,
   type GraphContext,
 } from "@/features/markets/components/EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/features/markets/entity-logos";
 import { TERMINAL_TICKERS } from "@/features/markets/entity-tickers";
-import { priceMeta, priceTone, useEntityQuotes } from "@/features/markets/hooks/useEntityQuotes";
+import { listingMeta } from "@/features/markets/lib/listing";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/features/markets/market-caps";
 import { getSupplyDatasetFn } from "@/features/supply/server-functions";
@@ -630,7 +629,7 @@ const TERMINALS: Terminal[] = [
   },
 ];
 
-type Metric = "capacity" | "sites" | "price" | "marketcap" | "ghg";
+type Metric = "capacity" | "sites" | "marketcap" | "ghg";
 
 const METRICS: Record<
   Metric,
@@ -649,13 +648,6 @@ const METRICS: Record<
     help: "Number of terminals and truck-loading racks capable of blending biofuels. A single very large hub can outrank a wide network on capacity but not here.",
     decimals: 0,
     value: (t) => t.terminals,
-  },
-  price: {
-    label: "Share price (listing currency)",
-    unit: "share price, primary listing currency",
-    help: "Latest traded share price on the operator's primary listing, in that exchange's currency. Private or state-owned operators have no listing and sit at the end.",
-    decimals: 2,
-    value: () => 0,
   },
   marketcap: {
     label: "Market cap (approx.)",
@@ -733,7 +725,6 @@ export function BlendingTerminalsPanel() {
   const [metricKey, setMetricKey] = useState<Metric>("capacity");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
-  const { get } = useEntityQuotes();
   const { data: dynamicPayload } = useQuery({
     queryKey: ["supply-dataset", "blending-terminals"],
     queryFn: () => getSupplyDatasetFn({ data: { datasetId: "blending-terminals" } }),
@@ -741,8 +732,7 @@ export function BlendingTerminalsPanel() {
   });
   const terminals = useMemo(() => mergeDynamicTerminals(dynamicPayload), [dynamicPayload]);
   const metric = METRICS[metricKey];
-  const valueOf = (t: Terminal) =>
-    metricKey === "price" ? (get(TERMINAL_TICKERS[t.name])?.price ?? 0) : metric.value(t);
+  const valueOf = (t: Terminal) => metric.value(t);
 
   const f = useChartFilter(terminals, {
     text: (t) => `${t.name} ${t.country} ${t.note}`,
@@ -764,8 +754,7 @@ export function BlendingTerminalsPanel() {
     size: axes.size.value(t),
     group: t.country,
     logo: entityLogoByName(t.name),
-    meta: priceMeta(get(TERMINAL_TICKERS[t.name])),
-    changePct: get(TERMINAL_TICKERS[t.name])?.changePct,
+    meta: listingMeta(TERMINAL_TICKERS[t.name]),
     newsTarget: { name: t.name, query: `"${t.name}" ${NEWS_SUFFIX}` },
   }));
 
@@ -775,9 +764,7 @@ export function BlendingTerminalsPanel() {
     sub: t.note,
     value: valueOf(t),
     logo: entityLogoByName(t.name),
-    meta: priceMeta(get(TERMINAL_TICKERS[t.name])),
-    tone: priceTone(get(TERMINAL_TICKERS[t.name])),
-    changePct: get(TERMINAL_TICKERS[t.name])?.changePct,
+    meta: listingMeta(TERMINAL_TICKERS[t.name]),
   }));
   const newsMap = Object.fromEntries(
     rows.map((t) => [t.name, { name: t.name, query: `"${t.name}" ${NEWS_SUFFIX}` }]),
@@ -795,7 +782,6 @@ export function BlendingTerminalsPanel() {
   const onSelect = detail.onSelect((target) => {
     const t = rows.find((r) => r.name === target?.name);
     if (!t) return null;
-    const q = get(TERMINAL_TICKERS[t.name]);
     return {
       name: t.name,
       sub: `${t.flag} ${t.country}`,
@@ -805,12 +791,6 @@ export function BlendingTerminalsPanel() {
         { label: "Blending capacity", value: `${fmt(t.capacityKm3, 0)} k m³/yr` },
         { label: "Blending terminals", value: fmt(t.terminals, 0) },
         { label: "Ticker", value: TERMINAL_TICKERS[t.name] ?? "Not listed" },
-        { label: "Share price", value: q ? fmt(q.price, 2) : "—" },
-        {
-          label: "1-day change",
-          value: q ? `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%` : "—",
-          tone: detailTone(q?.changePct),
-        },
         {
           label: "Market cap (approx.)",
           value: marketCapLabel(TERMINAL_TICKERS[t.name]) ?? "Private / state-owned",
@@ -861,21 +841,16 @@ export function BlendingTerminalsPanel() {
                   "Blending capacity (k m3/yr)",
                   "Blending terminals",
                   "Ticker",
-                  "Share price",
-                  "1-day change %",
                   "Market cap (approx., USD bn)",
                   "Note",
                 ],
                 rows: ranked.map((t) => {
-                  const q = get(TERMINAL_TICKERS[t.name]);
                   return [
                     t.name,
                     t.country,
                     t.capacityKm3,
                     t.terminals,
                     TERMINAL_TICKERS[t.name] ?? "",
-                    q ? q.price.toFixed(2) : "",
-                    q ? q.changePct.toFixed(2) : "",
                     marketCapLabel(TERMINAL_TICKERS[t.name]) ?? "",
                     t.note,
                   ];

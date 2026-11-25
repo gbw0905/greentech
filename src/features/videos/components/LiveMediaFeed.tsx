@@ -156,7 +156,7 @@ export function LiveMediaFeed({
         keywords.slice(index * 12, index * 12 + 12),
       );
       const results = await Promise.all(
-        batches.map((batch) => fetchMedia({ data: { keywords: batch, refresh: false } })),
+        batches.map((batch) => fetchMedia({ data: { keywords: batch } })),
       );
       return {
         videos: [

@@ -7,7 +7,7 @@
 ## Sections (top to bottom, as the user sees them)
 
 ### 1. "Biofuel and bioenergy jobs, worldwide." (hero)
-**What the user sees:** Headline, intro text, "Browse jobs" and "Get email alerts" buttons, and an animated floating-cards scene with labels "Global opportunities", "N employers", "N trusted sources", "Hiring news feed".
+**What the user sees:** Headline, intro text, "Browse jobs" and "Get email alerts" buttons, and an animated floating-cards scene with labels "Global opportunities", "N employers", "N trusted sources", "N job categories".
 
 | Piece | Shows | Comes from | How it gets here | Refreshes | Status |
 |---|---|---|---|---|---|
@@ -54,11 +54,10 @@
 | Search-engine data (JSON-LD) | Hidden list of the job boards for Google | `JOB_BOARDS` | Hand-written | When code changes | ⚪ |
 
 ## Problems spotted
-- **The Google News "hiring news" feed is built but not shown.** `getHiringNewsFn` → `search-jobs.server.ts` (Google News RSS, 🟡) exists, but nothing on the page calls it. Yet the hero still shows a "Hiring news feed" label.
+- **The hiring news feed is gone.** The Google News scraper (`search-jobs.server.ts`, `getHiringNewsFn`) was deleted and the hero label "Hiring news feed" now reads "N job categories". Nothing on this page comes from news.
 - **The employer list is not shown either.** `EmployerDirectory.tsx` is not used anywhere, but the hero and stats strip still advertise "N employers" / "Bioenergy employers".
 - **Region filter is narrower than its name.** Each region sends one country to the job boards, e.g. "Asia" → India, "Middle East & Africa" → United Arab Emirates, "Latin America" → Brazil (`JOB_REGIONS` in `data.ts`).
-- If the news feed is ever switched on: its cache is in server memory only (`market-cache.server.ts`), so it resets on every Vercel cold start.
 
 ---
-Status key: 🟢 our own data, official/open data, or licensed API · 🟡 allowed with care (RSS headlines, AI-written text, copyrighted report figures) · 🔴 not allowed / risky (Yahoo Finance `query1`, YouTube scraping) · ⚪ hand-written in code (needs manual updates)
+Status key: 🟢 our own data, official/open data, or licensed API · 🟡 allowed with care (RSS headlines, AI-written text, copyrighted report figures) · 🔴 not allowed / risky (none at the moment; the old Yahoo Finance `query1` and YouTube scraping were removed) · ⚪ hand-written in code (needs manual updates)
 "How it gets here" must be one of: **Live** (fetched when someone opens the page) · **Daily job** (`/api/public/scheduled-jobs`, 00:17 UTC) · **Parser** (supply ingestion) · **Hand-written** (hard-coded in a file) · **User input** (calculators/forms, saved to account or browser) · **AI** (Gemini) · **Own tracking** (Supabase traffic etc.)

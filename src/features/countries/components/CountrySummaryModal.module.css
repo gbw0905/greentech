@@ -163,3 +163,14 @@
     transition: none;
   }
 }
+
+.provenance {
+  margin-top: 14px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #6b8193;
+}
+.provenance a {
+  color: inherit;
+  text-decoration: underline;
+}

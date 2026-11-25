@@ -344,7 +344,7 @@ export function JobsHuntScene() {
       </span>
       <span className="jobs-discovery-label jobs-discovery-label-bottom">
         <i />
-        Hiring news feed
+        {JOB_CATEGORIES.length} job categories
       </span>
     </div>
   );

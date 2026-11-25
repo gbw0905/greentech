@@ -15,7 +15,7 @@ Same as sections 1–9 of [`countries-slug.md`](./countries-slug.md). The text c
 
 | Piece | Shows | Comes from | How it gets here | Refreshes | Status |
 |---|---|---|---|---|---|
-| News items | Headline, date, outlet, link | Supabase `policy_updates` (newest 1,000 rows across all countries). Filled from ~60 RSS feeds in `src/features/policy/sources.ts`, mostly Google News searches, plus Federal Register, GOV.UK, EU and trade magazines. Rows older than 180 days are deleted | Daily job (00:17 UTC). Also a background import when the newest item is over 4 h old. Preloaded on the server for this route | Every 2 min in the browser (and when the tab regains focus) | 🟡 |
+| News items | Headline, date, outlet, link | Supabase `policy_updates` (newest 1,000 rows across all countries). Filled from the direct official and trade/association feeds in `src/features/policy/sources.ts` (no Google News). Rows older than 180 days are deleted | Daily job (00:17 UTC). Visitors no longer trigger imports. Preloaded on the server for this route | Every 2 min in the browser (and when the tab regains focus) | 🟢 official feeds / 🟡 trade-press headlines |
 | Country filter | Which items appear | Item's country tag (keyword match during import) **or** the country's `updateKeywords` in `taxonomy.ts` found in the headline/summary | Hand-written keyword rules | — | ⚪ |
 | Policy / Market label | Category | Keyword rules (`categorise` in `policy-ingest.server.ts`). Official government sources are always "Policy" | Daily job | — | ⚪ |
 | Mandate tags | Instrument names | Keyword match against each mandate (`updateMatchesMandate` in `mandates.ts`) | Hand-written keyword rules | — | ⚪ |
@@ -33,9 +33,9 @@ Same as section 11 of [`countries-slug.md`](./countries-slug.md). ⚪
 ## Problems spotted
 - **Only the newest 1,000 items site-wide are searched.** The browser gets the latest 1,000 rows from all countries and then filters for this country (`readFeed` in `server-functions.ts`). Smaller countries can lose older items within the 180-day archive.
 - **Keyword matching can pull in other countries' news.** An item counts as this country's news if any of the country's `updateKeywords` appears in the headline or summary, even if the item is tagged to a different country.
-- **The background refresh may not finish.** When news is over 4 hours old, `getPolicyFeed` starts an import without waiting for it. On Vercel's serverless functions this work can be stopped once the response is sent, so it is not a reliable refresh.
+- **Small countries may show little or no news.** The Google News searches that used to find country-specific items are gone, so only items from the direct feeds that match the country's keywords appear.
 - All problems from [`countries-slug.md`](./countries-slug.md) also apply.
 
 ---
-Status key: 🟢 our own data, official/open data, or licensed API · 🟡 allowed with care (RSS headlines, AI-written text, copyrighted report figures) · 🔴 not allowed / risky (Yahoo Finance `query1`, YouTube scraping) · ⚪ hand-written in code (needs manual updates)
+Status key: 🟢 our own data, official/open data, or licensed API · 🟡 allowed with care (RSS headlines, AI-written text, copyrighted report figures) · 🔴 not allowed / risky (none at the moment; the old Yahoo Finance `query1` and YouTube scraping were removed) · ⚪ hand-written in code (needs manual updates)
 "How it gets here" must be one of: **Live** (fetched when someone opens the page) · **Daily job** (`/api/public/scheduled-jobs`, 00:17 UTC) · **Parser** (supply ingestion) · **Hand-written** (hard-coded in a file) · **User input** (calculators/forms, saved to account or browser) · **AI** (Gemini) · **Own tracking** (Supabase traffic etc.)

@@ -19,14 +19,13 @@ import {
 import { ghgSavingsMt, GHG_NOTE } from "@/shared/ghg-savings";
 import { GhgEmptyNotice } from "@/components/GhgEmptyNotice";
 import {
-  detailTone,
   useEntityDetail,
   type GraphContext,
 } from "@/features/markets/components/EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/features/markets/entity-logos";
 import { AIRLINE_TICKERS } from "@/features/markets/entity-tickers";
-import { priceMeta, priceTone, useEntityQuotes } from "@/features/markets/hooks/useEntityQuotes";
+import { listingMeta } from "@/features/markets/lib/listing";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/features/markets/market-caps";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { getSupplyDatasetFn } from "@/features/supply/server-functions";
@@ -522,7 +521,7 @@ const AIRLINES: Airline[] = [
   },
 ];
 
-type AirlineMetric = "volume" | "share" | "price" | "marketcap" | "ghg";
+type AirlineMetric = "volume" | "share" | "marketcap" | "ghg";
 
 const AIRLINE_METRICS: Record<
   AirlineMetric,
@@ -541,13 +540,6 @@ const AIRLINE_METRICS: Record<
     help: "Share of the airline's total jet fuel burn that is SAF. A small airline can rank high here even with modest volumes, because it measures intensity rather than scale.",
     decimals: 2,
     value: (a) => a.share,
-  },
-  price: {
-    label: "Share price (listing currency)",
-    unit: "share price, primary listing currency",
-    help: "Latest traded share price on the carrier's primary listing, in that exchange's currency. State-owned or private carriers have no listing and sit at the end.",
-    decimals: 2,
-    value: () => 0,
   },
   marketcap: {
     label: "Market cap (approx.)",
@@ -576,16 +568,6 @@ function scatterAxes(metricKey: AirlineMetric) {
       },
       y: AIRLINE_METRICS.share,
       size: { label: "SAF share of fuel burn", unit: "%", value: (a: Airline) => a.share },
-    };
-  }
-  if (metricKey === "price") {
-    return {
-      x: {
-        metric: AIRLINE_METRICS.share,
-        help: "X-axis shows SAF intensity; Y-axis shows share price.",
-      },
-      y: AIRLINE_METRICS.price,
-      size: { label: "SAF uplift volume", unit: "Ml/yr", value: (a: Airline) => a.volume },
     };
   }
   if (metricKey === "marketcap") {
@@ -635,7 +617,6 @@ export function SafAirlinesPanel() {
   const [metricKey, setMetricKey] = useState<AirlineMetric>("volume");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
-  const { get } = useEntityQuotes();
   const { data: dynamicPayload } = useQuery({
     queryKey: ["supply-dataset", "saf-airlines"],
     queryFn: () => getSupplyDatasetFn({ data: { datasetId: "saf-airlines" } }),
@@ -643,8 +624,7 @@ export function SafAirlinesPanel() {
   });
   const airlines = useMemo(() => mergeDynamicAirlines(dynamicPayload), [dynamicPayload]);
   const metric = AIRLINE_METRICS[metricKey];
-  const valueOf = (a: Airline) =>
-    metricKey === "price" ? (get(AIRLINE_TICKERS[a.code])?.price ?? 0) : metric.value(a);
+  const valueOf = (a: Airline) => metric.value(a);
   const f = useChartFilter(airlines, {
     text: (a) => `${a.name} ${a.code} ${a.country} ${a.note}`,
     facetA: (a) => a.country,
@@ -668,8 +648,7 @@ export function SafAirlinesPanel() {
     size: axes.size.value(a),
     group: a.country,
     logo: entityLogoByName(a.name),
-    meta: priceMeta(get(AIRLINE_TICKERS[a.code])),
-    changePct: get(AIRLINE_TICKERS[a.code])?.changePct,
+    meta: listingMeta(AIRLINE_TICKERS[a.code]),
     newsTarget: { name: a.name, query: `${a.name} sustainable aviation fuel OR SAF` },
   }));
 
@@ -679,9 +658,7 @@ export function SafAirlinesPanel() {
     sub: a.note,
     value: valueOf(a),
     logo: entityLogoByName(a.name),
-    meta: priceMeta(get(AIRLINE_TICKERS[a.code])),
-    tone: priceTone(get(AIRLINE_TICKERS[a.code])),
-    changePct: get(AIRLINE_TICKERS[a.code])?.changePct,
+    meta: listingMeta(AIRLINE_TICKERS[a.code]),
   }));
   const newsMap = Object.fromEntries(
     sorted.map((a) => [
@@ -702,7 +679,6 @@ export function SafAirlinesPanel() {
   const onSelect = detail.onSelect((t) => {
     const a = sorted.find((x) => x.name === t?.name);
     if (!a) return null;
-    const q = get(AIRLINE_TICKERS[a.code]);
     return {
       name: a.name,
       sub: `${a.flag} ${a.country} · ${a.code}`,
@@ -712,15 +688,9 @@ export function SafAirlinesPanel() {
         { label: "SAF uplift", value: `${fmt(a.volume, 0)} Ml/yr` },
         { label: "SAF share of fuel burn", value: `${fmt(a.share, 2)}%` },
         { label: "Ticker", value: AIRLINE_TICKERS[a.code] ?? "Not listed" },
-        { label: "Share price", value: q ? fmt(q.price, 2) : "—" },
         {
           label: "Market cap (approx.)",
           value: marketCapLabel(AIRLINE_TICKERS[a.code]) ?? "Private / state-owned",
-        },
-        {
-          label: "1-day change",
-          value: q ? `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%` : "—",
-          tone: detailTone(q?.changePct),
         },
       ],
       news: { name: a.name, query: `${a.name} sustainable aviation fuel OR SAF` },
@@ -769,13 +739,10 @@ export function SafAirlinesPanel() {
                   "SAF uplift (Ml/yr)",
                   "SAF share of fuel burn (%)",
                   "Ticker",
-                  "Share price",
-                  "1-day change %",
                   "Market cap (approx., USD bn)",
                   "Note",
                 ],
                 rows: ranked.map((a) => {
-                  const q = get(AIRLINE_TICKERS[a.code]);
                   return [
                     a.name,
                     a.code,
@@ -783,8 +750,6 @@ export function SafAirlinesPanel() {
                     a.volume,
                     a.share,
                     AIRLINE_TICKERS[a.code] ?? "",
-                    q ? q.price.toFixed(2) : "",
-                    q ? q.changePct.toFixed(2) : "",
                     marketCapLabel(AIRLINE_TICKERS[a.code]) ?? "",
                     a.note,
                   ];

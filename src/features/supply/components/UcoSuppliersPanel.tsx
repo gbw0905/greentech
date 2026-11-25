@@ -19,14 +19,13 @@ import {
 import { ghgSavingsMt, GHG_NOTE } from "@/shared/ghg-savings";
 import { GhgEmptyNotice } from "@/components/GhgEmptyNotice";
 import {
-  detailTone,
   useEntityDetail,
   type GraphContext,
 } from "@/features/markets/components/EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/features/markets/entity-logos";
 import { UCO_TICKERS } from "@/features/markets/entity-tickers";
-import { priceMeta, priceTone, useEntityQuotes } from "@/features/markets/hooks/useEntityQuotes";
+import { listingMeta } from "@/features/markets/lib/listing";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/features/markets/market-caps";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { getSupplyDatasetFn } from "@/features/supply/server-functions";
@@ -581,7 +580,7 @@ const SUPPLIERS: UcoSupplier[] = [
   },
 ];
 
-type Metric = "volume" | "reach" | "price" | "marketcap" | "ghg";
+type Metric = "volume" | "reach" | "marketcap" | "ghg";
 
 const METRICS: Record<
   Metric,
@@ -600,13 +599,6 @@ const METRICS: Record<
     help: "Number of countries where the supplier collects or sources UCO. A domestic collector can be large in volume yet score low here.",
     decimals: 0,
     value: (s) => s.countriesServed,
-  },
-  price: {
-    label: "Share price (listing currency)",
-    unit: "share price, primary listing currency",
-    help: "Latest traded share price on the supplier's primary listing, in that exchange's currency. Private or state-owned collectors have no listing and sit at the end.",
-    decimals: 2,
-    value: () => 0,
   },
   marketcap: {
     label: "Market cap (approx.)",
@@ -631,19 +623,6 @@ function scatterAxes(metricKey: Metric) {
       x: {
         metric: METRICS.volume,
         help: "X-axis shows annual UCO volume; Y-axis shows collection footprint.",
-      },
-      size: {
-        label: "Collection countries",
-        unit: "countries",
-        value: (s: UcoSupplier) => s.countriesServed,
-      },
-    };
-  }
-  if (metricKey === "price") {
-    return {
-      x: {
-        metric: METRICS.volume,
-        help: "X-axis shows annual UCO volume; Y-axis shows share price.",
       },
       size: {
         label: "Collection countries",
@@ -705,7 +684,6 @@ export function UcoSuppliersPanel() {
   const [metricKey, setMetricKey] = useState<Metric>("volume");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
-  const { get } = useEntityQuotes();
   const { data: dynamicPayload } = useQuery({
     queryKey: ["supply-dataset", "uco-suppliers"],
     queryFn: () => getSupplyDatasetFn({ data: { datasetId: "uco-suppliers" } }),
@@ -713,8 +691,7 @@ export function UcoSuppliersPanel() {
   });
   const suppliers = useMemo(() => mergeDynamicSuppliers(dynamicPayload), [dynamicPayload]);
   const metric = METRICS[metricKey];
-  const valueOf = (s: UcoSupplier) =>
-    metricKey === "price" ? (get(UCO_TICKERS[s.name])?.price ?? 0) : metric.value(s);
+  const valueOf = (s: UcoSupplier) => metric.value(s);
 
   const f = useChartFilter(suppliers, {
     text: (s) => `${s.name} ${s.country} ${s.note}`,
@@ -736,8 +713,7 @@ export function UcoSuppliersPanel() {
     size: axes.size.value(s),
     group: s.country,
     logo: entityLogoByName(s.name),
-    meta: priceMeta(get(UCO_TICKERS[s.name])),
-    changePct: get(UCO_TICKERS[s.name])?.changePct,
+    meta: listingMeta(UCO_TICKERS[s.name]),
     newsTarget: { name: s.name, query: `"${s.name}" ${NEWS_SUFFIX}` },
   }));
 
@@ -747,9 +723,7 @@ export function UcoSuppliersPanel() {
     sub: s.note,
     value: valueOf(s),
     logo: entityLogoByName(s.name),
-    meta: priceMeta(get(UCO_TICKERS[s.name])),
-    tone: priceTone(get(UCO_TICKERS[s.name])),
-    changePct: get(UCO_TICKERS[s.name])?.changePct,
+    meta: listingMeta(UCO_TICKERS[s.name]),
   }));
   const newsMap = Object.fromEntries(
     rows.map((s) => [s.name, { name: s.name, query: `"${s.name}" ${NEWS_SUFFIX}` }]),
@@ -767,7 +741,6 @@ export function UcoSuppliersPanel() {
   const onSelect = detail.onSelect((t) => {
     const s = rows.find((r) => r.name === t?.name);
     if (!s) return null;
-    const q = get(UCO_TICKERS[s.name]);
     return {
       name: s.name,
       sub: `${s.flag} ${s.country}`,
@@ -777,15 +750,9 @@ export function UcoSuppliersPanel() {
         { label: "UCO collected", value: `${fmt(s.volumeKt, 0)} kt/yr` },
         { label: "Collection countries", value: fmt(s.countriesServed, 0) },
         { label: "Ticker", value: UCO_TICKERS[s.name] ?? "Not listed" },
-        { label: "Share price", value: q ? fmt(q.price, 2) : "—" },
         {
           label: "Market cap (approx.)",
           value: marketCapLabel(UCO_TICKERS[s.name]) ?? "Private / state-owned",
-        },
-        {
-          label: "1-day change",
-          value: q ? `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%` : "—",
-          tone: detailTone(q?.changePct),
         },
       ],
       news: { name: s.name, query: `"${s.name}" ${NEWS_SUFFIX}` },
@@ -833,21 +800,16 @@ export function UcoSuppliersPanel() {
                   "UCO collected (kt/yr)",
                   "Collection countries",
                   "Ticker",
-                  "Share price",
-                  "1-day change %",
                   "Market cap (approx., USD bn)",
                   "Note",
                 ],
                 rows: ranked.map((s) => {
-                  const q = get(UCO_TICKERS[s.name]);
                   return [
                     s.name,
                     s.country,
                     s.volumeKt,
                     s.countriesServed,
                     UCO_TICKERS[s.name] ?? "",
-                    q ? q.price.toFixed(2) : "",
-                    q ? q.changePct.toFixed(2) : "",
                     marketCapLabel(UCO_TICKERS[s.name]) ?? "",
                     s.note,
                   ];

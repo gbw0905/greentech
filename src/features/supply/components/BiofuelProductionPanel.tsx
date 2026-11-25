@@ -20,7 +20,6 @@ import {
 import { ghgSavingsMt, GHG_NOTE } from "@/shared/ghg-savings";
 import { GhgEmptyNotice } from "@/components/GhgEmptyNotice";
 import {
-  detailTone,
   useEntityDetail,
   type GraphContext,
 } from "@/features/markets/components/EntityDetailSheet";
@@ -28,7 +27,7 @@ import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/componen
 import { entityLogoByName } from "@/features/markets/entity-logos";
 import type { FuelType } from "@/features/policy/taxonomy";
 import { STATION_TICKERS } from "@/features/markets/entity-tickers";
-import { priceMeta, priceTone, useEntityQuotes } from "@/features/markets/hooks/useEntityQuotes";
+import { listingMeta } from "@/features/markets/lib/listing";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/features/markets/market-caps";
 import { getSupplyDatasetFn } from "@/features/supply/server-functions";
 import type { SupplyDatasetPayload } from "@/features/supply/contracts";
@@ -1088,7 +1087,7 @@ const STATIONS: Station[] = [
   },
 ];
 
-type StationMetric = "sites" | "volume" | "perSite" | "price" | "marketcap" | "ghg";
+type StationMetric = "sites" | "volume" | "perSite" | "marketcap" | "ghg";
 
 const STATION_METRICS: Record<
   StationMetric,
@@ -1114,13 +1113,6 @@ const STATION_METRICS: Record<
     help: "Average biofuel sold per station per year (thousand litres) — volume divided by sites. It shows how intensively each forecourt sells biofuel, regardless of network size.",
     decimals: 1,
     value: (s) => (s.volumeMnL * 1000) / Math.max(s.sites, 1),
-  },
-  price: {
-    label: "Share price (listing currency)",
-    unit: "share price, primary listing currency",
-    help: "Latest traded share price of the parent company on its primary listing, in that exchange's currency. State-owned or private networks have no listing and sit at the end.",
-    decimals: 2,
-    value: () => 0,
   },
   marketcap: {
     label: "Market cap (approx.)",
@@ -1163,7 +1155,7 @@ function mergeDynamicStations(payload: SupplyDatasetPayload | undefined): Statio
         metricValue(row, ["sites", "biofuelSites", "retailSites", "dispensingSites"]) ??
         fallback?.sites ??
         1,
-      fuels: fuels.length ? (fuels as FuelType[]) : fallback?.fuels ?? [],
+      fuels: fuels.length ? (fuels as FuelType[]) : (fallback?.fuels ?? []),
       note: metaString(row.metadata["note"], fallback?.note ?? "Source-backed retail network row"),
       color: fallback?.color ?? "var(--chart-3)",
     });
@@ -1216,9 +1208,9 @@ function scatterAxes(metricKey: StationMetric) {
   return {
     x: {
       metric: STATION_METRICS.volume,
-      help: "X-axis shows total volume sold; Y-axis shows share price.",
+      help: "X-axis shows total volume sold; Y-axis shows market cap.",
     },
-    y: STATION_METRICS.price,
+    y: STATION_METRICS.marketcap,
     size: { label: "Retail sites", unit: "sites", value: (s: Station) => s.sites },
   };
 }
@@ -1227,7 +1219,6 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
   const [stationMetric, setStationMetric] = useState<StationMetric>("sites");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
-  const { get } = useEntityQuotes();
   const { data: dynamicPayload } = useQuery({
     queryKey: ["supply-dataset", "fuel-stations"],
     queryFn: () => getSupplyDatasetFn({ data: { datasetId: "fuel-stations" } }),
@@ -1235,8 +1226,7 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
   });
   const allStations = useMemo(() => mergeDynamicStations(dynamicPayload), [dynamicPayload]);
   const metric = STATION_METRICS[stationMetric];
-  const valueOf = (s: Station) =>
-    stationMetric === "price" ? (get(STATION_TICKERS[s.name])?.price ?? 0) : metric.value(s);
+  const valueOf = (s: Station) => metric.value(s);
 
   const matched = allStations.filter(
     (s) => fuels.length === 0 || s.fuels.some((f) => fuels.includes(f)),
@@ -1266,8 +1256,7 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
     size: axes.size.value(s),
     group: s.country,
     logo: entityLogoByName(s.name),
-    meta: priceMeta(get(STATION_TICKERS[s.name])),
-    changePct: get(STATION_TICKERS[s.name])?.changePct,
+    meta: listingMeta(STATION_TICKERS[s.name]),
     newsTarget: {
       name: s.name,
       query: `"${s.name}" biofuel OR ethanol OR renewable diesel station`,
@@ -1280,9 +1269,7 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
     sub: s.note,
     value: valueOf(s),
     logo: entityLogoByName(s.name),
-    meta: priceMeta(get(STATION_TICKERS[s.name])),
-    tone: priceTone(get(STATION_TICKERS[s.name])),
-    changePct: get(STATION_TICKERS[s.name])?.changePct,
+    meta: listingMeta(STATION_TICKERS[s.name]),
   }));
   const newsMap = Object.fromEntries(
     stations.map((s) => [
@@ -1307,7 +1294,6 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
   const onSelect = detail.onSelect((t) => {
     const s = stations.find((x) => x.name === t?.name);
     if (!s) return null;
-    const q = get(STATION_TICKERS[s.name]);
     return {
       name: s.name,
       sub: `${s.country} · ${s.fuels.join(" / ")}`,
@@ -1317,15 +1303,9 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
         { label: "Retail sites offering biofuels", value: fmt(s.sites, 0) },
         { label: "Biofuel volume sold", value: `${fmt(s.volumeMnL, 0)} Ml/yr` },
         { label: "Ticker", value: STATION_TICKERS[s.name] ?? "Not listed" },
-        { label: "Share price", value: q ? fmt(q.price, 2) : "—" },
         {
           label: "Market cap (approx.)",
           value: marketCapLabel(STATION_TICKERS[s.name]) ?? "Private / state-owned",
-        },
-        {
-          label: "1-day change",
-          value: q ? `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%` : "—",
-          tone: detailTone(q?.changePct),
         },
       ],
       news: { name: s.name, query: `"${s.name}" biofuel OR ethanol OR renewable diesel station` },
@@ -1375,13 +1355,10 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
                   "Volume per site (litres x1000/yr)",
                   "Fuels",
                   "Ticker",
-                  "Share price",
-                  "1-day change %",
                   "Market cap (approx., USD bn)",
                   "Note",
                 ],
                 rows: ranked.map((s) => {
-                  const q = get(STATION_TICKERS[s.name]);
                   return [
                     s.name,
                     s.country,
@@ -1390,8 +1367,6 @@ export function BiofuelProductionPanel({ fuels = [] }: { fuels?: FuelType[] }) {
                     ((s.volumeMnL * 1000) / Math.max(s.sites, 1)).toFixed(1),
                     s.fuels.join(" / "),
                     STATION_TICKERS[s.name] ?? "",
-                    q ? q.price.toFixed(2) : "",
-                    q ? q.changePct.toFixed(2) : "",
                     marketCapLabel(STATION_TICKERS[s.name]) ?? "",
                     s.note,
                   ];

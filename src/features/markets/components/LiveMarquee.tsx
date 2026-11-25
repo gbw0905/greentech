@@ -10,12 +10,14 @@ function PricePill({
   change,
   changePct,
   symbol,
+  unit,
 }: {
   label: string;
   price: number;
   change: number;
   changePct: number;
   symbol: string;
+  unit: string;
 }) {
   const up = change >= 0;
   return (
@@ -23,7 +25,8 @@ function PricePill({
       <span className="sr-only">{symbol}</span>
       <span className="font-semibold text-[#0e2a43]">{label}</span>
       <span className="text-[#4c6278] tabular-nums">
-        {price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        ${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        <span className="text-[#7b8ea0]">{unit}</span>
       </span>
       <span
         className={`inline-flex items-center gap-0.5 tabular-nums ${up ? "text-[#178a6b]" : "text-[#b4233c]"}`}
@@ -49,8 +52,8 @@ export function LiveMarquee({
     queryKey: ["oil-prices"],
     queryFn: () => getOilPricesFn(),
     initialData: initialMarket ?? undefined,
-    refetchInterval: 60_000,
-    staleTime: 30_000,
+    refetchInterval: 30 * 60_000,
+    staleTime: 10 * 60_000,
   });
 
   const { data: feedData } = useQuery({
@@ -61,8 +64,24 @@ export function LiveMarquee({
   const quotes = oilData?.quotes ?? [];
   const latest = (feedData?.updates as PolicyUpdate[] | undefined)?.slice(0, 4) ?? [];
 
+  const priceDate = oilData?.asOf
+    ? new Date(oilData.asOf).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+        timeZone: "UTC",
+      })
+    : null;
+
   const renderContent = (copy: string) => (
     <>
+      {quotes.length > 0 && priceDate && (
+        <span
+          key={`${copy}-price-date`}
+          className="shrink-0 px-[22px] whitespace-nowrap text-[#7b8ea0]"
+        >
+          EIA spot prices, {priceDate}
+        </span>
+      )}
       {quotes.map((q) => (
         <span key={`${copy}-${q.symbol}`} className="shrink-0 px-[22px]">
           <PricePill
@@ -71,6 +90,7 @@ export function LiveMarquee({
             change={q.change}
             changePct={q.changePct}
             symbol={q.symbol}
+            unit={q.unit}
           />
         </span>
       ))}
@@ -100,7 +120,7 @@ export function LiveMarquee({
   return (
     <div
       role="region"
-      aria-label="Live market and policy updates"
+      aria-label="Market prices and policy updates"
       className="site-ribbon flex h-[42px] items-stretch overflow-hidden border-b border-[#d6e1ea] bg-white font-['Instrument_Sans'] text-[14px]"
     >
       <div className="relative z-10 flex shrink-0 items-center gap-2 border-r border-[#d6e1ea] bg-white px-5 font-semibold text-[#0e2a43]">
@@ -114,7 +134,7 @@ export function LiveMarquee({
         </div>
       </div>
       <div className="relative z-10 hidden shrink-0 items-center gap-1.5 border-l border-[#d6e1ea] bg-white px-5 text-[#7b8ea0] min-[761px]:flex">
-        Last Updated <span className="font-semibold text-[#4c6278]">{lastScan}</span>
+        News updated <span className="font-semibold text-[#4c6278]">{lastScan}</span>
       </div>
     </div>
   );

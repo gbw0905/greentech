@@ -18,7 +18,7 @@ const BENEFITS = [
   {
     icon: MailCheck,
     title: "One daily digest",
-    body: "AI-classified summaries with jurisdiction, fuel type and source link. No noise, no multiple emails per day.",
+    body: "Headline summaries tagged by jurisdiction and fuel type, each with a link to the original source. One email a day.",
   },
   {
     icon: ShieldCheck,
@@ -34,7 +34,7 @@ export function GetAlertsPage() {
       <PageHeading
         icon={BellRing}
         title="Never miss a biofuel policy change again"
-        subtitle="A free daily digest of global bioenergy policy and market updates — mandates, blending targets, tax credits and SAF incentives, classified by AI."
+        subtitle="A free daily digest of global bioenergy policy and market updates — mandates, blending targets, tax credits and SAF incentives, tagged by country and fuel type."
       />
       <div className="grid items-start gap-6 lg:grid-cols-[1.05fr_minmax(0,1fr)]">
         <div className="space-y-4">

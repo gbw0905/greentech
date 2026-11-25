@@ -32,8 +32,8 @@ export function HomeHero({
           </h1>
           <p className={styles["description"]}>
             Global Bioenergy Watch reads official government sources, regulators and credible energy
-            media worldwide, then uses AI to classify and summarise each biofuel policy and market
-            update. Open the policy map to browse country profiles.
+            media worldwide, then tags each biofuel policy and market update by country and fuel
+            type and links to the original source. Open the policy map to browse country profiles.
           </p>
           <div className={styles["actions"]}>
             <a href="#map" className={styles["primary"]}>

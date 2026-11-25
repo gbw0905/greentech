@@ -18,13 +18,12 @@ const SOURCE_OVERRIDES: Record<
   string,
   Partial<Pick<SupplySourceRegistryEntry, "sourceType" | "parserId" | "refreshCadence" | "notes">>
 > = {
-  "ethanol|U.S. Energy Information Administration|https://www.eia.gov/petroleum/ethanolcapacity/":
-    {
-      sourceType: "html",
-      parserId: "ethanol-eia-capacity",
-      refreshCadence: "annual",
-      notes: "Parser follows the approved EIA landing page to its plant-level XLSX workbook.",
-    },
+  "ethanol|U.S. Energy Information Administration|https://www.eia.gov/petroleum/ethanolcapacity/": {
+    sourceType: "html",
+    parserId: "ethanol-eia-capacity",
+    refreshCadence: "annual",
+    notes: "Parser follows the approved EIA landing page to its plant-level XLSX workbook.",
+  },
   "biochar|Biochar Europe|https://www.biochareurope.eu/members": {
     sourceType: "html",
     parserId: "biochar-biochar-europe-members",
@@ -79,14 +78,13 @@ const SOURCE_OVERRIDES: Record<
       notes:
         "Parser follows the GOV.UK RTFO collection to the latest final report and ingests reported UCO feedstock-origin aggregates where published.",
     },
-  "saf-airlines|IATA|https://www.iata.org/en/programs/sustainability/sustainable-aviation-fuels/":
-    {
-      sourceType: "html",
-      parserId: "saf-iata-production",
-      refreshCadence: "quarterly",
-      notes:
-        "Parser extracts IATA global SAF production and fuel-share facts; airline-level uplift remains dependent on carrier disclosures.",
-    },
+  "saf-airlines|IATA|https://www.iata.org/en/programs/sustainability/sustainable-aviation-fuels/": {
+    sourceType: "html",
+    parserId: "saf-iata-production",
+    refreshCadence: "quarterly",
+    notes:
+      "Parser extracts IATA global SAF production and fuel-share facts; airline-level uplift remains dependent on carrier disclosures.",
+  },
   "renewable-hydrogen|International Energy Agency|https://www.iea.org/data-and-statistics/data-product/hydrogen-production-and-infrastructure-projects-database":
     {
       sourceType: "html",
@@ -127,7 +125,6 @@ const SOURCE_OVERRIDES: Record<
 };
 
 function shouldSnapshotSource(source: { org: string; url: string }): boolean {
-  if (source.org === "Yahoo Finance") return false;
   if (source.url.includes("globalbioenergywatch.org")) return false;
   return true;
 }
@@ -168,8 +165,7 @@ export const SUPPLY_SOURCE_REGISTRY: SupplySourceRegistryEntry[] = DATASETS.flat
     const override = SOURCE_OVERRIDES[`${dataset.id}|${source.org}|${source.url}`];
     const sourceType = override?.sourceType ?? inferSourceType(source.url);
     const parserId =
-      override?.parserId ??
-      (shouldSnapshotSource(source) ? "supply-source-page-snapshot" : null);
+      override?.parserId ?? (shouldSnapshotSource(source) ? "supply-source-page-snapshot" : null);
     const entry: SupplySourceRegistryEntry = {
       id: `${dataset.id}:${slugify(source.org)}:${slugify(source.title || source.url)}`,
       datasetId: dataset.id,
@@ -189,7 +185,8 @@ export const SUPPLY_SOURCE_REGISTRY: SupplySourceRegistryEntry[] = DATASETS.flat
       entry.notes =
         "Approved source crawled by the generic source snapshot parser; dedicated metric extraction can be added where the source exposes structured data.";
     } else if (sourceType === "html") {
-      entry.notes = "Approved source, but still needs a dedicated parser before automated ingestion.";
+      entry.notes =
+        "Approved source, but still needs a dedicated parser before automated ingestion.";
     }
     return entry;
   }),

@@ -21,16 +21,38 @@ function publicClient() {
   });
 }
 
-async function readFeed(): Promise<PolicyFeed> {
-  const fetchedAt = new Date().toISOString();
+/**
+ * When the archive last received data from the collection job. `updated_at` is
+ * bumped by a trigger whenever the ingest upserts a row, so the newest value is
+ * the time of the last successful collection — not the time of this request.
+ */
+async function lastCollectedAt(): Promise<string | null> {
   const { data, error } = await publicClient()
     .from("policy_updates")
-    .select(
-      "url,title,summary,source,published_at,region,country_slug,country_name,fuels,created_at,category",
-    )
-    .order("published_at", { ascending: false, nullsFirst: false })
-    .order("created_at", { ascending: false })
-    .limit(1000);
+    .select("updated_at")
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error || !data) return null;
+  return data.updated_at;
+}
+
+async function readFeed(): Promise<PolicyFeed> {
+  const [collectedAt, result] = await Promise.all([
+    lastCollectedAt(),
+    publicClient()
+      .from("policy_updates")
+      .select(
+        "url,title,summary,source,published_at,region,country_slug,country_name,fuels,created_at,category",
+      )
+      .order("published_at", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: false })
+      .limit(1000),
+  ]);
+  const { data, error } = result;
+  // Empty string (not "now") when unknown, so the UI never shows today's date
+  // for data that may be older.
+  const fetchedAt = collectedAt ?? "";
 
   if (error) return { updates: [], fetchedAt, error: error.message };
 
@@ -44,7 +66,7 @@ async function readFeed(): Promise<PolicyFeed> {
       url: r.url,
       source: r.source ?? "",
       publishedAt: r.published_at,
-      createdAt: r.created_at ?? fetchedAt,
+      createdAt: r.created_at ?? r.published_at ?? "",
       region: (r.region ?? "Global") as Region,
       countrySlug: r.country_slug,
       countryName: r.country_name,
@@ -55,42 +77,8 @@ async function readFeed(): Promise<PolicyFeed> {
   };
 }
 
-const STALE_THRESHOLD = 4 * 60 * 60 * 1000; // 4 hours
-let lastBackgroundIngest = 0;
-
-export const getPolicyFeed = createServerFn({ method: "GET" }).handler(async () => {
-  const feed = await readFeed();
-
-  if (feed.updates.length === 0) {
-    // Cold start: fill the archive on the very first visit.
-    const { ingestPolicyUpdates } = await import("./server/policy-ingest.server");
-    try {
-      await ingestPolicyUpdates();
-    } catch (e) {
-      return { ...feed, error: e instanceof Error ? e.message : String(e) };
-    }
-    return readFeed();
-  }
-
-  // Smart refresh: if the newest item is older than 4 hours and we haven't
-  // recently kicked off an ingest, trigger one in the background so the next
-  // poll picks up fresh data. The current request returns immediately.
-  const newest = feed.updates[0]?.publishedAt ?? feed.updates[0]?.createdAt;
-  const age = newest ? Date.now() - new Date(newest).getTime() : Infinity;
-  const sinceLastIngest = Date.now() - lastBackgroundIngest;
-
-  if (age > STALE_THRESHOLD && sinceLastIngest > STALE_THRESHOLD) {
-    lastBackgroundIngest = Date.now();
-    import("./server/policy-ingest.server")
-      .then((m) => m.ingestPolicyUpdates())
-      .catch((e) => console.error("background policy ingest failed", e));
-  }
-
-  return feed;
-});
-
-export const refreshPolicyFeed = createServerFn({ method: "POST" }).handler(async () => {
-  const { ingestPolicyUpdates } = await import("./server/policy-ingest.server");
-  const result = await ingestPolicyUpdates();
-  return { ...(await readFeed()), ingested: result.kept };
-});
+/**
+ * Read-only: visitors never trigger collection. The archive is filled by the
+ * scheduled ingest (`/api/public/ingest-policy` and `/api/public/scheduled-jobs`).
+ */
+export const getPolicyFeed = createServerFn({ method: "GET" }).handler(async () => readFeed());

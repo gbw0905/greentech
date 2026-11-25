@@ -49,6 +49,7 @@ define or migrate that table itself.
 | `supply_entities`          | Normalized companies/assets in supply datasets  | Public read               |
 | `supply_observations`      | Source-backed metric observations per entity    | Public read               |
 | `supply_ingest_runs`       | Supply scraper/parser run history               | Service role only         |
+| `official_price_cache`     | Last good copy of EIA, CARB and USDA price data | Public read               |
 
 ## Relationships
 
@@ -100,6 +101,10 @@ role; the site, assistant, and MCP tools read it.
 
 Indexes: unique URL; `published_at DESC NULLS LAST`; `country_slug`;
 `created_at DESC`; `category`.
+
+The newest `updated_at` in this table is the "News updated" date shown in the
+ribbon and footer. It is the real time of the last collection, because the
+trigger bumps it whenever the ingest upserts a row.
 
 RLS permits `SELECT` to `anon` and `authenticated`. Mutations are intended for
 `service_role` only.
@@ -377,6 +382,30 @@ allowed.
 Operational scraper/parser run log with parser id, status, timestamps, row
 counts, error text, and run metadata. Client roles are denied; service role has
 full access.
+
+### `official_price_cache`
+
+Last good copy of public government price data, so the home page and ribbon
+survive a server restart or a source outage. Added by
+`supabase/migrations/20261116120000_official_price_cache.sql`. **That migration
+must be applied** before the table exists; until then the server falls back to
+its in-memory copy only.
+
+| Column       | Type          | Default / constraint |
+| ------------ | ------------- | -------------------- |
+| `cache_key`  | `text`        | **PK**               |
+| `payload`    | `jsonb`       |                      |
+| `source_url` | `text`        |                      |
+| `fetched_at` | `timestamptz` | `now()`              |
+
+Keys: one per EIA series (`eia:wti`, `eia:brent`, `eia:henry-hub`,
+`eia:nyh-ulsd`, `eia:usgc-jet`), `carb:lcfs-monthly` and `usda:ams-3616`.
+Written by the server with the service role in
+`src/features/markets/official/store.server.ts`. A row is refreshed on read when
+it is older than its limit (EIA 6 h, USDA 12 h, CARB 24 h).
+
+RLS permits `SELECT` to `anon` and `authenticated` (the data is public). A
+restrictive policy blocks all client writes.
 
 ## Database functions
 

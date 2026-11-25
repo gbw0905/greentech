@@ -55,7 +55,7 @@ export function IntelligenceFooter() {
             </p>
             <span className="footer-status">
               <i className="status-pulse" aria-hidden="true" />
-              {lastScan ? `Last Updated ${lastScan}` : "Policy · Markets · Sustainability"}
+              {lastScan ? `News updated ${lastScan}` : "Policy · Markets · Sustainability"}
             </span>
           </div>
           <FooterNewsletter />

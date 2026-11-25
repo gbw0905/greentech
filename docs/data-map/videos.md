@@ -25,8 +25,8 @@ The page has three views on the same URL: the **video grid** (default), the **wa
 | Piece | Shows | Comes from | How it gets here | Refreshes | Status |
 |---|---|---|---|---|---|
 | "Recent uploads for:" line | The search phrases used | Built in the browser: 5 default phrases (e.g. "bioenergy policy", "biofuel mandate") or one phrase per ticked fuel, each prefixed with each ticked country name | Hand-written phrase list + User input | Instantly when filters change | ⚪ |
-| Video cards (title, channel, upload age, duration, thumbnail) | Newest YouTube videos for those phrases | **YouTube Data API v3** (`search` + `videos` endpoints, key `YOUTUBE_API_KEY`) | Live: server fetches, then saves a copy in Supabase table `video_cache` for **2 hours**; everyone gets the cached copy in that window | Browser re-asks every 5 min (cache usually answers) | 🟢 |
-| Video cards — **if `YOUTUBE_API_KEY` is not set** | Same | **Scraped from the YouTube search web page** (`youtube.com/results`, reads hidden `ytInitialData`) | Live, same 2 h cache | Same | 🔴 |
+| Video cards (title, channel, upload age, duration, thumbnail) | Newest YouTube videos for those phrases | **YouTube Data API v3** (`search` + `videos` endpoints, key `YOUTUBE_API_KEY`) | Live: server fetches, then saves a copy in Supabase table `video_cache` for **2 hours**; everyone gets the cached copy in that window. Visitors cannot bypass the cache | Browser re-asks every 5 min (cache usually answers) | 🟢 |
+| Video cards — **if `YOUTUBE_API_KEY` is not set** | Nothing: the grid is empty. There is no scraping fallback any more | — | — | — | — |
 | Thumbnails | Video preview images | YouTube image server `i.ytimg.com` | Live | — | 🟢 |
 | "You're up to date · N videos" | Count of results | Computed from the list | — | — | 🟢 |
 
@@ -41,7 +41,7 @@ The page has three views on the same URL: the **video grid** (default), the **wa
 | Title / channel / age / duration | Video details | Copied from the card you clicked (or your history). If you open a shared `?watch=` link for a video not in the list, the title shows the placeholder "Bioenergy video" | — | — | 🟢 |
 | "More to watch" — first items | The videos already in the grid | Same as section 2 | — | — | 🟢 |
 | "More to watch" — extra items | More videos on the same search phrase, by relevance, 12 per page | YouTube Data API v3 `search` (with `YOUTUBE_API_KEY`) | Live, cached 2 h in `video_cache` | When you scroll | 🟢 |
-| "More to watch" — **if no `YOUTUBE_API_KEY`** | Same | Scraped YouTube search page, then YouTube's **internal `youtubei/v1/search` endpoint** for further pages | Live, cached 2 h | When you scroll | 🔴 |
+| "More to watch" — **if no `YOUTUBE_API_KEY`** | Nothing extra is loaded. No scraping fallback | — | — | — | — |
 
 **Code:** `src/features/videos/components/VideoWatchView.tsx`, `src/features/videos/server/recommendations.server.ts` (`fetchRecommendationPage`)
 
@@ -60,11 +60,10 @@ The page has three views on the same URL: the **video grid** (default), the **wa
 | Page-view counter | Nothing visible | Anonymous visit record | Own tracking (`useVisitTracker`) | Each visit | 🟢 |
 
 ## Problems spotted
-- **Scraping fallback is built in.** If `YOUTUBE_API_KEY` is missing on Vercel, both the grid and "More to watch" silently switch to scraping YouTube pages and the internal `youtubei` API (🔴). Whether the key is set in production is unclear from code — check Vercel env vars.
-- **Anyone can skip the cache.** The server function accepts `refresh: true` from the browser and then re-calls YouTube. The site itself always sends `false`, but an outsider could use this to burn the YouTube API quota.
-- **Wasted API calls when nothing is found.** With the API key, if the first search returns no videos the code runs the exact same API searches a second time (the "older videos" fallback only differs for the scraper).
+- **No key means no videos.** If `YOUTUBE_API_KEY` is missing on Vercel, `/videos` shows an empty page. Both scraping fallbacks (the search web page and the internal `youtubei` API) were removed. Whether the key is set in production is unclear from code, so check the Vercel env vars.
+- **The API quota is protected.** The old `refresh: true` option is gone, so an outsider can no longer force fresh YouTube calls. A busy site still spends quota once per search phrase every 2 hours.
 - **Hand-written "official video hubs" list is not on this page.** `src/features/videos/video-library.ts` (IEA Bioenergy, IRENA, US DOE…) is only shown on country pages, not here. `VideoHero.tsx` is not used anywhere.
 
 ---
-Status key: 🟢 our own data, official/open data, or licensed API · 🟡 allowed with care (RSS headlines, AI-written text, copyrighted report figures) · 🔴 not allowed / risky (Yahoo Finance `query1`, YouTube scraping) · ⚪ hand-written in code (needs manual updates)
+Status key: 🟢 our own data, official/open data, or licensed API · 🟡 allowed with care (RSS headlines, AI-written text, copyrighted report figures) · 🔴 not allowed / risky (none at the moment; the old Yahoo Finance `query1` and YouTube scraping were removed) · ⚪ hand-written in code (needs manual updates)
 "How it gets here" must be one of: **Live** (fetched when someone opens the page) · **Daily job** (`/api/public/scheduled-jobs`, 00:17 UTC) · **Parser** (supply ingestion) · **Hand-written** (hard-coded in a file) · **User input** (calculators/forms, saved to account or browser) · **AI** (Gemini) · **Own tracking** (Supabase traffic etc.)

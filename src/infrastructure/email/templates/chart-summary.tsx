@@ -119,10 +119,10 @@ export const template = {
     filterLabel: "All countries · Top 10",
     dateLabel: "Thu, 20 Aug 2026",
     summary:
-      "Saudi Aramco dominates the ranking on annual output capacity, with several times the volume of the next largest producer.\n\nAcross the listed names the one-day move was modest, with advancers slightly outnumbering decliners.",
+      "Saudi Aramco dominates the ranking on annual output capacity, with several times the volume of the next largest producer.",
     sources: [
       "Annual output capacity (MMboe/yr): company annual reports and 20-F/10-K filings.",
-      "Live share prices: Yahoo Finance delayed market data.",
+      "Market capitalisation: approximate values from company disclosures.",
     ],
     referenceNote:
       "Figures are estimates compiled by Global Bioenergy Watch and may lag official filings — always cross-verify against the primary sources listed.",

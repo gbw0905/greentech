@@ -41,7 +41,7 @@
 
 | Piece | Shows | Comes from | How it gets here | Refreshes | Status |
 |---|---|---|---|---|---|
-| Headline, summary, link, date | News item | Supabase `policy_updates`, filled from ~60 RSS feeds in `src/features/policy/sources.ts`: mostly Google News search feeds (44+ queries), plus Federal Register, GOV.UK, EU, Biofuels Digest, Ethanol/Biodiesel/Biomass magazines. Only outlets on the trusted list in `outlets.ts` are kept. Summary is the feed's own text, cut to 320 characters. Rows older than 180 days are deleted | Daily job (00:17 UTC). Also a background import when the newest item is over 4 h old. An empty table triggers an import on the first visit | Every 2 min in the browser | 🟡 |
+| Headline, summary, link, date | News item | Supabase `policy_updates`, filled from the direct RSS/Atom feeds in `src/features/policy/sources.ts`: official bodies (Federal Register, US DOE, EIA, CARB, Natural Resources Canada, GOV.UK, European Commission, EUR-Lex, NZ Government) and trade/association feeds (Bioenergy International, Canary Media, Energy Monitor, ICCT, Mongabay, ET EnergyWorld, Antara, Clean Fuels Alliance America, Growth Energy). Google News searches are gone. Only outlets on the trusted list in `outlets.ts` are kept. Summary is the feed's own text, cut to 320 characters. Rows older than 180 days are deleted | Daily job (00:17 UTC). Visitors no longer trigger imports, not even on an empty table | Every 2 min in the browser | 🟢 official feeds / 🟡 trade-press headlines |
 | Country + fuel tags | Flag, country name, fuels | Keyword matching on the headline/summary during import (`classify` in `policy-ingest.server.ts`) | Daily job | — | ⚪ |
 | Photo | Topic photo | One of 8 stock images bundled in `src/assets/`, picked by the first fuel or the category (`update-images.ts`). Not the article's own image | Hand-written | Never | ⚪ |
 | Flag image | Flag | flagcdn.com, from emoji in `taxonomy.ts` | Live image | Never | 🟢 |
@@ -55,9 +55,10 @@
 
 ## Problems spotted
 - **The "Updates tracked" number can never go above 1,000.** The feed reads at most 1,000 rows (`.limit(1000)` in `server-functions.ts`), so the counter and filters ignore anything older, even within the 180-day archive.
-- **The background refresh may not finish.** When news is over 4 hours old, `getPolicyFeed` starts an import without waiting for it. On Vercel serverless this work can be stopped once the page has been sent.
-- **Headlines and summaries are copied from other outlets** (mostly through Google News) and shown in full on our page. That is fine with care (🟡), but it relies on the feed text.
+- **Much less news than before.** With the Google News searches and the monthly backfill removed, only the direct feeds add items. Old Google News rows stay until they age out (180 days), then the archive gets smaller. Several useful sources (EPA, USDA, IEA, IRENA, ICAO, IMO, Biofuels Digest and the biofuel magazines) have no working public feed and are not covered.
+- **An empty archive stays empty until the next import.** The first-visit import was removed, so a fresh database shows no news until the daily job runs.
+- **Trade-press headlines and summaries are copied from other outlets** and shown on our page with a link. That is fine with care (🟡). Official feeds are 🟢.
 
 ---
-Status key: 🟢 our own data, official/open data, or licensed API · 🟡 allowed with care (RSS headlines, AI-written text, copyrighted report figures) · 🔴 not allowed / risky (Yahoo Finance `query1`, YouTube scraping) · ⚪ hand-written in code (needs manual updates)
+Status key: 🟢 our own data, official/open data, or licensed API · 🟡 allowed with care (RSS headlines, AI-written text, copyrighted report figures) · 🔴 not allowed / risky (none at the moment; the old Yahoo Finance `query1` and YouTube scraping were removed) · ⚪ hand-written in code (needs manual updates)
 "How it gets here" must be one of: **Live** (fetched when someone opens the page) · **Daily job** (`/api/public/scheduled-jobs`, 00:17 UTC) · **Parser** (supply ingestion) · **Hand-written** (hard-coded in a file) · **User input** (calculators/forms, saved to account or browser) · **AI** (Gemini) · **Own tracking** (Supabase traffic etc.)

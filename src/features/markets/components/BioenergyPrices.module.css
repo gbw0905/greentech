@@ -1,0 +1,126 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+  gap: 18px;
+}
+.card {
+  background: #fff;
+  border: 1px solid #d6e5e9;
+  border-radius: 16px;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+.head h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0e2a43;
+  margin: 0;
+}
+.tag {
+  font-size: 12px;
+  font-weight: 650;
+  color: #49657a;
+  background: #eef5f6;
+  border-radius: 999px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+.price {
+  font-size: clamp(30px, 3vw, 38px);
+  font-weight: 750;
+  color: #0e2a43;
+  line-height: 1.1;
+}
+.price small {
+  font-size: 14px;
+  font-weight: 600;
+  color: #49657a;
+  margin-left: 6px;
+}
+.sub {
+  font-size: 14px;
+  color: #49657a;
+  margin: 0;
+}
+.positive {
+  color: #178a6b;
+}
+.negative {
+  color: #ba2849;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.table th,
+.table td {
+  text-align: left;
+  padding: 7px 4px;
+  border-bottom: 1px solid #eef2f4;
+}
+.table th {
+  color: #6b8193;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.table td:not(:first-child),
+.table th:not(:first-child) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  height: 92px;
+}
+.bar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  font-size: 12px;
+  color: #49657a;
+  height: 100%;
+}
+.bar i {
+  display: block;
+  width: 100%;
+  max-width: 54px;
+  border-radius: 6px 6px 2px 2px;
+  background: #178a6b;
+  opacity: 0.85;
+}
+.bar b {
+  color: #0e2a43;
+  font-size: 13px;
+}
+.source {
+  font-size: 12px;
+  color: #6b8193;
+  margin: 0;
+  line-height: 1.5;
+}
+.source a {
+  color: inherit;
+  text-decoration: underline;
+}
+.status {
+  padding: 24px;
+  color: #49657a;
+  font-size: 14px;
+}

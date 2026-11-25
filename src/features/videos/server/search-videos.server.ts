@@ -1,14 +1,11 @@
-import type { LiveArticle, LiveVideo } from "@/features/videos/contracts";
-import { publishedAgeMinutes } from "@/features/videos/published-age";
+import type { LiveVideo } from "@/features/videos/contracts";
 import type { Json } from "@/integrations/supabase/types";
-
-const UA = "GlobalBioenergyWatch/1.0 (+https://globalbioenergywatch.org)";
 
 // ---------------------------------------------------------------------------
 // Supabase cache helpers
 // ---------------------------------------------------------------------------
 
-type CacheKind = "youtube_search" | "news_search" | "youtube_related";
+type CacheKind = "youtube_search" | "youtube_related";
 
 async function cacheRead<T>(key: string): Promise<{ value: T; fetchedAt: number } | null> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -156,114 +153,10 @@ interface YouTubeVideoRenderer {
   lengthText?: YouTubeText;
 }
 
-export function collectYouTubeVideos(node: unknown, out: LiveVideo[], keyword: string) {
-  if (!node || typeof node !== "object") return;
-  if (Array.isArray(node)) {
-    for (const n of node) collectYouTubeVideos(n, out, keyword);
-    return;
-  }
-  const rec = node as Record<string, unknown>;
-  const vr = rec["videoRenderer"] as YouTubeVideoRenderer | undefined;
-  if (vr && typeof vr.videoId === "string" && /^[A-Za-z0-9_-]{11}$/.test(vr.videoId)) {
-    const id = String(vr.videoId);
-    if (!out.some((v) => v.id === id)) {
-      out.push({
-        id,
-        title:
-          vr.title?.simpleText ??
-          vr.title?.runs?.map((run) => run.text ?? "").join("") ??
-          "Untitled",
-        channel: vr.ownerText?.runs?.[0]?.text ?? vr.longBylineText?.runs?.[0]?.text ?? "YouTube",
-        published: vr.publishedTimeText?.simpleText ?? "",
-        duration: vr.lengthText?.simpleText ?? "",
-        thumbnail: `https://i.ytimg.com/vi/${id}/mqdefault.jpg`,
-        url: `https://www.youtube.com/watch?v=${id}`,
-        keyword,
-        kind: "youtube",
-      });
-    }
-  }
-  for (const key of Object.keys(rec)) collectYouTubeVideos(rec[key], out, keyword);
-}
-
-async function searchYouTubeScrape(
-  keyword: string,
-  limit: number,
-  recent: boolean,
-): Promise<LiveVideo[]> {
-  const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(keyword)}&sp=CAI%253D`;
-  const res = await fetch(url, {
-    signal: AbortSignal.timeout(15_000),
-    headers: { "user-agent": UA, "accept-language": "en-US,en;q=0.9" },
-  });
-  if (!res.ok) return [];
-  const html = await res.text();
-  const marker = "var ytInitialData = ";
-  const start = html.indexOf(marker);
-  if (start === -1) return [];
-  const end = html.indexOf("};", start);
-  if (end === -1) return [];
-  let data: unknown;
-  try {
-    data = JSON.parse(html.slice(start + marker.length, end + 1));
-  } catch {
-    return [];
-  }
-  const out: LiveVideo[] = [];
-  collectYouTubeVideos(data, out, keyword);
-  return out
-    .filter((video) => !recent || publishedAgeMinutes(video.published) <= 60 * 24 * 60)
-    .sort((a, b) => publishedAgeMinutes(a.published) - publishedAgeMinutes(b.published))
-    .slice(0, limit);
-}
-
-async function searchYouTube(
-  keyword: string,
-  limit: number,
-  recent: boolean,
-): Promise<LiveVideo[]> {
-  if (process.env["YOUTUBE_API_KEY"]) {
-    return searchYouTubeApi(keyword, limit);
-  }
-  return searchYouTubeScrape(keyword, limit, recent);
-}
-
-// ---------------------------------------------------------------------------
-// Google News RSS (unchanged — RSS is stable and TOS-friendly)
-// ---------------------------------------------------------------------------
-
-function decode(s: string) {
-  return s
-    .replace(/&#(\d+);/g, (_, d) => String.fromCharCode(Number(d)))
-    .replace(/&amp;/g, "&")
-    .replace(/&quot;/g, '"')
-    .replace(/&apos;/g, "'")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">");
-}
-
-async function searchWeb(keyword: string, limit: number): Promise<LiveArticle[]> {
-  const url = `https://news.google.com/rss/search?q=${encodeURIComponent(keyword)}&hl=en-US&gl=US&ceid=US:en`;
-  const res = await fetch(url, { headers: { "user-agent": UA } });
-  if (!res.ok) return [];
-  const xml = await res.text();
-  const items = xml.split("<item>").slice(1, limit + 1);
-  return items.map((item) => {
-    const get = (tag: string) => {
-      const m = item.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`));
-      return m && m[1] ? decode(m[1].replace(/<!\[CDATA\[|\]\]>/g, "").trim()) : "";
-    };
-    const rawTitle = get("title");
-    const source = get("source") || rawTitle.split(" - ").pop() || "Web";
-    return {
-      title: rawTitle.replace(new RegExp(` - ${source}$`), ""),
-      source,
-      published: get("pubDate"),
-      url: get("link"),
-      keyword,
-      kind: "web" as const,
-    };
-  });
+async function searchYouTube(keyword: string, limit: number): Promise<LiveVideo[]> {
+  // Official YouTube Data API only. No key means no videos — never scraping.
+  if (!process.env["YOUTUBE_API_KEY"]) return [];
+  return searchYouTubeApi(keyword, limit);
 }
 
 // ---------------------------------------------------------------------------
@@ -271,25 +164,22 @@ async function searchWeb(keyword: string, limit: number): Promise<LiveArticle[]>
 // ---------------------------------------------------------------------------
 
 const YOUTUBE_CACHE_TTL = 2 * 60 * 60_000; // 2 hours
-const NEWS_CACHE_TTL = 30 * 60_000; // 30 minutes
 
-export async function fetchLiveMedia(keywords: string[], perKeyword = 6, refresh = false) {
+/**
+ * Visitors cannot force a cache bypass: every miss costs YouTube API quota, so
+ * results are served from the Supabase cache for two hours.
+ */
+export async function fetchLiveMedia(keywords: string[], perKeyword = 6) {
   const cacheKey = `media:${keywords.sort().join("|")}:${perKeyword}`;
   const cached = await cacheRead<{ videos: LiveVideo[] }>(cacheKey);
-  if (!refresh && cached && Date.now() - cached.fetchedAt < YOUTUBE_CACHE_TTL) {
+  if (cached && Date.now() - cached.fetchedAt < YOUTUBE_CACHE_TTL) {
     return { videos: cached.value.videos, cachedAt: cached.fetchedAt, stale: false };
   }
   try {
-    const recent = await Promise.all(
-      keywords.map((keyword) => searchYouTube(keyword, perKeyword, true).catch(() => [])),
+    const results = await Promise.all(
+      keywords.map((keyword) => searchYouTube(keyword, perKeyword).catch(() => [])),
     );
-    let videos = [...new Map(recent.flat().map((video) => [video.id, video])).values()];
-    if (!videos.length) {
-      const fallback = await Promise.all(
-        keywords.map((keyword) => searchYouTube(keyword, perKeyword, false).catch(() => [])),
-      );
-      videos = [...new Map(fallback.flat().map((video) => [video.id, video])).values()];
-    }
+    const videos = [...new Map(results.flat().map((video) => [video.id, video])).values()];
     if (videos.length) {
       await cacheWrite(cacheKey, "youtube_search", { videos }).catch(() => {});
     }
@@ -297,27 +187,5 @@ export async function fetchLiveMedia(keywords: string[], perKeyword = 6, refresh
   } catch {
     if (cached) return { videos: cached.value.videos, cachedAt: cached.fetchedAt, stale: true };
     return { videos: [] as LiveVideo[], cachedAt: Date.now(), stale: true };
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Public API: fetchEntityNews
-// ---------------------------------------------------------------------------
-
-export async function fetchEntityNews(query: string, limit = 8) {
-  const cacheKey = `entity-news:${query}:${limit}`;
-  const cached = await cacheRead<{ articles: LiveArticle[] }>(cacheKey);
-  if (cached && Date.now() - cached.fetchedAt < NEWS_CACHE_TTL) {
-    return { articles: cached.value.articles, cachedAt: cached.fetchedAt, stale: false };
-  }
-  try {
-    const articles = await searchWeb(query, limit);
-    if (articles.length) {
-      await cacheWrite(cacheKey, "news_search", { articles }).catch(() => {});
-    }
-    return { articles, cachedAt: Date.now(), stale: false };
-  } catch {
-    if (cached) return { articles: cached.value.articles, cachedAt: cached.fetchedAt, stale: true };
-    return { articles: [] as LiveArticle[], cachedAt: Date.now(), stale: true };
   }
 }
