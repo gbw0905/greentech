@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { usePostHog } from "@posthog/react";
 import { BellRing, Check, Loader2, MapPin, Fuel, ChevronDown, X } from "lucide-react";
 import {
   COUNTRIES,
@@ -111,6 +112,7 @@ export function MultiSelectDropdown({
 
 export function AlertSignup({ appearance = "default" }: { appearance?: "default" | "footer" }) {
   const subscribe = useServerFn(subscribeToAlerts);
+  const posthog = usePostHog();
   const [email, setEmail] = useState("");
   const [fuels, setFuels] = useState<FuelType[]>([]);
   const [countries, setCountries] = useState<string[]>([]);
@@ -118,6 +120,14 @@ export function AlertSignup({ appearance = "default" }: { appearance?: "default"
   const mutation = useMutation({
     mutationFn: (input: { email: string; fuels: string[]; countries: string[] }) =>
       subscribe({ data: input }),
+    onSuccess: (result, input) => {
+      posthog.capture("alert_subscription_requested", {
+        subscription_status: result.status,
+        country_count: input.countries.length,
+        fuel_count: input.fuels.length,
+        placement: appearance,
+      });
+    },
   });
 
   const status = mutation.data?.status;

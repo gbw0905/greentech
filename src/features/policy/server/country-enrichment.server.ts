@@ -7,6 +7,7 @@ import {
   type EvidenceArticle,
   type ProfileSnapshot,
 } from "@/features/policy/profile-update-rules";
+import { captureGeminiGeneration } from "@/infrastructure/telemetry/ai-observability.server";
 
 const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 const MODEL = "gemini-3.8-flash";
@@ -24,6 +25,7 @@ interface EnrichmentResult {
 async function askGemini(prompt: string): Promise<unknown> {
   const apiKey = process.env["GEMINI_API_KEY"];
   if (!apiKey) throw new Error("no GEMINI_API_KEY");
+  const startedAt = Date.now();
   const res = await fetch(`${GEMINI_URL}/${MODEL}:generateContent?key=${apiKey}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -40,6 +42,16 @@ async function askGemini(prompt: string): Promise<unknown> {
   if (!res.ok) throw new Error(`Gemini ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const json = await res.json();
   const raw: string = json.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
+  await captureGeminiGeneration({
+    spanName: "country_profile_enrichment",
+    model: MODEL,
+    input: prompt,
+    output: raw,
+    response: json,
+    startedAt,
+    maxTokens: 8192,
+    temperature: 0,
+  });
   return JSON.parse(raw.replace(/```json\n?|\n?```/g, "").trim());
 }
 

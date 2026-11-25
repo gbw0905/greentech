@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { getPremiumStatusFn } from "@/features/premium/server-functions";
 import { historyInputSchema, type CalculationRun } from "./contracts";
 
 // Versioned snapshots use the existing private scenario repository and its user RLS.
@@ -30,15 +31,15 @@ export const listCalculationRunsFn = createServerFn({ method: "GET" })
   .validator((input: unknown) =>
     z
       .object({
-        before: z.string().datetime({ offset: true }).nullable(),
+        page: z.number().int().min(0).max(100000).default(0),
         kind: z.enum(["ci", "credit", "optimizer"]).optional(),
       })
       .parse(input),
   )
   .handler(async ({ data: params, context }) => {
-    let query = context.supabase
+    const query = context.supabase
       .from("ci_runs")
-      .select("id,created_at,inputs")
+      .select("id,created_at,inputs", { count: "exact" })
       .eq("user_id", context.userId)
       .in(
         "pathway_id",
@@ -47,20 +48,22 @@ export const listCalculationRunsFn = createServerFn({ method: "GET" })
           : ["civanta/ci", "civanta/credit", "civanta/optimizer"],
       )
       .order("created_at", { ascending: false })
-      .limit(50);
-    if (params.before) query = query.lt("created_at", params.before);
-    const { data, error } = await query;
+      .order("id", { ascending: false })
+      .range(params.page * 15, params.page * 15 + 14);
+    const { data, error, count } = await query;
     if (error) throw new Error("Could not load calculation history.");
     const runs = (data ?? []).flatMap((row) => {
       const parsed = historyInputSchema.omit({ snapshot: true }).safeParse(row.inputs);
       return parsed.success ? [{ ...parsed.data, id: row.id, createdAt: row.created_at }] : [];
     });
-    return { runs, next: data?.length === 50 ? data[data.length - 1]!.created_at : null };
+    return { runs, total: count ?? 0 };
   });
 export const getCalculationRunFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .validator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
+    if (!(await getPremiumStatusFn()).premium)
+      throw new Error("CIVanta Pro is required to open saved runs and download reports.");
     const { data: row, error } = await context.supabase
       .from("ci_runs")
       .select("id,created_at,inputs")

@@ -70,7 +70,8 @@ function parseFacts(pageText: string): OutlookFacts {
 
   return {
     targetYear,
-    potentialKtY: amount === null || !Number.isFinite(amount) ? null : Number((amount * 1000).toFixed(3)),
+    potentialKtY:
+      amount === null || !Number.isFinite(amount) ? null : Number((amount * 1000).toFixed(3)),
   };
 }
 
@@ -128,7 +129,7 @@ async function parse(source: SupplySourceRegistryEntry): Promise<ParsedSupplyDat
   const sourceHtml = await fetchText(source.url);
   const resourceUrl =
     [...sourceHtml.matchAll(/href=["']([^"']*renewable-liquid-gases-in-2040-and-2050[^"']*)["']/gi)]
-      .map((match) => new URL(decodeHtml(match[1]), source.url).toString())
+      .flatMap((match) => (match[1] ? [new URL(decodeHtml(match[1]), source.url).toString()] : []))
       .at(0) ?? OUTLOOK_URL;
   const html = resourceUrl === source.url ? sourceHtml : await fetchText(resourceUrl);
   const facts = parseFacts(text(html));

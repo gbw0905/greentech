@@ -21,7 +21,7 @@ export async function handleDocumentAnalysis(request: Request): Promise<Response
     }
 
     const { analyzeDocument } = await import("@/features/documents/server/analyze-document.server");
-    const result = await analyzeDocument(file, query);
+    const result = await analyzeDocument(file, query, userId);
 
     // Persist the analysis and the original file for the user's history
     try {

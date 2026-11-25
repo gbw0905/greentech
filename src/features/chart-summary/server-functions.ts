@@ -18,7 +18,7 @@ export const summariseChartFn = createServerFn({ method: "POST" })
     const { generateChartSummary } = await import("./server/chart-summary.server");
     const { assertAiQuota } = await import("@/infrastructure/ai/quota.server");
     assertAiQuota(`summary:${context.userId}`);
-    return { summary: await generateChartSummary(data) };
+    return { summary: await generateChartSummary(data, context.userId) };
   });
 
 /** Generates the analyst summary for the current view and emails it with references. */
@@ -30,12 +30,12 @@ export const emailChartSummaryFn = createServerFn({ method: "POST" })
     }
     return { email: input.email.trim().toLowerCase(), payload: validPayload(input.payload) };
   })
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const { generateChartSummary } = await import("./server/chart-summary.server");
     const { sourcesFor, REFERENCE_NOTE } = await import("@/shared/data/data-sources");
     const { sendTemplateEmail } = await import("@/infrastructure/email/send-email");
 
-    const summary = await generateChartSummary(data.payload);
+    const summary = await generateChartSummary(data.payload, context.userId);
     const result = await sendTemplateEmail("chart-summary", data.email, {
       templateData: {
         panel: data.payload.panel,

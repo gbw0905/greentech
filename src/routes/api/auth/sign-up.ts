@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createCookieClient } from "@/integrations/supabase/cookie-client.server";
+import { getPostHogClient } from "@/infrastructure/telemetry/posthog.server";
 
 export const Route = createFileRoute("/api/auth/sign-up")({
   server: {
@@ -27,6 +28,19 @@ export const Route = createFileRoute("/api/auth/sign-up")({
 
         if (!data.session) {
           return Response.json({ needsConfirmation: true });
+        }
+
+        if (data.user?.id) {
+          const posthog = getPostHogClient();
+          posthog?.capture({
+            distinctId: data.user.id,
+            event: "user_signed_up",
+            properties: {
+              $session_id: request.headers.get("X-PostHog-Session-Id") ?? undefined,
+              source: "api",
+            },
+          });
+          await posthog?.flush().catch(() => {});
         }
 
         return applyToResponse(

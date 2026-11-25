@@ -12,10 +12,12 @@ export type SendTemplateEmailResult =
   { sent: true } | { sent: false; reason: "recipient_suppressed" };
 
 export interface SendTemplateEmailOptions {
-  templateData?: Record<string, any>;
+  templateData?: Record<string, unknown>;
   /** Dedupes retries of the same logical send; defaults to a random UUID (no dedupe). */
   idempotencyKey?: string;
   replyTo?: string;
+  /** Self-service opt-out link for subscription emails (opens a confirmation page). */
+  unsubscribeUrl?: string;
 }
 
 /**
@@ -61,9 +63,16 @@ export async function sendTemplateEmail(
     html,
     text,
     replyTo: options.replyTo || SENDER_EMAIL,
-    headers: options.idempotencyKey
-      ? { "X-Entity-Ref-ID": options.idempotencyKey }
-      : undefined,
+    ...(options.idempotencyKey || options.unsubscribeUrl
+      ? {
+          headers: {
+            ...(options.idempotencyKey ? { "X-Entity-Ref-ID": options.idempotencyKey } : {}),
+            ...(options.unsubscribeUrl
+              ? { "List-Unsubscribe": `<${options.unsubscribeUrl}>` }
+              : {}),
+          },
+        }
+      : {}),
   });
 
   if (error) {

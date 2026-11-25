@@ -692,58 +692,58 @@
   }
 }
 
+/* GBW team: three equal columns on desktop, two on tablets, one on mobile. */
 .desk-design .team-page {
-  display: grid;
-  gap: 24px;
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
 }
-.desk-design .team-leadership {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-}
-.desk-design .team-leadership .member.lead {
-  grid-column: auto;
-  min-width: 0;
-}
-.desk-design .team-leadership .member.lead h2 {
-  font-size: clamp(20px, 2vw, 24px);
-}
-.desk-design .team-builders {
+.desk-design .team-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
+  gap: clamp(14px, 2vw, 24px);
+  width: 100%;
 }
-.desk-design .team-profile-links {
+.desk-design .team-grid .team-grid-card {
+  min-width: 0;
+  min-height: 188px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex-wrap: wrap;
-  column-gap: 20px;
+  text-align: center;
+  gap: 12px;
+  padding: clamp(18px, 2.4vw, 28px);
 }
-.desk-design .team-builders .av,
-.desk-design .team-leadership img.av {
-  object-fit: cover;
+.desk-design .team-grid .team-grid-card h2 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(17px, 1.5vw, 22px);
+  font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
 }
-.desk-design .team-builders .rakibul-portrait {
-  object-position: center 10%;
+.desk-design .team-grid .team-grid-card .role {
+  margin: 0;
+  letter-spacing: 0.05em;
+}
+.desk-design .team-grid .team-grid-card .profile-link {
+  margin-top: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 @media (max-width: 900px) {
-  .desk-design .team-leadership {
-    grid-template-columns: 1fr;
+  .desk-design .team-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-@media (max-width: 640px) {
-  .desk-design .team-builders {
-    grid-template-columns: 1fr;
+@media (max-width: 600px) {
+  .desk-design .team-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
-}
-.desk-design .team-leadership .profile-link {
-  display: flex;
-  width: fit-content;
-}
-@media (max-width: 640px) {
-  .desk-design .team-leadership .profile-link {
-    margin-inline: auto;
+  .desk-design .team-grid .team-grid-card {
+    min-height: 152px;
   }
 }
 

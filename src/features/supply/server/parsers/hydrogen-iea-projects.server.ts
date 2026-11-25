@@ -111,7 +111,7 @@ function findWorkbookUrl(sourceUrl: string, html: string): string {
     ...decoded.matchAll(/["'](https?:\/\/[^"']+\.(?:xlsx|xls)(?:\?[^"']*)?)["']/gi),
   ]
     .map((match) => match[1])
-    .filter(Boolean)
+    .filter((url): url is string => Boolean(url))
     .map((url) => new URL(url, sourceUrl).toString());
 
   const hydrogenWorkbook = candidates.find((url) => /hydrogen|h2|project/i.test(url));
@@ -138,7 +138,8 @@ function findHeaderRow(worksheet: ExcelJS.Worksheet): number | null {
     const joined = headers.join(" ");
     const hasProject = /\bproject\b/.test(joined) || /\bname\b/.test(joined);
     const hasCountry = /\bcountry\b/.test(joined);
-    const hasStatusOrCapacity = /\bstatus\b/.test(joined) || /\bcapacity\b|\bannounced size\b/.test(joined);
+    const hasStatusOrCapacity =
+      /\bstatus\b/.test(joined) || /\bcapacity\b|\bannounced size\b/.test(joined);
     if (hasProject && hasCountry && hasStatusOrCapacity) return rowNumber;
   }
   return null;
@@ -298,7 +299,11 @@ function observation(
   };
 }
 
-function toEntity(row: ProjectRow, sourceUrl: string, fallbackYear: number | null): ParsedSupplyEntity {
+function toEntity(
+  row: ProjectRow,
+  sourceUrl: string,
+  fallbackYear: number | null,
+): ParsedSupplyEntity {
   const entityName = row.company ?? row.name;
   const reportingYear = row.startYear ?? fallbackYear;
   const observations: ParsedSupplyObservation[] = [];

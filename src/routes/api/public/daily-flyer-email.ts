@@ -13,7 +13,7 @@ async function run() {
 
   let { data: updates, error } = await supabaseAdmin
     .from("policy_updates")
-    .select("url,title,summary,source,country_name,fuels,published_at,created_at")
+    .select("url,title,summary,source,country_name,fuels,category,published_at,created_at")
     .gte("created_at", since)
     .order("published_at", { ascending: false, nullsFirst: false })
     .limit(10);
@@ -24,7 +24,7 @@ async function run() {
   if (!updates || updates.length === 0) {
     const fallback = await supabaseAdmin
       .from("policy_updates")
-      .select("url,title,summary,source,country_name,fuels,published_at,created_at")
+      .select("url,title,summary,source,country_name,fuels,category,published_at,created_at")
       .order("published_at", { ascending: false, nullsFirst: false })
       .limit(10);
     if (fallback.error) return Response.json({ error: fallback.error.message }, { status: 500 });
@@ -38,6 +38,15 @@ async function run() {
     source: u.source ?? "",
     countryName: u.country_name,
     fuels: u.fuels ?? [],
+    category: u.category ?? "policy",
+    publishedAt: u.published_at
+      ? new Date(u.published_at).toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+          timeZone: "UTC",
+        })
+      : undefined,
   }));
 
   const dayKey = new Date().toISOString().slice(0, 10);

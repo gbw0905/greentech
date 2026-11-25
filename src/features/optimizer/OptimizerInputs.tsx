@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { ChevronDown } from "lucide-react";
 import { MEASURES, PATHWAYS, type Inputs, type MeasureId } from "./engine";
 
@@ -11,6 +12,8 @@ export function NumberField({
   min,
   max,
   onChange,
+  validate = false,
+  positive = false,
 }: {
   label: string;
   unit: string;
@@ -19,21 +22,42 @@ export function NumberField({
   min?: number;
   max?: number;
   onChange: (value: number) => void;
+  validate?: boolean;
+  positive?: boolean;
 }) {
+  const errorId = useId();
+  const error = !validate
+    ? ""
+    : !Number.isFinite(value)
+      ? "Required — enter a number (use 0 if none)."
+      : positive && value <= 0
+        ? "Enter a value greater than 0."
+        : min !== undefined && value < min
+          ? `Enter ${min} or a higher value.`
+          : max !== undefined && value > max
+            ? `Enter ${max} or a lower value.`
+            : "";
   return (
-    <label className="opt-field">
+    <label className={`opt-field${error ? " field-has-error" : ""}`}>
       <span>
         {label}
         <small>{unit}</small>
       </span>
       <input
         type="number"
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? errorId : undefined}
         value={Number.isFinite(value) ? value : ""}
         step={step}
         min={min}
         max={max}
         onChange={(event) => onChange(event.target.value === "" ? NaN : Number(event.target.value))}
       />
+      {error && (
+        <small className="field-validation" id={errorId}>
+          {error}
+        </small>
+      )}
     </label>
   );
 }
@@ -44,8 +68,10 @@ export function OptimizerInputs({
   onChange,
   onPathway,
   onSelected,
+  showErrors = false,
 }: {
   input: Inputs;
+  showErrors?: boolean;
   selected: MeasureId[];
   onChange: (input: Inputs) => void;
   onPathway: (id: string) => void;
@@ -56,6 +82,8 @@ export function OptimizerInputs({
     return (
       <NumberField
         key={key}
+        validate={showErrors}
+        positive={key === "volumeMj" || key === "lifeYears"}
         label={label}
         unit={unit}
         value={input[key]}
@@ -143,6 +171,7 @@ export function OptimizerInputs({
               {(["capex", "opex"] as const).map((key) => (
                 <NumberField
                   key={key}
+                  validate={showErrors}
                   label={`${measure.name} ${key === "capex" ? "capital" : "operating cost"}`}
                   unit={key === "capex" ? "USD" : "USD/year"}
                   value={input.costs[measure.id][key]}

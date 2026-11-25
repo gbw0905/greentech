@@ -929,12 +929,13 @@
       <h1>Understand your fuel’s carbon intensity.</h1>
       <div class="toolbar">
         <div class="actions">
-          <button id="save" class="primary" data-save>Save scenario</button>
+          <button id="save" class="primary" disabled data-save>Save scenario</button>
           <button id="fill-defaults">Load example</button>
+          <button id="reset" disabled>Clear</button>
         </div>
         <div class="actions">
           <button id="run" class="primary" type="button">Run</button>
-          <button id="export" class="primary">Pro · Download Excel</button>
+          <button id="export" class="primary" disabled>Pro · Download Excel</button>
         </div>
       </div>
       <div class="calculator-notices">
@@ -949,7 +950,6 @@
           <details class="scenario-options">
             <summary>Scenario options</summary>
             <div class="actions">
-              <button id="reset">Clear inputs</button>
               <button id="baseline">Use as baseline</button>
             </div>
           </details>

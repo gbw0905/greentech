@@ -19,7 +19,7 @@ export function InformationPage({
   children: ReactNode;
 }) {
   return (
-    <main className="desk-design">
+    <main className="desk-design about-page">
       <header className="banner">
         <div className="wrap">
           <h1>{title}</h1>

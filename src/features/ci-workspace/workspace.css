@@ -684,3 +684,7 @@
     animation: none;
   }
 }
+
+.calculator-header > .calculator-back {
+  margin-bottom: 16px;
+}

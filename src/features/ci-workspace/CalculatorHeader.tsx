@@ -31,10 +31,10 @@ export function CalculatorHeader({
   const current = products[product];
   return (
     <header className={`calculator-header calculator-header--${product}`}>
+      <a className="calculator-back" href="/civanta">
+        <ArrowLeft size={17} aria-hidden="true" /> Back to CIVanta
+      </a>
       <div className="calculator-heading-row">
-        <a className="calculator-back" href="/civanta">
-          <ArrowLeft size={17} aria-hidden="true" /> Back to CIVanta
-        </a>
         <div className="calculator-heading-copy">
           <h1>{current.title}</h1>
         </div>

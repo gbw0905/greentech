@@ -3,6 +3,7 @@ import type {
   ParsedSupplyDataset,
   ParsedSupplyEntity,
   ParsedSupplyObservation,
+  SupplyJson,
   SupplySourceRegistryEntry,
 } from "../../contracts";
 import type { SupplyParser } from "./types";
@@ -117,8 +118,7 @@ function findReportLinks(landingUrl: string, html: string): DcsReportLink[] {
     // Fuel-consumption reports either name the dataset or use the exact
     // "Reporting year YYYY.pdf" basename convention.
     const basename = href.split(/[?#]/)[0]?.split("/").at(-1) ?? "";
-    const namesDataset =
-      /fuel/i.test(href) || /^reporting year 20\d\d\.pdf$/i.test(basename);
+    const namesDataset = /fuel/i.test(href) || /^reporting year 20\d\d\.pdf$/i.test(basename);
     if (!namesDataset) continue;
     // SharePoint-truncated hrefs are broken on the source page itself.
     if (href.includes("...") || href.includes("…")) continue;
@@ -196,7 +196,7 @@ async function extractPdfText(pdfUrl: string): Promise<string> {
     return result.pages
       .map((page) => page.text)
       .join("\n")
-      .replace(/ | | /g, " ");
+      .replace(/\u00a0|\u202f|\u2009/g, " ");
   } finally {
     await parser.destroy();
   }
@@ -262,13 +262,7 @@ function parseFleetFigures(fullText: string, reportYear: number): FleetFigures {
       1_000,
       5_000_000,
     ),
-    ethanolT: requiredFigure(
-      fullText,
-      /([\d,]+)\s+tonnes of Ethanol/i,
-      "ethanol",
-      100,
-      1_000_000,
-    ),
+    ethanolT: requiredFigure(fullText, /([\d,]+)\s+tonnes of Ethanol/i, "ethanol", 100, 1_000_000),
     lngT: requiredFigure(fullText, /([\d,]+)\s+tonnes of LNG/i, "LNG", 1_000_000, 50_000_000),
   };
 }
@@ -295,13 +289,15 @@ function observation(
     estimated,
     confidence,
     sourceUrl,
-    raw: raw as unknown as ParsedSupplyObservation["raw"],
+    raw: raw as unknown as SupplyJson,
   };
 }
 
 function toEntity(figures: FleetFigures, sourceUrl: string): ParsedSupplyEntity {
   const biofuelKtY = Number((figures.biofuelT / 1000).toFixed(3));
-  const biofuelSharePct = Number(((figures.biofuelT / (figures.totalFuelMt * 1_000_000)) * 100).toFixed(3));
+  const biofuelSharePct = Number(
+    ((figures.biofuelT / (figures.totalFuelMt * 1_000_000)) * 100).toFixed(3),
+  );
   const reportRef = `IMO DCS annual fuel-oil-consumption summary, reporting year ${figures.reportYear}`;
   return {
     name: "International shipping fleet — biofuel consumption (IMO DCS)",
@@ -312,8 +308,10 @@ function toEntity(figures: FleetFigures, sourceUrl: string): ParsedSupplyEntity 
       role: "Global fleet market",
       ships: figures.ships,
       grossTonnageMt: figures.grossTonnageMt,
-      feedstock: "Biofuel reported under the DCS Other fuel category, plus methanol/ethanol/LNG context",
-      sourceKind: "IMO Ship Fuel Oil Consumption Database annual summary (anonymised fleet aggregate)",
+      feedstock:
+        "Biofuel reported under the DCS Other fuel category, plus methanol/ethanol/LNG context",
+      sourceKind:
+        "IMO Ship Fuel Oil Consumption Database annual summary (anonymised fleet aggregate)",
       carrierSplit: "not reported by dataset; per-carrier rows remain fallback data",
     },
     observations: [

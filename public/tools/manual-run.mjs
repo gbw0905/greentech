@@ -1,5 +1,13 @@
 /** Shared manual-run lifecycle for the two embedded calculators. */
-export function createManualRun({ target, snapshot, render, pending, onStart, onBusy }) {
+export function createManualRun({
+  target,
+  snapshot,
+  render,
+  pending,
+  onStart,
+  onBusy,
+  onReady = () => {},
+}) {
   let completed = null;
   let timer = null;
   let lastResult = null;
@@ -15,6 +23,7 @@ export function createManualRun({ target, snapshot, render, pending, onStart, on
     const wasRunning = timer !== null;
     if (wasRunning) stop();
     completed = null;
+    onReady(false);
     if (wasRunning && lastResult !== null) target.innerHTML = lastResult;
     else if (lastResult === null && !pendingVisible) {
       pending();
@@ -23,6 +32,13 @@ export function createManualRun({ target, snapshot, render, pending, onStart, on
   };
   return {
     isCurrent: current,
+    clear() {
+      stop();
+      completed = null;
+      lastResult = null;
+      pendingVisible = false;
+      invalidate();
+    },
     invalidate,
     update() {
       if (current()) {
@@ -33,6 +49,7 @@ export function createManualRun({ target, snapshot, render, pending, onStart, on
     run() {
       stop();
       completed = null;
+      onReady(false);
       const requested = snapshot();
       target.setAttribute("aria-busy", "true");
       target.innerHTML =
@@ -50,6 +67,7 @@ export function createManualRun({ target, snapshot, render, pending, onStart, on
         try {
           render();
           lastResult = target.innerHTML;
+          onReady(true);
           target.classList.remove("calculator-results-enter");
           void target.offsetWidth;
           target.classList.add("calculator-results-enter");

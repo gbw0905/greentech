@@ -65,6 +65,7 @@ export async function handleChatRequest(request: Request) {
     return new Response(e instanceof Error ? e.message : "Rate limited", { status: 429 });
   }
 
+  const threadId = typeof body.id === "string" ? body.id : null;
   const model = createGoogleGenerativeAI({ apiKey: geminiApiKey })("gemini-3.8-flash");
 
   const result = streamText({
@@ -74,6 +75,16 @@ export async function handleChatRequest(request: Request) {
     tools: assistantTools,
     stopWhen: stepCountIs(50),
     providerOptions: { openai: { store: false } },
+    runtimeContext: {
+      distinctId: userId ?? undefined,
+      sessionId: threadId ?? crypto.randomUUID(),
+    },
+    telemetry: {
+      functionId: "watch-assistant",
+      includeRuntimeContext: { distinctId: true, sessionId: true },
+      recordInputs: true,
+      recordOutputs: true,
+    },
     onError: ({ error }) =>
       console.error(
         "assistant stream error",
@@ -81,14 +92,11 @@ export async function handleChatRequest(request: Request) {
       ),
   });
 
-  const threadId = typeof body.id === "string" ? body.id : null;
-
   return result.toUIMessageStreamResponse({
     originalMessages: messages,
     onFinish: async ({ messages: finalMessages }) => {
-      if (!userId || !threadId) return;
       try {
-        await persist(userId, threadId, finalMessages);
+        if (userId && threadId) await persist(userId, threadId, finalMessages);
       } catch (e) {
         console.error("assistant persist failed", e);
       }
