@@ -18,6 +18,11 @@ const TEAM_MEMBERS = [
     linkedinUrl: "https://www.linkedin.com/in/chukwuemeka-valentine-okolo-9332a2a7/",
   },
   {
+    name: "Ananta Karmakar",
+    role: "Research Analyst",
+    linkedinUrl: "https://www.linkedin.com/in/ananta-karmakar-ananta/",
+  },
+  {
     name: "Shahnaeous Ali",
     role: "Lead Developer",
     linkedinUrl: "https://www.linkedin.com/in/shahneous-ali-0b3a53349/",
