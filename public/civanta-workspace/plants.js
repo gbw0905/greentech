@@ -1,6 +1,8 @@
 (() => {
  const storageKey = 'civanta-plants-v1';
  const activeKey = 'civanta-active-plant-v1';
+ const exporting = new URLSearchParams(location.search).get('profileExport') === '1';
+ let profileExportStarted = false;
 
  function rememberOpenPlant(id) {
   try {
@@ -41,7 +43,7 @@
   }
  }
  function saveActive() {
-  if (!active) return;
+  if (!active || exporting) return;
   const credits = active.model?.sel?.id === sel.id ? active.model.credits : {};
   active.model = copy({sel, generic, dairy, allocation, dairyTab, stage, calculated: !!baseline,
    ci: baseline?.ci, optim, confirmEconomics:$('confirmEconomics').checked, target: optimizationTarget, econ, optTab, creditTab, credits: credits || {}});
@@ -88,7 +90,7 @@
   list.replaceChildren();
   $('plantEmpty').hidden = plants.length > 0;
   $('plantCount').textContent = plants.length;
-  for (const plant of plants) {
+  for (const plant of [...plants].reverse()) {
    const row = document.createElement('li');
    const details = document.createElement('div');
    const open = document.createElement('button');
@@ -137,7 +139,7 @@
    plant.id = globalThis.crypto.randomUUID();
    persist();
   }
-  rememberOpenPlant(plant.id);
+  if (!exporting) rememberOpenPlant(plant.id);
   const model = plant.model ? copy(plant.model) : {};
   sel = model.sel || copy(initialSelection);
   generic = model.generic || {};
@@ -166,7 +168,7 @@
   rinLastPath = '';
   responseKey = '';
   $('validation').textContent = '';
-  $('excelDownloadStatus').textContent = '';
+  setExcelDownloadStatus('');
   $('activePlantName').textContent = plant.name;
   $('plantToolbar').hidden = false;
   $('plantPortfolio').hidden = true;
@@ -176,10 +178,14 @@
   const hasScenario = Object.values(optim).some(value => value > 0);
   const resumeStage = !sel.id ? 0 : !baseline ? 1 :
    [1, 2, 3].includes(savedStage) ? savedStage : hasScenario ? 2 : 1;
-  show(restoring && savedStage === 0 ? 0 : resumeStage);
+  show(exporting ? 1 : restoring && savedStage === 0 ? 0 : resumeStage);
   restoreCreditInputs();
   if (!restoring) $('activePlantName').focus({preventScroll: true});
  }
+ window.addEventListener('civanta-stage-changed', () => {
+  restoreCreditInputs();
+  saveActive();
+ });
  function restoreCreditInputs() {
   if (stage !== 3) return;
   for (const [id, value] of Object.entries(active?.model?.credits || {})) {
@@ -189,6 +195,7 @@
    else control.value = value;
   }
   updateRinEconomics();
+  syncCreditRunButtons();
  }
  form.onsubmit = event => {
   event.preventDefault();
@@ -236,6 +243,28 @@
  let openId;
  try { openId = sessionStorage.getItem(activeKey); } catch {}
  const previous = openId && plants.find(plant => plant.id === openId);
- if (previous) openPlant(previous,true);
- document.body.dataset.workspaceReady = '';
+ if (previous && !exporting) openPlant(previous,true);
+ window.addEventListener('message', async event => {
+  if (!exporting || profileExportStarted || window.parent === window || event.source !== window.parent || event.origin !== location.origin || event.data?.type !== 'civanta-profile-export') return;
+  profileExportStarted = true;
+  const id = event.data.id;
+  let ok = false;
+  let error = '';
+  try {
+   if (!(await civantaPro.refresh())) throw new Error('CIVanta Pro is required to download Excel.');
+   const plant = plants.find(plant => plant.id === id);
+   if (!plant?.model?.calculated) throw new Error('Open this plant and run CI before downloading Excel.');
+   openPlant(plant,true);
+   if (!baseline) throw new Error('The saved inputs need review. Open this plant and run CI again.');
+   ok = await downloadCivantaExcel({silent:true}) === true;
+   if (!ok) error = 'Excel could not be prepared. Check your Pro access and try again.';
+  } catch (failure) { error = failure.message; }
+  window.parent.postMessage({type:'civanta-profile-export-result',id,ok,error},location.origin);
+ });
+ document.addEventListener('DOMContentLoaded', () => {
+  document.body.dataset.workspaceReady = '';
+  if (window.parent !== window) {
+   window.parent.postMessage({type: 'civanta-workspace-ready'}, location.origin);
+  }
+ }, {once: true});
 })();

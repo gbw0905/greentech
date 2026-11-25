@@ -33,13 +33,42 @@ body.plant-list-open:not(.embedded) {
     var(--review-right) var(--review-bottom), var(--review-left) var(--review-bottom),
     var(--review-left) var(--review-top), 0 0);
 }
-.civanta-host:not([data-workspace-ready]) > iframe { visibility: hidden; }
-@media (prefers-reduced-motion: no-preference) {
-  .civanta-host[data-workspace-ready] > iframe { animation: civanta-workspace-enter 220ms ease-out; }
+.civanta-host:not([data-workspace-ready]) { position: relative; }
+.civanta-host:not([data-workspace-ready]) > iframe {
+  position: absolute;
+  inset: 0;
+  visibility: hidden;
 }
-@keyframes civanta-workspace-enter {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.civanta-workspace-status {
+  min-height: 500px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 8px;
+  padding: 24px;
+  text-align: center;
+}
+.civanta-workspace-status p { font-size: 16px; }
+.civanta-workspace-spinner {
+  width: 30px;
+  height: 30px;
+  margin-top: 4px;
+  border: 3px solid #bdded6;
+  border-top-color: #08765a;
+  border-radius: 50%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .civanta-workspace-spinner { animation: civanta-workspace-spin .8s linear infinite; }
+}
+@keyframes civanta-workspace-spin { to { transform: rotate(1turn); } }
+
+.civanta-workspace-status button {
+  margin-top: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: #123b5a;
+  color: #fff;
+  font-weight: 700;
 }
 
 .civanta-quick-actions {
@@ -58,9 +87,8 @@ body.plant-list-open:not(.embedded) {
   padding: 10px 12px;
   border: 1px solid #bbd4e8;
   border-radius: 12px;
-  background: #fffffff2;
+  background: #fff;
   color: #102d43;
-  backdrop-filter: blur(18px);
   font-size: 16.8px;
   line-height: 1.3;
   box-shadow: 0 2px 12px #102d4012;
@@ -117,3 +145,9 @@ body.plant-list-open:not(.embedded) {
   .civanta-quick-actions { gap: 6px; }
   .civanta-quick-metrics, .civanta-quick-buttons { flex-basis: 100%; }
 }
+
+.civanta-quick-actions .requires-pro::after {content:"Pro";display:inline-block;margin-left:8px;padding:2px 7px;border:1px solid #c99b35;border-radius:6px;background:linear-gradient(135deg,#fff1ba,#eac15e);color:#6b4305;box-shadow:inset 0 1px 0 #fff8dc;font-size:11px;line-height:1.4;font-weight:700;vertical-align:middle}
+
+.requires-pro::after {content:none!important}
+.civanta-pro-badge {display:inline-flex!important;align-items:center;justify-content:center;gap:5px;margin-left:10px;padding:4px 9px;border:1px solid #efae12;border-radius:7px;background:#ffc328;color:#161616;font-size:12px!important;line-height:1.4;font-weight:800;vertical-align:middle;white-space:nowrap;flex-shrink:0;box-shadow:inset 0 1px 0 #ffe28a}
+.civanta-pro-badge svg {width:15px;height:15px;fill:currentColor;flex-shrink:0}

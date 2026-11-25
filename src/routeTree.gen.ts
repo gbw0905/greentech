@@ -39,7 +39,9 @@ import { Route as AboutIndexRouteImport } from './routes/about.index'
 import { Route as AboutMissionVisionRouteImport } from './routes/about.mission-vision'
 import { Route as AboutTeamRouteImport } from './routes/about.team'
 import { Route as AlertsConfirmRouteImport } from './routes/alerts.confirm'
+import { Route as AlertsUnsubscribeRouteImport } from './routes/alerts.unsubscribe'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiCivantaAccessRouteImport } from './routes/api/civanta-access'
 import { Route as ApiDocumentAnalyzeRouteImport } from './routes/api/document-analyze'
 import { Route as ApiDocumentExplainRouteImport } from './routes/api/document-explain'
 import { Route as ApiDocumentHistoryRouteImport } from './routes/api/document-history'
@@ -219,9 +221,19 @@ const AlertsConfirmRoute = AlertsConfirmRouteImport.update({
   path: '/alerts/confirm',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AlertsUnsubscribeRoute = AlertsUnsubscribeRouteImport.update({
+  id: '/alerts/unsubscribe',
+  path: '/alerts/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCivantaAccessRoute = ApiCivantaAccessRouteImport.update({
+  id: '/api/civanta-access',
+  path: '/api/civanta-access',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiDocumentAnalyzeRoute = ApiDocumentAnalyzeRouteImport.update({
@@ -401,7 +413,9 @@ export interface FileRoutesByFullPath {
   '/about/mission-vision': typeof AboutMissionVisionRoute
   '/about/team': typeof AboutTeamRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
+  '/alerts/unsubscribe': typeof AlertsUnsubscribeRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/civanta-access': typeof ApiCivantaAccessRoute
   '/api/document-analyze': typeof ApiDocumentAnalyzeRoute
   '/api/document-explain': typeof ApiDocumentExplainRoute
   '/api/document-history': typeof ApiDocumentHistoryRoute
@@ -461,7 +475,9 @@ export interface FileRoutesByTo {
   '/about/mission-vision': typeof AboutMissionVisionRoute
   '/about/team': typeof AboutTeamRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
+  '/alerts/unsubscribe': typeof AlertsUnsubscribeRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/civanta-access': typeof ApiCivantaAccessRoute
   '/api/document-analyze': typeof ApiDocumentAnalyzeRoute
   '/api/document-explain': typeof ApiDocumentExplainRoute
   '/api/document-history': typeof ApiDocumentHistoryRoute
@@ -522,7 +538,9 @@ export interface FileRoutesById {
   '/about/mission-vision': typeof AboutMissionVisionRoute
   '/about/team': typeof AboutTeamRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
+  '/alerts/unsubscribe': typeof AlertsUnsubscribeRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/civanta-access': typeof ApiCivantaAccessRoute
   '/api/document-analyze': typeof ApiDocumentAnalyzeRoute
   '/api/document-explain': typeof ApiDocumentExplainRoute
   '/api/document-history': typeof ApiDocumentHistoryRoute
@@ -585,7 +603,9 @@ export interface FileRouteTypes {
     | '/about/mission-vision'
     | '/about/team'
     | '/alerts/confirm'
+    | '/alerts/unsubscribe'
     | '/api/chat'
+    | '/api/civanta-access'
     | '/api/document-analyze'
     | '/api/document-explain'
     | '/api/document-history'
@@ -645,7 +665,9 @@ export interface FileRouteTypes {
     | '/about/mission-vision'
     | '/about/team'
     | '/alerts/confirm'
+    | '/alerts/unsubscribe'
     | '/api/chat'
+    | '/api/civanta-access'
     | '/api/document-analyze'
     | '/api/document-explain'
     | '/api/document-history'
@@ -705,7 +727,9 @@ export interface FileRouteTypes {
     | '/about/mission-vision'
     | '/about/team'
     | '/alerts/confirm'
+    | '/alerts/unsubscribe'
     | '/api/chat'
+    | '/api/civanta-access'
     | '/api/document-analyze'
     | '/api/document-explain'
     | '/api/document-history'
@@ -765,7 +789,9 @@ export interface RootRouteChildren {
   TimelineRoute: typeof TimelineRoute
   VideosRoute: typeof VideosRoute
   AlertsConfirmRoute: typeof AlertsConfirmRoute
+  AlertsUnsubscribeRoute: typeof AlertsUnsubscribeRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiCivantaAccessRoute: typeof ApiCivantaAccessRoute
   ApiDocumentAnalyzeRoute: typeof ApiDocumentAnalyzeRoute
   ApiDocumentExplainRoute: typeof ApiDocumentExplainRoute
   ApiDocumentHistoryRoute: typeof ApiDocumentHistoryRoute
@@ -1004,11 +1030,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AlertsConfirmRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/alerts/unsubscribe': {
+      id: '/alerts/unsubscribe'
+      path: '/alerts/unsubscribe'
+      fullPath: '/alerts/unsubscribe'
+      preLoaderRoute: typeof AlertsUnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
       fullPath: '/api/chat'
       preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/civanta-access': {
+      id: '/api/civanta-access'
+      path: '/api/civanta-access'
+      fullPath: '/api/civanta-access'
+      preLoaderRoute: typeof ApiCivantaAccessRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/document-analyze': {
@@ -1280,7 +1320,9 @@ const rootRouteChildren: RootRouteChildren = {
   TimelineRoute: TimelineRoute,
   VideosRoute: VideosRoute,
   AlertsConfirmRoute: AlertsConfirmRoute,
+  AlertsUnsubscribeRoute: AlertsUnsubscribeRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiCivantaAccessRoute: ApiCivantaAccessRoute,
   ApiDocumentAnalyzeRoute: ApiDocumentAnalyzeRoute,
   ApiDocumentExplainRoute: ApiDocumentExplainRoute,
   ApiDocumentHistoryRoute: ApiDocumentHistoryRoute,

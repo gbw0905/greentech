@@ -49,7 +49,6 @@ const NAV_GROUPS = [
     label: "Products",
     items: [
       { to: "/civanta", label: "CIVanta" },
-      { to: "/civanta-new", label: "CIVanta New" },
       { to: "/document-analyzer", label: "Policy Document Analyzer" },
     ],
   },

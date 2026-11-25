@@ -49,7 +49,7 @@ function PricingPage() {
             <div className="pricing-price">
               $0 <small>/ forever</small>
             </div>
-            <Link className="pricing-card-action pricing-free-action" to="/ci-workspace">
+            <Link className="pricing-card-action pricing-free-action" to="/civanta">
               Open CI Workspace <ArrowRight size={18} aria-hidden="true" />
             </Link>
             <ul>

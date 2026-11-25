@@ -39,7 +39,7 @@ function renderFuelPath(list, route) {
 function openWorkspaceDialog(dialog,onClose) {
  const frame = window.frameElement;
  const host = frame?.ownerDocument.defaultView || window;
- const siteBackdrop = dialog.id === 'pathwayReview' && frame?.parentElement?.matches('.civanta-host')
+ const siteBackdrop = ['pathwayReview','civantaProDialog'].includes(dialog.id) && frame?.parentElement?.matches('.civanta-host')
   ? host.document.createElement('div')
   : null;
  const siteSiblings = [];
@@ -141,23 +141,44 @@ function requestWorkspaceScroll(){
  const request=new Event('civanta-scroll-request',{cancelable:true});
  if(window.dispatchEvent(request))window.scrollTo({top:0,behavior:'auto'});
 }
+const excelDownloadButtons = document.querySelectorAll('[data-download-excel]');
+const excelDownloadStatuses = document.querySelectorAll('.excel-download-status');
+let excelDownloadPending = false;
+function syncExcelDownloadActions() {
+ for (const button of excelDownloadButtons) {
+  const creditPanel = button.id === 'creditDownloadExcel'
+   ? document.querySelector('#view3 [role="tabpanel"]:not([hidden])') : null;
+  const needsCreditRun = button.id === 'creditDownloadExcel' &&
+   !creditPanel?.querySelector('.credit-result-grid .rin-stat');
+  button.disabled = !baseline || excelDownloadPending || needsCreditRun;
+  button.title = !baseline ? 'Run CI to unlock Excel' :
+   needsCreditRun ? 'Run this credit estimate to unlock Excel' : '';
+ }
+}
+function setExcelDownloadStatus(message) {
+ for (const status of excelDownloadStatuses) status.textContent = message;
+}
 function syncResultActions() {
  const calculated = !!baseline;
  $('runButton').hidden = calculated;
  $('runButton').disabled = !calculated && !hasRequiredCiInputs();
- $('downloadExcel').disabled = !calculated;
- $('downloadExcel').title = calculated ? '' : 'Run CI to unlock Excel';
+ syncExcelDownloadActions();
  $('excelDownloadHint').hidden = calculated;
  $('goOptimize').hidden = !calculated;
  if (!calculated) {
-  $('excelDownloadStatus').textContent = '';
+  setExcelDownloadStatus('');
  }
  for (const button of document.querySelectorAll('.nav [data-go="2"], .nav [data-go="3"]')) {
-  button.disabled = !calculated;
+  button.disabled = false;
  }
 }
 
-function show(i) {
+function show(i, accessVerified = false) {
+ if (i >= 2 && !accessVerified) {
+  if (baseline && stage < 2) show(1);
+  void civantaPro.enter(i, () => show(i, true));
+  return;
+ }
  if ((i >= 1 && !sel.id) || (i >= 2 && !baseline)) return;
  stage = i;
  document.querySelectorAll('section[id^="view"]').forEach((view, index) => view.classList.toggle('hide', index !== i));
@@ -167,6 +188,7 @@ function show(i) {
  if (i === 1) renderInputs();
  if (i === 2) renderOptimizer();
  if (i === 3) renderCredits();
+ window.dispatchEvent(new Event('civanta-stage-changed'));
  pathwayPicker.setStageVisible(i === 0);
  requestWorkspaceScroll();
 }
@@ -498,12 +520,16 @@ $('econExample').onclick = () => {
  setEconomics(structuredClone(exampleEconomics));
  $('ecLife').closest('details').open = true;
 };
-function creditActions(prefix,run) {
- return `<div class="credit-actions">
-  <button class="secondary" type="button" id="${prefix}Reset">Reset</button>
-  <button class="secondary" type="button" id="${prefix}Example">Load example</button>
-  <button class="primary" type="button" id="${run}">Run</button>
-  <small class="muted credit-action-status" id="${prefix}ExampleStatus" role="status"></small>
+function creditActions(prefix,heading,run) {
+ return `<div class="credit-toolbar">
+  <h3>${heading}</h3>
+  <span class="sr-only" id="${prefix}Badge" role="status">${run?'Needs inputs':'Not modelled'}</span>
+  <div class="credit-actions">
+   ${run?`<button class="secondary" type="button" id="${prefix}Reset">Reset</button>
+   <button class="secondary" type="button" id="${prefix}Example">Load example</button>
+   <button class="primary" type="button" id="${run}" disabled>Run</button>`:''}
+  </div>
+  ${run?`<small class="muted credit-action-status" id="${prefix}ExampleStatus" role="status"></small>`:''}
  </div>`;
 }
 function clearCreditFields(panel) {
@@ -518,16 +544,42 @@ function bindCreditReset(prefix, panel) {
   panel.querySelector('input, select').dispatchEvent(new Event('input',{bubbles:true}));
  };
 }
-function creditState(prefix, value = '', state = 'Needs inputs', confirmed = false) {
- const headline = $(prefix+'Headline');
+function creditState(prefix, state = 'Needs inputs') {
  const badge = $(prefix+'Badge');
- headline.textContent = value || 'Not estimated yet';
- headline.classList.toggle('muted-val',!value);
  badge.textContent = state;
- badge.className = 'badge '+(confirmed?'ready':'need');
+ if (state === 'Needs inputs') badge.dataset.example = '';
+ if (state === 'Example inputs') badge.dataset.example = 'true';
+ syncCreditRunButtons();
 }
+function syncCreditRunButtons() {
+ if (!baseline) return;
+ const validNumbers = (...ids) => ids.every(id => Number.isFinite(numberEntry(id)));
+ const lcfsRun = $('estimate');
+ if (lcfsRun) {
+  if ($('lcfsUse')) {
+   const config = documentedLcfs[baseline.path.fuel];
+   lcfsRun.disabled = !config?.uses[numberEntry('lcfsUse')] ||
+    !validNumbers('lcfsApprovedCi','lcfsQuantity','lcfsprice') ||
+    numberEntry('lcfsQuantity')<0 || numberEntry('lcfsprice')<0 ||
+    !($('lcfsBadge').dataset.example || $('lconfirm').checked && $('lcfsPathCode').value.trim());
+  } else {
+   lcfsRun.disabled = !validNumbers('bench','share','lcfsprice','eer') ||
+    numberEntry('bench')<0 || numberEntry('share')<0 || numberEntry('share')>100 ||
+    numberEntry('lcfsprice')<0 || numberEntry('eer')<=0;
+  }
+ }
+ const zRun = $('z45Run');
+ if (zRun) {
+  const animal = ['Dairy manure','Swine manure','Beef cattle manure'].includes(baseline.path.feedstock);
+  const rates = [numberEntry('z45BaseRate'),numberEntry('z45OptRate')];
+  zRun.disabled = !validNumbers('z45Qty','z45BaseRate','z45OptRate') || numberEntry('z45Qty')<=0 ||
+   !['yes','no'].includes($('z45Pwa').value) || rates.some(rate=>rate>50 || !animal && rate<0) ||
+   !($('z45Badge').dataset.example || ['z45Domestic','z45Origin','z45Reg','z45Sale'].every(id=>$(id).checked));
+ }
+}
+let rinExampleLoaded = false;
 const creditExampleMessage = 'Illustrative inputs loaded. Select Run to preview.';
-$('rinActions').innerHTML = creditActions('rin','rinRun');
+$('rinActions').innerHTML = creditActions('rin','EPA RINs','rinRun');
 bindCreditReset('rin',$('rinSupported'));
 
 function updateRinEconomics(run = false){
@@ -537,8 +589,12 @@ function updateRinEconomics(run = false){
  $('rinNotSupported').classList.toggle('hide',supported);
  $('rinSupported').classList.toggle('hide',!supported);
  $('rinMethod').hidden = !supported;
+ for (const action of $('rinActions').querySelectorAll('.credit-actions button:not([data-download-excel])')) {
+  action.hidden = !supported;
+ }
  if(rinLastPath!==b.path.id){
   rinLastPath=b.path.id;
+  rinExampleLoaded = false;
   clearCreditFields($('rinSupported'));
  }
  if (!supported) {
@@ -556,6 +612,7 @@ function updateRinEconomics(run = false){
  else if(!rng&&(!Number.isFinite(ev)||ev<=0||ev>5))error='Enter an EPA-approved equivalence value from 0 to 5.';
  else if(!Number.isFinite(volume)||volume<=0)error='A positive annual production quantity is required.';
  if(!error&&fuel==='rd'&&year===2026&&Math.abs(ev-1.7)<0.001&&b.path.energy>0&&b.path.energy/0.00105505585262<123500)error='The 2026 RD EV 1.7 presupposes a qualifying LHV; verify the applicable EPA factor.';
+ $('rinRun').disabled = Boolean(error) || (!dcode && !rinExampleLoaded);
  if (!run) {
   $('rinError').textContent = '';
   $('rinStats').replaceChildren();
@@ -580,11 +637,13 @@ $('rinExample').onclick = () => {
   else control.value = value;
  }
  for (const id of Object.keys(example)) $(id).dispatchEvent(new Event('input',{bubbles:true}));
+ rinExampleLoaded = true;
+ updateRinEconomics();
  $('rinExampleStatus').textContent = creditExampleMessage;
- creditState('rin','','Example inputs');
+ creditState('rin','Example inputs');
 };
 $('rinRun').onclick = () => updateRinEconomics(true);
-['rinYear','rinDcode','rinEv','rinShare','rinPrice','rinConfirmed'].forEach(id=>$(id).addEventListener('input',()=>updateRinEconomics()));
+['rinYear','rinDcode','rinEv','rinShare','rinPrice','rinConfirmed'].forEach(id=>$(id).addEventListener('input',()=>{rinExampleLoaded=false;updateRinEconomics()} ));
 
 /* ===== V21 redesign: decision-first optimization & credit planning ===== */
 let rinLastPath='';let responseKey='';const Z45_ELIGIBLE=['bd','rd','ethanol','saf','rng','h2'];
@@ -984,7 +1043,10 @@ function drawScenarioFrontier(){
 /* ---------- Step 4 ---------- */
 const creditTabs = [...document.querySelectorAll('.credit-tabs [role="tab"]')];
 let creditTab = 'creditPanel';
+const creditDownloadExcel = $('creditDownloadExcel');
+const creditExcelDownloadStatus = $('creditExcelDownloadStatus');
 function selectCreditTab(id) {
+ syncCreditRunButtons();
  creditTab = creditTabs.some(tab => tab.getAttribute('aria-controls') === id) ? id : 'creditPanel';
  for (const tab of creditTabs) {
   const panel = tab.getAttribute('aria-controls');
@@ -993,6 +1055,16 @@ function selectCreditTab(id) {
   tab.tabIndex = selected ? 0 : -1;
   $(panel).hidden = !selected;
  }
+ const toolbar = $(creditTab).querySelector('.credit-toolbar');
+ const actions = toolbar?.querySelector('.credit-actions');
+ if (actions && !actions.contains(creditDownloadExcel)) {
+  actions.insertBefore(creditDownloadExcel, actions.querySelector('.primary:not([hidden])'));
+  toolbar.after(creditExcelDownloadStatus);
+ }
+ syncExcelDownloadActions();
+}
+for (const type of ['input','change','click']) {
+ $('view3').addEventListener(type,syncExcelDownloadActions);
 }
 creditTabs.forEach((tab, index) => {
  tab.onclick = () => selectCreditTab(tab.getAttribute('aria-controls'));
@@ -1022,9 +1094,7 @@ function documentedLcfsBalance(fuel, use, ci, quantity) {
 function renderDocumentedLcfs(panel, fuel) {
  const config = documentedLcfs[fuel];
  const jet = fuel === 'saf';
- panel.innerHTML = `<div class="prog-top"><div><h3>California LCFS</h3><span class="kind">Tradable credit · CARB · 2026</span></div><span class="badge need" id="lcfsBadge">Needs inputs</span></div>
-  <div class="prog-val muted-val" id="lcfsHeadline">Not estimated yet</div>
-  <p class="prog-sub">Estimate fuel-pathway credits using a CARB-approved pathway CI and qualifying California fuel quantity.</p>
+ panel.innerHTML = `${creditActions('lcfs','California LCFS','estimate')}
   <div class="prog-fields">
    <label>Fuel use<select id="lcfsUse"><option value="">Select end use</option>${config.uses.map(([name], i) => `<option value="${i}">${name}</option>`).join('')}</select></label>
    <label>CARB fuel pathway code<input id="lcfsPathCode" type="text" placeholder="Enter approved pathway code"></label>
@@ -1033,7 +1103,6 @@ function renderDocumentedLcfs(panel, fuel) {
    <label>Credit price · USD/t<input id="lcfsprice" type="number" min="0" step="any" placeholder="Enter price"></label>
   </div>
   <label class="prog-check"><input type="checkbox" id="lconfirm"><span>I verified the pathway, qualifying fuel quantity and reporting entitlement${jet?', including LCFS opt-in':''}.</span></label>
-  ${creditActions('lcfs','estimate')}
   <div id="creditResults" aria-live="polite"></div>
   <div class="prog-foot">Uses LCFS fuel-pathway accounting. <a href="${lcfsReference}" target="_blank" rel="noopener">CARB regulation §§95484, 95486 and 95486.1</a></div>`;
  let exampleLoaded = false;
@@ -1051,7 +1120,7 @@ function renderDocumentedLcfs(panel, fuel) {
   for (const id of [...Object.keys(sample),'lconfirm']) $(id).dispatchEvent(new Event('input',{bubbles:true}));
   exampleLoaded = true;
   $('lcfsExampleStatus').textContent = creditExampleMessage;
-  creditState('lcfs','','Example inputs');
+  creditState('lcfs','Example inputs');
  };
  $('estimate').onclick = () => {
   const use = config.uses[numberEntry('lcfsUse')];
@@ -1074,7 +1143,7 @@ function renderDocumentedLcfs(panel, fuel) {
   const [, benchmark, eer] = use;
   const deficit = balance < 0;
   $('lcfsExampleStatus').textContent = '';
-  creditState('lcfs',dollars(balance * price),exampleLoaded?'Illustrative':'Estimated',!exampleLoaded);
+  creditState('lcfs',exampleLoaded?'Illustrative':'Estimated');
   output.innerHTML = `<div class="rin-stat-grid credit-result-grid">
    <div class="rin-stat"><span>${deficit?'Estimated deficits':'Estimated credits'}</span><strong>${fmt(Math.abs(balance),2)}</strong><small>t CO₂e</small></div>
    <div class="rin-stat"><span>${deficit?'Estimated deficit cost':'Estimated gross value'}</span><strong>${dollars(value)}</strong><small>USD</small></div>
@@ -1096,8 +1165,7 @@ function renderCredits(){const b=baseline,o=scenario(optim);if(!b)return;
   : '';
  $('creditSummary').innerHTML=`<div class="credit-summary-heading">
    <h2 id="creditPathwayTitle">Credit potential</h2>
-   <p>${esc(b.path.name)}</p>
-  </div>
+    </div>
   <div class="ci-snapshot-metrics">
    <div class="ci-snapshot-metric"><span class="ci-snapshot-label">Baseline CI</span><strong>${fmt(b.ci,2)}</strong><small>g CO₂e/MJ</small></div>
    <div class="ci-snapshot-metric ci-snapshot-scenario"><span class="ci-snapshot-label">Scenario CI</span><strong>${fmt(o.ci,2)}</strong><small>g CO₂e/MJ · modelled</small>${Math.abs(change)>1e-5?`<span class="ci-snapshot-change${change>0?' has-reduction':''}">${signed(change,2)} g/MJ</span>`:''}</div>
@@ -1107,15 +1175,13 @@ function renderCredits(){const b=baseline,o=scenario(optim);if(!b)return;
  const panel=$('creditPanel');
  if(documentedLcfs[fuel]) renderDocumentedLcfs(panel, fuel);
  else if(!supported){
-  panel.innerHTML=`<div class="prog-top"><div><h3>California LCFS</h3><span class="kind">Tradable credit · CARB</span></div><span class="badge na">Not modelled</span></div>
+  panel.innerHTML=`${creditActions('lcfs','California LCFS')}
    <div class="note">${fuel==='solid'
     ? 'This pathway models solid biomass for industrial energy. If the biomass is used to produce a qualifying transportation fuel, estimate LCFS credits under the finished fuel’s approved pathway.'
     : 'CIVanta does not have a California LCFS estimate for this fuel category. Check CARB’s approved pathway and end-use requirements.'}</div>
    <div class="prog-foot"><a href="https://ww2.arb.ca.gov/resources/documents/apply-lcfs-fuel-pathway" target="_blank" rel="noopener">CARB pathway guidance</a></div>`}
  else{
-  panel.innerHTML=`<div class="prog-top"><div><h3>California LCFS</h3><span class="kind">Tradable credit · CARB</span></div><span class="badge need" id="lcfsBadge">Needs inputs</span></div>
-  <div class="prog-val muted-val" id="lcfsHeadline">Not estimated yet</div>
-  <p class="prog-sub">Credits move directly with CI: a lower CI widens the gap to the benchmark and earns more per MJ.</p>
+  panel.innerHTML=`${creditActions('lcfs','California LCFS','estimate')}
   <div class="prog-fields">
    <label>2026 benchmark · g/MJ<input type="number" step="any" id="bench" placeholder="Enter benchmark"><small>Editable; verify with CARB.</small></label>
    <label>Eligible quantity · %<input id="share" type="number" min="0" max="100" placeholder="Enter share"><small>Only qualifying California fuel.</small></label>
@@ -1123,8 +1189,7 @@ function renderCredits(){const b=baseline,o=scenario(optim);if(!b)return;
    <label>EER<input id="eer" type="number" min="0.01" step="any" placeholder="Enter EER"><small>Must match fuel and end use.</small></label>
   </div>
   <label class="prog-check"><input type="checkbox" id="lconfirm"><span>I confirmed LCFS pathway certification, delivery and credit entitlement for this scenario.</span></label>
-  ${creditActions('lcfs','estimate')}
-  <div id="creditResults"></div>
+  <div id="creditResults" aria-live="polite"></div>
   <div class="prog-foot">Tonnes = (benchmark × EER − CI) × eligible energy ÷ 10⁶. ${esc(b.kind==='dairy'?'Dairy RNG requires a full CARB calculation and annualized reported energy before any real valuation.':'Screening energy basis; CARB approval and transfers need independent verification.')}</div>`;
   $('lcfsExample').onclick = () => {
    const sample = {bench:fuel==='ethanol'?'75.16':'80.17',share:'50',lcfsprice:'75',eer:'1'};
@@ -1134,7 +1199,7 @@ function renderCredits(){const b=baseline,o=scenario(optim);if(!b)return;
    }
    $('lconfirm').checked = false;
    $('lconfirm').dispatchEvent(new Event('change',{bubbles:true}));
-   creditState('lcfs','','Example inputs');
+   creditState('lcfs','Example inputs');
    $('lcfsExampleStatus').textContent = creditExampleMessage;
   };
   for (const control of panel.querySelectorAll('input,select')) control.addEventListener('input', () => {
@@ -1147,7 +1212,7 @@ function renderCredits(){const b=baseline,o=scenario(optim);if(!b)return;
    const e=annualEnergy*share/100,baseT=(bmk*eer-b.ci)*e/1e6,testT=(bmk*eer-o.ci)*e/1e6,inc=(testT-baseT)*price;
    const conf=$('lconfirm').checked;
    $('lcfsExampleStatus').textContent = '';
-   creditState('lcfs',dollars(inc),conf?'Eligibility confirmed':'Conditional',conf);
+   creditState('lcfs',conf?'Eligibility confirmed':'Conditional');
    $('creditResults').innerHTML=`<div class="rin-stat-grid credit-result-grid"><div class="rin-stat"><span>Baseline credits</span><strong>${fmt(baseT,1)}</strong><small>tonnes CO₂e/yr</small></div><div class="rin-stat"><span>Scenario credits</span><strong>${fmt(testT,1)}</strong><small>tonnes CO₂e/yr</small></div><div class="rin-stat"><span>Incremental value</span><strong>${dollars(inc)}</strong><small>USD/yr at $${fmt(price,0)}/t</small></div></div>
    <div class="note small">${conf?'You have confirmed the programme assumptions.':'Eligibility is unconfirmed, so treat this as conditional planning only.'} These are not issued credits.</div>`};}
  if ($('lcfsReset')) bindCreditReset('lcfs',panel);
@@ -1159,15 +1224,13 @@ function renderCredits(){const b=baseline,o=scenario(optim);if(!b)return;
 }
 
 
-/* --- 45Z, restyled as a programme card; calculate45Z is unchanged --- */
+/* --- 45Z programme card and separately documented emissions rates --- */
 function render45Z(){const b=baseline,box=$('z45Panel');if(!b||!box)return;
  const fuel=b.path.fuel,supported=Z45_ELIGIBLE.includes(fuel),manure=['Dairy manure','Swine manure','Beef cattle manure'].includes(b.path.feedstock);
  if(!supported){
-  box.innerHTML=`<div class="prog-top"><div><h3>45Z tax credit</h3><span class="kind">IRC §45Z · federal income-tax credit</span></div><span class="badge na">Not modelled</span></div>
+  box.innerHTML=`${creditActions('z45','45Z tax credit')}
    <p class="note">CIVanta has no 45Z estimate for this fuel category. The credit requires qualifying transportation fuel and a documented 45Z emissions rate.</p>`;return}
- box.innerHTML=`<div class="prog-top"><div><h3>45Z tax credit</h3><span class="kind">IRC §45Z · federal income-tax credit</span></div><span class="badge need" id="z45Badge">Needs inputs</span></div>
- <div class="prog-val muted-val" id="z45Headline">Not estimated yet</div>
- <p class="prog-sub">Uses a <strong>separately established 45Z emissions rate</strong> from the IRS table, an allowed methodology or a PER. Your screening CI is never converted into that rate.</p>
+ box.innerHTML=`${creditActions('z45','45Z tax credit','z45Run')}
  <div class="warning small">${manure?'Animal-manure fuels can carry a negative 45Z rate under the 2026 exception; use the feedstock-specific methodology.':'For fuel produced after 2025, negative 45Z rates are not allowed unless the fuel derives from animal manure.'} Feedstocks must originate in the United States, Mexico or Canada.</div>
  <div class="prog-fields">
   <label>Qualifying fuel sold in 2026<input type="number" id="z45Qty" min="0" step="any" placeholder="US gallons or GGE"><small>Do not assume all output qualifies.</small></label>
@@ -1181,9 +1244,8 @@ function render45Z(){const b=baseline,box=$('z45Panel');if(!b||!box)return;
   <label class="prog-check"><input type="checkbox" id="z45Reg"><span>Producer registered with the IRS (Form 637) at production.</span></label>
   <label class="prog-check"><input type="checkbox" id="z45Sale"><span>Qualified sale occurred; anti-double-credit rules reviewed.</span></label>
  </div>
- ${creditActions('z45','z45Run')}
- <div id="z45Results"></div>
- <div class="prog-foot">Factor = (50 − emissions rate) ÷ 50, rounded to the nearest 0.1; the rate must not exceed 50 kg CO₂e/MMBtu. 2026 amounts: $0.22/gal base, $1.09/gal with PWA. <a href="https://www.irs.gov/irb/2026-41_irb" target="_blank" rel="noopener">IRS Notice 2026-53</a> · <a href="https://www.energy.gov/documents/cmei-greet-user-manual-2026-sept-2026-update-final" target="_blank" rel="noopener">45ZCF-GREET</a></div>`;
+ <div id="z45Results" aria-live="polite"></div>
+ <div class="prog-foot">Factor = (50 − emissions rate) ÷ 50, rounded to the nearest 0.1; the rate must not exceed 50 kg CO₂e/MMBtu. 2026 amounts: $0.22/gal base, $1.09/gal with PWA. <a href="https://www.irs.gov/pub/irs-drop/n-26-53.pdf" target="_blank" rel="noopener">IRS Notice 2026-53</a> · <a href="https://www.energy.gov/documents/cmei-greet-user-manual-2026-sept-2026-update-final" target="_blank" rel="noopener">45ZCF-GREET</a></div>`;
  let exampleLoaded = false;
  const checks = ['z45Domestic','z45Origin','z45Reg','z45Sale'];
  for (const input of box.querySelectorAll('input,select')) input.addEventListener('input', () => {
@@ -1199,25 +1261,25 @@ function render45Z(){const b=baseline,box=$('z45Panel');if(!b||!box)return;
   for (const id of [...Object.keys(example),...checks]) $(id).dispatchEvent(new Event('input',{bubbles:true}));
   exampleLoaded = true;
   $('z45ExampleStatus').textContent = creditExampleMessage;
-  creditState('z45','','Example inputs');
+  creditState('z45','Example inputs');
  };
  $('z45Run').onclick = () => calculate45Z(exampleLoaded);
  bindCreditReset('z45',box);
 }
 
 
-/* keep the RIN card headline and badge in step with the engine's own RIN maths */
+/* Keep the RIN status in step with the estimate. */
 const _rinBase=updateRinEconomics;
 updateRinEconomics=function(run){_rinBase(run);syncRinCard()};
-function syncRinCard(){const h=$('rinHeadline'),bd=$('rinBadge');if(!h||!bd)return;
+function syncRinCard(){const bd=$('rinBadge');
  if ($('rinSupported').classList.contains('hide')) {
+  $('rinRun').disabled = true;
   bd.textContent = 'Not modelled';
-  bd.className = 'badge na';
   return;
  }
  const values = $('rinStats').querySelectorAll('strong');
  const confirmed = Boolean($('rinDcode').value && $('rinConfirmed').checked);
- if (values.length >= 3) creditState('rin',values[2].textContent,confirmed?'Eligibility confirmed':'Conditional',confirmed);
+ if (values.length >= 3) creditState('rin',rinExampleLoaded?'Illustrative':confirmed?'Eligibility confirmed':'Conditional');
  else creditState('rin');
 }
 
@@ -1233,9 +1295,10 @@ function calculate45Z(example = false){
   // IRS emissions factor rounded to the nearest 0.1; 45Z is based on qualified sold volume.
   const factor=x=>Math.round(((50-x)/50)*10)/10;
   const fb=factor(base),fo=factor(opt),amount=rate==='yes'?1.09:.22;
-  const bv=qty*amount*fb,ov=qty*amount*fo;
+  const total=f=>Math.round((qty*amount*f+Number.EPSILON)*100)/100;
+  const bv=total(fb),ov=total(fo);
   $('z45ExampleStatus').textContent = '';
-  creditState('z45',money(ov-bv),example?'Illustrative':'Eligibility confirmed',!example);
+  creditState('z45',example?'Illustrative':'Eligibility confirmed');
   out.innerHTML=`<div class="rin-stat-grid credit-result-grid z45-results"><div class="rin-stat"><span>Baseline 45Z tax-credit estimate</span><strong>${money(bv)}</strong><small>Factor ${fmt(fb,1)} × $${amount.toFixed(2)} × qualified volume</small></div><div class="rin-stat"><span>Optimized 45Z tax-credit estimate</span><strong>${money(ov)}</strong><small>Factor ${fmt(fo,1)} · separately provided emissions rate</small></div><div class="rin-stat"><span>Incremental 45Z amount</span><strong>${money(ov-bv)}</strong><small>USD · scenario difference, not guaranteed income</small></div></div><div class="note"><strong>Interpretation:</strong> The estimate uses your user-entered 45Z emissions rates, <strong>not</strong> the generic CI generated in Step 2. Qualified producers should separately verify actual 45ZCF-GREET/CORSIA inputs, tax guidance, registration, sales, anti-double-credit provisions, documentation and the appropriate reporting period. Do not add these estimates to gross LCFS/RIN revenue as if eligibility and stacking were established.</div>`;
   if (example) {
    const notice = document.createElement('p');
@@ -1254,7 +1317,7 @@ function zipStored(entries){const encoder=new TextEncoder(),chunks=[],central=[]
 function cvFormula(formula, cache=null){return {f:formula.replace(/^=/,''),v:cache};}
 function cvXmlCell(v,ref,style){
  const s=style===undefined?'':` s="${style}"`;
- if(v===null||v===undefined||v===''||typeof v==='number'&&!Number.isFinite(v))return style===37?`<c r="${ref}"${s}/>`:'';
+ if(v===null||v===undefined||v===''||typeof v==='number'&&!Number.isFinite(v))return style!==undefined?`<c r="${ref}"${s}/>`:'';
  if(typeof v==='object'&&v.f){const isText=typeof v.v==='string';const vtag=v.v===null||v.v===undefined?'':isText?`<v>${encXml(v.v)}</v>`:Number.isFinite(Number(v.v))?`<v>${Number(v.v)}</v>`:'';return `<c r="${ref}"${isText?' t="str"':''}${s}><f>${encXml(v.f)}</f>${vtag}</c>`}
  if(typeof v==='number'&&Number.isFinite(v))return `<c r="${ref}"${s}><v>${v}</v></c>`;
  if(typeof v==='boolean')return `<c r="${ref}" t="b"${s}><v>${v?1:0}</v></c>`;
