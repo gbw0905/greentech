@@ -177,7 +177,7 @@ export const SUPPLY_PANELS: {
     id: "oil",
     icon: Building2,
     title: "Oil companies",
-    blurb: "Global majors with live share prices and annual production capacity.",
+    blurb: "Global majors with approximate market caps and annual production capacity.",
     stat: "20",
     statLabel: "listed majors",
     tone: "var(--chart-2)",

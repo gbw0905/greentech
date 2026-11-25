@@ -20,14 +20,13 @@ import {
 import { ghgSavingsMt, GHG_NOTE } from "@/shared/ghg-savings";
 import { GhgEmptyNotice } from "@/components/GhgEmptyNotice";
 import {
-  detailTone,
   useEntityDetail,
   type GraphContext,
 } from "@/features/markets/components/EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/features/markets/entity-logos";
 import { BIOPOWER_TICKERS } from "@/features/markets/entity-tickers";
-import { priceMeta, priceTone, useEntityQuotes } from "@/features/markets/hooks/useEntityQuotes";
+import { listingMeta } from "@/features/markets/lib/listing";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/features/markets/market-caps";
 import { getSupplyDatasetFn } from "@/features/supply/server-functions";
@@ -729,7 +728,7 @@ const GENERATORS: Generator[] = [
   },
 ];
 
-type Metric = "capacity" | "generation" | "price" | "marketcap" | "ghg";
+type Metric = "capacity" | "generation" | "marketcap" | "ghg";
 
 const METRICS: Record<
   Metric,
@@ -748,13 +747,6 @@ const METRICS: Record<
     help: "Indicative annual electricity generated from biofuels. High capacity factors on biomass mean the biggest plants here punch above their MW.",
     decimals: 0,
     value: (g) => g.generationGwh,
-  },
-  price: {
-    label: "Share price (listing currency)",
-    unit: "share price, primary listing currency",
-    help: "Latest traded share price on the generator's primary listing. State-owned and private operators have no listing and sit at the end.",
-    decimals: 2,
-    value: () => 0,
   },
   marketcap: {
     label: "Market cap (approx.)",
@@ -826,7 +818,9 @@ function freshnessLabel(stale: boolean | null): string {
   return stale ? "refresh due" : "fresh";
 }
 
-function dynamicReportingYears(rows: { observations: { reportingYear: number | null }[] }[]): number[] {
+function dynamicReportingYears(
+  rows: { observations: { reportingYear: number | null }[] }[],
+): number[] {
   return [
     ...new Set(
       rows
@@ -841,7 +835,6 @@ export function BioPowerGeneratorsPanel() {
   const [metricKey, setMetricKey] = useState<Metric>("capacity");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
-  const { get } = useEntityQuotes();
   const { data: dynamicPayload } = useQuery({
     queryKey: ["supply-dataset", DYNAMIC_DATASET_ID],
     queryFn: () => getSupplyDatasetFn({ data: { datasetId: DYNAMIC_DATASET_ID } }),
@@ -850,8 +843,7 @@ export function BioPowerGeneratorsPanel() {
   const dynamicRows = dynamicPayload?.rows ?? [];
   const dynamicYears = dynamicReportingYears(dynamicRows);
   const metric = METRICS[metricKey];
-  const valueOf = (g: Generator) =>
-    metricKey === "price" ? (get(BIOPOWER_TICKERS[g.name])?.price ?? 0) : metric.value(g);
+  const valueOf = (g: Generator) => metric.value(g);
 
   const f = useChartFilter(GENERATORS, {
     text: (g) => `${g.name} ${g.country} ${g.feedstock} ${g.note}`,
@@ -874,8 +866,7 @@ export function BioPowerGeneratorsPanel() {
     size: axes.size.value(g),
     group: g.country,
     logo: entityLogoByName(g.name),
-    meta: priceMeta(get(BIOPOWER_TICKERS[g.name])),
-    changePct: get(BIOPOWER_TICKERS[g.name])?.changePct,
+    meta: listingMeta(BIOPOWER_TICKERS[g.name]),
     newsTarget: { name: g.name, query: `"${g.name}" ${NEWS_SUFFIX}` },
   }));
 
@@ -885,9 +876,7 @@ export function BioPowerGeneratorsPanel() {
     sub: `${g.feedstock} · ${g.note}`,
     value: valueOf(g),
     logo: entityLogoByName(g.name),
-    meta: priceMeta(get(BIOPOWER_TICKERS[g.name])),
-    tone: priceTone(get(BIOPOWER_TICKERS[g.name])),
-    changePct: get(BIOPOWER_TICKERS[g.name])?.changePct,
+    meta: listingMeta(BIOPOWER_TICKERS[g.name]),
   }));
   const newsMap = Object.fromEntries(
     rows.map((g) => [g.name, { name: g.name, query: `"${g.name}" ${NEWS_SUFFIX}` }]),
@@ -908,7 +897,6 @@ export function BioPowerGeneratorsPanel() {
   const onSelect = detail.onSelect((target) => {
     const g = rows.find((r) => r.name === target?.name);
     if (!g) return null;
-    const q = get(BIOPOWER_TICKERS[g.name]);
     return {
       name: g.name,
       sub: `${g.flag} ${g.country}`,
@@ -919,12 +907,6 @@ export function BioPowerGeneratorsPanel() {
         { label: "Biofuel generation", value: `${fmt(g.generationGwh, 0)} GWh/yr` },
         { label: "Feedstock", value: g.feedstock },
         { label: "Ticker", value: BIOPOWER_TICKERS[g.name] ?? "Not listed" },
-        { label: "Share price", value: q ? fmt(q.price, 2) : "—" },
-        {
-          label: "1-day change",
-          value: q ? `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%` : "—",
-          tone: detailTone(q?.changePct),
-        },
         {
           label: "Market cap (approx.)",
           value: marketCapLabel(BIOPOWER_TICKERS[g.name]) ?? "Private / state-owned",
@@ -976,13 +958,10 @@ export function BioPowerGeneratorsPanel() {
                   "Biofuel capacity (MW)",
                   "Biofuel generation (GWh/yr)",
                   "Ticker",
-                  "Share price",
-                  "1-day change %",
                   "Market cap (approx., USD bn)",
                   "Note",
                 ],
                 rows: ranked.map((g) => {
-                  const q = get(BIOPOWER_TICKERS[g.name]);
                   return [
                     g.name,
                     g.country,
@@ -990,8 +969,6 @@ export function BioPowerGeneratorsPanel() {
                     g.capacityMw,
                     g.generationGwh,
                     BIOPOWER_TICKERS[g.name] ?? "",
-                    q ? q.price.toFixed(2) : "",
-                    q ? q.changePct.toFixed(2) : "",
                     marketCapLabel(BIOPOWER_TICKERS[g.name]) ?? "",
                     g.note,
                   ];
@@ -1030,8 +1007,9 @@ export function BioPowerGeneratorsPanel() {
         sourceMeta={
           dynamicRows.length ? (
             <p className="label-mono mt-2 text-xs text-muted-foreground">
-              Ember country markets: {dynamicRows.length} entities · {reportingYearLabel(dynamicYears)} ·
-              ingested {formatFreshnessDate(dynamicPayload?.latestIngest?.finishedAt ?? null)} ·{" "}
+              Ember country markets: {dynamicRows.length} entities ·{" "}
+              {reportingYearLabel(dynamicYears)} · ingested{" "}
+              {formatFreshnessDate(dynamicPayload?.latestIngest?.finishedAt ?? null)} ·{" "}
               {freshnessLabel(dynamicPayload?.freshness?.stale ?? null)} · fallback rows reviewed{" "}
               {dynamicPayload?.registry?.lastReviewed ?? "not recorded"} ·{" "}
               <Link

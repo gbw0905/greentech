@@ -19,11 +19,10 @@ import {
 import { ghgSavingsMt, GHG_NOTE } from "@/shared/ghg-savings";
 import { GhgEmptyNotice } from "@/components/GhgEmptyNotice";
 import {
-  detailTone,
   useEntityDetail,
   type GraphContext,
 } from "@/features/markets/components/EntityDetailSheet";
-import { priceMeta, priceTone, useEntityQuotes } from "@/features/markets/hooks/useEntityQuotes";
+import { listingMeta } from "@/features/markets/lib/listing";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/features/markets/entity-logos";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
@@ -473,7 +472,7 @@ const PRODUCERS: Producer[] = [
   },
 ];
 
-type Metric = "capacity" | "co2" | "marketcap" | "price" | "ghg";
+type Metric = "capacity" | "co2" | "marketcap" | "ghg";
 
 const METRICS: Record<
   Metric,
@@ -492,13 +491,6 @@ const METRICS: Record<
     help: "Fossil methanol or marine fuel displaced by the plant's output, using typical well-to-wake intensities. Indicative rather than certified.",
     decimals: 0,
     value: (p) => p.co2AvoidedKtY,
-  },
-  price: {
-    label: "Share price (listing currency)",
-    unit: "share price, primary listing currency",
-    help: "Latest traded share price on the producer's primary listing, in that exchange's currency. Private, state-owned or unlisted producers have no price and sit at the end.",
-    decimals: 2,
-    value: () => 0,
   },
   marketcap: {
     label: "Market cap (approx.)",
@@ -568,15 +560,13 @@ export function BioMethanolPanel() {
   const [metricKey, setMetricKey] = useState<Metric>("capacity");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
-  const { get } = useEntityQuotes();
   const { data: dynamicPayload } = useQuery({
     queryKey: ["supply-dataset", DYNAMIC_DATASET_ID],
     queryFn: () => getSupplyDatasetFn({ data: { datasetId: DYNAMIC_DATASET_ID } }),
   });
   const producers = useMemo(() => mergeDynamicProducers(dynamicPayload), [dynamicPayload]);
   const metric = METRICS[metricKey];
-  const valueOf = (p: Producer) =>
-    metricKey === "price" ? (get(METHANOL_TICKERS[p.name])?.price ?? 0) : metric.value(p);
+  const valueOf = (p: Producer) => metric.value(p);
 
   const f = useChartFilter(producers, {
     text: (p) => `${p.name} ${p.country} ${p.route} ${p.note}`,
@@ -599,8 +589,7 @@ export function BioMethanolPanel() {
     size: axes.size.value(p),
     group: p.country,
     logo: entityLogoByName(p.name),
-    meta: priceMeta(get(METHANOL_TICKERS[p.name])),
-    changePct: get(METHANOL_TICKERS[p.name])?.changePct,
+    meta: listingMeta(METHANOL_TICKERS[p.name]),
     newsTarget: { name: p.name, query: `"${p.name}" ${NEWS_SUFFIX}` },
   }));
 
@@ -610,9 +599,7 @@ export function BioMethanolPanel() {
     sub: `${p.route} · ${p.note}`,
     value: valueOf(p),
     logo: entityLogoByName(p.name),
-    meta: priceMeta(get(METHANOL_TICKERS[p.name])),
-    tone: priceTone(get(METHANOL_TICKERS[p.name])),
-    changePct: get(METHANOL_TICKERS[p.name])?.changePct,
+    meta: listingMeta(METHANOL_TICKERS[p.name]),
   }));
   const newsMap = Object.fromEntries(
     rows.map((p) => [p.name, { name: p.name, query: `"${p.name}" ${NEWS_SUFFIX}` }]),
@@ -640,17 +627,6 @@ export function BioMethanolPanel() {
       note: p.note,
       stats: [
         { label: "Ticker", value: METHANOL_TICKERS[p.name] ?? "Not listed" },
-        {
-          label: "Share price",
-          value: get(METHANOL_TICKERS[p.name]) ? fmt(get(METHANOL_TICKERS[p.name])!.price, 2) : "—",
-        },
-        {
-          label: "1-day change",
-          value: get(METHANOL_TICKERS[p.name])
-            ? `${get(METHANOL_TICKERS[p.name])!.changePct >= 0 ? "+" : ""}${get(METHANOL_TICKERS[p.name])!.changePct.toFixed(2)}%`
-            : "—",
-          tone: detailTone(get(METHANOL_TICKERS[p.name])?.changePct),
-        },
         { label: "Methanol capacity", value: `${fmt(p.capacityKtY, 1)} kt/yr` },
         { label: "Fossil CO₂ displaced", value: `${fmt(p.co2AvoidedKtY, 0)} kt/yr` },
         { label: "Production route", value: p.route },
@@ -700,8 +676,6 @@ export function BioMethanolPanel() {
                 note: `Measure shown: ${metric.label}`,
                 header: [
                   "Ticker",
-                  "Share price",
-                  "1-day change %",
                   "Producer",
                   "Country",
                   "Route",
@@ -712,8 +686,6 @@ export function BioMethanolPanel() {
                 ],
                 rows: ranked.map((p) => [
                   METHANOL_TICKERS[p.name] ?? "Not listed",
-                  get(METHANOL_TICKERS[p.name])?.price ?? "",
-                  get(METHANOL_TICKERS[p.name])?.changePct?.toFixed(2) ?? "",
                   p.name,
                   p.country,
                   p.route,

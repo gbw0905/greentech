@@ -34,8 +34,8 @@ Everything you can see on this page is typed into code. No numbers on this page 
 - The page loader also loads the policy news feed (`loadNavigationFeed`). Nothing from it is shown on this page. It only fills the shared cache. The feed is covered in `00-every-page.md` and `home.md`.
 
 ## Problems spotted
-- **Some card counts are out of date.** The counts are typed by hand and nothing checks them against the data. The "Oil companies" card says **"20 listed majors"**, but the oil page loads **47** companies (`OIL_STOCKS` in `src/features/markets/oil-server-functions.ts`). The "Renewable hydrogen" card says **64**, but `RenewableHydrogenPanel.tsx` lists **66**. The other cards match the lists in their panel files today.
+- **Some card counts are out of date.** The counts are typed by hand and nothing checks them against the data. The "Oil companies" card says **"20 listed majors"**, but the oil page loads **47** companies (`OIL_COMPANIES` in `src/features/markets/oil-companies.ts`). The "Renewable hydrogen" card says **64**, but `RenewableHydrogenPanel.tsx` lists **66**. The other cards match the lists in their panel files today.
 
 ---
-Status key: 🟢 our own data, official/open data, or licensed API · 🟡 allowed with care (RSS headlines, AI-written text, copyrighted report figures) · 🔴 not allowed / risky (Yahoo Finance `query1`, YouTube scraping) · ⚪ hand-written in code (needs manual updates)
+Status key: 🟢 our own data, official/open data, or licensed API · 🟡 allowed with care (RSS headlines, AI-written text, copyrighted report figures) · 🔴 not allowed / risky (none at the moment; the old Yahoo Finance `query1` and YouTube scraping were removed) · ⚪ hand-written in code (needs manual updates)
 "How it gets here" must be one of: **Live** (fetched when someone opens the page) · **Daily job** (`/api/public/scheduled-jobs`, 00:17 UTC) · **Parser** (supply ingestion) · **Hand-written** (hard-coded in a file) · **User input** (calculators/forms, saved to account or browser) · **AI** (Gemini) · **Own tracking** (Supabase traffic etc.)

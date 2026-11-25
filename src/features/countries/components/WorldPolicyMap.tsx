@@ -8,9 +8,12 @@ import {
   type CountryProfile,
   type PolicyStatus,
 } from "@/features/policy/taxonomy";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { getCountryIndicesFn } from "@/features/countries/server-functions";
 import { MAP_STATUS_COLORS } from "./map-presentation";
+import type { LiveCountryProfile } from "@/features/countries/live-profiles";
+
+/** Status from the live database profile when we have one, else the built-in list. */
+const statusOf = (country: CountryProfile | undefined): PolicyStatus =>
+  (country as Partial<LiveCountryProfile> | undefined)?.policyStatus ?? policyStatusFor(country);
 import { COUNTRY_MARKETS } from "@/features/countries/country-markets";
 
 interface GeoFeature {
@@ -122,10 +125,13 @@ const CountryLayer = memo(function CountryLayer({
 
 export function WorldPolicyMap({
   counts,
+  countries,
   activeCountry,
   onSelect,
 }: {
   counts: Record<string, number>;
+  /** Live profiles; until they load the built-in list is used. */
+  countries?: CountryProfile[] | undefined;
   activeCountry: string | null;
   onSelect: (slug: string | null) => void;
 }) {
@@ -162,14 +168,6 @@ export function WorldPolicyMap({
     }, 650);
   }, [keepTooltip]);
   useEffect(() => () => keepTooltip(), [keepTooltip]);
-  const { data: marketData, isFetching } = useQuery({
-    queryKey: ["country-indices"],
-    queryFn: () => getCountryIndicesFn(),
-    staleTime: 5 * 60 * 1000,
-    refetchInterval: 5 * 60 * 1000,
-    placeholderData: keepPreviousData,
-    gcTime: Infinity,
-  });
 
   useEffect(() => {
     const controller = new AbortController();
@@ -207,11 +205,16 @@ export function WorldPolicyMap({
   const byMapName = useMemo(
     () =>
       new Map(
-        COUNTRIES.filter((country) => country.mapName).map((country) => [country.mapName, country]),
+        (countries ?? COUNTRIES)
+          .filter((country) => country.mapName)
+          .map((country) => [country.mapName, country]),
       ),
-    [],
+    [countries],
   );
-  const bySlug = useMemo(() => new Map(COUNTRIES.map((country) => [country.slug, country])), []);
+  const bySlug = useMemo(
+    () => new Map((countries ?? COUNTRIES).map((country) => [country.slug, country])),
+    [countries],
+  );
   const shapes = useMemo(
     () =>
       (features ?? []).map((geo): MapShape => {
@@ -221,7 +224,7 @@ export function WorldPolicyMap({
           name: geo.properties.name,
           path: path(geo as never) ?? "",
           country,
-          color: MAP_STATUS_COLORS[policyStatusFor(country)],
+          color: MAP_STATUS_COLORS[statusOf(country)],
           opacity: country ? (count > 0 ? Math.min(0.72 + count * 0.04, 1) : 0.62) : 1,
         };
       }),
@@ -300,7 +303,6 @@ export function WorldPolicyMap({
     [onSelect],
   );
   const hovered = hover ? bySlug.get(hover) : undefined;
-  const hoveredIndex = hovered ? marketData?.indices[hovered.slug] : undefined;
   const knownMarket = hovered ? COUNTRY_MARKETS[hovered.slug] : undefined;
   useEffect(() => {
     const node = tooltipRef.current;
@@ -491,41 +493,13 @@ export function WorldPolicyMap({
               <h3>{hovered.name}</h3>
               <p className="jurisdiction-tip-count">{counts[hovered.slug] ?? 0} updates</p>
               <span className="jurisdiction-tip-status">
-                <i style={{ background: MAP_STATUS_COLORS[policyStatusFor(hovered)] }} />
-                {policyStatusFor(hovered)}
+                <i style={{ background: MAP_STATUS_COLORS[statusOf(hovered)] }} />
+                {statusOf(hovered)}
               </span>
               <dl>
                 <div>
-                  <dt>Index</dt>
-                  <dd>{hoveredIndex?.index ?? knownMarket?.index ?? "—"}</dd>
-                </div>
-                <div>
-                  <dt>Last</dt>
-                  <dd>
-                    {hoveredIndex
-                      ? hoveredIndex.price.toLocaleString("en-US", { maximumFractionDigits: 2 }) +
-                        " " +
-                        hoveredIndex.currency
-                      : knownMarket
-                        ? isFetching
-                          ? "Loading…"
-                          : "Unavailable"
-                        : "—"}
-                  </dd>
-                </div>
-                <div>
-                  <dt>1D</dt>
-                  <dd
-                    className={
-                      hoveredIndex ? (hoveredIndex.changePct >= 0 ? "positive" : "negative") : ""
-                    }
-                  >
-                    {hoveredIndex
-                      ? (hoveredIndex.changePct >= 0 ? "▲ " : "▼ ") +
-                        Math.abs(hoveredIndex.changePct).toFixed(2) +
-                        "%"
-                      : "—"}
-                  </dd>
+                  <dt>Stock index</dt>
+                  <dd>{knownMarket?.index ?? "—"}</dd>
                 </div>
                 <div>
                   <dt>Region</dt>

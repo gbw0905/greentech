@@ -20,14 +20,13 @@ import {
 import { ghgSavingsMt, GHG_NOTE } from "@/shared/ghg-savings";
 import { GhgEmptyNotice } from "@/components/GhgEmptyNotice";
 import {
-  detailTone,
   useEntityDetail,
   type GraphContext,
 } from "@/features/markets/components/EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/features/markets/entity-logos";
 import { ETHANOL_TICKERS } from "@/features/markets/entity-tickers";
-import { priceMeta, priceTone, useEntityQuotes } from "@/features/markets/hooks/useEntityQuotes";
+import { listingMeta } from "@/features/markets/lib/listing";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/features/markets/market-caps";
 import { COUNTRY_NAME_FLAG } from "@/features/policy/taxonomy";
@@ -686,7 +685,7 @@ const PRODUCERS: Producer[] = [
   },
 ];
 
-type Metric = "capacity" | "plants" | "price" | "marketcap" | "ghg";
+type Metric = "capacity" | "plants" | "marketcap" | "ghg";
 
 const METRICS: Record<
   Metric,
@@ -705,13 +704,6 @@ const METRICS: Record<
     help: "Number of ethanol plants, mills or distilleries the producer operates. A single mega-plant can outrank a wide fleet on volume but not here.",
     decimals: 0,
     value: (p) => p.plants,
-  },
-  price: {
-    label: "Share price (listing currency)",
-    unit: "share price, primary listing currency",
-    help: "Latest traded share price on the producer's primary listing, in that exchange's currency. Cooperatives and private producers have no listing and sit at the end.",
-    decimals: 2,
-    value: () => 0,
   },
   marketcap: {
     label: "Market cap (approx.)",
@@ -802,7 +794,9 @@ function mergeDynamicProducers(payload: SupplyDatasetPayload | undefined): {
   stale: boolean | null;
   sourceLabel: string | null;
 } {
-  const dynamic = (payload?.rows ?? []).map(dynamicProducer).filter((p): p is Producer => Boolean(p));
+  const dynamic = (payload?.rows ?? [])
+    .map(dynamicProducer)
+    .filter((p): p is Producer => Boolean(p));
   if (dynamic.length === 0) {
     return {
       producers: PRODUCERS,
@@ -832,7 +826,9 @@ function mergeDynamicProducers(payload: SupplyDatasetPayload | undefined): {
       .filter(Boolean)
       .sort()
       .at(-1) ?? null;
-  const parsedSource = payload?.sources.find((source) => source.parserId === "ethanol-eia-capacity");
+  const parsedSource = payload?.sources.find(
+    (source) => source.parserId === "ethanol-eia-capacity",
+  );
 
   return {
     producers: [...byName.values()],
@@ -871,7 +867,6 @@ export function EthanolProductionPanel() {
   const [metricKey, setMetricKey] = useState<Metric>("capacity");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
-  const { get } = useEntityQuotes();
   const { data: dynamicPayload } = useQuery({
     queryKey: ["supply-dataset", DYNAMIC_DATASET_ID],
     queryFn: () => getSupplyDatasetFn({ data: { datasetId: DYNAMIC_DATASET_ID } }),
@@ -880,8 +875,7 @@ export function EthanolProductionPanel() {
   const dynamic = useMemo(() => mergeDynamicProducers(dynamicPayload), [dynamicPayload]);
   const producers = dynamic.producers;
   const metric = METRICS[metricKey];
-  const valueOf = (p: Producer) =>
-    metricKey === "price" ? (get(ETHANOL_TICKERS[p.name])?.price ?? 0) : metric.value(p);
+  const valueOf = (p: Producer) => metric.value(p);
 
   const f = useChartFilter(producers, {
     text: (p) => `${p.name} ${p.country} ${p.feedstock} ${p.note}`,
@@ -904,8 +898,7 @@ export function EthanolProductionPanel() {
     size: axes.size.value(p),
     group: p.country,
     logo: entityLogoByName(p.name),
-    meta: priceMeta(get(ETHANOL_TICKERS[p.name])),
-    changePct: get(ETHANOL_TICKERS[p.name])?.changePct,
+    meta: listingMeta(ETHANOL_TICKERS[p.name]),
     newsTarget: { name: p.name, query: `"${p.name}" ${NEWS_SUFFIX}` },
   }));
 
@@ -915,9 +908,7 @@ export function EthanolProductionPanel() {
     sub: `${p.feedstock} · ${p.note}`,
     value: valueOf(p),
     logo: entityLogoByName(p.name),
-    meta: priceMeta(get(ETHANOL_TICKERS[p.name])),
-    tone: priceTone(get(ETHANOL_TICKERS[p.name])),
-    changePct: get(ETHANOL_TICKERS[p.name])?.changePct,
+    meta: listingMeta(ETHANOL_TICKERS[p.name]),
   }));
   const newsMap = Object.fromEntries(
     rows.map((p) => [p.name, { name: p.name, query: `"${p.name}" ${NEWS_SUFFIX}` }]),
@@ -938,7 +929,6 @@ export function EthanolProductionPanel() {
   const onSelect = detail.onSelect((target) => {
     const p = rows.find((r) => r.name === target?.name);
     if (!p) return null;
-    const q = get(ETHANOL_TICKERS[p.name]);
     return {
       name: p.name,
       sub: `${p.flag} ${p.country}`,
@@ -949,12 +939,6 @@ export function EthanolProductionPanel() {
         { label: "Plants", value: fmt(p.plants, 0) },
         { label: "Feedstock", value: p.feedstock },
         { label: "Ticker", value: ETHANOL_TICKERS[p.name] ?? "Not listed" },
-        { label: "Share price", value: q ? fmt(q.price, 2) : "—" },
-        {
-          label: "1-day change",
-          value: q ? `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%` : "—",
-          tone: detailTone(q?.changePct),
-        },
         {
           label: "Market cap (approx.)",
           value: marketCapLabel(ETHANOL_TICKERS[p.name]) ?? "Private / state-owned",
@@ -1011,13 +995,10 @@ export function EthanolProductionPanel() {
                   "Ethanol output (Ml/yr)",
                   "Plants",
                   "Ticker",
-                  "Share price",
-                  "1-day change %",
                   "Market cap (approx., USD bn)",
                   "Note",
                 ],
                 rows: ranked.map((p) => {
-                  const q = get(ETHANOL_TICKERS[p.name]);
                   return [
                     p.name,
                     p.country,
@@ -1025,8 +1006,6 @@ export function EthanolProductionPanel() {
                     p.capacityMl,
                     p.plants,
                     ETHANOL_TICKERS[p.name] ?? "",
-                    q ? q.price.toFixed(2) : "",
-                    q ? q.changePct.toFixed(2) : "",
                     marketCapLabel(ETHANOL_TICKERS[p.name]) ?? "",
                     p.note,
                   ];
@@ -1066,8 +1045,9 @@ export function EthanolProductionPanel() {
           dynamic.sourceBacked ? (
             <p className="label-mono mt-2 text-xs text-muted-foreground">
               {dynamic.sourceLabel} rows: {reportingYearLabel(dynamic.reportingYears)} · ingested{" "}
-              {formatFreshnessDate(dynamic.latestIngestFinishedAt)} · {freshnessLabel(dynamic.stale)} ·
-              fallback rows reviewed {dynamicPayload?.registry?.lastReviewed ?? "not recorded"} ·{" "}
+              {formatFreshnessDate(dynamic.latestIngestFinishedAt)} ·{" "}
+              {freshnessLabel(dynamic.stale)} · fallback rows reviewed{" "}
+              {dynamicPayload?.registry?.lastReviewed ?? "not recorded"} ·{" "}
               <Link
                 to="/data-sources"
                 hash={DYNAMIC_DATASET_ID}

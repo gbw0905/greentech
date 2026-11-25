@@ -1,5 +1,5 @@
 import { COUNTRIES, FUEL_KEYWORDS, FUEL_TYPES, type FuelType } from "@/features/policy/taxonomy";
-import { FEED_SOURCES, backfillSources } from "@/features/policy/sources";
+import { FEED_SOURCES } from "@/features/policy/sources";
 import { isTrustedOutlet, isOfficialSource } from "@/features/policy/outlets";
 
 interface FeedItem {
@@ -346,8 +346,7 @@ export interface IngestResult {
 }
 
 export async function ingestPolicyUpdates(): Promise<IngestResult> {
-  // Live sweeps plus month-by-month backfill so the archive spans all months.
-  const sources = [...FEED_SOURCES, ...backfillSources(6)];
+  const sources = FEED_SOURCES;
   const results: { name: string; items: FeedItem[] }[] = [];
   for (let i = 0; i < sources.length; i += 12) {
     const batch = sources.slice(i, i + 12);

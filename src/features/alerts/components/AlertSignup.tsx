@@ -181,8 +181,8 @@ export function AlertSignup({ appearance = "default" }: { appearance?: "default"
     >
       {appearance === "default" && (
         <p className="mb-4 text-sm text-muted-foreground">
-          Pick your coverage and subscribe to a daily AI-written digest of bioenergy policy and
-          market updates.
+          Pick your coverage and subscribe to a daily digest of bioenergy policy and market updates,
+          with a link to each original source.
         </p>
       )}
 

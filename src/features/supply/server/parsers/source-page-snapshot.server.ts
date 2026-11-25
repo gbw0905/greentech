@@ -1,9 +1,13 @@
-import type { ParsedSupplyDataset, ParsedSupplyEntity, SupplySourceRegistryEntry } from "../../contracts";
+import type {
+  ParsedSupplyDataset,
+  ParsedSupplyEntity,
+  SupplySourceRegistryEntry,
+} from "../../contracts";
+import { createHash } from "crypto";
 import type { SupplyParser } from "./types";
 
 const PARSER_ID = "supply-source-page-snapshot";
 const FETCH_TIMEOUT_MS = 20_000;
-const MAX_SNIPPET_CHARS = 1400;
 
 function decodeHtml(value: string): string {
   return value
@@ -35,7 +39,8 @@ async function fetchSnapshot(url: string): Promise<{
   contentType: string | null;
   contentLength: number | null;
   title: string | null;
-  snippet: string | null;
+  /** SHA-256 of the fetched bytes, used only to notice when the page changes. */
+  contentHash: string | null;
   error: string | null;
 }> {
   const controller = new AbortController();
@@ -59,7 +64,9 @@ async function fetchSnapshot(url: string): Promise<{
       contentType,
       contentLength: Number.isFinite(contentLength) ? contentLength : null,
       title: body ? pageTitle(body) : null,
-      snippet: body ? text(body).slice(0, MAX_SNIPPET_CHARS) : null,
+      // We deliberately do not store any of the page's text (it belongs to the
+      // publisher) — only its title and a fingerprint of the content.
+      contentHash: body ? createHash("sha256").update(body).digest("hex") : null,
       error: null,
     };
   } catch (error) {
@@ -69,7 +76,7 @@ async function fetchSnapshot(url: string): Promise<{
       contentType: null,
       contentLength: null,
       title: null,
-      snippet: null,
+      contentHash: null,
       error:
         error instanceof Error && error.name === "AbortError"
           ? `Timed out after ${FETCH_TIMEOUT_MS / 1000}s`
@@ -96,7 +103,7 @@ async function parse(source: SupplySourceRegistryEntry): Promise<ParsedSupplyDat
       pageTitle: snapshot.title,
       contentType: snapshot.contentType,
       contentLength: snapshot.contentLength,
-      snippet: snapshot.snippet,
+      contentHash: snapshot.contentHash,
       error: snapshot.error,
     },
     observations: [

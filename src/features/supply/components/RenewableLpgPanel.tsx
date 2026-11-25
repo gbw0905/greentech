@@ -19,11 +19,10 @@ import {
 import { ghgSavingsMt, GHG_NOTE } from "@/shared/ghg-savings";
 import { GhgEmptyNotice } from "@/components/GhgEmptyNotice";
 import {
-  detailTone,
   useEntityDetail,
   type GraphContext,
 } from "@/features/markets/components/EntityDetailSheet";
-import { priceMeta, priceTone, useEntityQuotes } from "@/features/markets/hooks/useEntityQuotes";
+import { listingMeta } from "@/features/markets/lib/listing";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/features/markets/entity-logos";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
@@ -489,7 +488,7 @@ const SUPPLIERS: Supplier[] = [
   },
 ];
 
-type Metric = "capacity" | "supply" | "marketcap" | "price" | "ghg";
+type Metric = "capacity" | "supply" | "marketcap" | "ghg";
 
 const METRICS: Record<
   Metric,
@@ -508,13 +507,6 @@ const METRICS: Record<
     help: "BioLPG produced as an HVO/SAF co-product plus dedicated rDME capacity. Pure distributors show zero because they buy rather than make the molecule.",
     decimals: 1,
     value: (s) => s.capacityKtY,
-  },
-  price: {
-    label: "Share price (listing currency)",
-    unit: "share price, primary listing currency",
-    help: "Latest traded share price on the company's primary listing, in that exchange's currency. Private, state-owned or unlisted suppliers have no price and sit at the end.",
-    decimals: 2,
-    value: () => 0,
   },
   marketcap: {
     label: "Market cap (approx.)",
@@ -584,15 +576,13 @@ export function RenewableLpgPanel() {
   const [metricKey, setMetricKey] = useState<Metric>("supply");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
-  const { get } = useEntityQuotes();
   const { data: dynamicPayload } = useQuery({
     queryKey: ["supply-dataset", DYNAMIC_DATASET_ID],
     queryFn: () => getSupplyDatasetFn({ data: { datasetId: DYNAMIC_DATASET_ID } }),
   });
   const suppliers = useMemo(() => mergeDynamicSuppliers(dynamicPayload), [dynamicPayload]);
   const metric = METRICS[metricKey];
-  const valueOf = (s: Supplier) =>
-    metricKey === "price" ? (get(RLPG_TICKERS[s.name])?.price ?? 0) : metric.value(s);
+  const valueOf = (s: Supplier) => metric.value(s);
 
   const f = useChartFilter(suppliers, {
     text: (s) => `${s.name} ${s.country} ${s.role} ${s.note}`,
@@ -615,8 +605,7 @@ export function RenewableLpgPanel() {
     size: axes.size.value(s),
     group: s.country,
     logo: entityLogoByName(s.name),
-    meta: priceMeta(get(RLPG_TICKERS[s.name])),
-    changePct: get(RLPG_TICKERS[s.name])?.changePct,
+    meta: listingMeta(RLPG_TICKERS[s.name]),
     newsTarget: { name: s.name, query: `"${s.name}" ${NEWS_SUFFIX}` },
   }));
 
@@ -626,9 +615,7 @@ export function RenewableLpgPanel() {
     sub: `${s.role} · ${s.note}`,
     value: valueOf(s),
     logo: entityLogoByName(s.name),
-    meta: priceMeta(get(RLPG_TICKERS[s.name])),
-    tone: priceTone(get(RLPG_TICKERS[s.name])),
-    changePct: get(RLPG_TICKERS[s.name])?.changePct,
+    meta: listingMeta(RLPG_TICKERS[s.name]),
   }));
   const newsMap = Object.fromEntries(
     rows.map((s) => [s.name, { name: s.name, query: `"${s.name}" ${NEWS_SUFFIX}` }]),
@@ -656,17 +643,6 @@ export function RenewableLpgPanel() {
       note: s.note,
       stats: [
         { label: "Ticker", value: RLPG_TICKERS[s.name] ?? "Not listed" },
-        {
-          label: "Share price",
-          value: get(RLPG_TICKERS[s.name]) ? fmt(get(RLPG_TICKERS[s.name])!.price, 2) : "—",
-        },
-        {
-          label: "1-day change",
-          value: get(RLPG_TICKERS[s.name])
-            ? `${get(RLPG_TICKERS[s.name])!.changePct >= 0 ? "+" : ""}${get(RLPG_TICKERS[s.name])!.changePct.toFixed(2)}%`
-            : "—",
-          tone: detailTone(get(RLPG_TICKERS[s.name])?.changePct),
-        },
         { label: "Renewable LPG supplied", value: `${fmt(s.supplyKtY, 1)} kt/yr` },
         { label: "Production capacity", value: `${fmt(s.capacityKtY, 1)} kt/yr` },
         { label: "Role", value: s.role },
@@ -716,8 +692,6 @@ export function RenewableLpgPanel() {
                 note: `Measure shown: ${metric.label}`,
                 header: [
                   "Ticker",
-                  "Share price",
-                  "1-day change %",
                   "Company",
                   "Country",
                   "Role",
@@ -728,8 +702,6 @@ export function RenewableLpgPanel() {
                 ],
                 rows: ranked.map((s) => [
                   RLPG_TICKERS[s.name] ?? "Not listed",
-                  get(RLPG_TICKERS[s.name])?.price ?? "",
-                  get(RLPG_TICKERS[s.name])?.changePct?.toFixed(2) ?? "",
                   s.name,
                   s.country,
                   s.role,

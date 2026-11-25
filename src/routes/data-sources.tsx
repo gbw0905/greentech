@@ -49,8 +49,8 @@ const COMPILATION_NOTES = [
     text: "Each dataset states the reporting year its figures refer to and the date it was last reviewed against its sources.",
   },
   {
-    title: "Market quotes",
-    text: "Share prices and 1-day changes are live delayed exchange quotes and are not part of the curated datasets.",
+    title: "Market prices",
+    text: "Fuel benchmark prices are U.S. EIA daily spot prices, LCFS credit prices come from CARB's monthly transfer reports and ethanol prices from USDA's weekly ethanol report. Company share charts on the home page are delayed TradingView embeds. None of these are part of the curated datasets.",
   },
 ];
 

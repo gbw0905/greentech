@@ -19,11 +19,10 @@ import {
 import { ghgSavingsMt, GHG_NOTE } from "@/shared/ghg-savings";
 import { GhgEmptyNotice } from "@/components/GhgEmptyNotice";
 import {
-  detailTone,
   useEntityDetail,
   type GraphContext,
 } from "@/features/markets/components/EntityDetailSheet";
-import { priceMeta, priceTone, useEntityQuotes } from "@/features/markets/hooks/useEntityQuotes";
+import { listingMeta } from "@/features/markets/lib/listing";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/features/markets/entity-logos";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
@@ -656,7 +655,7 @@ const PRODUCERS: Producer[] = [
   },
 ];
 
-type Metric = "capacity" | "electrolyser" | "marketcap" | "price" | "ghg";
+type Metric = "capacity" | "electrolyser" | "marketcap" | "ghg";
 
 const METRICS: Record<
   Metric,
@@ -675,13 +674,6 @@ const METRICS: Record<
     help: "Installed or sanctioned electrolyser capacity in megawatts. Pyrolysis and non-electrolytic routes show zero.",
     decimals: 0,
     value: (p) => p.electrolyserMw,
-  },
-  price: {
-    label: "Share price (listing currency)",
-    unit: "share price, primary listing currency",
-    help: "Latest traded share price on the producer's primary listing, in that exchange's currency. Private, state-owned or unlisted producers have no price and sit at the end.",
-    decimals: 2,
-    value: () => 0,
   },
   marketcap: {
     label: "Market cap (approx.)",
@@ -741,7 +733,10 @@ function mergeDynamicProducers(payload: SupplyDatasetPayload | undefined): Produ
         fallback?.electrolyserMw ??
         0,
       route: metaString(row.metadata["route"], fallback?.route ?? "Renewable hydrogen"),
-      note: metaString(row.metadata["note"], fallback?.note ?? "Source-backed hydrogen project row"),
+      note: metaString(
+        row.metadata["note"],
+        fallback?.note ?? "Source-backed hydrogen project row",
+      ),
     });
   }
   return [...byName.values()];
@@ -751,15 +746,13 @@ export function RenewableHydrogenPanel() {
   const [metricKey, setMetricKey] = useState<Metric>("capacity");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
-  const { get } = useEntityQuotes();
   const { data: dynamicPayload } = useQuery({
     queryKey: ["supply-dataset", DYNAMIC_DATASET_ID],
     queryFn: () => getSupplyDatasetFn({ data: { datasetId: DYNAMIC_DATASET_ID } }),
   });
   const producers = useMemo(() => mergeDynamicProducers(dynamicPayload), [dynamicPayload]);
   const metric = METRICS[metricKey];
-  const valueOf = (p: Producer) =>
-    metricKey === "price" ? (get(HYDROGEN_TICKERS[p.name])?.price ?? 0) : metric.value(p);
+  const valueOf = (p: Producer) => metric.value(p);
 
   const f = useChartFilter(producers, {
     text: (p) => `${p.name} ${p.country} ${p.route} ${p.note}`,
@@ -782,8 +775,7 @@ export function RenewableHydrogenPanel() {
     size: axes.size.value(p),
     group: p.country,
     logo: entityLogoByName(p.name),
-    meta: priceMeta(get(HYDROGEN_TICKERS[p.name])),
-    changePct: get(HYDROGEN_TICKERS[p.name])?.changePct,
+    meta: listingMeta(HYDROGEN_TICKERS[p.name]),
     newsTarget: { name: p.name, query: `"${p.name}" ${NEWS_SUFFIX}` },
   }));
 
@@ -793,9 +785,7 @@ export function RenewableHydrogenPanel() {
     sub: `${p.route} · ${p.note}`,
     value: valueOf(p),
     logo: entityLogoByName(p.name),
-    meta: priceMeta(get(HYDROGEN_TICKERS[p.name])),
-    tone: priceTone(get(HYDROGEN_TICKERS[p.name])),
-    changePct: get(HYDROGEN_TICKERS[p.name])?.changePct,
+    meta: listingMeta(HYDROGEN_TICKERS[p.name]),
   }));
   const newsMap = Object.fromEntries(
     rows.map((p) => [p.name, { name: p.name, query: `"${p.name}" ${NEWS_SUFFIX}` }]),
@@ -823,17 +813,6 @@ export function RenewableHydrogenPanel() {
       note: p.note,
       stats: [
         { label: "Ticker", value: HYDROGEN_TICKERS[p.name] ?? "Not listed" },
-        {
-          label: "Share price",
-          value: get(HYDROGEN_TICKERS[p.name]) ? fmt(get(HYDROGEN_TICKERS[p.name])!.price, 2) : "—",
-        },
-        {
-          label: "1-day change",
-          value: get(HYDROGEN_TICKERS[p.name])
-            ? `${get(HYDROGEN_TICKERS[p.name])!.changePct >= 0 ? "+" : ""}${get(HYDROGEN_TICKERS[p.name])!.changePct.toFixed(2)}%`
-            : "—",
-          tone: detailTone(get(HYDROGEN_TICKERS[p.name])?.changePct),
-        },
         { label: "Renewable H₂ output", value: `${fmt(p.capacityKtY, 1)} kt/yr` },
         { label: "Electrolyser capacity", value: `${fmt(p.electrolyserMw, 0)} MW` },
         { label: "Production route", value: p.route },
@@ -883,8 +862,6 @@ export function RenewableHydrogenPanel() {
                 note: `Measure shown: ${metric.label}`,
                 header: [
                   "Ticker",
-                  "Share price",
-                  "1-day change %",
                   "Producer",
                   "Country",
                   "Route",
@@ -895,8 +872,6 @@ export function RenewableHydrogenPanel() {
                 ],
                 rows: ranked.map((p) => [
                   HYDROGEN_TICKERS[p.name] ?? "Not listed",
-                  get(HYDROGEN_TICKERS[p.name])?.price ?? "",
-                  get(HYDROGEN_TICKERS[p.name])?.changePct?.toFixed(2) ?? "",
                   p.name,
                   p.country,
                   p.route,

@@ -19,14 +19,13 @@ import {
 import { ghgSavingsMt, GHG_NOTE } from "@/shared/ghg-savings";
 import { GhgEmptyNotice } from "@/components/GhgEmptyNotice";
 import {
-  detailTone,
   useEntityDetail,
   type GraphContext,
 } from "@/features/markets/components/EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/features/markets/entity-logos";
 import { CARRIER_TICKERS } from "@/features/markets/entity-tickers";
-import { priceMeta, priceTone, useEntityQuotes } from "@/features/markets/hooks/useEntityQuotes";
+import { listingMeta } from "@/features/markets/lib/listing";
 import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/features/markets/market-caps";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
 import { getSupplyDatasetFn } from "@/features/supply/server-functions";
@@ -662,7 +661,7 @@ const RAIL: Carrier[] = [
   },
 ];
 
-type Metric = "volume" | "share" | "price" | "marketcap" | "ghg";
+type Metric = "volume" | "share" | "marketcap" | "ghg";
 
 const METRICS: Record<
   Metric,
@@ -681,13 +680,6 @@ const METRICS: Record<
     help: "Share of the operator's total fuel burn met by biofuels. A smaller fleet can rank high here — it measures intensity of use, not scale.",
     decimals: 1,
     value: (c) => c.share,
-  },
-  price: {
-    label: "Share price (listing currency)",
-    unit: "share price, primary listing currency",
-    help: "Latest traded share price on the operator's primary listing, in that exchange's currency. State-owned or private operators have no listing and sit at the end.",
-    decimals: 2,
-    value: () => 0,
   },
   marketcap: {
     label: "Market cap (approx.)",
@@ -716,16 +708,6 @@ function scatterAxes(metricKey: Metric) {
       },
       y: METRICS.share,
       size: { label: "Biofuel share of fuel burn", unit: "%", value: (c: Carrier) => c.share },
-    };
-  }
-  if (metricKey === "price") {
-    return {
-      x: {
-        metric: METRICS.share,
-        help: "X-axis shows biofuel intensity; Y-axis shows share price.",
-      },
-      y: METRICS.price,
-      size: { label: "Biofuel volume used", unit: "Ml/yr", value: (c: Carrier) => c.volumeMnL },
     };
   }
   if (metricKey === "marketcap") {
@@ -799,10 +781,13 @@ function CarrierAggregateNotice({ payload }: { payload: SupplyDatasetPayload | u
     <section className="rounded-lg border border-border bg-card/80 p-4 shadow-sm">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-foreground">Source-backed IMO fleet aggregate</h3>
+          <h3 className="text-sm font-semibold text-foreground">
+            Source-backed IMO fleet aggregate
+          </h3>
           <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-            IMO DCS publishes anonymised fleet totals, not named carrier rows. The company charts below
-            remain curated fallback estimates until operator-level reports are wired one by one.
+            IMO DCS publishes anonymised fleet totals, not named carrier rows. The company charts
+            below remain curated fallback estimates until operator-level reports are wired one by
+            one.
           </p>
         </div>
         <div className="grid grid-cols-3 gap-3 text-right text-sm">
@@ -822,9 +807,7 @@ function CarrierAggregateNotice({ payload }: { payload: SupplyDatasetPayload | u
             <div className="font-semibold text-foreground">
               {totalFuelMt === null ? "NR" : fmt(totalFuelMt, 1)}
             </div>
-            <div className="text-xs text-muted-foreground">
-              Mt fuel{year ? `, ${year}` : ""}
-            </div>
+            <div className="text-xs text-muted-foreground">Mt fuel{year ? `, ${year}` : ""}</div>
           </div>
         </div>
       </div>
@@ -854,10 +837,8 @@ function CarrierChart({
   const [metricKey, setMetricKey] = useState<Metric>("volume");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
-  const { get } = useEntityQuotes();
   const metric = METRICS[metricKey];
-  const valueOf = (c: Carrier) =>
-    metricKey === "price" ? (get(CARRIER_TICKERS[c.name])?.price ?? 0) : metric.value(c);
+  const valueOf = (c: Carrier) => metric.value(c);
   const f = useChartFilter(data, {
     text: (c) => `${c.name} ${c.country} ${c.note}`,
     facetA: (c) => c.country,
@@ -880,8 +861,7 @@ function CarrierChart({
     size: axes.size.value(c),
     group: c.country,
     logo: entityLogoByName(c.name),
-    meta: priceMeta(get(CARRIER_TICKERS[c.name])),
-    changePct: get(CARRIER_TICKERS[c.name])?.changePct,
+    meta: listingMeta(CARRIER_TICKERS[c.name]),
     newsTarget: { name: c.name, query: `"${c.name}" ${newsSuffix}` },
   }));
 
@@ -891,9 +871,7 @@ function CarrierChart({
     sub: c.note,
     value: valueOf(c),
     logo: entityLogoByName(c.name),
-    meta: priceMeta(get(CARRIER_TICKERS[c.name])),
-    tone: priceTone(get(CARRIER_TICKERS[c.name])),
-    changePct: get(CARRIER_TICKERS[c.name])?.changePct,
+    meta: listingMeta(CARRIER_TICKERS[c.name]),
   }));
   const newsMap = Object.fromEntries(
     rows.map((c) => [c.name, { name: c.name, query: `"${c.name}" ${newsSuffix}` }]),
@@ -911,7 +889,6 @@ function CarrierChart({
   const onSelect = detail.onSelect((t) => {
     const c = rows.find((x) => x.name === t?.name);
     if (!c) return null;
-    const q = get(CARRIER_TICKERS[c.name]);
     return {
       name: c.name,
       sub: `${c.flag} ${c.country}`,
@@ -921,15 +898,9 @@ function CarrierChart({
         { label: "Biofuel volume used", value: `${fmt(c.volumeMnL, 0)} Ml/yr` },
         { label: "Biofuel share of fuel burn", value: `${fmt(c.share, 1)}%` },
         { label: "Ticker", value: CARRIER_TICKERS[c.name] ?? "Not listed" },
-        { label: "Share price", value: q ? fmt(q.price, 2) : "—" },
         {
           label: "Market cap (approx.)",
           value: marketCapLabel(CARRIER_TICKERS[c.name]) ?? "Private / state-owned",
-        },
-        {
-          label: "1-day change",
-          value: q ? `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%` : "—",
-          tone: detailTone(q?.changePct),
         },
       ],
       news: { name: c.name, query: `"${c.name}" ${newsSuffix}` },
@@ -977,21 +948,16 @@ function CarrierChart({
                   "Biofuel volume used (Ml/yr)",
                   "Biofuel share of fuel burn (%)",
                   "Ticker",
-                  "Share price",
-                  "1-day change %",
                   "Market cap (approx., USD bn)",
                   "Note",
                 ],
                 rows: ranked.map((c) => {
-                  const q = get(CARRIER_TICKERS[c.name]);
                   return [
                     c.name,
                     c.country,
                     c.volumeMnL,
                     c.share,
                     CARRIER_TICKERS[c.name] ?? "",
-                    q ? q.price.toFixed(2) : "",
-                    q ? q.changePct.toFixed(2) : "",
                     marketCapLabel(CARRIER_TICKERS[c.name]) ?? "",
                     c.note,
                   ];

@@ -4,61 +4,24 @@ export interface FeedSource {
   url: string;
 }
 
-const news = (q: string): string =>
-  `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en-US&gl=US&ceid=US:en`;
-
 /**
- * Month-by-month backfill sweeps. Google News caps a single query's results, so
- * one query per month per theme is how the archive builds real history instead
- * of only the current fortnight.
+ * Only feeds published by the original source: government bodies, regulators
+ * and trade or news publishers' own RSS/Atom feeds. Every stored item links
+ * straight to the publisher's page.
+ *
+ * Google News searches were removed (Google's terms limit its feeds to
+ * personal, non-commercial use). Broad feeds such as EUR-Lex or the NZ
+ * Beehive publish everything; the ingest's keyword rules (`categorise`) keep
+ * only bioenergy items.
+ *
+ * Every URL here was checked to return a valid feed with recent items when it
+ * was added (Nov 2026). Feeds that answered 403/404 were left out: Biofuels
+ * Digest (403), Biodiesel / Ethanol Producer / Biomass Magazine (feeds 404 after
+ * their site redesign), European Parliament (403), EPA, USDA, IEA, IRENA, ICAO,
+ * IMO, Brazil ANP/MME and Indonesia ESDM (no working public feed found).
  */
-const MONTHLY_THEMES = [
-  "biofuel policy mandate",
-  "ethanol blending mandate government",
-  "biodiesel mandate policy",
-  "sustainable aviation fuel mandate policy",
-  "renewable fuel standard EPA rule",
-  "European Union RED III ReFuelEU biofuels",
-  "biofuel market prices demand supply",
-];
-
-/** Rolling six-month window, matching the 180-day retention in the ingest job. */
-export function backfillSources(months = 6): FeedSource[] {
-  const out: FeedSource[] = [];
-  const now = new Date();
-  for (let i = 0; i < months; i += 1) {
-    const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i + 1, 1));
-    const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
-    const range = `after:${start.toISOString().slice(0, 10)} before:${end.toISOString().slice(0, 10)}`;
-    for (const theme of MONTHLY_THEMES) {
-      out.push({ name: "Google News", url: news(`${theme} ${range}`) });
-    }
-  }
-  return out;
-}
-
 export const FEED_SOURCES: FeedSource[] = [
-  // Topic sweeps
-  { name: "Google News", url: news("biofuel policy mandate when:180d") },
-  { name: "Google News", url: news("ethanol blending mandate government when:180d") },
-  { name: "Google News", url: news("biodiesel mandate policy when:180d") },
-  { name: "Google News", url: news("renewable diesel policy regulation when:180d") },
-  { name: "Google News", url: news("sustainable aviation fuel mandate policy when:180d") },
-  { name: "Google News", url: news("biogas biomethane policy incentive when:180d") },
-  { name: "Google News", url: news("renewable fuel standard RVO EPA when:180d") },
-  // United States: 45Z / 45V / EPA / IRS
-  { name: "Google News", url: news('"45Z" clean fuel production credit guidance when:180d') },
-  { name: "Google News", url: news('"45V" clean hydrogen production credit rules when:180d') },
-  {
-    name: "Google News",
-    url: news("IRS Treasury guidance clean fuel production credit biofuel when:180d"),
-  },
-  {
-    name: "Google News",
-    url: news("EPA Renewable Fuel Standard rule RVO small refinery exemption when:180d"),
-  },
-  { name: "Google News", url: news("EPA E15 ethanol waiver rule when:180d") },
-  // Official government documents (rulemakings, notices, gazettes)
+  // United States: official documents and agencies
   {
     name: "Federal Register",
     url: "https://www.federalregister.gov/api/v1/documents.rss?conditions%5Bterm%5D=renewable%20fuel&conditions%5Bagencies%5D%5B%5D=environmental-protection-agency",
@@ -87,6 +50,19 @@ export const FEED_SOURCES: FeedSource[] = [
     name: "Federal Register",
     url: "https://www.federalregister.gov/api/v1/documents.rss?conditions%5Bterm%5D=renewable%20volume%20obligation",
   },
+  { name: "US Department of Energy", url: "https://www.energy.gov/rss/news.xml" },
+  { name: "US Energy Information Administration", url: "https://www.eia.gov/rss/press_rss.xml" },
+  {
+    name: "US Energy Information Administration",
+    url: "https://www.eia.gov/rss/todayinenergy.xml",
+  },
+  { name: "California Air Resources Board", url: "https://ww2.arb.ca.gov/rss.xml" },
+  // Canada
+  {
+    name: "Natural Resources Canada",
+    url: "https://api.io.canada.ca/io-server/gc/news/en/v2?dept=naturalresourcescanada&type=newsreleases&sort=publishedDate&orderBy=desc&pick=50&format=atom",
+  },
+  // United Kingdom
   { name: "GOV.UK", url: "https://www.gov.uk/search/all.atom?keywords=biofuel" },
   { name: "GOV.UK", url: "https://www.gov.uk/search/all.atom?keywords=bioenergy" },
   {
@@ -94,59 +70,32 @@ export const FEED_SOURCES: FeedSource[] = [
     url: "https://www.gov.uk/search/all.atom?keywords=renewable+transport+fuel+obligation",
   },
   { name: "GOV.UK", url: "https://www.gov.uk/search/all.atom?keywords=sustainable+aviation+fuel" },
-  { name: "Google News", url: news("site:gov.in ethanol blending policy") },
-  { name: "Google News", url: news("site:europa.eu biofuels renewable energy directive") },
-  { name: "Google News", url: news("site:gov.br biocombustivel RenovaBio") },
-  { name: "Google News", url: news("gazette notification biofuel blending mandate when:180d") },
-  { name: "Google News", url: news("ministry decree biofuel blending when:180d") },
-  { name: "Google News", url: news("parliament approves biofuel bill when:180d") },
-  { name: "Google News", url: news("cabinet approves ethanol blending policy when:180d") },
   {
-    name: "Google News",
-    url: news("government notification biodiesel blending obligation when:180d"),
+    name: "GOV.UK",
+    url: "https://www.gov.uk/government/organisations/department-for-transport.atom",
   },
-  { name: "Google News", url: news("regulator consultation renewable fuel obligation when:180d") },
-
-  { name: "Google News", url: news('"Renewable Energy Directive" biofuels when:180d') },
-  { name: "Google News", url: news("low carbon fuel standard when:180d") },
-  { name: "Google News", url: news("bioenergy policy legislation when:180d") },
-  // Regional sweeps
-  { name: "Google News", url: news("India ethanol blending programme policy when:180d") },
-  { name: "Google News", url: news("Brazil RenovaBio biodiesel mandate when:180d") },
-  { name: "Google News", url: news("Indonesia B40 biodiesel mandate when:180d") },
-  { name: "Google News", url: news("European Union RefuelEU biofuels when:180d") },
-  { name: "Google News", url: news("China biofuel policy when:180d") },
-  { name: "Google News", url: news("Africa biofuel policy blending when:180d") },
-  // European Union institutions and instruments
-  {
-    name: "Google News",
-    url: news('"RED III" renewable energy directive transport target when:180d'),
-  },
-  { name: "Google News", url: news("ReFuelEU Aviation SAF blending obligation when:180d") },
-  { name: "Google News", url: news("FuelEU Maritime renewable fuel when:180d") },
-  {
-    name: "Google News",
-    url: news("European Commission delegated act biofuels renewable fuels when:180d"),
-  },
-  { name: "Google News", url: news("EU biofuel blending obligation member state when:180d") },
-  { name: "Google News", url: news('"Fit for 55" biofuels aviation maritime when:180d') },
+  // European Union institutions and legislation
   {
     name: "European Commission",
     url: "https://ec.europa.eu/commission/presscorner/api/rss?language=en&pagesize=50",
   },
   { name: "European Commission Energy", url: "https://energy.ec.europa.eu/node/2/rss_en" },
-  { name: "European Parliament", url: "https://www.europarl.europa.eu/rss/doc/top-stories/en.xml" },
-  // Trade press
-  { name: "Biofuels Digest", url: "https://www.biofuelsdigest.com/bdigest/feed/" },
-  { name: "Biodiesel Magazine", url: "https://biodieselmagazine.com/rss/articles" },
-  { name: "Ethanol Producer Magazine", url: "https://ethanolproducer.com/rss/articles" },
-  { name: "Biomass Magazine", url: "https://biomassmagazine.com/rss/articles" },
-  // Market sweeps (prices, supply, demand, investment)
-  { name: "Google News", url: news("biofuel market prices demand supply when:90d") },
-  { name: "Google News", url: news("ethanol prices market outlook when:90d") },
-  { name: "Google News", url: news("biodiesel HVO feedstock prices market when:90d") },
-  { name: "Google News", url: news("sustainable aviation fuel offtake supply deal when:180d") },
-  { name: "Google News", url: news("renewable diesel capacity refinery investment when:180d") },
-  { name: "Google News", url: news("biogas biomethane investment plant capacity when:180d") },
-  { name: "Google News", url: news("biofuel exports imports trade when:90d") },
+  { name: "EUR-Lex", url: "https://eur-lex.europa.eu/EN/display-feed.rss?rssId=162" },
+  // Asia-Pacific
+  { name: "New Zealand Government", url: "https://www.beehive.govt.nz/rss.xml" },
+  { name: "Antara News", url: "https://en.antaranews.com/rss/news.xml" },
+  {
+    name: "ET EnergyWorld",
+    url: "https://energy.economictimes.indiatimes.com/rss/oil-and-gas",
+  },
+  { name: "ET EnergyWorld", url: "https://energy.economictimes.indiatimes.com/rss/renewable" },
+  // Trade press and specialist publishers
+  { name: "Bioenergy International", url: "https://bioenergyinternational.com/feed/" },
+  { name: "Canary Media", url: "https://www.canarymedia.com/rss" },
+  { name: "Energy Monitor", url: "https://www.energymonitor.ai/feed/" },
+  { name: "ICCT", url: "https://theicct.org/feed/" },
+  { name: "Mongabay", url: "https://news.mongabay.com/feed/" },
+  // Industry associations (press releases, labelled with the association's name)
+  { name: "Clean Fuels Alliance America", url: "https://cleanfuels.org/feed/" },
+  { name: "Growth Energy", url: "https://growthenergy.org/feed/" },
 ];

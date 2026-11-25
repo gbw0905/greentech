@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { ChartMap } from "@/components/ChartMap";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Building2 } from "lucide-react";
-import { getOilStocksFn, type OilQuote } from "@/features/markets/oil-server-functions";
+import { OIL_COMPANIES } from "@/features/markets/oil-companies";
 import { entityLogo } from "@/features/markets/entity-logos";
 import {
   ChartBars,
@@ -20,7 +20,7 @@ import {
 } from "@/components/chart-kit";
 import { ghgSavingsMt, GHG_NOTE } from "@/shared/ghg-savings";
 import { GhgEmptyNotice } from "@/components/GhgEmptyNotice";
-import { detailTone, useEntityDetail, type GraphContext } from "./EntityDetailSheet";
+import { useEntityDetail, type GraphContext } from "./EntityDetailSheet";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { type BrandedExport } from "@/shared/export/branded-export";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
@@ -28,8 +28,9 @@ import { marketCapValue, marketCapLabel, MARKET_CAP_NOTE } from "@/features/mark
 import { getSupplyDatasetFn } from "@/features/supply/server-functions";
 import { SupplySourceFacts } from "@/features/supply/components/SupplySourceFacts";
 
-const fmt = (n: number, d = 2) =>
-  n.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
+/** One listed company: primary-listing ticker (identifier only) and name. */
+type OilQuote = { symbol: string; label: string };
+const COMPANIES: OilQuote[] = OIL_COMPANIES.map(([symbol, label]) => ({ symbol, label }));
 
 /**
  * Approximate annual output capacity, million barrels of oil equivalent per year
@@ -198,11 +199,6 @@ function oilExport(rows: OilQuote[]): BrandedExport {
   const header = [
     "Company",
     "Ticker",
-    "Share price",
-    "Currency",
-    "Previous close",
-    "1-day change",
-    "1-day change %",
     "Annual capacity (MMboe/yr)",
     "Capacity type",
     "Market cap (approx., USD bn)",
@@ -210,25 +206,20 @@ function oilExport(rows: OilQuote[]): BrandedExport {
   const body = rows.map((q) => [
     q.label,
     q.symbol,
-    q.price.toFixed(2),
-    q.currency,
-    q.prevClose.toFixed(2),
-    q.change.toFixed(2),
-    q.changePct.toFixed(2),
     capOf(q.symbol).mmboe || "",
     capOf(q.symbol).kind,
     marketCapValue(marketCapTickerOf(q.symbol)),
   ]);
   return {
-    title: "Top global oil companies — share price & output capacity",
+    title: "Top global oil companies — output capacity & market cap",
     filename: "global-oil-companies",
     header,
     rows: body,
-    note: "Source: Global Bioenergy Watch. Prices via public market data; capacity approximate.",
+    note: "Source: Global Bioenergy Watch from company reports. Capacity and market caps approximate.",
   };
 }
 
-type StockMetric = "price" | "change" | "capacity" | "marketcap" | "ghg";
+type StockMetric = "capacity" | "marketcap" | "ghg";
 
 const STOCK_METRICS: Record<
   StockMetric,
@@ -240,20 +231,6 @@ const STOCK_METRICS: Record<
     value: (q: OilQuote) => number;
   }
 > = {
-  price: {
-    label: "Share price (listing currency)",
-    unit: "share price, primary listing currency",
-    help: "The latest traded share price on the company's primary stock exchange, shown in that exchange's currency. Bigger, redder tiles mean a higher price per share — not a bigger company.",
-    decimals: 2,
-    value: (q) => q.price,
-  },
-  change: {
-    label: "1-day change (%)",
-    unit: "absolute 1-day price change, %",
-    help: "How far the share price moved since the previous close, as a percentage. Tile size uses the size of the move; the figure under the name shows its direction (+ up, − down).",
-    decimals: 2,
-    value: (q) => Math.abs(q.changePct),
-  },
   capacity: {
     label: "Annual capacity (MMboe/yr)",
     unit: "annual output capacity, million barrels of oil equivalent / year",
@@ -280,51 +257,28 @@ const STOCK_METRICS: Record<
 
 /** Defines the scatter-plot axes for each selected metric so X and Y never collide. */
 function scatterAxes(metricKey: StockMetric) {
-  if (metricKey === "change") {
+  const size = {
+    label: "Annual capacity",
+    unit: "MMboe/yr",
+    value: (q: OilQuote) => capOf(q.symbol).mmboe,
+  };
+  if (metricKey === "capacity") {
     return {
       x: {
-        metric: STOCK_METRICS.price,
-        help: "X-axis shows the share price; Y-axis shows the 1-day move.",
+        metric: STOCK_METRICS.marketcap,
+        help: "X-axis shows approximate market cap; Y-axis shows annual capacity.",
       },
-      y: STOCK_METRICS.change,
-      size: {
-        label: "Annual capacity",
-        unit: "MMboe/yr",
-        value: (q: OilQuote) => capOf(q.symbol).mmboe,
-      },
-    };
-  }
-  if (metricKey === "marketcap") {
-    return {
-      x: {
-        metric: STOCK_METRICS.capacity,
-        help: "X-axis shows annual capacity; Y-axis shows approximate market cap.",
-      },
-      y: STOCK_METRICS.marketcap,
-      size: {
-        label: "Annual capacity",
-        unit: "MMboe/yr",
-        value: (q: OilQuote) => capOf(q.symbol).mmboe,
-      },
+      y: STOCK_METRICS.capacity,
+      size,
     };
   }
   return {
     x: {
-      metric: {
-        label: "1-day change (%)",
-        unit: "1-day price change, %",
-        help: "X-axis shows 1-day market momentum (negative = down, positive = up); Y-axis shows the selected measure.",
-        decimals: 2,
-        value: (q: OilQuote) => q.changePct,
-      },
-      help: "X-axis shows 1-day market momentum (negative = down, positive = up); Y-axis shows the selected measure.",
+      metric: STOCK_METRICS.capacity,
+      help: "X-axis shows annual capacity; Y-axis shows the selected measure.",
     },
     y: STOCK_METRICS[metricKey],
-    size: {
-      label: "Annual capacity",
-      unit: "MMboe/yr",
-      value: (q: OilQuote) => capOf(q.symbol).mmboe,
-    },
+    size,
   };
 }
 
@@ -332,14 +286,6 @@ export function OilStocksPanel() {
   const [metricKey, setMetricKey] = useState<StockMetric>("capacity");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
-  const { data, isLoading } = useQuery({
-    queryKey: ["oil-stocks"],
-    queryFn: () => getOilStocksFn(),
-    refetchInterval: 5 * 60 * 1000,
-    staleTime: 60 * 1000,
-    placeholderData: keepPreviousData,
-    gcTime: Infinity,
-  });
   const { data: dynamicPayload } = useQuery({
     queryKey: ["supply-dataset", "oil-companies"],
     queryFn: () => getSupplyDatasetFn({ data: { datasetId: "oil-companies" } }),
@@ -347,8 +293,8 @@ export function OilStocksPanel() {
   });
 
   const metric = STOCK_METRICS[metricKey];
-  const quotes: OilQuote[] = data?.quotes ?? [];
-  const stale = data?.stale ?? false;
+  const quotes = COMPANIES;
+  const isLoading = false;
   const f = useChartFilter(quotes, {
     text: (q) => `${q.label} ${q.symbol} ${countryOf(q.symbol)}`,
     facetA: (q) => countryOf(q.symbol),
@@ -373,20 +319,17 @@ export function OilStocksPanel() {
     size: axes.size.value(q),
     group: countryOf(q.symbol),
     logo: entityLogo(q.symbol),
-    meta: `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%`,
-    changePct: q.changePct,
+    meta: marketCapLabel(marketCapTickerOf(q.symbol)) ?? "Private / state-owned",
     newsTarget: { name: q.label, query: `"${q.label}" oil company news` },
   }));
 
   const items = sorted.map((q) => ({
     key: q.symbol,
     label: q.label,
-    sub: `${q.symbol.replace(/\.[A-Z]+$/, "")} · ${chartFmt(q.price, 2)}`,
+    sub: `${q.symbol.replace(/\.[A-Z]+$/, "")} · ${countryOf(q.symbol)}`,
     value: metric.value(q),
     logo: entityLogo(q.symbol),
-    meta: `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%`,
-    tone: q.changePct >= 0 ? ("up" as const) : ("down" as const),
-    changePct: q.changePct,
+    meta: marketCapLabel(marketCapTickerOf(q.symbol)) ?? "Private / state-owned",
   }));
   const newsMap = Object.fromEntries(
     sorted.map((q) => [q.symbol, { name: q.label, query: `"${q.label}" oil company news` }]),
@@ -412,12 +355,6 @@ export function OilStocksPanel() {
       sub: `${q.symbol} · ${countryOf(q.symbol)}`,
       logo: entityLogo(q.symbol),
       stats: [
-        { label: "Share price", value: chartFmt(q.price, 2) },
-        {
-          label: "1-day change",
-          value: `${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}%`,
-          tone: detailTone(q.changePct),
-        },
         {
           label: metric.label,
           value: `${chartFmt(metric.value(q), metric.decimals)} ${metric.unit}`,
@@ -437,7 +374,7 @@ export function OilStocksPanel() {
       <ChartPanel
         icon={Building2}
         title="Top global oil companies"
-        blurb="The world's largest oil and gas majors, with live share prices from their primary listing and approximate annual output capacity."
+        blurb="The world's largest oil and gas majors, with approximate annual output capacity and market capitalisation."
         metricValue={metricKey}
         metricOptions={(Object.keys(STOCK_METRICS) as StockMetric[]).map((m) => ({
           value: m,
@@ -489,20 +426,19 @@ export function OilStocksPanel() {
             matched={ranked.length}
           />
         }
-        status={isLoading ? "Loading" : stale ? "Last close" : "Live"}
+        status="Company reports"
         footnote={
           view === "scatter"
-            ? `Scatter plot: X = ${axes.x.metric.label}, Y = ${metric.label}, bubble size = ${axes.size.label}. ${axes.x.help} Capacity is approximate annual output in million barrels of oil equivalent per year. Prices refresh every five minutes and are quoted in each company's primary listing currency. Click any bubble for that company's latest news. ${MARKET_CAP_NOTE}`
-            : `Capacity is approximate annual output in million barrels of oil equivalent per year (upstream production, or crude throughput for refiners). Prices refresh every five minutes and are quoted in each company's primary listing currency. Click any row for that company's latest news. ${MARKET_CAP_NOTE}`
+            ? `Scatter plot: X = ${axes.x.metric.label}, Y = ${metric.label}, bubble size = ${axes.size.label}. ${axes.x.help} Capacity is approximate annual output in million barrels of oil equivalent per year. Click any bubble for that company's latest news. ${MARKET_CAP_NOTE}`
+            : `Capacity is approximate annual output in million barrels of oil equivalent per year (upstream production, or crude throughput for refiners). Click any row for that company's latest news. ${MARKET_CAP_NOTE}`
         }
       >
         {ghgEmpty && !isLoading ? (
           <GhgEmptyNotice />
         ) : sorted.length === 0 && !isLoading ? (
           <p className="text-sm text-muted-foreground">
-            {quotes.length === 0
-              ? "Market data is unavailable right now."
-              : "No listed oil companies for this filter — open that country's profile page for its policy and market updates."}
+            No listed oil companies for this filter — open that country's profile page for its
+            policy and market updates.
           </p>
         ) : view === "line" ? (
           <ChartTrend panel="oil" />
@@ -516,7 +452,7 @@ export function OilStocksPanel() {
             formatY={(n) => chartFmt(n, metric.decimals)}
             formatSize={(n) => chartFmt(n, 0)}
             onSelect={onSelect}
-            indexLabel="NYSE / global energy majors index"
+            indexLabel="Global energy majors"
           />
         ) : view === "map" ? (
           <ChartMap
@@ -538,7 +474,7 @@ export function OilStocksPanel() {
             items={items}
             unitLabel={metric.unit}
             yLabel="Company"
-            metaHeader="1-day"
+            metaHeader="Market cap"
             format={(n: number) => chartFmt(n, metric.decimals)}
             news={newsMap}
             onSelect={onSelect}
@@ -557,7 +493,7 @@ export function OilStocksPanel() {
             unitLabel={metric.unit}
             measureLabel={metric.label}
             measureHelp={metric.help}
-            indexLabel="NYSE / global energy majors index"
+            indexLabel="Global energy majors"
             format={(n) => chartFmt(n, metric.decimals)}
             items={items}
             onSelect={onSelect}

@@ -20,11 +20,10 @@ import {
 import { ghgSavingsMt, GHG_NOTE } from "@/shared/ghg-savings";
 import { GhgEmptyNotice } from "@/components/GhgEmptyNotice";
 import {
-  detailTone,
   useEntityDetail,
   type GraphContext,
 } from "@/features/markets/components/EntityDetailSheet";
-import { priceMeta, priceTone, useEntityQuotes } from "@/features/markets/hooks/useEntityQuotes";
+import { listingMeta } from "@/features/markets/lib/listing";
 import { ChartFilterBar, countryFilterOptions, useChartFilter } from "@/components/chart-filters";
 import { entityLogoByName } from "@/features/markets/entity-logos";
 import { ExportCsvButton } from "@/components/ExportCsvButton";
@@ -457,7 +456,7 @@ const PRODUCERS: Producer[] = [
   },
 ];
 
-type Metric = "capacity" | "removal" | "marketcap" | "price" | "ghg";
+type Metric = "capacity" | "removal" | "marketcap" | "ghg";
 
 const METRICS: Record<
   Metric,
@@ -476,13 +475,6 @@ const METRICS: Record<
     help: "Carbon locked away per year, issued or claimed under biochar carbon-removal registries. Roughly two tonnes CO₂e per tonne of biochar.",
     decimals: 0,
     value: (p) => p.co2RemovalT,
-  },
-  price: {
-    label: "Share price (listing currency)",
-    unit: "share price, primary listing currency",
-    help: "Latest traded share price on the producer's primary listing, in that exchange's currency. Private, state-owned or unlisted producers have no price and sit at the end.",
-    decimals: 2,
-    value: () => 0,
   },
   marketcap: {
     label: "Market cap (approx.)",
@@ -568,7 +560,9 @@ function mergeDynamicProducers(payload: SupplyDatasetPayload | undefined): {
   latestIngestFinishedAt: string | null;
   stale: boolean | null;
 } {
-  const dynamic = (payload?.rows ?? []).map(dynamicProducer).filter((p): p is Producer => Boolean(p));
+  const dynamic = (payload?.rows ?? [])
+    .map(dynamicProducer)
+    .filter((p): p is Producer => Boolean(p));
   const listedCount = payload?.rows.length ?? 0;
   if (dynamic.length === 0) {
     return {
@@ -629,7 +623,6 @@ export function BiocharProducersPanel() {
   const [metricKey, setMetricKey] = useState<Metric>("capacity");
   const [view, setView] = useState<PanelView>("heat");
   const detail = useEntityDetail();
-  const { get } = useEntityQuotes();
   const { data: dynamicPayload } = useQuery({
     queryKey: ["supply-dataset", DYNAMIC_DATASET_ID],
     queryFn: () => getSupplyDatasetFn({ data: { datasetId: DYNAMIC_DATASET_ID } }),
@@ -638,8 +631,7 @@ export function BiocharProducersPanel() {
   const dynamic = useMemo(() => mergeDynamicProducers(dynamicPayload), [dynamicPayload]);
   const producers = dynamic.producers;
   const metric = METRICS[metricKey];
-  const valueOf = (p: Producer) =>
-    metricKey === "price" ? (get(BIOCHAR_TICKERS[p.name])?.price ?? 0) : metric.value(p);
+  const valueOf = (p: Producer) => metric.value(p);
 
   const f = useChartFilter(producers, {
     text: (p) => `${p.name} ${p.country} ${p.feedstock} ${p.note}`,
@@ -662,8 +654,7 @@ export function BiocharProducersPanel() {
     size: axes.size.value(p),
     group: p.country,
     logo: entityLogoByName(p.name),
-    meta: priceMeta(get(BIOCHAR_TICKERS[p.name])),
-    changePct: get(BIOCHAR_TICKERS[p.name])?.changePct,
+    meta: listingMeta(BIOCHAR_TICKERS[p.name]),
     newsTarget: { name: p.name, query: `"${p.name}" ${NEWS_SUFFIX}` },
   }));
 
@@ -673,9 +664,7 @@ export function BiocharProducersPanel() {
     sub: `${p.feedstock} · ${p.note}`,
     value: valueOf(p),
     logo: entityLogoByName(p.name),
-    meta: priceMeta(get(BIOCHAR_TICKERS[p.name])),
-    tone: priceTone(get(BIOCHAR_TICKERS[p.name])),
-    changePct: get(BIOCHAR_TICKERS[p.name])?.changePct,
+    meta: listingMeta(BIOCHAR_TICKERS[p.name]),
   }));
   const newsMap = Object.fromEntries(
     rows.map((p) => [p.name, { name: p.name, query: `"${p.name}" ${NEWS_SUFFIX}` }]),
@@ -703,17 +692,6 @@ export function BiocharProducersPanel() {
       note: p.note,
       stats: [
         { label: "Ticker", value: BIOCHAR_TICKERS[p.name] ?? "Not listed" },
-        {
-          label: "Share price",
-          value: get(BIOCHAR_TICKERS[p.name]) ? fmt(get(BIOCHAR_TICKERS[p.name])!.price, 2) : "—",
-        },
-        {
-          label: "1-day change",
-          value: get(BIOCHAR_TICKERS[p.name])
-            ? `${get(BIOCHAR_TICKERS[p.name])!.changePct >= 0 ? "+" : ""}${get(BIOCHAR_TICKERS[p.name])!.changePct.toFixed(2)}%`
-            : "—",
-          tone: detailTone(get(BIOCHAR_TICKERS[p.name])?.changePct),
-        },
         { label: "Biochar capacity", value: `${fmt(p.capacityT, 0)} t/yr` },
         { label: "Durable CO₂ removal", value: `${fmt(p.co2RemovalT, 0)} tCO₂e/yr` },
         { label: "Feedstock", value: p.feedstock },
@@ -770,8 +748,6 @@ export function BiocharProducersPanel() {
                 note: `Measure shown: ${metric.label}`,
                 header: [
                   "Ticker",
-                  "Share price",
-                  "1-day change %",
                   "Producer",
                   "Country",
                   "Feedstock",
@@ -782,8 +758,6 @@ export function BiocharProducersPanel() {
                 ],
                 rows: ranked.map((p) => [
                   BIOCHAR_TICKERS[p.name] ?? "Not listed",
-                  get(BIOCHAR_TICKERS[p.name])?.price ?? "",
-                  get(BIOCHAR_TICKERS[p.name])?.changePct?.toFixed(2) ?? "",
                   p.name,
                   p.country,
                   p.feedstock,
@@ -828,8 +802,9 @@ export function BiocharProducersPanel() {
             <p className="label-mono mt-2 text-xs text-muted-foreground">
               Biochar Europe rows: {dynamic.listedCount} listed entities ·{" "}
               {reportingYearLabel(dynamic.reportingYears)} · ingested{" "}
-              {formatFreshnessDate(dynamic.latestIngestFinishedAt)} · {freshnessLabel(dynamic.stale)} ·{" "}
-              fallback capacities reviewed {dynamicPayload?.registry?.lastReviewed ?? "not recorded"} ·{" "}
+              {formatFreshnessDate(dynamic.latestIngestFinishedAt)} ·{" "}
+              {freshnessLabel(dynamic.stale)} · fallback capacities reviewed{" "}
+              {dynamicPayload?.registry?.lastReviewed ?? "not recorded"} ·{" "}
               <Link
                 to="/data-sources"
                 hash={DYNAMIC_DATASET_ID}

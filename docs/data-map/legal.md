@@ -22,6 +22,7 @@ Both pages are plain text typed into the code. Nothing is fetched.
 
 ## Problems spotted
 - **Privacy Policy doesn't cover the AI tools.** "Information we collect" and "Data sharing" do not mention that (a) Watch Assistant conversations are stored (`chat_threads`, `chat_messages`), (b) uploaded documents and their analyses are stored (`doc` bucket, `document_analyses`), or (c) chat messages and document text are sent to Google (Gemini) for processing. "Service providers" lists only hosting, authentication, analytics and email.
+- **Privacy Policy doesn't mention TradingView.** The home page "Biofuel stocks" tab loads a third-party TradingView script in the visitor's browser. Neither Cookies nor Data sharing mentions it.
 ---
-Status key: 🟢 our own data, official/open data, or licensed API · 🟡 allowed with care (RSS headlines, AI-written text, copyrighted report figures) · 🔴 not allowed / risky (Yahoo Finance `query1`, YouTube scraping) · ⚪ hand-written in code (needs manual updates)
+Status key: 🟢 our own data, official/open data, or licensed API · 🟡 allowed with care (RSS headlines, AI-written text, copyrighted report figures) · 🔴 not allowed / risky (none at the moment; the old Yahoo Finance `query1` and YouTube scraping were removed) · ⚪ hand-written in code (needs manual updates)
 "How it gets here" must be one of: **Live** (fetched when someone opens the page) · **Daily job** (`/api/public/scheduled-jobs`, 00:17 UTC) · **Parser** (supply ingestion) · **Hand-written** (hard-coded in a file) · **User input** (calculators/forms, saved to account or browser) · **AI** (Gemini) · **Own tracking** (Supabase traffic etc.)

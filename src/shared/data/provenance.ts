@@ -50,14 +50,12 @@ export type DatasetMeta = {
   limitations: string[];
 };
 
-const MARKET_SOURCES: SourceRef[] = [
-  {
-    org: "Yahoo Finance",
-    title: "Delayed market quotes — primary listing of each covered entity",
-    url: "https://finance.yahoo.com/",
-    year: 2026,
-  },
-];
+/**
+ * Supply datasets no longer show live share prices (the old feed was an
+ * unlicensed Yahoo Finance endpoint), so there is no market-quote source to
+ * cite. Kept as an empty list so each dataset's source list stays unchanged.
+ */
+const MARKET_SOURCES: SourceRef[] = [];
 
 export const DATASETS: DatasetMeta[] = [
   {
@@ -178,7 +176,7 @@ export const DATASETS: DatasetMeta[] = [
     id: "oil-companies",
     panel: "Top global oil companies",
     description:
-      "Integrated oil and refining groups ranked by annual output capacity alongside their live share price and renewable-fuel positions.",
+      "Integrated oil and refining groups ranked by annual output capacity alongside their approximate market capitalisation and renewable-fuel positions.",
     reportingYear: 2024,
     lastReviewed: "2026-09-01",
     metrics: [
@@ -189,9 +187,10 @@ export const DATASETS: DatasetMeta[] = [
           "Upstream production plus refinery throughput as reported in the group's annual report or 20-F / 10-K filing, annualised.",
       },
       {
-        label: "Share price and 1-day change",
-        unit: "primary listing currency",
-        basis: "Delayed exchange quote for the group's primary listing, refreshed live.",
+        label: "Market capitalisation (approx.)",
+        unit: "USD billions",
+        basis:
+          "Approximate latest-available value from company disclosures, converted to USD; shown for context only.",
       },
     ],
     sources: [
@@ -219,7 +218,7 @@ export const DATASETS: DatasetMeta[] = [
       "The largest listed and state-owned oil and refining groups by output, restricted to those with a disclosed refining or renewable-fuel position.",
     limitations: [
       "National oil companies report on different boundaries (equity vs operated volumes); figures are normalised to operated capacity where disclosed.",
-      "Share prices are delayed exchange quotes, not real-time trades, and unlisted state companies have no price.",
+      "Market capitalisations are approximate and updated by hand; unlisted state companies have none.",
     ],
   },
   {

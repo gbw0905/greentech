@@ -40,7 +40,7 @@ Everything on this page is typed into code. Nothing is fetched live.
 **Code:** `src/shared/data/provenance.ts`
 
 ### 4. "How we compile the panels"
-**What the user sees:** Four numbered principles (Primary documents, Transparent estimates, Reporting periods, Market quotes).
+**What the user sees:** Four numbered principles (Primary documents, Transparent estimates, Reporting periods, Market prices). The last one now says fuel prices are U.S. EIA daily spot prices, LCFS credit prices come from CARB, ethanol prices from USDA, and company share charts are delayed TradingView embeds.
 
 | Piece | Shows | Comes from | How it gets here | Refreshes | Status |
 |---|---|---|---|---|---|
@@ -61,5 +61,5 @@ Everything on this page is typed into code. Nothing is fetched live.
 - "Last reviewed" dates are typed by hand. They do not update by themselves, so they only stay true if someone edits `provenance.ts` after each review.
 
 ---
-Status key: 🟢 our own data, official/open data, or licensed API · 🟡 allowed with care (RSS headlines, AI-written text, copyrighted report figures) · 🔴 not allowed / risky (Yahoo Finance `query1`, YouTube scraping) · ⚪ hand-written in code (needs manual updates)
+Status key: 🟢 our own data, official/open data, or licensed API · 🟡 allowed with care (RSS headlines, AI-written text, copyrighted report figures) · 🔴 not allowed / risky (none at the moment; the old Yahoo Finance `query1` and YouTube scraping were removed) · ⚪ hand-written in code (needs manual updates)
 "How it gets here" must be one of: **Live** (fetched when someone opens the page) · **Daily job** (`/api/public/scheduled-jobs`, 00:17 UTC) · **Parser** (supply ingestion) · **Hand-written** (hard-coded in a file) · **User input** (calculators/forms, saved to account or browser) · **AI** (Gemini) · **Own tracking** (Supabase traffic etc.)

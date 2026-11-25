@@ -204,6 +204,8 @@ export type Database = {
           articles_used: string[]
           result_summary: string | null
           created_at: string
+          changes: Json | null
+          evidence: Json | null
         }
         Insert: {
           id?: string
@@ -212,6 +214,8 @@ export type Database = {
           articles_used?: string[]
           result_summary?: string | null
           created_at?: string
+          changes?: Json | null
+          evidence?: Json | null
         }
         Update: {
           id?: string
@@ -220,6 +224,8 @@ export type Database = {
           articles_used?: string[]
           result_summary?: string | null
           created_at?: string
+          changes?: Json | null
+          evidence?: Json | null
         }
         Relationships: []
       }
@@ -302,6 +308,12 @@ export type Database = {
           last_enriched_at: string | null
           created_at: string
           updated_at: string
+          last_change_at: string | null
+          last_change_fields: string[]
+          last_change_source_url: string | null
+          last_change_source_title: string | null
+          last_change_source_name: string | null
+          last_change_quote: string | null
         }
         Insert: {
           id?: string
@@ -315,6 +327,12 @@ export type Database = {
           last_enriched_at?: string | null
           created_at?: string
           updated_at?: string
+          last_change_at?: string | null
+          last_change_fields?: string[]
+          last_change_source_url?: string | null
+          last_change_source_title?: string | null
+          last_change_source_name?: string | null
+          last_change_quote?: string | null
         }
         Update: {
           id?: string
@@ -328,6 +346,12 @@ export type Database = {
           last_enriched_at?: string | null
           created_at?: string
           updated_at?: string
+          last_change_at?: string | null
+          last_change_fields?: string[]
+          last_change_source_url?: string | null
+          last_change_source_title?: string | null
+          last_change_source_name?: string | null
+          last_change_quote?: string | null
         }
         Relationships: []
       }
@@ -634,6 +658,27 @@ export type Database = {
           path?: string
           referrer?: string | null
           visitor_id?: string
+        }
+        Relationships: []
+      }
+      official_price_cache: {
+        Row: {
+          cache_key: string
+          payload: Json
+          source_url: string
+          fetched_at: string
+        }
+        Insert: {
+          cache_key: string
+          payload: Json
+          source_url: string
+          fetched_at?: string
+        }
+        Update: {
+          cache_key?: string
+          payload?: Json
+          source_url?: string
+          fetched_at?: string
         }
         Relationships: []
       }

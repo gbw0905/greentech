@@ -15,7 +15,6 @@ import {
 import { toast } from "sonner";
 import {
   BIOFUEL_STOCKS,
-  getBiofuelStocksFn,
   getMarketHistoryFn,
   getOilPricesFn,
   type MarketHistoryRange,
@@ -24,6 +23,8 @@ import {
 import { marketOutlookFn } from "@/features/markets/outlook-server-functions";
 import { windowChange } from "@/features/markets/lib/window-change";
 import { compareCloses } from "@/features/markets/lib/comparison";
+import { TradingViewWidget } from "./TradingViewWidget";
+import { BioenergyPricesPanel } from "./BioenergyPricesPanel";
 import benchmarkStyles from "./BenchmarkPanel.module.css";
 import periodStyles from "./MarketPeriod.module.css";
 
@@ -150,7 +151,7 @@ function MarketCard({
     >
       <span className="benchmark-card-row">
         <span className="benchmark-card-name">{q.label}</span>
-        <span className="benchmark-symbol">{q.symbol}</span>
+        <span className="benchmark-symbol">{q.code}</span>
       </span>
       <span className="benchmark-card-row">
         <span className="benchmark-card-price">
@@ -205,7 +206,7 @@ function UnavailableMarketCard({
     >
       <span className="benchmark-card-row">
         <span className="benchmark-card-name">{benchmark.label}</span>
-        <span className="benchmark-symbol">{benchmark.symbol}</span>
+        <span className="benchmark-symbol">{benchmark.code}</span>
       </span>
       <span className="benchmark-card-row">
         <span className="benchmark-card-price">
@@ -749,20 +750,12 @@ function MarketStats({ q }: { q: OilQuote }) {
 }
 
 type Outlook = { text: string; loading: boolean; error?: string };
+type MarketView = "benchmarks" | "bioenergy" | "stocks";
+const MARKET_VIEWS: MarketView[] = ["benchmarks", "bioenergy", "stocks"];
 
 function BiofuelStockWorkspace() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["biofuel-stocks"],
-    queryFn: () => getBiofuelStocksFn(),
-    refetchInterval: 60_000,
-    staleTime: 60_000,
-  });
   const [selected, setSelected] = useState<string>(BIOFUEL_STOCKS[0].symbol);
-  const [historyRange, setHistoryRange] = useState<ChartRange>("1mo");
-  const quotes = data?.quotes ?? [];
-  const active = quotes.find((quote) => quote.symbol === selected) ?? quotes[0];
-  const selectedInfo = BIOFUEL_STOCKS.find((stock) => stock.symbol === active?.symbol);
-  const activeTrend = active ? stats(active).trend : null;
+  const active = BIOFUEL_STOCKS.find((stock) => stock.symbol === selected) ?? BIOFUEL_STOCKS[0];
 
   return (
     <div className="stock-workspace">
@@ -770,126 +763,89 @@ function BiofuelStockWorkspace() {
         <div>
           <h3>Biofuel company shares</h3>
           <p>
-            Ten listed companies from the Global Bioenergy Watch desk. Select one to inspect its
-            price history.
+            Ten listed companies from the Global Bioenergy Watch desk. Select one to see its share
+            price chart from TradingView (delayed exchange data).
           </p>
         </div>
       </div>
       <div className="stock-workspace-grid">
         <MotionReveal
           as="article"
-          key={active?.symbol ?? "empty"}
+          key={active.symbol}
           delay={0.12}
           duration={0.9}
           id="stock-chart-detail"
           className="stock-chart-panel"
         >
-          {active ? (
-            <>
-              <div className="stock-chart-summary" key={active.symbol}>
-                <div className="stock-chart-head">
-                  <div className="stock-chart-name">
-                    <img src={`/market-logos/${active.symbol}.png`} alt="" aria-hidden="true" />
-                    <div>
-                      <div className="stock-chart-id">
-                        <h4>{active.label}</h4>
-                        <span className="benchmark-symbol">{active.symbol}</span>
-                      </div>
-                      <p>{selectedInfo?.focus}</p>
-                    </div>
+          <div className="stock-chart-summary">
+            <div className="stock-chart-head">
+              <div className="stock-chart-name">
+                <img src={`/market-logos/${active.logo}.png`} alt="" aria-hidden="true" />
+                <div>
+                  <div className="stock-chart-id">
+                    <h4>{active.label}</h4>
+                    <span className="benchmark-symbol">{active.symbol}</span>
                   </div>
-                  <span
-                    className={`benchmark-trend ${activeTrend !== null && activeTrend < 0 ? "negative" : "positive"}`}
-                  >
-                    {activeTrend === null ? "—" : percent(activeTrend)} · 30-day change
-                  </span>
-                </div>
-                <div className="benchmark-price-row stock-price-row">
-                  <div className="benchmark-price">
-                    {price(active, active.price)} <small>{active.currency} / share</small>
-                  </div>
-                  <DailyBadge q={active} />
-                  <span className="benchmark-daily">
-                    1D change{" "}
-                    <b className={active.change >= 0 ? "positive" : "negative"}>
-                      {active.change >= 0 ? "+" : ""}
-                      {number(active.change)}
-                    </b>
-                  </span>
+                  <p>{active.focus}</p>
                 </div>
               </div>
-              <MarketChart
-                key={active.symbol}
-                q={active}
-                comparison={undefined}
-                range={historyRange}
-                onRangeChange={setHistoryRange}
-              />
-              <MarketStats key={active.symbol + "-period"} q={active} />
-              <p className="stock-quote-note">
-                Last market quote:{" "}
-                {new Date(active.updatedAt).toLocaleString("en-US", {
-                  dateStyle: "medium",
-                  timeStyle: "short",
-                  timeZone: "UTC",
-                })}{" "}
-                UTC. Prices may be delayed; closed exchanges show their last trade.
-              </p>
-            </>
-          ) : (
-            <div className="stock-chart-empty" role="status">
-              {isLoading ? (
-                <>
-                  <Loader2 size={20} className="animate-spin" /> Loading stock prices…
-                </>
-              ) : (
-                "Stock prices are unavailable right now. Please try refreshing."
-              )}
             </div>
-          )}
+          </div>
+          <TradingViewWidget
+            widget="symbol-overview"
+            height={420}
+            title={`${active.label} share price chart`}
+            config={{
+              symbols: [[active.label, `${active.symbol}|1M`]],
+              chartOnly: false,
+              width: "100%",
+              height: "100%",
+              locale: "en",
+              colorTheme: "light",
+              isTransparent: true,
+              autosize: true,
+              showVolume: false,
+              hideDateRanges: false,
+              scalePosition: "right",
+              scaleMode: "Normal",
+              chartType: "area",
+              changeMode: "price-and-percent",
+              dateRanges: ["1d|1", "1m|30", "3m|60", "12m|1D", "60m|1W", "all|1M"],
+            }}
+          />
         </MotionReveal>
         <MotionReveal className="stock-list-panel" delay={0.22} duration={0.9}>
           <div className="stock-list-title">
             <span>Company</span>
-            <span>Share price / 1D</span>
+            <span>Focus</span>
           </div>
           <div className="stock-list" role="group" aria-label="Choose a biofuel stock">
-            {BIOFUEL_STOCKS.map((stock, index) => {
-              const quote = quotes.find((item) => item.symbol === stock.symbol);
-              return (
-                <button
-                  type="button"
-                  key={stock.symbol}
-                  className="stock-row"
-                  style={{ "--row-index": index } as CSSProperties}
-                  aria-pressed={active?.symbol === stock.symbol}
-                  aria-controls="stock-chart-detail"
-                  disabled={!quote}
-                  onClick={() => setSelected(stock.symbol)}
-                >
-                  <span className="stock-row-number">{String(index + 1).padStart(2, "0")}</span>
-                  <img
-                    className="stock-row-logo"
-                    src={`/market-logos/${stock.symbol}.png`}
-                    alt=""
-                    aria-hidden="true"
-                    loading="lazy"
-                  />
-                  <span className="stock-row-identity">
-                    <strong>{stock.label}</strong>
-                    <small>
-                      {stock.symbol} · {stock.focus}
-                    </small>
-                  </span>
-                  <span className="stock-row-quote">
-                    <strong>{quote ? price(quote, quote.price) : "—"}</strong>
-                    <small className={quote && quote.change < 0 ? "negative" : "positive"}>
-                      {quote ? percent(quote.changePct) : isLoading ? "Loading" : "Unavailable"}
-                    </small>
-                  </span>
-                </button>
-              );
-            })}
+            {BIOFUEL_STOCKS.map((stock, index) => (
+              <button
+                type="button"
+                key={stock.symbol}
+                className="stock-row"
+                style={{ "--row-index": index } as CSSProperties}
+                aria-pressed={active.symbol === stock.symbol}
+                aria-controls="stock-chart-detail"
+                onClick={() => setSelected(stock.symbol)}
+              >
+                <span className="stock-row-number">{String(index + 1).padStart(2, "0")}</span>
+                <img
+                  className="stock-row-logo"
+                  src={`/market-logos/${stock.logo}.png`}
+                  alt=""
+                  aria-hidden="true"
+                  loading="lazy"
+                />
+                <span className="stock-row-identity">
+                  <strong>{stock.label}</strong>
+                  <small>
+                    {stock.symbol} · {stock.focus}
+                  </small>
+                </span>
+              </button>
+            ))}
           </div>
         </MotionReveal>
       </div>
@@ -902,17 +858,17 @@ export function OilPricePanel({
 }: {
   initialMarket?: Awaited<ReturnType<typeof getOilPricesFn>> | null;
 }) {
-  const { data, isLoading, dataUpdatedAt } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["oil-prices"],
     queryFn: () => getOilPricesFn(),
     initialData: initialMarket ?? undefined,
-    refetchInterval: 60_000,
+    refetchInterval: 30 * 60_000,
     placeholderData: keepPreviousData,
-    staleTime: Infinity,
+    staleTime: 10 * 60_000,
     gcTime: Infinity,
   });
   const [selected, setSelected] = useState<string | null>(null);
-  const [marketView, setMarketView] = useState<"benchmarks" | "stocks">("benchmarks");
+  const [marketView, setMarketView] = useState<MarketView>("benchmarks");
   const [historyRange, setHistoryRange] = useState<ChartRange>("1mo");
   const [compareSymbol, setCompareSymbol] = useState<string | null>(null);
   const [outlookOpen, setOutlookOpen] = useState(false);
@@ -958,13 +914,14 @@ export function OilPricePanel({
   );
   const selectedOutlook = q ? outlook[q.symbol] : undefined;
   const stale = data?.stale ?? false;
-  const asOf = data?.asOf ?? dataUpdatedAt;
+  const asOf = data?.asOf ?? null;
   const stamp = asOf
-    ? new Date(asOf).toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
+    ? new Date(asOf).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
         timeZone: "UTC",
-      }) + " UTC"
+      })
     : "—";
   const trend = q ? stats(q).trend : null;
 
@@ -973,7 +930,10 @@ export function OilPricePanel({
       <MotionReveal as="header" className="benchmark-header">
         <div>
           <h2 id="markets-title">Markets that move biofuel economics</h2>
-          <p>Explore benchmark prices and the share performance of listed biofuel companies.</p>
+          <p>
+            Official fuel benchmark prices, California LCFS credit and U.S. ethanol prices, and
+            listed biofuel company shares.
+          </p>
         </div>
         {marketView === "benchmarks" && (
           <div className="benchmark-meta">
@@ -981,16 +941,10 @@ export function OilPricePanel({
               <span
                 className={quotes.length && !stale ? "benchmark-live-dot" : "benchmark-offline-dot"}
               />
-              {quotes.length
-                ? stale
-                  ? "Last close"
-                  : "Live"
-                : isLoading
-                  ? "Loading"
-                  : "Unavailable"}
+              {quotes.length ? "Daily · U.S. EIA" : isLoading ? "Loading" : "Unavailable"}
             </span>
             <span>
-              {stale ? "As of" : "Updated"} <b>{stamp}</b>
+              Prices for <b>{stamp}</b>
             </span>
           </div>
         )}
@@ -1002,17 +956,17 @@ export function OilPricePanel({
         onKeyDown={(event) => {
           if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
           event.preventDefault();
-          const next =
+          const current = MARKET_VIEWS.indexOf(marketView);
+          const nextIndex =
             event.key === "Home"
-              ? "benchmarks"
+              ? 0
               : event.key === "End"
-                ? "stocks"
-                : marketView === "benchmarks"
-                  ? "stocks"
-                  : "benchmarks";
-          setMarketView(next);
+                ? MARKET_VIEWS.length - 1
+                : (current + (event.key === "ArrowRight" ? 1 : MARKET_VIEWS.length - 1)) %
+                  MARKET_VIEWS.length;
+          setMarketView(MARKET_VIEWS[nextIndex]!);
           const tabs = event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]');
-          tabs[next === "benchmarks" ? 0 : 1]?.focus();
+          tabs[nextIndex]?.focus();
         }}
       >
         <button
@@ -1022,7 +976,16 @@ export function OilPricePanel({
           aria-controls="market-benchmarks-panel"
           onClick={() => setMarketView("benchmarks")}
         >
-          Benchmark markets
+          Fuel benchmarks
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={marketView === "bioenergy"}
+          aria-controls="market-bioenergy-panel"
+          onClick={() => setMarketView("bioenergy")}
+        >
+          Credits &amp; ethanol
         </button>
         <button
           type="button"
@@ -1034,7 +997,11 @@ export function OilPricePanel({
           Biofuel stocks
         </button>
       </div>
-      {marketView === "stocks" ? (
+      {marketView === "bioenergy" ? (
+        <div id="market-bioenergy-panel" role="tabpanel">
+          <BioenergyPricesPanel />
+        </div>
+      ) : marketView === "stocks" ? (
         <div id="market-stocks-panel" role="tabpanel">
           <BiofuelStockWorkspace />
         </div>
@@ -1055,7 +1022,7 @@ export function OilPricePanel({
             <div className="benchmark-cards" role="group" aria-label="Choose a benchmark">
               <div className="benchmark-list-title" aria-hidden="true">
                 <span>Market</span>
-                <span>Price / 1D</span>
+                <span>Price / day</span>
               </div>
               {BENCHMARKS.map((benchmark, index) => {
                 const quote = quotes.find((item) => item.symbol === benchmark.symbol);
@@ -1100,7 +1067,7 @@ export function OilPricePanel({
                     <div className="benchmark-panel-top">
                       <div className="benchmark-id">
                         <h3>{q.label}</h3>
-                        <span className="benchmark-symbol">{q.symbol}</span>
+                        <span className="benchmark-symbol">{q.code}</span>
                       </div>
                       <span
                         className={
@@ -1118,7 +1085,7 @@ export function OilPricePanel({
                       </div>
                       <DailyBadge q={q} />
                       <span className="benchmark-daily">
-                        1D change{" "}
+                        Day change{" "}
                         <b className={q.change >= 0 ? "positive" : "negative"}>
                           {q.change >= 0 ? "+" : ""}
                           {number(q.change)}
@@ -1178,11 +1145,24 @@ export function OilPricePanel({
                   </div>
                   <p className="benchmark-why">
                     <b>Why it matters:</b>{" "}
-                    {q.symbol === "CL=F" || q.symbol === "BZ=F"
+                    {q.symbol === "eia:wti" || q.symbol === "eia:brent"
                       ? "Crude oil prices help explain the relative economics of biodiesel, renewable diesel and ethanol blending."
-                      : q.symbol === "^GSPC" || q.symbol === "^NYA"
-                        ? "US equity benchmarks provide context for investment conditions across listed energy companies and biofuel producers."
-                        : "Natural gas is an operating cost for biofuel plants and a benchmark for renewable natural gas markets."}
+                      : q.symbol === "eia:nyh-ulsd"
+                        ? "Ultra-low-sulfur diesel is the fossil fuel that biodiesel and renewable diesel replace, so its price sets the baseline they compete against."
+                        : q.symbol === "eia:usgc-jet"
+                          ? "Conventional jet fuel is the price sustainable aviation fuel competes with; the gap between them drives SAF mandates and credits."
+                          : "Natural gas is an operating cost for biofuel plants and a benchmark for renewable natural gas markets."}
+                    <br />
+                    <small>
+                      Source:{" "}
+                      <a href={q.sourceUrl} target="_blank" rel="noopener noreferrer">
+                        U.S. Energy Information Administration
+                      </a>{" "}
+                      daily spot price, series {q.code.replace(/^EIA /, "")}.
+                      {q.releasedAt
+                        ? ` Released ${new Date(q.releasedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}; EIA publishes weekly.`
+                        : ""}
+                    </small>
                   </p>
                   <div className="benchmark-outlook">
                     <button

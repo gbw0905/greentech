@@ -1,6 +1,8 @@
 import { MotionReveal } from "@/components/MotionReveal";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { countryBySlug } from "@/features/policy/taxonomy";
+import { liveCountryProfilesQuery } from "@/features/countries/live-profiles";
 import { CountrySummaryModal } from "./CountrySummaryModal";
 import styles from "./PolicyMap.module.css";
 const WorldPolicyMap = lazy(() =>
@@ -10,7 +12,10 @@ const WorldPolicyMap = lazy(() =>
 export function PolicyMapSection({ counts }: { counts: Record<string, number> }) {
   const [selected, setSelected] = useState<string | null>(null);
   const opener = useRef<SVGElement | null>(null);
-  const country = selected ? countryBySlug(selected) : undefined;
+  const { data: liveProfiles } = useQuery(liveCountryProfilesQuery);
+  const country = selected
+    ? (liveProfiles?.find((profile) => profile.slug === selected) ?? countryBySlug(selected))
+    : undefined;
   const mapFrame = useRef<HTMLDivElement>(null);
   const [loadMap, setLoadMap] = useState(false);
   useEffect(() => {
@@ -61,6 +66,7 @@ export function PolicyMapSection({ counts }: { counts: Record<string, number> })
               >
                 <WorldPolicyMap
                   counts={counts}
+                  countries={liveProfiles}
                   activeCountry={selected}
                   onSelect={(slug) => {
                     opener.current = slug

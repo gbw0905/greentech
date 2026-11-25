@@ -71,7 +71,7 @@ const PolicyAlert = ({ dateLabel = "", items = [] }: Props) => (
         ))}
 
         <Text style={foot}>
-          Summaries are AI-generated from public sources — always cross-verify against the original
+          Summaries are the publisher's own feed text — always cross-verify against the original
           announcement. Sent by globalbioenergywatch.org
         </Text>
       </Container>
