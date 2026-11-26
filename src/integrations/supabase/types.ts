@@ -412,6 +412,98 @@ export type Database = {
         }
         Relationships: []
       }
+      civanta_calculations: {
+        Row: {
+          ci: number
+          created_at: string
+          engine_version: string
+          id: string
+          input_hash: string
+          inputs: Json
+          parts: Json
+          pathway_id: string
+          pathway_label: string
+          plant_id: string
+          plant_name: string
+          user_id: string
+        }
+        Insert: {
+          ci: number
+          created_at?: string
+          engine_version: string
+          id?: string
+          input_hash: string
+          inputs: Json
+          parts?: Json
+          pathway_id: string
+          pathway_label?: string
+          plant_id: string
+          plant_name: string
+          user_id: string
+        }
+        Update: {
+          ci?: number
+          created_at?: string
+          engine_version?: string
+          id?: string
+          input_hash?: string
+          inputs?: Json
+          parts?: Json
+          pathway_id?: string
+          pathway_label?: string
+          plant_id?: string
+          plant_name?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "civanta_calculations_plant_id_fkey"
+            columns: ["plant_id"]
+            isOneToOne: false
+            referencedRelation: "civanta_plants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      civanta_plants: {
+        Row: {
+          calculated: boolean
+          created_at: string
+          id: string
+          latest_ci: number | null
+          model: Json | null
+          name: string
+          pathway_id: string
+          pathway_label: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          calculated?: boolean
+          created_at?: string
+          id?: string
+          latest_ci?: number | null
+          model?: Json | null
+          name: string
+          pathway_id?: string
+          pathway_label?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          calculated?: boolean
+          created_at?: string
+          id?: string
+          latest_ci?: number | null
+          model?: Json | null
+          name?: string
+          pathway_id?: string
+          pathway_label?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       flyer_generations: {
         Row: {
           created_at: string

@@ -7,42 +7,119 @@ import { getPremiumStatusFn } from "@/features/premium/server-functions";
 interface Plant {
   id: string;
   name: string;
+  pathway: string;
+  calculated: boolean;
+  ci: number | null;
+}
+interface Calculation {
+  id: string;
+  plant_id: string;
+  ci: number;
+  pathway_label: string;
+  created_at: string;
+}
+interface StoredPlant {
+  id: string;
+  name: string;
   model?: {
     calculated?: boolean;
     ci?: number;
     sel?: { fuel?: string; feed?: string; tech?: string };
   };
 }
+interface ServerPlant {
+  id: string;
+  name: string;
+  pathway_label: string;
+  calculated: boolean;
+  latest_ci: number | null;
+}
 const storageKey = "civanta-plants-v1";
+const HISTORY_SHOWN = 10;
+
+function plantsFromBrowser(): Plant[] {
+  const stored: unknown = JSON.parse(localStorage.getItem(storageKey) || "[]");
+  if (!Array.isArray(stored)) return [];
+  return stored
+    .filter((p): p is StoredPlant => p && typeof p.id === "string" && typeof p.name === "string")
+    .reverse()
+    .map((p) => {
+      const calculated = p.model?.calculated === true && Number.isFinite(p.model.ci);
+      return {
+        id: p.id,
+        name: p.name,
+        pathway: [p.model?.sel?.fuel, p.model?.sel?.feed, p.model?.sel?.tech]
+          .filter(Boolean)
+          .join(" · "),
+        calculated,
+        ci: calculated ? (p.model?.ci ?? null) : null,
+      };
+    });
+}
+
+async function plantsFromAccount() {
+  const [plantsResponse, historyResponse] = await Promise.all([
+    fetch("/api/civanta-plants?summary=1", { credentials: "same-origin", cache: "no-store" }),
+    fetch("/api/civanta-calculations?limit=300", {
+      credentials: "same-origin",
+      cache: "no-store",
+    }),
+  ]);
+  if (!plantsResponse.ok || !historyResponse.ok) throw new Error("Account plants unavailable");
+  const { plants } = (await plantsResponse.json()) as { plants: ServerPlant[] };
+  const { calculations } = (await historyResponse.json()) as { calculations: Calculation[] };
+  return {
+    plants: plants.map((p) => ({
+      id: p.id,
+      name: p.name,
+      pathway: p.pathway_label,
+      calculated: p.calculated && p.latest_ci !== null,
+      ci: p.latest_ci === null ? null : Number(p.latest_ci),
+    })),
+    calculations: calculations.map((c) => ({ ...c, ci: Number(c.ci) })),
+  };
+}
+
+const formatDate = (value: string) =>
+  new Date(value).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+
 export function MyPlantsPanel() {
   const access = usePremium();
   const [plants, setPlants] = useState<Plant[]>([]);
+  const [history, setHistory] = useState<Calculation[]>([]);
+  const [fromAccount, setFromAccount] = useState(false);
   const [error, setError] = useState("");
   const [exportId, setExportId] = useState<string | null>(null);
   useEffect(() => {
-    const refresh = () => {
+    let current = true;
+    const refresh = async () => {
       try {
-        const stored: unknown = JSON.parse(localStorage.getItem(storageKey) || "[]");
-        setPlants(
-          Array.isArray(stored)
-            ? stored
-                .filter(
-                  (p): p is Plant => p && typeof p.id === "string" && typeof p.name === "string",
-                )
-                .reverse()
-            : [],
-        );
+        const saved = await plantsFromAccount();
+        if (!current) return;
+        setPlants(saved.plants);
+        setHistory(saved.calculations);
+        setFromAccount(true);
       } catch {
-        setError("Saved plants could not be read in this browser.");
+        // Fall back to this browser's copy when the account cannot be reached.
+        try {
+          if (current) {
+            setPlants(plantsFromBrowser());
+            setHistory([]);
+            setFromAccount(false);
+          }
+        } catch {
+          if (current) setError("Saved plants could not be read in this browser.");
+        }
       }
     };
-    refresh();
+    void refresh();
     const changed = (event: StorageEvent) => {
-      if (!event.key || event.key === storageKey) refresh();
+      if (!event.key || event.key === storageKey) void refresh();
     };
     window.addEventListener("storage", changed);
     window.addEventListener("focus", refresh);
     return () => {
+      current = false;
       window.removeEventListener("storage", changed);
       window.removeEventListener("focus", refresh);
     };
@@ -78,7 +155,7 @@ export function MyPlantsPanel() {
   }, [exportId]);
   async function download(plant: Plant) {
     setError("");
-    if (!access.premium || !plant.model?.calculated || exportId) return;
+    if (!access.premium || !plant.calculated || exportId) return;
     try {
       if (!(await getPremiumStatusFn()).premium) {
         setError("CIVanta Pro is required to download Excel.");
@@ -99,28 +176,46 @@ export function MyPlantsPanel() {
           Open CIVanta →
         </Link>
       </div>
-      <p>Plants saved in this browser. Open a plant to continue its calculation.</p>
+      <p>
+        {fromAccount
+          ? "Plants saved to your account. Open a plant to continue its calculation."
+          : "Plants saved in this browser. Open a plant to continue its calculation."}
+      </p>
       {error && <p role="alert">{error}</p>}
       {!plants.length ? (
         <p>No plants yet. Add your first plant in CIVanta.</p>
       ) : (
         <ul className="profile-plants-list">
           {plants.map((plant) => {
-            const calculated = plant.model?.calculated === true && Number.isFinite(plant.model.ci);
+            const calculated = plant.calculated && plant.ci !== null;
+            const runs = history.filter((run) => run.plant_id === plant.id);
             return (
               <li key={plant.id}>
                 <div>
                   <strong>{plant.name}</strong>
-                  <p>
-                    {[plant.model?.sel?.fuel, plant.model?.sel?.feed, plant.model?.sel?.tech]
-                      .filter(Boolean)
-                      .join(" · ") || "Pathway not selected"}
-                  </p>
+                  <p>{plant.pathway || "Pathway not selected"}</p>
                   <small>
                     {calculated
-                      ? `${plant.model?.ci?.toFixed(2)} g CO₂e/MJ`
+                      ? `${plant.ci?.toFixed(2)} g CO₂e/MJ`
                       : "Draft · Run CI to prepare a report"}
                   </small>
+                  {runs.length > 0 && (
+                    <details className="profile-plant-history">
+                      <summary>Past calculations ({runs.length})</summary>
+                      <ol>
+                        {runs.slice(0, HISTORY_SHOWN).map((run) => (
+                          <li key={run.id}>
+                            <time dateTime={run.created_at}>{formatDate(run.created_at)}</time>
+                            <b>{run.ci.toFixed(2)} g CO₂e/MJ</b>
+                            {run.pathway_label && <span>{run.pathway_label}</span>}
+                          </li>
+                        ))}
+                      </ol>
+                      {runs.length > HISTORY_SHOWN && (
+                        <small>Showing the latest {HISTORY_SHOWN} calculations.</small>
+                      )}
+                    </details>
+                  )}
                 </div>
                 <div className="profile-plant-actions">
                   <Link

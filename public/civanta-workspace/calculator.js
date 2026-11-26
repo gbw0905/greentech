@@ -443,6 +443,9 @@ function computeDairy(){let err=validate(dairy,dairyNumericFields);if(err)throw 
 function inputError(message, field) {
  return Object.assign(new Error(message), {field});
 }
+// Saved with every calculation in the member's history. Change it whenever
+// computeGeneric or computeDairy would give a different result for the same inputs.
+const CIVANTA_ENGINE_VERSION = 'civanta-frontend-2026-11';
 let calculationError;
 $('runButton').onclick = () => {
  calculationError = null;
