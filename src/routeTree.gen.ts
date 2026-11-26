@@ -42,6 +42,8 @@ import { Route as AlertsConfirmRouteImport } from './routes/alerts.confirm'
 import { Route as AlertsUnsubscribeRouteImport } from './routes/alerts.unsubscribe'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiCivantaAccessRouteImport } from './routes/api/civanta-access'
+import { Route as ApiCivantaCalculationsRouteImport } from './routes/api/civanta-calculations'
+import { Route as ApiCivantaPlantsRouteImport } from './routes/api/civanta-plants'
 import { Route as ApiDocumentAnalyzeRouteImport } from './routes/api/document-analyze'
 import { Route as ApiDocumentExplainRouteImport } from './routes/api/document-explain'
 import { Route as ApiDocumentHistoryRouteImport } from './routes/api/document-history'
@@ -236,6 +238,16 @@ const ApiCivantaAccessRoute = ApiCivantaAccessRouteImport.update({
   path: '/api/civanta-access',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCivantaCalculationsRoute = ApiCivantaCalculationsRouteImport.update({
+  id: '/api/civanta-calculations',
+  path: '/api/civanta-calculations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCivantaPlantsRoute = ApiCivantaPlantsRouteImport.update({
+  id: '/api/civanta-plants',
+  path: '/api/civanta-plants',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiDocumentAnalyzeRoute = ApiDocumentAnalyzeRouteImport.update({
   id: '/api/document-analyze',
   path: '/api/document-analyze',
@@ -416,6 +428,8 @@ export interface FileRoutesByFullPath {
   '/alerts/unsubscribe': typeof AlertsUnsubscribeRoute
   '/api/chat': typeof ApiChatRoute
   '/api/civanta-access': typeof ApiCivantaAccessRoute
+  '/api/civanta-calculations': typeof ApiCivantaCalculationsRoute
+  '/api/civanta-plants': typeof ApiCivantaPlantsRoute
   '/api/document-analyze': typeof ApiDocumentAnalyzeRoute
   '/api/document-explain': typeof ApiDocumentExplainRoute
   '/api/document-history': typeof ApiDocumentHistoryRoute
@@ -478,6 +492,8 @@ export interface FileRoutesByTo {
   '/alerts/unsubscribe': typeof AlertsUnsubscribeRoute
   '/api/chat': typeof ApiChatRoute
   '/api/civanta-access': typeof ApiCivantaAccessRoute
+  '/api/civanta-calculations': typeof ApiCivantaCalculationsRoute
+  '/api/civanta-plants': typeof ApiCivantaPlantsRoute
   '/api/document-analyze': typeof ApiDocumentAnalyzeRoute
   '/api/document-explain': typeof ApiDocumentExplainRoute
   '/api/document-history': typeof ApiDocumentHistoryRoute
@@ -541,6 +557,8 @@ export interface FileRoutesById {
   '/alerts/unsubscribe': typeof AlertsUnsubscribeRoute
   '/api/chat': typeof ApiChatRoute
   '/api/civanta-access': typeof ApiCivantaAccessRoute
+  '/api/civanta-calculations': typeof ApiCivantaCalculationsRoute
+  '/api/civanta-plants': typeof ApiCivantaPlantsRoute
   '/api/document-analyze': typeof ApiDocumentAnalyzeRoute
   '/api/document-explain': typeof ApiDocumentExplainRoute
   '/api/document-history': typeof ApiDocumentHistoryRoute
@@ -606,6 +624,8 @@ export interface FileRouteTypes {
     | '/alerts/unsubscribe'
     | '/api/chat'
     | '/api/civanta-access'
+    | '/api/civanta-calculations'
+    | '/api/civanta-plants'
     | '/api/document-analyze'
     | '/api/document-explain'
     | '/api/document-history'
@@ -668,6 +688,8 @@ export interface FileRouteTypes {
     | '/alerts/unsubscribe'
     | '/api/chat'
     | '/api/civanta-access'
+    | '/api/civanta-calculations'
+    | '/api/civanta-plants'
     | '/api/document-analyze'
     | '/api/document-explain'
     | '/api/document-history'
@@ -730,6 +752,8 @@ export interface FileRouteTypes {
     | '/alerts/unsubscribe'
     | '/api/chat'
     | '/api/civanta-access'
+    | '/api/civanta-calculations'
+    | '/api/civanta-plants'
     | '/api/document-analyze'
     | '/api/document-explain'
     | '/api/document-history'
@@ -792,6 +816,8 @@ export interface RootRouteChildren {
   AlertsUnsubscribeRoute: typeof AlertsUnsubscribeRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiCivantaAccessRoute: typeof ApiCivantaAccessRoute
+  ApiCivantaCalculationsRoute: typeof ApiCivantaCalculationsRoute
+  ApiCivantaPlantsRoute: typeof ApiCivantaPlantsRoute
   ApiDocumentAnalyzeRoute: typeof ApiDocumentAnalyzeRoute
   ApiDocumentExplainRoute: typeof ApiDocumentExplainRoute
   ApiDocumentHistoryRoute: typeof ApiDocumentHistoryRoute
@@ -1049,6 +1075,20 @@ declare module '@tanstack/react-router' {
       path: '/api/civanta-access'
       fullPath: '/api/civanta-access'
       preLoaderRoute: typeof ApiCivantaAccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/civanta-calculations': {
+      id: '/api/civanta-calculations'
+      path: '/api/civanta-calculations'
+      fullPath: '/api/civanta-calculations'
+      preLoaderRoute: typeof ApiCivantaCalculationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/civanta-plants': {
+      id: '/api/civanta-plants'
+      path: '/api/civanta-plants'
+      fullPath: '/api/civanta-plants'
+      preLoaderRoute: typeof ApiCivantaPlantsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/document-analyze': {
@@ -1323,6 +1363,8 @@ const rootRouteChildren: RootRouteChildren = {
   AlertsUnsubscribeRoute: AlertsUnsubscribeRoute,
   ApiChatRoute: ApiChatRoute,
   ApiCivantaAccessRoute: ApiCivantaAccessRoute,
+  ApiCivantaCalculationsRoute: ApiCivantaCalculationsRoute,
+  ApiCivantaPlantsRoute: ApiCivantaPlantsRoute,
   ApiDocumentAnalyzeRoute: ApiDocumentAnalyzeRoute,
   ApiDocumentExplainRoute: ApiDocumentExplainRoute,
   ApiDocumentHistoryRoute: ApiDocumentHistoryRoute,

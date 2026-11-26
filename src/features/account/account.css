@@ -320,14 +320,96 @@
   }
 }
 
-.profile-plants-heading,.profile-plant-actions {display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.profile-plants-heading h2 {display:flex;align-items:center;gap:10px;margin:0}
-.profile-plants-list {list-style:none;padding:0;margin:20px 0 0;max-height:560px;overflow:auto}
-.profile-plants-list li {display:flex;align-items:center;justify-content:space-between;gap:20px;padding:20px 0;border-top:1px solid #d6e1ea}
-.profile-plants-list strong {font-size:18px;color:#102d40}
-.profile-plants-list p {margin:5px 0;color:#526b79}
-.profile-plants-list small {color:#526b79}
-.profile-plant-actions {justify-content:flex-end;flex-shrink:0}
-.profile-excel:disabled {cursor:not-allowed;opacity:.6}
-.profile-pro-badge {background:#ffc328;color:#161616;border-radius:5px;padding:2px 7px;font-size:12px;font-weight:800}
-@media(max-width:800px){.profile-plants-list li{align-items:flex-start;flex-direction:column}.profile-plant-actions{justify-content:flex-start}}
+.profile-plants-heading,
+.profile-plant-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.profile-plants-heading h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+.profile-plants-list {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0 0;
+  max-height: 560px;
+  overflow: auto;
+}
+.profile-plants-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 0;
+  border-top: 1px solid #d6e1ea;
+}
+.profile-plants-list strong {
+  font-size: 18px;
+  color: #102d40;
+}
+.profile-plants-list p {
+  margin: 5px 0;
+  color: #526b79;
+}
+.profile-plants-list small {
+  color: #526b79;
+}
+.profile-plant-actions {
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+.profile-plant-history {
+  margin-top: 10px;
+}
+.profile-plant-history summary {
+  cursor: pointer;
+  color: #102d40;
+  font-weight: 600;
+  font-size: 14px;
+}
+.profile-plant-history ol {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 4px;
+}
+.profile-plants-list .profile-plant-history li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: baseline;
+  gap: 4px 14px;
+  padding: 6px 0;
+  border-top: 1px dashed #d6e1ea;
+  font-size: 14px;
+  color: #526b79;
+}
+.profile-plant-history b {
+  color: #102d40;
+}
+.profile-excel:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.profile-pro-badge {
+  background: #ffc328;
+  color: #161616;
+  border-radius: 5px;
+  padding: 2px 7px;
+  font-size: 12px;
+  font-weight: 800;
+}
+@media (max-width: 800px) {
+  .profile-plants-list li {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .profile-plant-actions {
+    justify-content: flex-start;
+  }
+}
