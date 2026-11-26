@@ -1,7 +1,10 @@
 (() => {
  const storageKey = 'civanta-plants-v1';
  const activeKey = 'civanta-active-plant-v1';
- const exporting = new URLSearchParams(location.search).get('profileExport') === '1';
+ const params = new URLSearchParams(location.search);
+ // The admin audit page runs this engine in a hidden frame; it must never touch saved plants.
+ const auditing = params.get('audit') === '1';
+ const exporting = params.get('profileExport') === '1' || auditing;
  let profileExportStarted = false;
 
  function rememberOpenPlant(id) {
@@ -386,7 +389,7 @@
  });
  renderList();
  // Open the plant from the last visit (or picked in the profile) once account plants are loaded.
- const plantsReady = pullPlants().catch(() => {}).then(() => {
+ const plantsReady = (auditing ? Promise.resolve() : pullPlants().catch(() => {})).then(() => {
   let openId;
   try { openId = sessionStorage.getItem(activeKey); } catch {}
   const previous = openId && plants.find(plant => plant.id === openId);

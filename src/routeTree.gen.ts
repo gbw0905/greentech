@@ -38,6 +38,7 @@ import { Route as VideosRouteImport } from './routes/videos'
 import { Route as AboutIndexRouteImport } from './routes/about.index'
 import { Route as AboutMissionVisionRouteImport } from './routes/about.mission-vision'
 import { Route as AboutTeamRouteImport } from './routes/about.team'
+import { Route as AdminCivantaAuditRouteImport } from './routes/admin.civanta-audit'
 import { Route as AlertsConfirmRouteImport } from './routes/alerts.confirm'
 import { Route as AlertsUnsubscribeRouteImport } from './routes/alerts.unsubscribe'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
@@ -53,6 +54,7 @@ import { Route as CivantaOptimizerRouteImport } from './routes/civanta_.optimize
 import { Route as CountriesSlugRouteImport } from './routes/countries.$slug'
 import { Route as SupplyIndexRouteImport } from './routes/supply.index'
 import { Route as SupplyPanelRouteImport } from './routes/supply.$panel'
+import { Route as ApiAdminCivantaAuditRouteImport } from './routes/api/admin/civanta-audit'
 import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
 import { Route as ApiAuthSessionRouteImport } from './routes/api/auth/session'
 import { Route as ApiAuthSetSessionRouteImport } from './routes/api/auth/set-session'
@@ -218,6 +220,11 @@ const AboutTeamRoute = AboutTeamRouteImport.update({
   path: '/team',
   getParentRoute: () => AboutRoute,
 } as any)
+const AdminCivantaAuditRoute = AdminCivantaAuditRouteImport.update({
+  id: '/admin/civanta-audit',
+  path: '/admin/civanta-audit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AlertsConfirmRoute = AlertsConfirmRouteImport.update({
   id: '/alerts/confirm',
   path: '/alerts/confirm',
@@ -291,6 +298,11 @@ const SupplyIndexRoute = SupplyIndexRouteImport.update({
 const SupplyPanelRoute = SupplyPanelRouteImport.update({
   id: '/supply/$panel',
   path: '/supply/$panel',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminCivantaAuditRoute = ApiAdminCivantaAuditRouteImport.update({
+  id: '/api/admin/civanta-audit',
+  path: '/api/admin/civanta-audit',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthCallbackRoute = ApiAuthCallbackRouteImport.update({
@@ -424,6 +436,7 @@ export interface FileRoutesByFullPath {
   '/videos': typeof VideosRoute
   '/about/mission-vision': typeof AboutMissionVisionRoute
   '/about/team': typeof AboutTeamRoute
+  '/admin/civanta-audit': typeof AdminCivantaAuditRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/alerts/unsubscribe': typeof AlertsUnsubscribeRoute
   '/api/chat': typeof ApiChatRoute
@@ -440,6 +453,7 @@ export interface FileRoutesByFullPath {
   '/supply/$panel': typeof SupplyPanelRoute
   '/about/': typeof AboutIndexRoute
   '/supply/': typeof SupplyIndexRoute
+  '/api/admin/civanta-audit': typeof ApiAdminCivantaAuditRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
   '/api/auth/set-session': typeof ApiAuthSetSessionRoute
@@ -488,6 +502,7 @@ export interface FileRoutesByTo {
   '/videos': typeof VideosRoute
   '/about/mission-vision': typeof AboutMissionVisionRoute
   '/about/team': typeof AboutTeamRoute
+  '/admin/civanta-audit': typeof AdminCivantaAuditRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/alerts/unsubscribe': typeof AlertsUnsubscribeRoute
   '/api/chat': typeof ApiChatRoute
@@ -503,6 +518,7 @@ export interface FileRoutesByTo {
   '/supply/$panel': typeof SupplyPanelRoute
   '/about': typeof AboutIndexRoute
   '/supply': typeof SupplyIndexRoute
+  '/api/admin/civanta-audit': typeof ApiAdminCivantaAuditRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
   '/api/auth/set-session': typeof ApiAuthSetSessionRoute
@@ -553,6 +569,7 @@ export interface FileRoutesById {
   '/videos': typeof VideosRoute
   '/about/mission-vision': typeof AboutMissionVisionRoute
   '/about/team': typeof AboutTeamRoute
+  '/admin/civanta-audit': typeof AdminCivantaAuditRoute
   '/alerts/confirm': typeof AlertsConfirmRoute
   '/alerts/unsubscribe': typeof AlertsUnsubscribeRoute
   '/api/chat': typeof ApiChatRoute
@@ -569,6 +586,7 @@ export interface FileRoutesById {
   '/supply/$panel': typeof SupplyPanelRoute
   '/about/': typeof AboutIndexRoute
   '/supply/': typeof SupplyIndexRoute
+  '/api/admin/civanta-audit': typeof ApiAdminCivantaAuditRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
   '/api/auth/set-session': typeof ApiAuthSetSessionRoute
@@ -620,6 +638,7 @@ export interface FileRouteTypes {
     | '/videos'
     | '/about/mission-vision'
     | '/about/team'
+    | '/admin/civanta-audit'
     | '/alerts/confirm'
     | '/alerts/unsubscribe'
     | '/api/chat'
@@ -636,6 +655,7 @@ export interface FileRouteTypes {
     | '/supply/$panel'
     | '/about/'
     | '/supply/'
+    | '/api/admin/civanta-audit'
     | '/api/auth/callback'
     | '/api/auth/session'
     | '/api/auth/set-session'
@@ -684,6 +704,7 @@ export interface FileRouteTypes {
     | '/videos'
     | '/about/mission-vision'
     | '/about/team'
+    | '/admin/civanta-audit'
     | '/alerts/confirm'
     | '/alerts/unsubscribe'
     | '/api/chat'
@@ -699,6 +720,7 @@ export interface FileRouteTypes {
     | '/supply/$panel'
     | '/about'
     | '/supply'
+    | '/api/admin/civanta-audit'
     | '/api/auth/callback'
     | '/api/auth/session'
     | '/api/auth/set-session'
@@ -748,6 +770,7 @@ export interface FileRouteTypes {
     | '/videos'
     | '/about/mission-vision'
     | '/about/team'
+    | '/admin/civanta-audit'
     | '/alerts/confirm'
     | '/alerts/unsubscribe'
     | '/api/chat'
@@ -764,6 +787,7 @@ export interface FileRouteTypes {
     | '/supply/$panel'
     | '/about/'
     | '/supply/'
+    | '/api/admin/civanta-audit'
     | '/api/auth/callback'
     | '/api/auth/session'
     | '/api/auth/set-session'
@@ -812,6 +836,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   TimelineRoute: typeof TimelineRoute
   VideosRoute: typeof VideosRoute
+  AdminCivantaAuditRoute: typeof AdminCivantaAuditRoute
   AlertsConfirmRoute: typeof AlertsConfirmRoute
   AlertsUnsubscribeRoute: typeof AlertsUnsubscribeRoute
   ApiChatRoute: typeof ApiChatRoute
@@ -826,6 +851,7 @@ export interface RootRouteChildren {
   CountriesSlugRoute: typeof CountriesSlugRouteWithChildren
   SupplyPanelRoute: typeof SupplyPanelRoute
   SupplyIndexRoute: typeof SupplyIndexRoute
+  ApiAdminCivantaAuditRoute: typeof ApiAdminCivantaAuditRoute
   ApiAuthCallbackRoute: typeof ApiAuthCallbackRoute
   ApiAuthSessionRoute: typeof ApiAuthSessionRoute
   ApiAuthSetSessionRoute: typeof ApiAuthSetSessionRoute
@@ -1049,6 +1075,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutTeamRouteImport
       parentRoute: typeof AboutRoute
     }
+    '/admin/civanta-audit': {
+      id: '/admin/civanta-audit'
+      path: '/admin/civanta-audit'
+      fullPath: '/admin/civanta-audit'
+      preLoaderRoute: typeof AdminCivantaAuditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/alerts/confirm': {
       id: '/alerts/confirm'
       path: '/alerts/confirm'
@@ -1152,6 +1185,13 @@ declare module '@tanstack/react-router' {
       path: '/supply/$panel'
       fullPath: '/supply/$panel'
       preLoaderRoute: typeof SupplyPanelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/civanta-audit': {
+      id: '/api/admin/civanta-audit'
+      path: '/api/admin/civanta-audit'
+      fullPath: '/api/admin/civanta-audit'
+      preLoaderRoute: typeof ApiAdminCivantaAuditRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/auth/callback': {
@@ -1359,6 +1399,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   TimelineRoute: TimelineRoute,
   VideosRoute: VideosRoute,
+  AdminCivantaAuditRoute: AdminCivantaAuditRoute,
   AlertsConfirmRoute: AlertsConfirmRoute,
   AlertsUnsubscribeRoute: AlertsUnsubscribeRoute,
   ApiChatRoute: ApiChatRoute,
@@ -1373,6 +1414,7 @@ const rootRouteChildren: RootRouteChildren = {
   CountriesSlugRoute: CountriesSlugRouteWithChildren,
   SupplyPanelRoute: SupplyPanelRoute,
   SupplyIndexRoute: SupplyIndexRoute,
+  ApiAdminCivantaAuditRoute: ApiAdminCivantaAuditRoute,
   ApiAuthCallbackRoute: ApiAuthCallbackRoute,
   ApiAuthSessionRoute: ApiAuthSessionRoute,
   ApiAuthSetSessionRoute: ApiAuthSetSessionRoute,
