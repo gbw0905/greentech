@@ -8,7 +8,10 @@ export function PageMotion({ pathname, children }: { pathname: string; children:
 
   useEffect(() => {
     const node = root.current;
-    if (!node || reduced || !window.IntersectionObserver || !node.animate) return;
+    // The homepage sections already manage their own reveals and lazy content.
+    // Do not scan their animated text/subtrees again on every DOM mutation.
+    if (pathname === "/" || !node || reduced || !window.IntersectionObserver || !node.animate)
+      return;
     const seen = new WeakSet<Element>();
     const controls = new Set<Animation>();
     let frame = 0;

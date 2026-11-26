@@ -224,7 +224,15 @@ export function IndustryCarousel() {
                     aria-hidden={active !== index}
                   >
                     <motion.img
-                      src={failed.has(index) ? slide.fallback : photoUrl(slide.photo, 1600)}
+                      src={
+                        index === active ||
+                        index === (active + 1) % SLIDES.length ||
+                        index === (active + SLIDES.length - 1) % SLIDES.length
+                          ? failed.has(index)
+                            ? slide.fallback
+                            : photoUrl(slide.photo, 1600)
+                          : undefined
+                      }
                       alt=""
                       width={1600}
                       height={900}

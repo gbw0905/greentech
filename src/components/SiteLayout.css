@@ -19,6 +19,8 @@
   position: relative;
   top: auto;
   z-index: 2;
+  background: #fff;
+  backdrop-filter: none;
 }
 .site-chrome .gbw-header .gbw-header-inner {
   width: min(var(--site-content-width), calc(100% - 2 * var(--site-gutter)));

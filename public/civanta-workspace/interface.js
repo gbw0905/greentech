@@ -143,7 +143,7 @@
   const inputActions = document.getElementById("ciActions");
   const optActions = document.getElementById("optActions");
   const optSummary = optimizerView.querySelector(".resultbar");
-  const exportStatus = document.getElementById("excelDownloadStatus");
+  const exportStatuses = [inputView, optimizerView].map(view => view.querySelector(".excel-download-status"));
   const change = document.getElementById("rbDelta");
   const quickBaseline = quickActions.querySelector("[data-quick-baseline]");
   const quickScenarioRow = quickActions.querySelector("[data-quick-scenario-row]");
@@ -155,7 +155,10 @@
   const buttons = [...inputActions.querySelectorAll("button"), ...optActions.querySelectorAll("button")].map(source => {
     const button = controls.ownerDocument.createElement("button");
     button.type = "button";
-    button.textContent = source.dataset.quickLabel || source.textContent.trim();
+    const label = source.cloneNode(true);
+    label.querySelectorAll('.civanta-pro-badge').forEach(badge => badge.remove());
+    button.textContent = source.dataset.quickLabel || label.textContent.trim();
+    if (source.matches('[data-go="2"], [data-go="3"], #goOptimize, [data-download-excel]')) civantaPro.decorate(button);
     button.toggleAttribute("data-primary", source.classList.contains("primary"));
     button.onclick = () => {
       const isRun = source.id === "runButton";
@@ -167,6 +170,7 @@
         runningFromQuickActions = false;
       }
       if (isRun && hadFocus && source.hidden) {
+        actionsDirty = true;
         syncQuickActions();
         buttons.find(entry => entry.source.id === "goOptimize")?.button.focus({preventScroll: true});
       }
@@ -180,10 +184,18 @@
   };
   let frameRequest = 0;
   let barHeight = 56;
+  let actionsDirty = true;
+  const setHidden = (element, hidden) => {
+    if (element.hidden !== hidden) element.hidden = hidden;
+  };
   function syncQuickActions() {
     const isInput = !inputView.classList.contains("hide");
     const view = isInput ? inputView : optimizerView;
     const anchor = isInput ? inputActions : optSummary;
+    if (document.body.classList.contains("plant-list-open") || view.classList.contains("hide")) {
+      setHidden(quickActions, true);
+      return;
+    }
     const headerBottom = Math.max(0, header?.getBoundingClientRect().bottom ?? 0);
     const frameTop = embedded ? window.frameElement.getBoundingClientRect().top : 0;
     const top = headerBottom + 8 - frameTop;
@@ -191,32 +203,42 @@
       !document.body.classList.contains("plant-list-open") &&
       !view.classList.contains("hide") && anchor.getBoundingClientRect().bottom <= top &&
       view.getBoundingClientRect().bottom > top + barHeight;
-    quickActions.hidden = !visible;
+    const wasHidden = quickActions.hidden;
+    setHidden(quickActions, !visible);
     if (!visible) return;
 
     if (embedded && !mount) quickActions.style.position = "absolute";
-    quickActions.style.top = (embedded && !mount ? top : headerBottom + 8) + "px";
-    quickActions.setAttribute("aria-label", isInput ? "CI quick action" : "Optimizer summary");
+    const barTop = (embedded && !mount ? top : headerBottom + 8) + "px";
+    if (quickActions.style.top !== barTop) quickActions.style.top = barTop;
+    if (!actionsDirty && !wasHidden) return;
+    actionsDirty = false;
+    const label = isInput ? "CI quick action" : "Optimizer summary";
+    if (quickActions.getAttribute("aria-label") !== label) quickActions.setAttribute("aria-label", label);
     setText(quickBaseline, baseline ? fmt(baseline.ci,2) : "—");
-    quickScenarioRow.hidden = quickDelta.hidden = isInput;
+    setHidden(quickScenarioRow, isInput);
+    setHidden(quickDelta, isInput);
     if (!isInput && baseline) {
       setText(quickScenario, fmt(scenario(optim).ci,2));
       setText(quickDelta, change.textContent);
       quickDelta.classList.toggle("has-reduction", change.classList.contains("has-reduction"));
       quickDelta.classList.toggle("has-increase", change.classList.contains("has-increase"));
     }
-    setText(quickStatus, isInput ? exportStatus.textContent : "");
+    setText(quickStatus, exportStatuses[isInput ? 0 : 1].textContent);
 
     const actions = isInput ? inputActions : optActions;
     for (const {source, button} of buttons) {
-      button.hidden = source.parentElement !== actions || source.hidden;
-      button.disabled = source.disabled;
-      button.title = source.title;
+      setHidden(button, source.parentElement !== actions || source.hidden);
+      if (button.disabled !== source.disabled) button.disabled = source.disabled;
+      if (button.title !== source.title) button.title = source.title;
     }
     barHeight = quickActions.offsetHeight;
   }
 
   function scheduleQuickActions() {
+    actionsDirty = true;
+    scheduleQuickActionsPosition();
+  }
+  function scheduleQuickActionsPosition() {
     if (frameRequest) return;
     frameRequest = requestAnimationFrame(() => {
       frameRequest = 0;
@@ -227,19 +249,21 @@
   for (const node of [inputView,optimizerView,document.body]) {
     actionObserver.observe(node,{attributes:true,attributeFilter:["class"]});
   }
-  actionObserver.observe(inputActions,{subtree:true,attributes:true,attributeFilter:["hidden","disabled","title"]});
-  for (const node of [exportStatus,change,document.getElementById("rbOpt")]) {
+  for (const node of [inputActions,optActions]) {
+    actionObserver.observe(node,{subtree:true,attributes:true,attributeFilter:["hidden","disabled","title"]});
+  }
+  for (const node of [...exportStatuses,change,document.getElementById("rbOpt")]) {
     actionObserver.observe(node,{childList:true,subtree:true,characterData:true});
   }
   const actionSize = new ResizeObserver(scheduleQuickActions);
   for (const node of [inputView,optimizerView,inputActions,optSummary,header]) {
     if (node) actionSize.observe(node);
   }
-  scrollOwner.addEventListener("scroll",scheduleQuickActions,{passive:true});
+  scrollOwner.addEventListener("scroll",scheduleQuickActionsPosition,{passive:true});
   scrollOwner.addEventListener("resize",scheduleQuickActions);
   window.addEventListener("pagehide",event=>{
     if (event.persisted) return;
-    scrollOwner.removeEventListener("scroll",scheduleQuickActions);
+    scrollOwner.removeEventListener("scroll",scheduleQuickActionsPosition);
     scrollOwner.removeEventListener("resize",scheduleQuickActions);
     actionObserver.disconnect();
     actionSize.disconnect();

@@ -1,10 +1,13 @@
-@import url("./assets/civanta-actions.css?v=5");
+@import url("./assets/civanta-actions.css?v=11");
 
 :root {
   --ink: #102d40;
   --muted: #526b79;
   --dark: #0b3439;
   --green: #08765a;
+  --action-blue: #123b5a;
+  --action-hover: #20567b;
+  --action-soft: #e8f2fa;
   --mint: #e9f7f0;
   --bg: #f3f7f7;
   --line: #d5e2e5;
@@ -61,7 +64,7 @@ body:not([data-view="view0"]) .hero { display: none; }
 [data-icon] { display: inline-flex; }
 .nav { margin: 18px 0; gap: 8px; }
 .nav button { border-radius: 11px; display: flex; align-items: center; justify-content: center; gap: 9px; padding: 11px 10px; min-height: 52px; color: #314e5c; }
-.nav button.active { background: #103f43; color: white; border-color: #103f43; box-shadow: 0 5px 15px #0a303420; }
+.nav button.active { background: var(--action-blue); color: white; border-color: var(--action-blue); box-shadow: 0 5px 15px #123b5a20; }
 .nav .nav-icon { flex: none; color: #14765c; }
 .nav button.active .nav-icon { color: #9ce1c1; }
 .nav button:disabled { opacity: .65; }
@@ -112,7 +115,7 @@ body:not([data-view="view0"]) .hero { display: none; }
 .rb-num strong { font-variant-numeric: tabular-nums; }
 .tabbar { gap: 5px; }
 .tabbar button { min-height: 42px; }
-.tabbar button.active { background: #e7f5ee; color: #12614a; }
+.tabbar button.active { background: var(--action-soft); color: var(--action-blue); }
 .tabpane { animation: none; }
 .tabpane.animate-enter {
   --tw-enter-opacity: 0;
@@ -286,7 +289,7 @@ body.embedded.plant-list-open { background: transparent; }
 #view2 .resultbar {
   position: relative;
   top: auto;
-  padding: clamp(15px, 2.5vw, 26px);
+  padding: 14px clamp(14px, 2vw, 22px);
   min-width: 0;
 }
 #view2 .rb-top { align-items: center; gap: 10px clamp(10px, 2.2vw, 26px); }
@@ -316,8 +319,8 @@ body.embedded.plant-list-open { background: transparent; }
 }
 .plant-toolbar-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 16px; }
 #activePlantName { flex: 1 1 8rem; min-width: 0; margin: 0; overflow-wrap: anywhere; font-size: clamp(24px, 3vw, 32px); }
-#backToPlants { min-height: 40px; background: #123b5a; border-color: #123b5a; color: white; }
-#backToPlants:hover { background: #20567b; }
+#backToPlants { min-height: 40px; background: var(--action-blue); border-color: var(--action-blue); color: white; }
+#backToPlants:hover { background: var(--action-hover); border-color: var(--action-hover); }
 #editPlantPathway { flex: none; margin-inline-start: auto; white-space: nowrap; background: #e8f2fa; border-color: #bcd5e6; color: #153e5b; }
 #editPlantPathway:hover { background: #dcecf7; }
 .pathway-studio {
@@ -328,7 +331,7 @@ body.embedded.plant-list-open { background: transparent; }
   --tree-border: var(--line);
   --tree-edge: #96b9ad;
   --tree-active: #08765a;
-  --tree-tint: var(--mint);
+  --tree-tint: var(--action-soft);
 }
 :root[data-theme="dark"] .pathway-studio {
   --tree-text: #e4f0ed;
@@ -338,7 +341,7 @@ body.embedded.plant-list-open { background: transparent; }
   --tree-border: #375559;
   --tree-edge: #6d9e92;
   --tree-active: #80dbb8;
-  --tree-tint: #1b433d;
+  --tree-tint: #193b53;
   color-scheme: dark;
   color: var(--tree-text);
   background: var(--tree-panel);
@@ -499,7 +502,7 @@ body.embedded.plant-list-open { background: transparent; }
   box-shadow: none;
   overflow: auto;
 }
-.pathway-review::backdrop { background: var(--civanta-review-shade); }
+.pathway-review::backdrop, .civanta-pro-dialog::backdrop { background: var(--civanta-review-shade); }
 .plant-dialog::backdrop { background: #102d401a; }
 .plant-dialog {
   width: min(430px, calc(100% - 24px));
@@ -614,8 +617,15 @@ body.embedded.plant-list-open { background: transparent; }
   align-items: start;
 }
 #productionFields { display: contents; }
-.inventory-section { border-top: 1px solid var(--line); margin-top: 18px; padding-top: 16px; }
-.inventory-section h3 { margin: 0 0 5px; }
+.inventory-section {
+ border: 2px solid #a6bdca;
+ border-radius: 12px;
+ margin-top: 22px;
+ padding: clamp(14px, 2vw, 22px);
+ background: #fff;
+ box-shadow: 0 4px 12px #123b5a18;
+}
+.inventory-section h3 { margin: 0 0 10px; font-size: clamp(19px, 2.2vw, 24px); line-height: 1.25; }
 .inventory-section > .grid, #allocationData { margin-top: 10px; }
 #allocationFields fieldset { min-width: 0; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 0; }
 #allocationFields legend { padding-inline: 4px; color: var(--ink); font-weight: 700; }
@@ -668,25 +678,24 @@ body.embedded.plant-list-open { background: transparent; }
 .credit-tabs { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 6px; padding: 6px; margin: 14px 0 10px; background: #fff; border: 1px solid var(--line); border-radius: 12px; }
 .credit-tabs button { min-height: 44px; padding: 6px; font-weight: 750; border: 1px solid transparent; border-radius: 8px; color: var(--ink); background: transparent; }
 .credit-tabs button:hover { background: var(--bg); }
-.credit-tabs button[aria-selected="true"] { background: var(--dark); color: white; }
+.credit-tabs button[aria-selected="true"] { background: var(--action-blue); color: white; border-color: var(--action-blue); }
 .credit-panels .prog-fields { grid-template-columns: repeat(2,minmax(0,1fr)); }
 @media (max-width: 600px) {
   .credit-panels .prog-fields { grid-template-columns: minmax(0,1fr); }
 }
 
 .credit-tabs button { background: var(--bg); border-color: var(--line); }
-.credit-tabs button:not([aria-selected="true"]):hover { background: var(--mint); border-color: #a6cbbd; }
-.credit-tabs button[aria-selected="true"] { border-color: var(--dark); }
+.credit-tabs button:not([aria-selected="true"]):hover { background: var(--action-soft); border-color: #bcd5e6; }
 .credit-panels .prog { padding: clamp(16px, 2.5vw, 28px); }
-.credit-panels .prog-top { margin-bottom: 0; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
-.credit-panels .prog-top h3 { font-size: clamp(18px, 2.5vw, 23px); }
-.credit-panels .prog-val { margin-top: 14px; }
-.credit-panels .prog-sub { margin: 6px 0 14px; }
 .credit-panels .prog-fields { gap: 12px; margin: 16px 0; }
 .credit-panels .prog-fields label { min-width: 0; }
 .credit-panels .prog-fields :is(input, select) { font-size: 15px; font-weight: 500; }
 .credit-readonly { min-height: 43px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 9px; background: var(--bg); }
 .credit-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 14px 0; }
+.credit-toolbar { margin-bottom: 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+.credit-toolbar h3 { margin: 0; font-size: clamp(17px, 2vw, 21px); line-height: 1.2; }
+.credit-toolbar .credit-actions { justify-content: flex-end; margin: 0 0 0 auto; }
+.credit-toolbar .credit-action-status { margin: 0; }
 .credit-actions button { min-width: 112px; min-height: 44px; }
 .credit-action-status { flex-basis: 100%; }
 .credit-action-status:empty, .credit-result-grid:empty { display: none; }
@@ -694,10 +703,12 @@ body.embedded.plant-list-open { background: transparent; }
 .credit-result-grid .rin-stat { min-width: 0; overflow-wrap: anywhere; }
 .credit-panels .prog-foot { margin-top: 12px; }
 @media (max-width: 540px) {
-  .credit-actions button { flex: 1; }
+  .credit-actions button { flex: 1; min-width: max-content; padding-inline: 12px; }
   .credit-result-grid { grid-template-columns: minmax(0,1fr); }
 }
 
+#view1 > .panel { margin-top: 20px; }
+.credit-actions .primary:disabled { opacity: .55; cursor: not-allowed; }
 .ci-actions {
   display: flex;
   flex-wrap: wrap;
@@ -717,13 +728,36 @@ body.embedded.plant-list-open { background: transparent; }
 #view2 .resultbar {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(212px, 24%);
-  gap: clamp(12px, 2vw, 24px);
+  gap: 10px 18px;
   align-items: stretch;
   background: #fff;
   box-shadow: 0 5px 18px #153a3809;
 }
 .ci-snapshot { min-width: 0; }
-#creditSummary { margin-bottom: 0; }
+#creditSummary { margin-bottom: 0; padding: 14px clamp(14px, 2vw, 22px); }
+#creditSummary .ci-snapshot-metrics {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px 14px;
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+}
+#creditSummary .ci-snapshot-metric {
+  gap: 2px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+#creditSummary .ci-snapshot-metric + .ci-snapshot-metric {
+  padding-inline-start: 14px;
+  border-inline-start: 1px solid var(--line);
+}
+#creditSummary .ci-snapshot-metric > strong { font-size: clamp(20px, 2.2vw, 27px); }
+@media (max-width: 600px) {
+  #creditSummary .ci-snapshot-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 10px; }
+  #creditSummary .ci-snapshot-metric:nth-child(3) { padding-inline-start: 0; border-inline-start: 0; }
+  .credit-toolbar .credit-actions { flex: 1 1 auto; }
+}
 .credit-allocation {
   margin: 12px 0 0;
   padding-top: 10px;
@@ -731,7 +765,6 @@ body.embedded.plant-list-open { background: transparent; }
   color: var(--muted);
   font-size: 12px;
 }
-.credit-panels .prog-top + .note { margin-top: 14px; }
 .ci-snapshot h2 { margin: 0 0 12px; }
 .credit-summary-heading {
   display: flex;
@@ -739,10 +772,11 @@ body.embedded.plant-list-open { background: transparent; }
   align-items: baseline;
   gap: 4px 16px;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 .credit-summary-heading h2, .credit-summary-heading p { margin: 0; }
-.credit-summary-heading p { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+.credit-summary-heading h2 { font-size: clamp(19px, 2vw, 23px); line-height: 1.2; }
+.credit-summary-heading p { color: var(--muted); font-size: 13px; line-height: 1.35; overflow-wrap: anywhere; }
 .ci-snapshot-metrics {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 145px), 1fr));
@@ -810,3 +844,70 @@ body.embedded.plant-list-open { background: transparent; }
   font-display: swap;
 }
 .annual-energy { font-family: "Bricolage Grotesque", sans-serif; }
+
+
+#view2 .ci-snapshot h2 { margin-bottom: 8px; font-size: 22px; }
+#view2 .ci-snapshot-metric {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  gap: 2px;
+}
+#view2 .ci-snapshot-metric + .ci-snapshot-metric {
+  border-inline-start: 1px solid var(--line);
+  padding-inline-start: 14px;
+}
+#view2 .ci-snapshot-metric > strong { font-size: clamp(26px, 2.8vw, 34px); }
+#view2 .ci-snapshot-target { gap: 4px 8px; padding-inline-start: 16px; }
+#view2 .ci-snapshot-target p, #view2 .ci-snapshot-target label small { font-size: 12px; }
+#view2 .ci-snapshot-target label strong { font-size: 15px; }
+#view2 .ciscale summary { font-size: 13px; }
+
+#optTabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  padding: 8px;
+  background: #f3f7fa;
+  overflow: visible;
+}
+#optTabs button {
+  min-height: 60px;
+  padding: 12px 10px;
+  margin: 0;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  color: #456276;
+  font-size: 15px;
+  line-height: 1.3;
+  white-space: normal;
+  text-align: center;
+}
+#optTabs button:hover:not(.active) { background: #e4eef5; color: var(--action-blue); }
+#optTabs button.active {
+  background: var(--action-blue);
+  border-color: var(--action-blue);
+  color: #fff;
+  box-shadow: 0 2px 5px #123b5a20;
+}
+@media (max-width: 760px) {
+  #view2 .ci-snapshot-target { padding: 10px 0 0; }
+}
+@media (max-width: 540px) {
+  #optTabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #optTabs button { min-height: 52px; padding: 10px 8px; font-size: 14px; }
+  #view2 .ci-snapshot-value { padding: 8px 0 0; border-inline-start: 0; border-top: 1px solid var(--line); }
+}
+
+/* Keep the two paid stages visible and explain their access requirement. */
+.requires-pro::after {content:"Pro";display:inline-block;margin-left:8px;padding:2px 7px;border:1px solid #b9cedd;border-radius:6px;font-size:11px;line-height:1.4;font-weight:700;color:#143e59;background:#eaf2f8;vertical-align:middle}
+.civanta-pro-dialog {width:min(520px,calc(100vw - 32px));padding:28px;border:1px solid #c5d7e0;border-radius:18px;color:#102d40;background:#fff}
+.civanta-pro-dialog h2 {margin:0 0 12px;font-size:25px}
+.civanta-pro-dialog p {color:#506b7b;line-height:1.6}
+.civanta-pro-dialog .cta {display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;margin-top:24px}
+.civanta-pro-upgrade {display:inline-flex;align-items:center;padding:12px 18px;background:#123d59;color:white;border-radius:10px;font-weight:700;text-decoration:none}
+
+.civanta-pro-dialog {inset:calc(var(--review-inset,0px) + var(--review-space,100dvh)/2) 0 auto;margin:0 auto;transform:translateY(-50%);max-height:calc(var(--review-space,100dvh) - 24px);overflow:auto}
+.requires-pro::after {color:#6b4305;background:linear-gradient(135deg,#fff1ba,#eac15e);border-color:#c99b35;box-shadow:inset 0 1px 0 #fff8dc}
+.nav button.requires-pro::after {display:inline-block}

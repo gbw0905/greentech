@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 
 const ITEMS = [
   { href: "#disclaimer", label: "What we do" },
-  { to: "/ci-calculator", label: "CI calculator" },
+  { to: "/civanta", label: "CIVanta" },
   { to: "/videos", label: "Videos" },
   { to: "/about", label: "About us" },
   { to: "/about/mission-vision", label: "Mission & vision" },

@@ -17,7 +17,7 @@ export function MotionReveal({
   delay = 0,
   duration = 0.8,
   distance = 28,
-  blur = 3,
+  blur = 0,
   children,
   onFocusCapture,
   ...props
@@ -53,9 +53,13 @@ export function MotionReveal({
         reduced || focused || settled
           ? { opacity: 1, y: 0, filter: "none" }
           : entered
-            ? { opacity: [0, 1], y: [distance, 0], filter: [`blur(${blur}px)`, "blur(0px)"] }
+            ? {
+                opacity: [0, 1],
+                y: [distance, 0],
+                filter: blur > 0 ? [`blur(${blur}px)`, "blur(0px)"] : "none",
+              }
             : prepared
-              ? { opacity: 0, y: distance, filter: `blur(${blur}px)` }
+              ? { opacity: 0, y: distance, filter: blur > 0 ? `blur(${blur}px)` : "none" }
               : { opacity: 1, y: 0, filter: "none" }
       }
       transition={{

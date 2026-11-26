@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, LayoutDashboard } from "lucide-react";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { usePremium } from "@/features/premium/hooks/usePremium";
-import { HistoryPanel } from "@/features/calculation-history/HistoryPanel";
+import { MyPlantsPanel } from "@/features/civanta/MyPlantsPanel";
 import { AccountLayout } from "@/features/account/AccountLayout";
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -21,7 +21,7 @@ function ProfilePage() {
   return (
     <AccountLayout
       title="My Profile"
-      description="Your account, calculation history and CIVanta access."
+      description="Your account, CIVanta plants and Pro access."
       section="profile"
     >
       {loading ? (
@@ -78,10 +78,10 @@ function ProfilePage() {
             <p>
               {access.premium
                 ? "Your Pro analysis and report downloads are active."
-                : "Your calculations save to your account. Upgrade for advanced comparisons and downloadable reports."}
+                : "Manage your plants in CIVanta. Upgrade for advanced comparisons and downloadable reports."}
             </p>
-            <Link to={access.premium ? "/my-results" : "/pricing"} className="account-action">
-              {access.premium ? "View saved results" : "Go for Pro plan"}
+            <Link to={access.premium ? "/civanta" : "/pricing"} className="account-action">
+              {access.premium ? "Open my plants" : "Go for Pro plan"}
               <ArrowRight size={16} />
             </Link>
           </section>
@@ -96,7 +96,7 @@ function ProfilePage() {
           </Link>
         </section>
       )}
-      {user && <HistoryPanel preview />}
+      {user && <MyPlantsPanel />}
     </AccountLayout>
   );
 }

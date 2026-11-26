@@ -16,6 +16,7 @@ function buildFullCivantaReport(run) {
  const status = value => value == null ? 'Not provided' : 'Provided';
  const add = (name, key, values, styles={}) => {
   const sheet = sheets[name];
+  if (key && Object.hasOwn(refs[name],key)) throw new Error('Duplicate workbook row key: '+name+'/'+key);
   const number = sheet.rows.push({cells:values,styles});
   if (key) refs[name][key] = number;
   return number;
@@ -24,13 +25,13 @@ function buildFullCivantaReport(run) {
   'Calculation':[49,24,18,31,23,24,26,63],
   'Inputs':[52,25,29,65],
   'Emission factors':[44,24,26,68],
-  'Global factor library':[53,23,25,65],
+  'Global factor library':[53,23,25,70,68],
   'Keys':[38,95],
-  'Optimization scenarios':[42,22,19,19,19,18,18,18,20,22,22],
+  'Optimization scenarios':[46,22,19,19,19,18,18,18,20,22,22,20,20,23],
   'Sensitivity analysis':[32,20,20,20,20,20],
-  'Economic analysis':[38,24,18,19,19,19,19,21,21,21,22,22],
+  'Economic analysis':[46,24,18,19,19,19,19,21,21,21,22,22,18],
   'Regulatory credits':[38,25,24,57],
-  'Sources & methods':[32,66,55],
+  'Sources & methods':[40,66,55,60],
   'Co-product allocation':[39,31,25,25,26,22,22,61]
  };
  const dated = new Date().toISOString().slice(0,10);
@@ -65,11 +66,14 @@ function buildFullCivantaReport(run) {
  const O = 'Optimization scenarios', S = 'Sensitivity analysis', E = 'Economic analysis', R = 'Regulatory credits';
  const G = 'Global factor library', K = 'Keys', M = 'Sources & methods';
  const i = key => ref(I,key), f = key => ref(F,key), c = (key,index) => ref(C,key,index);
+ const setting = key => ref(I,'setting:'+key);
  const al = (key,index) => ref(A,key,index), opt = (key,index) => ref(O,key,index), e = key => ref(E,key), r = key => ref(R,key);
  const simple = ['Item','Value','Unit','Source / status'];
 
  title(I,'Facility inventory and run settings',simple);
+ input(I,'plant','Plant name',plant);
  add(I,null,['Pathway',b.path.id,'',b.kind === 'dairy' ? 'Dairy RNG farm model' : legacy ? 'Legacy combined' : 'Detailed stage inventory']);
+ add(I,null,['Fuel / feedstock / technology',[b.path.group,b.path.feedstock,b.path.technology].join(' / ')]);
  add(I,null,['Input origin',inputs._example ? 'Includes illustrative data loaded in the form' : 'Facility entries or documented values']);
  const groups = farm ? run.dairySections : [
   ['Production',['volume','lhv']],
@@ -89,7 +93,7 @@ function buildFullCivantaReport(run) {
   }
  }
  section(I,'Scenario settings');
- controls.forEach(key => input(I,key,labels[key],settings[key],'%'));
+ controls.forEach(key => input(I,'setting:'+key,labels[key],settings[key],'%'));
  input(I,'target','CI target',target,ciUnit);
 
  title(F,'Applied factors used in live calculation formulas',simple);
@@ -204,6 +208,7 @@ function buildFullCivantaReport(run) {
   'Methane leakage / slip':'(1-'+pct('leak')+'/100)','Pipeline delivery':'(1-'+pct('demand')+'/100)'
  })[key] || '1';
  const scope = key => sharedKeys.includes(key) ? al(key,1)+'="Shared"' : 'FALSE';
+ const validSettings = pct => controls.map(key=>'ISNUMBER('+pct(key)+'),'+pct(key)+'>=0,'+pct(key)+'<=100').join(',');
  const validFarmInput = farm ? 'AND(ISNUMBER('+c('energy')+'),'+run.dairySections.flatMap(([,keys])=>keys)
   .filter(key=>!['digester','temp'].includes(key)).map(key=>t(key)+','+i(key)+'>=0').join(',')+
   ',LEN(TRIM('+i('digester')+'))>0,'+['storage','methane','leak','upgrading'].map(key=>i(key)+'<=100').join(',')+
@@ -223,7 +228,7 @@ function buildFullCivantaReport(run) {
   const scenarioValue = value==null?'':baseScenario.parts[key]*share;
   add(C,key,[key,formula(farm?'IF('+validFarmInput+','+expr+',"")':expr,value??''),formula('IF('+scope(key)+','+al('factor')+',1)',share),
    formula('IF(AND(ISNUMBER(B'+n+'),ISNUMBER(C'+n+')),B'+n+'*C'+n+',"")',net),
-   formula('IF(ISNUMBER(D'+n+'),D'+n+'*'+scenarioFactor(key,i)+',"")',scenarioValue),
+   formula('IF(AND(ISNUMBER(D'+n+'),'+validSettings(setting)+'),D'+n+'*'+scenarioFactor(key,setting)+',"")',scenarioValue),
    formula('IF(AND(ISNUMBER(D'+n+'),ISNUMBER('+c('energy')+')),D'+n+'*'+c('energy')+'/1000000,"")',net===''?'':net*annual/1e6),
    scopeLabel,heading+' · '+status(value)],{1:4,2:69,3:4,4:4,5:4});
  }
@@ -231,7 +236,7 @@ function buildFullCivantaReport(run) {
  const signedCredit = 'IF('+al('method')+'="'+allocationMethods.displacement+'",IF('+al('qa')+'="Ready",-'+al('avoided')+',"") ,0)';
  ledgerSection('Co-products and avoided emissions');
  const adj = add(C,'displacement',['Co-product displacement',null,null,formula(signedCredit,disp),formula(signedCredit,disp),
-  formula('IF(ISNUMBER(D'+(sheets[C].rows.length+1)+'),D'+(sheets[C].rows.length+1)+'*'+c('energy')+'/1000000,"")',disp*annual/1e6),
+  formula('IF(AND(ISNUMBER(D'+(sheets[C].rows.length+1)+'),ISNUMBER('+c('energy')+')),D'+(sheets[C].rows.length+1)+'*'+c('energy')+'/1000000,"")',disp*annual/1e6),
   'Lifecycle adjustment','Applies only to documented displacement'],{3:4,4:4,5:4});
  const optionalFields = legacy || farm ? [] : ['chemicals','distribution','endUse'];
  const optionalChecks=optionalFields.map(key=>',OR('+i(key)+'="",AND('+t(key)+','+i(key)+'>=0))').join('');
@@ -245,17 +250,47 @@ function buildFullCivantaReport(run) {
  };
  const positives = stageCells.reduce((sum,[key])=>sum+Math.max(0,gross[key]*(isProp&&a.scope.includes(key)?b.allocation.factor:1)||0),0);
  setValue(C,'baseline','IF('+ready+',SUM(D'+stageFirst+':D'+adj+'),"")',b.ci,ciUnit,'Attributed emissions plus signed credit');
- setValue(C,'scenario','IF('+ready+',SUM(E'+stageFirst+':E'+adj+'),"")',baseScenario.ci,ciUnit,'Uses the selected optimizer settings');
- setValue(C,'reduction','IF(ISNUMBER('+c('baseline')+'),'+c('baseline')+'-'+c('scenario')+',"")',b.ci-baseScenario.ci,ciUnit);
+ setValue(C,'scenario','IF(AND('+ready+','+validSettings(setting)+'),SUM(E'+stageFirst+':E'+adj+'),"")',baseScenario.ci,ciUnit,'Uses the selected optimizer settings');
+ setValue(C,'reduction','IF(AND(ISNUMBER('+c('baseline')+'),ISNUMBER('+c('scenario')+')),'+c('baseline')+'-'+c('scenario')+',"")',b.ci-baseScenario.ci,ciUnit);
  setValue(C,'gross','SUMIF(D'+stageFirst+':D'+adj+',">0")',positives,ciUnit);
  setValue(C,'credits','SUMIF(D'+stageFirst+':D'+adj+',"<0")',b.ci-positives,ciUnit);
  section(C,'Scope reconciliation');
- add(C,null,['Classification',null,null,'Baseline CI',null,'Annual t CO₂e'],{0:1,1:1,2:1,3:1,4:1,5:1});
+ add(C,null,['Classification',null,null,'Baseline CI','Share of gross emissions','Annual t CO₂e'],{0:1,3:1,4:1,5:1});
  for (const label of ['Scope 1','Scope 2','Scope 3','Scope not assigned','Lifecycle adjustment']) {
   const total=stageCells.filter(([, , ,scopeLabel])=>scopeLabel===label).reduce((sum,[key])=>sum+(gross[key]||0)*(isProp&&a.scope.includes(key)?b.allocation.factor:1),label==='Lifecycle adjustment'?disp:0);
-  add(C,null,[label,null,null,formula('SUMIF(G'+stageFirst+':G'+adj+',"'+label+'",D'+stageFirst+':D'+adj+')',total),null,
-   formula('IF(ISNUMBER('+c('energy')+'),D'+(sheets[C].rows.length+1)+'*'+c('energy')+'/1000000,"")',total*annual/1e6)]);
+  const n = sheets[C].rows.length+1;
+  const grossShare = label==='Lifecycle adjustment'?'""':
+   'IF('+c('gross')+'>0,SUMIFS(D'+stageFirst+':D'+adj+',G'+stageFirst+':G'+adj+',"'+label+'",D'+stageFirst+':D'+adj+',">0")/'+c('gross')+',"" )';
+  const positiveScope = stageCells.filter(([, , ,scopeLabel])=>scopeLabel===label)
+   .reduce((sum,[key])=>sum+Math.max(0,gross[key]||0)*(isProp&&a.scope.includes(key)?b.allocation.factor:1),0);
+  add(C,null,[label,null,null,formula('SUMIF(G'+stageFirst+':G'+adj+',"'+label+'",D'+stageFirst+':D'+adj+')',total),
+   formula(grossShare,positives>0&&label!=='Lifecycle adjustment'?positiveScope/positives:''),
+   formula('IF(ISNUMBER('+c('energy')+'),D'+n+'*'+c('energy')+'/1000000,"")',total*annual/1e6)],{4:69});
  }
+ section(C,'Lifecycle contribution by emission source');
+ add(C,null,['Stage','Baseline CI','Scenario CI','Reduction (g CO₂e/MJ)','Annual baseline t CO₂e','Annual scenario t CO₂e'],{0:1,1:1,2:1,3:1,4:1,5:1});
+ const contributionFirst = sheets[C].rows.length+1;
+ const stageLabels = [...stageCells.map(([key])=>key),'displacement'];
+ const contributions = stageLabels.map(key=>{
+  const title = key==='displacement'?'Co-product displacement':key;
+  const share = isProp&&a.scope.includes(key)?b.allocation.factor:1;
+  const before = key==='displacement'?disp:gross[key]==null?null:gross[key]*share;
+  const after = key==='displacement'?disp:gross[key]==null?null:baseScenario.parts[key]*share;
+  const n = sheets[C].rows.length+1;
+  const guarded = (cell,expression) => 'IF(ISNUMBER('+cell+'),'+expression+',"")';
+  add(C,null,[title,formula(guarded(c(key,3),c(key,3)),before??''),
+   formula(guarded(c(key,4),c(key,4)),after??''),
+   formula('IF(AND(ISNUMBER(B'+n+'),ISNUMBER(C'+n+')),B'+n+'-C'+n+',"")',before===null?'':before-after),
+   formula('IF(AND(ISNUMBER(B'+n+'),ISNUMBER('+c('energy')+')),B'+n+'*'+c('energy')+'/1000000,"")',before===null?'':before*annual/1e6),
+   formula('IF(AND(ISNUMBER(C'+n+'),ISNUMBER('+c('energy')+')),C'+n+'*'+c('energy')+'/1000000,"")',after===null?'':after*annual/1e6)]);
+  return {title,before,after};
+ });
+ sheets[C].chart = {label:'Baseline and scenario by stage (g CO₂e/MJ)',first:contributionFirst,
+  last:sheets[C].rows.length,category:'A',labels:contributions.map(row=>row.title),horizontal:true,
+  series:[
+   {name:'Baseline',value:'B',values:contributions.map(row=>row.before),color:'5F7D8C'},
+   {name:'Scenario',value:'C',values:contributions.map(row=>row.after),color:'08765A'}
+  ]};
  writeAllocationAudit();
 
  function writeAllocationAudit() {
@@ -273,9 +308,10 @@ function buildFullCivantaReport(run) {
   const validFuelPrice = 'AND(ISNUMBER('+al('price')+'),'+al('price')+'>0)';
   const before = al('mass')+'*'+al('price');
   const shares = b.allocation?.shares || {};
-  setValue(A,'energyShare','IF(AND('+withLhv+',ISNUMBER('+c('energy')+')),'+c('energy')+'/('+c('energy')+'+'+total('F')+'),"")',shares.energy??'','fraction');
-  setValue(A,'massShare','IF(AND('+validProduct+','+validFuelMass+'),'+al('mass')+'/('+al('mass')+'+'+total('C')+'),"")',shares.mass??'','fraction');
-  setValue(A,'economicShare','IF(AND('+withPrice+','+validFuelMass+','+validFuelPrice+'),'+before+'/('+before+'+'+total('G')+'),"")',shares.economic??'','fraction');
+  const proportional = 'OR('+['energy','mass','economic'].map(key=>al('method')+'="'+allocationMethods[key]+'"').join(',')+')';
+  setValue(A,'energyShare','IF(AND('+proportional+','+withLhv+',ISNUMBER('+c('energy')+')),'+c('energy')+'/('+c('energy')+'+'+total('F')+'),"")',shares.energy??'','fraction');
+  setValue(A,'massShare','IF(AND('+proportional+','+validProduct+','+validFuelMass+'),'+al('mass')+'/('+al('mass')+'+'+total('C')+'),"")',shares.mass??'','fraction');
+  setValue(A,'economicShare','IF(AND('+proportional+','+withPrice+','+validFuelMass+','+validFuelPrice+'),'+before+'/('+before+'+'+total('G')+'),"")',shares.economic??'','fraction');
   const method = al('method');
   const eq = key => method+'="'+allocationMethods[key]+'"';
   const inactive = 'OR('+eq('none')+','+eq('displacement')+')';
@@ -311,8 +347,25 @@ function buildFullCivantaReport(run) {
   ];
  }
 
- title(O,'Selected scenario and all sixteen combinations',
-  ['Scenario',...controls.map(key=>labels[key]+' (%)'),'Baseline CI','Scenario CI','CI reduction','Target','Annual costs','Net benefit']);
+ title(O,'Selected scenario and all sixteen combinations',simple);
+ for (const key of controls) linked(O,null,labels[key],setting(key),settings[key],'%','Editable in Inputs');
+ section(O,'Calculation settings and traceability');
+ linked(O,null,'Baseline CI',c('baseline'),b.ci,ciUnit);
+ linked(O,null,'Annual fuel energy',c('energy'),annual,'MJ/year');
+ linked(O,null,'Planning CI target','IF(ISNUMBER('+i('target')+'),'+i('target')+',"")',target??'',ciUnit);
+ if (!farm) {
+  const grid = cache(inputs.grid);
+  linked(O,null,'Applied baseline grid factor','IF(ISNUMBER('+f('grid')+'),'+f('grid')+',"")',grid,'g CO₂e/kWh');
+  linked(O,null,'Rail / truck emissions ratio','1-'+f('railReduction'),1-.78,'ratio');
+ }
+ section(O,'Selected scenario and 16 combinations');
+ const effectStages = farm
+  ? [['Electricity reduction',['Grid electricity']],['Pipeline reduction',['Pipeline delivery']],
+    ['Heat and methane reduction',['Process natural gas','Methane leakage / slip']]]
+  : [['Electricity reduction',['Electricity']],['Transport reduction',['Transport']],
+    ['Heat and tuning reduction',['Process heat']]];
+ const headers = ['Scenario',...controls.map(key=>labels[key]+' (%)'),'Baseline CI','Scenario CI','CI reduction','Target','Annual costs','Net benefit',...effectStages.map(([label])=>label)];
+ add(O,null,headers,Object.fromEntries(headers.map((_,index)=>[index,1])));
  const variants = [{key:'selected',title:'Selected scenario',levels:settings,inputs:true},
   ...Array.from({length:16},(_,mask) => {
    const levels = Object.fromEntries(controls.map((key,j)=>[key,mask&(1<<j)?100:0]));
@@ -320,19 +373,24 @@ function buildFullCivantaReport(run) {
   })];
  function variantExpression(pct) {
   const parts = stageCells.map(([key])=>'N('+c(key,3)+')*'+scenarioFactor(key,pct));
-  return 'IF(ISNUMBER('+c('baseline')+'),'+parts.join('+')+'+N('+c('displacement',3)+'),"")';
+  return 'IF(AND(ISNUMBER('+c('baseline')+'),'+validSettings(pct)+'),'+parts.join('+')+'+N('+c('displacement',3)+'),"")';
  }
  for (const variant of variants) {
   const {key,levels} = variant;
   const n = sheets[O].rows.length+1;
   const use = name => controls.includes(name) ? col(controls.indexOf(name)+1)+n : '0';
-  const scenario = run.evaluate(levels).ci;
-  add(O,key,[variant.title,...controls.map(k=>variant.inputs?formula(i(k),levels[k]):levels[k]),
+  const result = run.evaluate(levels);
+  const scenario = result.ci;
+  const effects = effectStages.map(([,stages])=>formula(
+   'IF(ISNUMBER(G'+n+'),'+stages.map(stage=>'N('+c(stage,3)+')*(1-'+scenarioFactor(stage,use)+')').join('+')+',"")',
+   stages.reduce((total,stage)=>total+((gross[stage]||0)-(result.parts[stage]||0))*(isProp&&a.scope.includes(stage)?b.allocation.factor:1),0)
+  ));
+  add(O,key,[variant.title,...controls.map(k=>variant.inputs?formula(setting(k),levels[k]):levels[k]),
    formula('IF(ISNUMBER('+c('baseline')+'),'+c('baseline')+',"")',b.ci),
    formula(variantExpression(use),scenario),
    formula('IF(ISNUMBER(G'+n+'),F'+n+'-G'+n+',"")',b.ci-scenario),
    formula('IF(AND(ISNUMBER(G'+n+'),ISNUMBER('+i('target')+')),IF(G'+n+'<='+i('target')+',"Meets","Above"),"No target")',
-    target==null?'No target':scenario<=target?'Meets':'Above')]);
+    target==null?'No target':scenario<=target?'Meets':'Above'),null,null,...effects]);
  }
 
  title(S,'Response, lever ranking and two-variable sensitivity',
@@ -344,14 +402,28 @@ function buildFullCivantaReport(run) {
   add(S,key,[labels[key],...vals]);
  }
  section(S,'Tornado ranking · full setting reduction');
- add(S,null,['Measure','Potential reduction (g CO₂e/MJ)'],{0:1,1:1});
+ add(S,null,['Measure','CI at 0%','CI at 100%','Current reduction','Remaining reduction','Full reduction'],
+  {0:1,1:1,2:1,3:1,4:1,5:1});
  const ranked = controls.map(key=>({key,value:b.ci-run.evaluate(Object.fromEntries(controls.map(name=>[name,name===key?100:0]))).ci})).sort((x,y)=>y.value-x.value);
  const tornadoFirst = sheets[S].rows.length+1;
- for (const {key,value} of ranked)
-  add(S,null,[labels[key],formula('IF(ISNUMBER('+c('baseline')+'),'+ref(S,key,1)+'-'+ref(S,key,5)+',"")',value)]);
- sheets[S].chart = {label:'Full lever reduction (g CO₂e/MJ)',first:tornadoFirst,last:tornadoFirst+ranked.length-1,
-  category:'A',value:'B',labels:ranked.map(item=>labels[item.key]),values:ranked.map(item=>item.value),horizontal:true};
- const [x,y] = controls;
+ const impact = ranked.map(({key,value})=>{
+  const current = b.ci-run.evaluate(Object.fromEntries(controls.map(name=>[name,name===key?settings[key]:0]))).ci;
+  const n = sheets[S].rows.length+1;
+  const currentCI = variantExpression(name=>name===key?setting(key):'0');
+  add(S,null,[labels[key],formula(ref(S,key,1),b.ci),formula(ref(S,key,5),b.ci-value),
+   formula('IF(AND(ISNUMBER(B'+n+'),'+validSettings(setting)+'),B'+n+'-('+currentCI+'),"")',current),
+   formula('IF(ISNUMBER(D'+n+'),F'+n+'-D'+n+',"")',value-current),
+   formula('IF(ISNUMBER(B'+n+'),B'+n+'-C'+n+',"")',value)]);
+  return {current,remaining:value-current};
+ });
+ sheets[S].chart = {label:'Lever reduction (g CO₂e/MJ)',first:tornadoFirst,last:tornadoFirst+ranked.length-1,
+  category:'A',labels:ranked.map(item=>labels[item.key]),horizontal:true,stacked:true,
+  series:[
+   {name:'Current reduction',value:'D',values:impact.map(row=>row.current),color:'08765A'},
+   {name:'Remaining reduction',value:'E',values:impact.map(row=>row.remaining),color:'B7D8CF'}
+  ]};
+ const x = controls.includes(run.heatX)?run.heatX:controls[0];
+ const y = controls.includes(run.heatY)&&run.heatY!==x?run.heatY:controls.find(key=>key!==x);
  section(S,labels[x]+' × '+labels[y]+' · scenario CI');
  const levels = [0,25,50,75,100];
  const heatHeader = add(S,null,[labels[y]+' ↓ / '+labels[x]+' →',...levels],{0:1,1:1,2:1,3:1,4:1,5:1});
@@ -364,22 +436,24 @@ function buildFullCivantaReport(run) {
  sheets[S].heatmap = 'B'+(heatHeader+1)+':F'+(heatHeader+levels.length);
 
  title(E,'Documented CAPEX, cash flow, conditional credit value and abatement costs',
-  ['Scenario / assumption','Scenario CI / value','Reduction','CAPEX','Fixed O&M','Power cost','Gas savings','Annualized capital','O&M change','Conditional LCFS','Net benefit','Cost per tonne']);
+  ['Scenario / assumption','Scenario CI / value','Reduction','CAPEX','Fixed O&M','Power cost','Gas savings','Annualized capital','O&M change','Conditional LCFS','Net benefit','Cost per tonne','Target']);
  input(E,'used','Use displayed assumptions',finance.confirmed === true);
  const lcfsEconomics = [
   ['price','LCFS price','USD/t'],['share','LCFS eligible share','%'],['eer','Energy economy ratio','ratio']
  ];
  for (const [key,label,unit] of lcfsEconomics)
-  input(E,key,label,screeningLcfs&&finance.confirmed?cache(finance[key],null):null,unit,screeningLcfs?'User assumption':'Excluded for this pathway');
+  input(E,key,label,screeningLcfs?cache(finance[key],null):null,unit,screeningLcfs?'User assumption':'Excluded for this pathway');
  for (const [key,label,unit] of [
   ['life','Project life','years'],['rate','Discount rate','%'],['ppa','Renewable electricity premium','USD/kWh'],
   ['gasPrice','Process natural gas price','USD/MJ'],['railCost','Rail transport cost change','USD/t-km'],
   ['pipeCost','Pipe delivery cost change','USD/MJ-mile']
- ]) input(E,key,label,finance.confirmed?cache(finance[key],null):null,unit,'User assumption');
+ ]) input(E,key,label,cache(finance[key],null),unit,'User assumption');
+ linked(E,null,'Annual fuel energy',c('energy'),annual,'MJ/year');
+ linked(E,null,'Planning CI target','IF(ISNUMBER('+i('target')+'),'+i('target')+',"")',target??'',ciUnit);
  section(E,'Implementation costs by measure');
  add(E,null,['Measure','Capital cost (USD)','O&M change (USD/year)'],{0:1,1:1,2:1});
  for (const key of controls)
-  add(E,key,[labels[key],finance.confirmed?cache(finance.cost[key]?.capex,null):null,finance.confirmed?cache(finance.cost[key]?.opex,null):null],{1:2,2:2});
+  add(E,key,[labels[key],cache(finance.cost[key]?.capex,null),cache(finance.cost[key]?.opex,null)],{1:2,2:2});
  const econChecks = [
   e('used')+'=TRUE','ISNUMBER('+c('baseline')+')',
   ...['life','rate','ppa','gasPrice',farm?'pipeCost':'railCost'].map(key=>'ISNUMBER('+e(key)+')'),
@@ -390,11 +464,11 @@ function buildFullCivantaReport(run) {
  ];
  const econOK = 'AND('+econChecks.join(',')+')';
  linked(E,'ready','Data readiness','IF('+econOK+',"Ready","Needs inputs")',finance.ready?'Ready':empty);
- const allowed = expression => 'IF('+e('ready')+'="Ready",'+expression+',"")';
  const econStart = sheets[E].rows.length+2;
  section(E,'Annualized economics by scenario');
  const econValues=[];
  for (const {key,title:label,levels} of variants) {
+  const allowed = expression => 'IF(AND('+e('ready')+'="Ready",ISNUMBER('+opt(key,6)+')),'+expression+',"")';
   const n=sheets[E].rows.length+1;
   const value=finance.ready?run.economics(levels):null;
   const pct=k=>controls.includes(k)?opt(key,controls.indexOf(k)+1)+'/100':'0';
@@ -416,10 +490,11 @@ function buildFullCivantaReport(run) {
    formula(allowed('E'+n+'+F'+n+'-G'+n+'+'+transport),cache(value?.opex)),
    formula(allowed(screeningLcfs?'IF('+noCredit+',0,C'+n+'*'+c('energy')+'*'+e('share')+'/100/1000000*'+e('price')+')':'0'),cache(value?.credit)),
    formula(allowed('J'+n+'-H'+n+'-I'+n),cache(value?.net)),
-   formula(allowed('IF(C'+n+'>0,(H'+n+'+I'+n+')/(C'+n+'*'+c('energy')+'/1000000),"")'),cache(value?.mac))
+   formula(allowed('IF(C'+n+'>0,(H'+n+'+I'+n+')/(C'+n+'*'+c('energy')+'/1000000),"")'),cache(value?.mac)),
+   formula(opt(key,8),target==null?'No target':run.evaluate(levels).ci<=target?'Meets':'Above')
   ]);
   econValues.push(cache(value?.net,null));
-  sheets[O].rows[refs[O][key]-1].cells.push(
+  sheets[O].rows[refs[O][key]-1].cells.splice(9,2,
    formula('IF(ISNUMBER('+ref(E,key,7)+'),'+ref(E,key,7)+'+'+ref(E,key,8)+',"")',value?value.annualCapex+value.opex:''),
    formula('IF(ISNUMBER('+ref(E,key,10)+'),'+ref(E,key,10)+',"")',cache(value?.net))
   );
@@ -441,12 +516,13 @@ function buildFullCivantaReport(run) {
   const rin = credit.rin;
   const z45 = credit.z45;
   const present = (...keys) => keys.map(key=>'ISNUMBER('+r(key)+')').join(',');
-  const only = (flag, expr) => 'IF('+r(flag)+'="Ready",'+expr+',"")';
+  const only = (flag, expr) => 'IF(OR('+r(flag)+'="Ready",'+r(flag)+'="Conditional"),'+expr+',"")';
   section(R,'California LCFS');
   const lcfsConfig = documentedLcfs[b.path.fuel];
+  let lcReady = false, baseLc = null, optLc = null;
   if (lcfsConfig) {
    const use = lcfsConfig.uses[lcfs.use];
-   const validInputs = use && lcfs.pathCode && lcfs.confirmed &&
+   const validInputs = use &&
     [lcfs.approvedCi,lcfs.quantity,lcfs.price].every(Number.isFinite) && lcfs.quantity>=0 && lcfs.price>=0;
    input(R,'lcUse','2026 fuel use',use?.[0]);
    input(R,'lcCode','CARB fuel pathway code',lcfs.pathCode);
@@ -459,9 +535,8 @@ function buildFullCivantaReport(run) {
    linked(R,'lcBenchmark','2026 benchmark CI',useFactor(1),use?.[1]??'',ciUnit,'17 CCR §95484');
    linked(R,'lcEer','Energy economy ratio',useFactor(2),use?.[2]??'','ratio','17 CCR §95486.1, Table 5');
    input(R,'lcEnergy','CARB fuel energy density',lcfsConfig.energy,'MJ/'+lcfsConfig.unit,'17 CCR §95486, Table 4');
-   band('LCFS status','lcReady','IF(AND(LEN(TRIM('+r('lcCode')+'))>0,'+r('lcConfirm')+'=TRUE,'+
-    present('lcBenchmark','lcEer','lcApprovedCi','lcQuantity','lcPrice')+','+r('lcQuantity')+'>=0,'+r('lcPrice')+'>=0),"Ready","Needs inputs")',
-    validInputs?'Ready':empty);
+   band('LCFS status','lcReady','IF(AND('+present('lcBenchmark','lcEer','lcApprovedCi','lcQuantity','lcPrice')+','+r('lcQuantity')+'>=0,'+r('lcPrice')+'>=0),IF(AND(LEN(TRIM('+r('lcCode')+'))>0,'+r('lcConfirm')+'=TRUE),"Ready","Conditional"),"Needs inputs")',
+    validInputs?(lcfs.confirmed&&lcfs.pathCode?'Ready':'Conditional'):empty);
    const raw = '('+r('lcBenchmark')+'*'+r('lcEer')+'-'+r('lcApprovedCi')+')*'+r('lcQuantity')+'*'+r('lcEnergy')+'/1000000';
    const balance = validInputs ? documentedLcfsBalance(b.path.fuel,use,lcfs.approvedCi,lcfs.quantity) : null;
    linked(R,'lcBalance','Estimated LCFS balance',only('lcReady',b.path.fuel==='saf'?'MAX(0,'+raw+')':raw),cache(balance),'t CO₂e','Positive = credits. Negative = deficits.');
@@ -472,18 +547,38 @@ function buildFullCivantaReport(run) {
     ['lcConfirm','Eligibility reviewed by user',lcfs.confirmed],['lcBenchmark','Benchmark CI',lcfs.benchmark,ciUnit],
     ['lcShare','Eligible production share',lcfs.share,'%'],['lcPrice','Credit price',lcfs.price,'USD/t'],['lcEer','Energy economy ratio',lcfs.eer,'ratio']
    ]) input(R,key,label,value,unit);
-   const lcReady = screenSupported && lcfs.confirmed && [lcfs.benchmark,lcfs.share,lcfs.price,lcfs.eer].every(Number.isFinite) &&
+   lcReady = screenSupported && [lcfs.benchmark,lcfs.share,lcfs.price,lcfs.eer].every(Number.isFinite) &&
     lcfs.benchmark>=0 && lcfs.share>=0 && lcfs.share<=100 && lcfs.price>=0 && lcfs.eer>0;
-   const lcState = !screenSupported?'Not modeled':lcReady?'Ready':empty;
-   band('LCFS status','lcReady',screenSupported?'IF(AND(ISNUMBER('+c('baseline')+'),'+r('lcConfirm')+'=TRUE,'+
+   const lcState = !screenSupported?'Not modeled':lcReady?(lcfs.confirmed?'Ready':'Conditional'):empty;
+   band('LCFS status','lcReady',screenSupported?'IF(AND(ISNUMBER('+c('baseline')+'),'+
     present('lcBenchmark','lcShare','lcPrice','lcEer')+','+r('lcShare')+'>=0,'+r('lcShare')+'<=100,'+
-    r('lcBenchmark')+'>=0,'+r('lcPrice')+'>=0,'+r('lcEer')+'>0),"Ready","Needs inputs")':'"Not modeled"',lcState);
-   const baseLc = lcReady?(lcfs.benchmark*lcfs.eer-b.ci)*annual*lcfs.share/100/1e6:null;
-   const optLc = lcReady?(lcfs.benchmark*lcfs.eer-baseScenario.ci)*annual*lcfs.share/100/1e6:null;
+    r('lcBenchmark')+'>=0,'+r('lcPrice')+'>=0,'+r('lcEer')+'>0),IF('+r('lcConfirm')+'=TRUE,"Ready","Conditional"),"Needs inputs")':'"Not modeled"',lcState);
+   baseLc = lcReady?(lcfs.benchmark*lcfs.eer-b.ci)*annual*lcfs.share/100/1e6:null;
+   optLc = lcReady?(lcfs.benchmark*lcfs.eer-baseScenario.ci)*annual*lcfs.share/100/1e6:null;
    for (const [key,label,ci,result] of [['lcBase','Baseline volume','baseline',baseLc],['lcOpt','Scenario volume','scenario',optLc]])
-    linked(R,key,label,only('lcReady','('+r('lcBenchmark')+'*'+r('lcEer')+'-'+c(ci)+')*'+c('energy')+'*'+r('lcShare')+'/100000000'),cache(result),'t CO₂e/year');
-   linked(R,'lcDelta','Incremental conditional value',only('lcReady','('+r('lcOpt')+'-'+r('lcBase')+')*'+r('lcPrice')),
+    linked(R,key,label,only('lcReady','IF(ISNUMBER('+c(ci)+'),('+r('lcBenchmark')+'*'+r('lcEer')+'-'+c(ci)+')*'+c('energy')+'*'+r('lcShare')+'/100000000,"")'),cache(result),'t CO₂e/year');
+   linked(R,'lcEligible','Eligible annual energy',only('lcReady',c('energy')+'*'+r('lcShare')+'/100'),
+    lcReady?annual*lcfs.share/100:'','MJ/year');
+   linked(R,'lcBaseValue','Baseline conditional gross value',only('lcReady',r('lcBase')+'*'+r('lcPrice')),
+    lcReady?baseLc*lcfs.price:'','USD/year');
+   linked(R,'lcOptValue','Scenario conditional gross value',only('lcReady','IF(ISNUMBER('+r('lcOpt')+'),'+r('lcOpt')+'*'+r('lcPrice')+',"")'),
+    lcReady?optLc*lcfs.price:'','USD/year');
+   linked(R,'lcDelta','Incremental conditional value',only('lcReady','IF(ISNUMBER('+r('lcOpt')+'),('+r('lcOpt')+'-'+r('lcBase')+')*'+r('lcPrice')+',"")'),
     lcReady?(optLc-baseLc)*lcfs.price:'','USD/year');
+  }
+
+  if (!lcfsConfig && screenSupported) {
+   section(R,'California LCFS · comparison');
+   add(R,null,['Metric','Baseline','Scenario','Unit'],{0:1,1:1,2:1,3:1});
+   for (const [label,before,after,unit,valueBefore,valueAfter,linkedToCi] of [
+    ['Carbon intensity','baseline','scenario',ciUnit,b.ci,baseScenario.ci,true],
+    ['Credit volume','lcBase','lcOpt','t CO₂e/year',baseLc??'',optLc??'',false],
+    ['Conditional gross value','lcBaseValue','lcOptValue','USD/year',lcReady?baseLc*lcfs.price:'',lcReady?optLc*lcfs.price:'',false]
+   ]) {
+    const source = linkedToCi?c:r;
+    const link = key=>linkedToCi?source(key):only('lcReady',source(key));
+    add(R,null,[label,formula(link(before),valueBefore),formula(link(after),valueAfter),unit],{1:4,2:4});
+   }
   }
 
   section(R,'Renewable Fuel Standard · RINs');
@@ -492,14 +587,15 @@ function buildFullCivantaReport(run) {
    ['rinShare','Eligible production share',rin.share,'%'],['rinPrice','RIN price',rin.price,'USD/RIN'],['rinEv','Equivalence value',rng?null:rin.ev,'RIN/gal']
   ]) input(R,key,label,value,unit);
   const rinEnergyUnit = 77000*.00105505585262;
+  const rinCodes = ['D3','D4','D5','D6','D7'];
   const rinLhv = b.path.fuel==='rd' ? ',OR('+r('rinYear')+'<>2026,ABS('+r('rinEv')+'-1.7)>=0.001,'+f('energy')+'/0.00105505585262>=123500)' : '';
-  const rinCheck = screenSupported && rin.confirmed && !!rin.code && [rin.year,rin.share,rin.price].every(Number.isFinite) && rin.share>=0 && rin.share<=100 &&
+  const rinCheck = screenSupported && [2026,2027].includes(rin.year) && [rin.year,rin.share,rin.price].every(Number.isFinite) && rin.share>=0 && rin.share<=100 &&
    rin.price>=0 && (rng || (Number.isFinite(rin.ev)&&rin.ev>0&&rin.ev<=5)) &&
    (b.path.fuel!=='rd'||rin.year!==2026||Math.abs(rin.ev-1.7)>=.001||b.path.energy/.00105505585262>=123500);
-  band('RIN status','rinReady',screenSupported?'IF(AND(ISNUMBER('+c('baseline')+'),'+r('rinConfirm')+'=TRUE,LEN(TRIM('+r('rinCode')+'))>0,'+
+  band('RIN status','rinReady',screenSupported?'IF(AND(ISNUMBER('+c('baseline')+'),OR('+r('rinYear')+'=2026,'+r('rinYear')+'=2027),'+
    present('rinShare','rinPrice','rinYear')+','+r('rinShare')+'>=0,'+r('rinShare')+'<=100,'+r('rinPrice')+'>=0'+
-   (rng?'':','+present('rinEv')+','+r('rinEv')+'>0,'+r('rinEv')+'<=5')+rinLhv+'),"Ready","Needs inputs")':'"Not modeled"',
-   !screenSupported?'Not modeled':rinCheck?'Ready':empty);
+   (rng?'':','+present('rinEv')+','+r('rinEv')+'>0,'+r('rinEv')+'<=5')+rinLhv+'),IF(AND('+r('rinConfirm')+'=TRUE,OR('+rinCodes.map(code=>r('rinCode')+'="'+code+'"').join(',')+')),"Ready","Conditional"),"Needs inputs")':'"Not modeled"',
+   !screenSupported?'Not modeled':rinCheck?(rin.confirmed&&rinCodes.includes(rin.code)?'Ready':'Conditional'):empty);
   const modeledRins=rinCheck?(rng?annual/rinEnergyUnit:b.volume*rin.ev)*rin.share/100:null;
   linked(R,'rinCount','Annual RINs · baseline and scenario',only('rinReady',(rng?c('energy')+'/'+rinEnergyUnit:i('volume')+'*'+r('rinEv'))+'*'+r('rinShare')+'/100'),cache(modeledRins),'RIN/year');
   linked(R,'rinValue','Conditional gross value',only('rinReady',r('rinCount')+'*'+r('rinPrice')),rinCheck?modeledRins*rin.price:'','USD/year');
@@ -508,27 +604,38 @@ function buildFullCivantaReport(run) {
   section(R,'45Z · separately documented rates');
   for (const [key,label,value,unit] of [
    ['zQty','Qualifying volume sold',z45.qty,'qualifying gal / GGE'],['zBase','Baseline 45Z emissions rate',z45.base,'kg CO₂e/MMBtu'],
-   ['zOpt','Scenario 45Z emissions rate',z45.opt,'kg CO₂e/MMBtu'],['zPwa','PWA applies',z45.pwa],['zConfirm','Eligibility conditions reviewed',z45.confirmed]
+   ['zOpt','Scenario 45Z emissions rate',z45.opt,'kg CO₂e/MMBtu'],['zPwa','PWA applies',z45.pwa],
+   ['zDomestic','Qualified U.S. facility and producer',z45.domestic],['zOrigin','Qualifying feedstock origin reviewed',z45.origin],
+   ['zReg','IRS registration reviewed',z45.registered],['zSale','Qualifying sale and double counting reviewed',z45.sale]
   ]) input(R,key,label,value,unit);
+  const confirmations = ['zDomestic','zOrigin','zReg','zSale'];
+  const eligibilityReviewed = z45.domestic&&z45.origin&&z45.registered&&z45.sale;
   const zSupported = ['bd','rd','ethanol','saf','rng','h2'].includes(b.path.fuel);
   const animal = ['Dairy manure','Swine manure','Beef cattle manure'].includes(b.path.feedstock);
-  const zReady = zSupported&&z45.confirmed && ['yes','no'].includes(z45.pwa)&&[z45.qty,z45.base,z45.opt].every(Number.isFinite)&&
+  const zReady = zSupported && ['yes','no'].includes(z45.pwa)&&[z45.qty,z45.base,z45.opt].every(Number.isFinite)&&
    z45.qty>0&&z45.base<=50&&z45.opt<=50&&(animal||z45.base>=0&&z45.opt>=0);
-  band('45Z status','zReady',zSupported?'IF(AND('+r('zConfirm')+'=TRUE,'+present('zQty','zBase','zOpt')+
+  band('45Z status','zReady',zSupported?'IF(AND('+present('zQty','zBase','zOpt')+
    ','+r('zQty')+'>0,'+r('zBase')+'<=50,'+r('zOpt')+'<=50,OR('+r('zPwa')+'="yes",'+r('zPwa')+'="no")'+
-   (animal?'':','+r('zBase')+'>=0,'+r('zOpt')+'>=0')+'),"Ready","Needs inputs")':'"Not modeled"',!zSupported?'Not modeled':zReady?'Ready':empty);
+   (animal?'':','+r('zBase')+'>=0,'+r('zOpt')+'>=0')+'),IF(AND('+confirmations.map(key=>r(key)+'=TRUE').join(',')+'),"Ready","Conditional"),"Needs inputs")':'"Not modeled"',!zSupported?'Not modeled':zReady?(eligibilityReviewed?'Ready':'Conditional'):empty);
+  input(R,'zBaseAmount','Base screening amount',.22,'USD/gal or GGE','2026 workspace reference');
+  input(R,'zPwaAmount','PWA screening amount',1.09,'USD/gal or GGE','2026 workspace reference');
   const amount=z45.pwa==='yes'?1.09:.22;
-  const estimate=rate=>z45.qty*amount*Math.round((50-rate)/5)/10;
+  const estimate=rate=>Math.round((z45.qty*amount*Math.round((50-rate)/5)/10+Number.EPSILON)*100)/100;
   for (const [key,label,rate,value] of [['zBaseValue','Baseline tax credit','zBase',z45.base],['zOptValue','Scenario tax credit','zOpt',z45.opt]])
-   linked(R,key,label,only('zReady',r('zQty')+'*IF('+r('zPwa')+'="yes",1.09,0.22)*ROUND((50-'+r(rate)+')/50,1)'),zReady?estimate(value):'','USD/year');
+   linked(R,key,label,only('zReady','ROUND('+r('zQty')+'*IF('+r('zPwa')+'="yes",'+r('zPwaAmount')+','+r('zBaseAmount')+')*ROUND((50-'+r(rate)+')/50,1),2)'),zReady?estimate(value):'','USD/year');
   linked(R,'zDelta','Incremental tax credit',only('zReady',r('zOptValue')+'-'+r('zBaseValue')),zReady?estimate(z45.opt)-estimate(z45.base):'','USD/year');
-  add(R,null,['Program results are separate and conditional. Use the approved pathway, methodology and documented eligibility.']);
+  section(R,'Other programmes in the client review workbook');
+  for (const label of ['Oregon CFP','Washington CFS','Canada CFR','EU RED III','ICAO CORSIA','FuelEU Maritime','Brazil RenovaBio'])
+   add(R,null,[label,'Not modelled here','','No eligible activity or programme-specific result in this CIVanta New run.']);
+  section(R,'Credit stacking and integrity');
+  add(R,null,['Report each programme separately','','','Confirm eligibility and any double-counting restrictions before combining estimates.']);
+
  }
 
- title(G,'Reference catalog · separate from facility factors',simple);
+ title(G,'Reference catalog · separate from facility factors',[...simple,'Basis / detail']);
  for (const [heading,entries] of run.referenceGroups) {
   section(G,heading);
-  for (const [label,value,unit,source] of entries) add(G,null,[label,value,unit,source]);
+  for (const row of entries) add(G,null,row);
  }
  if (farm) {
   for (const key of Object.keys(refs[F]).filter(key=>key!=='grid')) {
@@ -544,23 +651,47 @@ function buildFullCivantaReport(run) {
   ['Green cells','Linked calculations. Excel recalculates on open or edit.'],
   ['Blank / Not provided','No documented value was entered. Optional gaps are excluded from the total.'],
   ['Zero','Explicit zero or a calculation with zero activity.'],
+  ['Conditional','Numeric inputs support a planning estimate; programme eligibility remains unconfirmed.'],
   ['Needs inputs','The defined prerequisites have not been met for this output.'],
   ['No allocation','Each stage remains fully attributed to the fuel.'],
   ['Screening output','Results are model estimates and do not establish program approval.']
  ]) add(K,null,row);
 
- title(M,'Calculation methods, factor provenance and reference links',['Topic','Method or source','Application']);
+ title(M,'Applied emission-factor register',['Factor','Value used','Units','Source / basis']);
+ for (const [key,index] of Object.entries(refs[F])) {
+  const [label,value,unit,source] = sheets[F].rows[index-1].cells;
+  const current = value?.f ? value.v : value;
+  add(M,null,[label,formula('IF(ISNUMBER('+f(key)+'),'+f(key)+',"")',current??''),unit,source],{1:4});
+ }
+ section(M,'Calculation methods, factor provenance and reference links');
+ add(M,null,['Topic','Method or source','Application'],{0:1,1:1,2:1});
  for (const row of [
-  ['CIVanta workflow','https://www.globalbioenergywatch.org/civanta-new','Active plant snapshot and scenario settings'],
+  ['CIVanta workflow','https://www.globalbioenergywatch.org/civanta','Active plant snapshot and scenario settings'],
   ['Fuel energy basis',run.energySource,'Applied value and units are on Emission factors'],
   ['Lifecycle emissions','Activity × applicable factor, normalized to MJ of fuel','Direct entries are normalized in the form'],
   ['Allocation','Allocate only selected shared gross stages; fuel-specific emissions stay with fuel','Displacement is a separate documented signed credit'],
   ['Optimizer','Apply the selected measures to the relevant gross activities before reallocation','Heat and tuning apply sequentially to the same process heat'],
   ['Conditional LCFS','https://ww2.arb.ca.gov/our-work/programs/low-carbon-fuel-standard','Separate program inputs'],
   ['Conditional RINs','https://www.epa.gov/renewable-fuel-standard-program','Eligible quantity and approved equivalence value'],
-  ['Conditional 45Z','https://www.irs.gov/irb/2026-41_irb','Requires independently supplied emissions rates'],
+  ['Conditional 45Z','https://www.irs.gov/pub/irs-drop/n-26-53.pdf','Requires independently supplied emissions rates; annual credit rounded to cents'],
   ['Reference factors','See Global factor library and Emission factors','Facility overrides are recorded on the applied sheet']
  ]) add(M,null,row);
+ if (run.pro === false) {
+  for (const key of ['scenario','reduction']) sheets[C].rows[refs[C][key]-1].cells = [];
+  for (const key of [...stageCells.map(([key])=>key),'displacement'])
+   sheets[C].rows[refs[C][key]-1].cells[4] = null;
+  for (const row of sheets[C].rows) {
+   if (row.cells[0] === 'Emission source') row.cells[4] = null;
+   if (row.cells[0] === 'Stage') for (const index of [2,3,5]) row.cells[index] = null;
+  }
+  for (let index=contributionFirst-1;index<contributionFirst-1+stageLabels.length;index++)
+   for (const column of [2,3,5]) sheets[C].rows[index].cells[column] = null;
+  sheets[C].chart.label = 'Baseline by stage (g CO₂e/MJ)';
+  sheets[C].chart.series = [sheets[C].chart.series[0]];
+  sheets[I].rows.splice(refs[I]['setting:'+controls[0]]-2);
+  sheets[M].rows = sheets[M].rows.filter(row=>!['Optimizer','Conditional LCFS','Conditional RINs','Conditional 45Z'].includes(row.cells[0]));
+  return [C,I,F,G,K,M,A].map(name=>sheets[name]);
+ }
  return [C,I,F,G,K,O,S,E,R,M,A].map(name=>sheets[name]);
 }
 
@@ -577,7 +708,7 @@ function fullCivantaSnapshot(b) {
  return {
   plant:$('activePlantName').textContent, baseline:b,
   inputs:{...(b.kind==='dairy'?b.inputs:generic)}, allocation:structuredClone(allocation),
-  settings, labels:OPT_LABELS, controls:optControls(), target:Number.isFinite(optimizationTarget)?optimizationTarget:null,
+  settings, heatX, heatY, labels:OPT_LABELS, controls:optControls(), target:Number.isFinite(optimizationTarget)?optimizationTarget:null,
   measuredLhv:b.kind==='generic' && usesMeasuredLhv(b.path),
   energySource:b.kind==='dairy'?'CIVanta dairy screening model':productionBasis(CATALOG.find(path=>path.id===b.path.id)).source,
   fieldLabels:Object.fromEntries([...gfields,...gadvance,...inventoryDetails,energyField,...DSEC.flatMap(group=>group.fields)]
@@ -589,7 +720,8 @@ function fullCivantaSnapshot(b) {
     use:number('lcfsUse'),pathCode:value('lcfsPathCode')?.trim(),approvedCi:number('lcfsApprovedCi'),quantity:number('lcfsQuantity')},
    rin:{confirmed:checked('rinConfirmed'),code:value('rinDcode'),year:number('rinYear'),share:number('rinShare'),
     price:number('rinPrice'),ev:number('rinEv')},
-   z45:{confirmed:['z45Domestic','z45Origin','z45Reg','z45Sale'].every(checked),qty:number('z45Qty'),base:number('z45BaseRate'),
+   z45:{domestic:checked('z45Domestic'),origin:checked('z45Origin'),registered:checked('z45Reg'),sale:checked('z45Sale'),
+    qty:number('z45Qty'),base:number('z45BaseRate'),
     opt:number('z45OptRate'),pwa:value('z45Pwa')}
   },
   referenceGroups:[['CIVanta coefficients and pathway energy references',[
@@ -603,28 +735,37 @@ function fullCivantaSnapshot(b) {
  };
 }
 
-$('downloadExcel').onclick = async () => {
- if (!baseline) return;
- const run = fullCivantaSnapshot(baseline);
- const button = $('downloadExcel');
- const status = $('excelDownloadStatus');
- button.disabled = true;
- status.textContent = 'Preparing workbook…';
+async function downloadCivantaExcel(options = {}) {
+ if (!baseline || excelDownloadPending) return false;
+ excelDownloadPending = true;
+ syncExcelDownloadActions();
+ setExcelDownloadStatus('Preparing workbook…');
  try {
+  const pro = await civantaPro.refresh();
+  if (!pro) {
+   if (!options.silent) void civantaPro.enter('download', () => downloadCivantaExcel());
+   return false;
+  }
+  if (!baseline) return;
+  const run = fullCivantaSnapshot(baseline);
+  run.pro = pro;
   const asset = async name => {
    const response = await fetch(new URL(name, location.href));
    if (!response.ok) throw new Error('The workbook formatting assets could not be loaded.');
    return response;
   };
-  const [{SOURCES, ELECTRICITY_REGIONS, DAIRY, MODEL_VERSION},styles,logo] = await Promise.all([
+  const [{__modules, DAIRY},styles,logo] = await Promise.all([
    import('/tools/workspace-engine.mjs'),
    asset('assets/client-workbook-styles.xml').then(response=>response.text()),
    asset('assets/client-workbook-logo.png').then(async response=>new Uint8Array(await response.arrayBuffer()))
   ]);
-  const note = 'GBW reference library · ' + MODEL_VERSION;
+  const referenceGroups = new Map();
+  for (const row of __modules['gbw-workspace/engine/source/ci-model.mjs'].backgroundFactors()) {
+   if (!referenceGroups.has(row.group)) referenceGroups.set(row.group,[]);
+   referenceGroups.get(row.group).push([row.item,row.value,row.unit,row.source,row.detail]);
+  }
   run.referenceGroups.push(
-   ['Electricity grid regions', ELECTRICITY_REGIONS.map(x=>[x.label,x.gPerKwh,'g CO₂e/kWh',note])],
-   ['Process energy and fuels', SOURCES.map(x=>[x.label,x.factor,'g CO₂e/'+x.unit,note])],
+   ...referenceGroups,
    ['Dairy model grid references', Object.entries(DAIRY.LCFS_EF.grid).map(([region,value])=>[region,value,'g CO₂e/kWh','GBW dairy model reference'])]
   );
   const url = URL.createObjectURL(cvWorkbookZip(buildFullCivantaReport(run),styles,logo));
@@ -635,13 +776,17 @@ $('downloadExcel').onclick = async () => {
   link.click();
   link.remove();
   setTimeout(()=>URL.revokeObjectURL(url),30000);
-  status.textContent = '';
+  setExcelDownloadStatus('');
+  return true;
  } catch (error) {
-  status.textContent = 'Excel download could not start. ' + error.message;
+  setExcelDownloadStatus('Excel download could not start. ' + error.message);
+  return false;
  } finally {
-  button.disabled = !baseline;
+  excelDownloadPending = false;
+  syncExcelDownloadActions();
  }
-};
+}
+for (const button of excelDownloadButtons) button.addEventListener('click',downloadCivantaExcel);
 
 function civantaChartAnchor(sheet) {
  const height = sheet.chart.horizontal ? 3100000 : 4350000;
@@ -656,15 +801,21 @@ function civantaChartXml(sheet) {
  const axisPositions = chart.horizontal ? ['l','b'] : ['b','l'];
  const range = col => encXml("'"+sheet.name+"'!$"+col+"$"+chart.first+":$"+col+"$"+chart.last);
  const points = (values,numeric) => values.map((value,i)=>value==null?'':'<c:pt idx="'+i+'"><c:v>'+encXml(numeric?Number(value):value)+'</c:v></c:pt>').join('');
+ const series = chart.series || [{value:chart.value,values:chart.values,color:'08765A'}];
+ const seriesXml = series.map(({name,value,values,color},index)=>
+  '<c:ser><c:idx val="'+index+'"/><c:order val="'+index+'"/>'+
+  (name?'<c:tx><c:v>'+encXml(name)+'</c:v></c:tx>':'')+
+  '<c:spPr><a:solidFill><a:srgbClr val="'+color+'"/></a:solidFill></c:spPr>'+
+  '<c:cat><c:strRef><c:f>'+range(chart.category)+'</c:f><c:strCache><c:ptCount val="'+chart.labels.length+'"/>'+points(chart.labels,false)+'</c:strCache></c:strRef></c:cat>'+
+  '<c:val><c:numRef><c:f>'+range(value)+'</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val="'+values.length+'"/>'+points(values,true)+'</c:numCache></c:numRef></c:val></c:ser>'
+ ).join('');
  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
   '<c:chartSpace xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">'+
   '<c:chart><c:title><c:tx><c:rich><a:bodyPr/><a:lstStyle/><a:p><a:r><a:t>'+encXml(chart.label)+'</a:t></a:r></a:p></c:rich></c:tx></c:title>'+
-  '<c:plotArea><c:layout/><c:barChart><c:barDir val="'+direction+'"/><c:grouping val="clustered"/><c:ser><c:idx val="0"/><c:order val="0"/>'+
-  '<c:spPr><a:solidFill><a:srgbClr val="08765A"/></a:solidFill></c:spPr>'+
-  '<c:cat><c:strRef><c:f>'+range(chart.category)+'</c:f><c:strCache><c:ptCount val="'+chart.labels.length+'"/>'+points(chart.labels,false)+'</c:strCache></c:strRef></c:cat>'+
-  '<c:val><c:numRef><c:f>'+range(chart.value)+'</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val="'+chart.values.length+'"/>'+points(chart.values,true)+'</c:numCache></c:numRef></c:val>'+
-  '</c:ser><c:gapWidth val="65"/><c:axId val="101"/><c:axId val="102"/></c:barChart>'+
+  '<c:plotArea><c:layout/><c:barChart><c:barDir val="'+direction+'"/><c:grouping val="'+(chart.stacked?'stacked':'clustered')+'"/>'+
+  seriesXml+'<c:gapWidth val="65"/>'+(chart.stacked?'<c:overlap val="100"/>':'')+
+  '<c:axId val="101"/><c:axId val="102"/></c:barChart>'+
   '<c:catAx><c:axId val="101"/><c:scaling><c:orientation val="'+(chart.horizontal?'maxMin':'minMax')+'"/></c:scaling><c:axPos val="'+axisPositions[0]+'"/><c:tickLblPos val="low"/><c:crossAx val="102"/><c:crosses val="autoZero"/><c:auto val="1"/><c:lblAlgn val="ctr"/><c:lblOffset val="100"/></c:catAx>'+
   '<c:valAx><c:axId val="102"/><c:scaling><c:orientation val="minMax"/></c:scaling><c:axPos val="'+axisPositions[1]+'"/><c:majorGridlines/><c:crossAx val="101"/><c:crosses val="autoZero"/><c:crossBetween val="between"/></c:valAx>'+
-  '</c:plotArea><c:plotVisOnly val="1"/><c:dispBlanksAs val="gap"/></c:chart></c:chartSpace>';
+  '</c:plotArea>'+(chart.series?'<c:legend><c:legendPos val="b"/><c:layout/></c:legend>':'')+'<c:plotVisOnly val="1"/><c:dispBlanksAs val="gap"/></c:chart></c:chartSpace>';
 }

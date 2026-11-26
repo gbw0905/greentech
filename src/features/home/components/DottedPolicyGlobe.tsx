@@ -114,6 +114,8 @@ export function DottedPolicyGlobe() {
     let introTimer: ReturnType<typeof setTimeout> | undefined;
     let inView = true;
     let frame = 0;
+    let scrolling = false;
+    let scrollTimer: ReturnType<typeof setTimeout> | undefined;
     let previous = 0;
     let width = 0;
     let height = 0;
@@ -134,11 +136,12 @@ export function DottedPolicyGlobe() {
       ctx.arc(x, y, size, 0, Math.PI * 2);
     };
     function requestRender() {
-      if (!disposed && inView && !document.hidden && !frame) frame = requestAnimationFrame(draw);
+      if (!disposed && inView && !scrolling && !document.hidden && !frame)
+        frame = requestAnimationFrame(draw);
     }
     const draw = (now: number) => {
       frame = 0;
-      if (!inView || document.hidden || !width || !height) return;
+      if (!inView || scrolling || document.hidden || !width || !height) return;
       // Limit drawing to 30 fps. Rotation uses elapsed time, so it stays smooth.
       if (active() && previous && now - previous < 30) {
         requestRender();
@@ -383,6 +386,18 @@ export function DottedPolicyGlobe() {
       );
       requestRender();
     };
+    const onScroll = () => {
+      scrolling = true;
+      cancelAnimationFrame(frame);
+      frame = 0;
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => {
+        scrolling = false;
+        previous = 0;
+        requestRender();
+      }, 120);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
     const visibility = () => {
       previous = 0;
       if (document.hidden) {
@@ -422,6 +437,8 @@ export function DottedPolicyGlobe() {
     return () => {
       disposed = true;
       clearTimeout(introTimer);
+      clearTimeout(scrollTimer);
+      window.removeEventListener("scroll", onScroll);
       cancelAnimationFrame(frame);
       observer.disconnect();
       intersection.disconnect();
