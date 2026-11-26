@@ -412,6 +412,98 @@ export type Database = {
         }
         Relationships: []
       }
+      civanta_audit_documents: {
+        Row: {
+          characters: number
+          created_at: string
+          extracted_text: string
+          file_name: string
+          file_path: string | null
+          file_size: number
+          file_type: string
+          id: string
+          uploaded_by: string | null
+          uploaded_email: string
+        }
+        Insert: {
+          characters: number
+          created_at?: string
+          extracted_text: string
+          file_name: string
+          file_path?: string | null
+          file_size: number
+          file_type: string
+          id?: string
+          uploaded_by?: string | null
+          uploaded_email: string
+        }
+        Update: {
+          characters?: number
+          created_at?: string
+          extracted_text?: string
+          file_name?: string
+          file_path?: string | null
+          file_size?: number
+          file_type?: string
+          id?: string
+          uploaded_by?: string | null
+          uploaded_email?: string
+        }
+        Relationships: []
+      }
+      civanta_audit_reports: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          created_email: string
+          document_id: string
+          engine_version: string
+          findings: Json
+          id: string
+          matches: Json
+          model: string
+          summary: string
+          token_usage: Json
+          tests: Json
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          created_email: string
+          document_id: string
+          engine_version: string
+          findings?: Json
+          id?: string
+          matches?: Json
+          model: string
+          summary?: string
+          token_usage?: Json
+          tests?: Json
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          created_email?: string
+          document_id?: string
+          engine_version?: string
+          findings?: Json
+          id?: string
+          matches?: Json
+          model?: string
+          summary?: string
+          token_usage?: Json
+          tests?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "civanta_audit_reports_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "civanta_audit_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       civanta_calculations: {
         Row: {
           ci: number
