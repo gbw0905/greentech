@@ -25,7 +25,11 @@ export function createCookieClient(request: Request) {
       setAll(cookies) {
         for (const { name, value, options } of cookies) {
           responseCookies.push(
-            serializeCookieHeader(name, value, { ...COOKIE_OPTIONS, ...options }),
+            serializeCookieHeader(name, value, {
+              ...options,
+              ...COOKIE_OPTIONS,
+              maxAge: options.maxAge === 0 ? 0 : COOKIE_OPTIONS.maxAge,
+            }),
           );
         }
       },

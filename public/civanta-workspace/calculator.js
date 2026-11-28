@@ -275,7 +275,6 @@ function renderGFields() {
  const path = CATALOG.find(item => item.id === sel.id);
  const basis = productionBasis(path);
  const legacy = generic._mode === 'legacy';
- $('inventoryMode').value = generic._mode || '';
  const fields = new Map([...gfields, ...gadvance, ...inventoryDetails, energyField].map(field => [field[0],field]));
  const field = key => {
   const [,label,help] = fields.get(key);
@@ -285,7 +284,7 @@ function renderGFields() {
  $('productionFields').innerHTML = field('volume') + (usesMeasuredLhv(path) ? field('lhv') : '');
  $('inventoryStages').innerHTML =
   section('Upstream & feedstock transport', [legacy ? 'fixed' : 'upstream','km','kg','truckfactor'],
-   legacy ? 'Combined net contribution from the original inventory. Switch to detailed inputs to allocate gross stages.'
+   legacy ? 'Combined net contribution from this plant’s saved inventory.'
     : 'Enter upstream supply emissions separately from the transport, energy and downstream stages below.') +
   section('Process energy', ['ng','gasfactor','kwh','grid'], 'Enter the applicable emission factors when the energy source is used.') +
   (legacy ? '' : section('Chemicals & fugitives', ['chemicals'], 'Optional · enter documented process emissions.')) +
@@ -304,11 +303,6 @@ function renderGFields() {
  syncInventoryRequired(path);
 }
 
-$('inventoryMode').addEventListener('change', event => {
- generic._mode = event.target.value;
- markDirty();
- renderGFields();
-});
 $('genericFields').addEventListener('input', event => {
  const control = event.target;
  const key = control.dataset.key;
@@ -446,6 +440,25 @@ function inputError(message, field) {
 // Saved with every calculation in the member's history. Change it whenever
 // computeGeneric or computeDairy would give a different result for the same inputs.
 const CIVANTA_ENGINE_VERSION = 'civanta-frontend-2026-11';
+
+if (typeof window !== 'undefined' && new URLSearchParams(window.location?.search).get('audit') === '1') {
+ window.civantaEngineAudit = {
+  version: CIVANTA_ENGINE_VERSION,
+  run(test, allocationState, levers) {
+   sel = {fuel: '', feed: '', tech: '', id: test.pathwayId};
+   let baseline;
+   if (test.kind === 'dairy') {
+    dairy = {...test.inputs, digester: test.digester};
+    baseline = computeDairy();
+   } else {
+    generic = {...test.inputs, _mode: 'detailed'};
+    allocation = allocationState;
+    baseline = computeGeneric();
+   }
+   return Object.values(levers).some(value => value > 0) ? scenarioFor(baseline, levers).ci : baseline.ci;
+  },
+ };
+}
 let calculationError;
 $('runButton').onclick = () => {
  calculationError = null;

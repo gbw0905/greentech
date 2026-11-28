@@ -1,3 +1,4 @@
+import { readJson, RequestBodyError } from "@/infrastructure/http/server/request-body.server";
 import "@/infrastructure/telemetry/error-capture";
 
 import type { ExplainSelectionRequest, SelectionExplanation } from "@/features/documents/contracts";
@@ -109,8 +110,6 @@ ${request.selection}`;
   await captureGeminiGeneration({
     spanName: "document_selection_explanation",
     model,
-    input: prompt,
-    output: raw,
     response: responsePayload,
     startedAt,
     distinctId,
@@ -155,9 +154,11 @@ export async function handleExplainSelection(request: Request): Promise<Response
     }
     const { assertAiQuota } = await import("@/infrastructure/ai/quota.server");
     assertAiQuota(`document-explain:${userId}`, 10);
-    const result = await explainSelection(await request.json(), userId);
+    const result = await explainSelection(await readJson(request, 65_536), userId);
     return Response.json(result);
   } catch (error) {
+    if (error instanceof RequestBodyError)
+      return Response.json({ error: error.message }, { status: error.status });
     const message = error instanceof Error ? error.message : "Explanation failed.";
     const status = message.startsWith("Too many")
       ? 429
@@ -165,6 +166,13 @@ export async function handleExplainSelection(request: Request): Promise<Response
         ? 502
         : 400;
     console.error("document selection explanation failed", error);
-    return Response.json({ error: message }, { status });
+    const clientMessage =
+      status === 429 ||
+      /^(Enter |Use no more|Keep each|Unsupported file|The selected file|The file is larger|Select some text)/.test(
+        message,
+      )
+        ? message
+        : "Could not process the document. Please try again.";
+    return Response.json({ error: clientMessage }, { status });
   }
 }

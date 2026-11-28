@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-interface AuthUser {
+export interface AuthUser {
   id: string;
   email?: string;
   avatar_url?: string | null;

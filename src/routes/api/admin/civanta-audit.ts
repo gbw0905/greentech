@@ -1,3 +1,4 @@
+import { readForm, readJson } from "@/infrastructure/http/server/request-body.server";
 import { createFileRoute } from "@tanstack/react-router";
 
 const headers = { "Cache-Control": "private, no-store", Vary: "Cookie" };
@@ -32,7 +33,7 @@ export const Route = createFileRoute("/api/admin/civanta-audit")({
           const user = await admin(request);
           if (!user) return notFound();
           if (request.headers.get("content-type")?.includes("multipart/form-data")) {
-            const file = (await request.formData()).get("file");
+            const file = (await readForm(request, 15 * 1024 * 1024 + 64 * 1024)).get("file");
             if (!(file instanceof File))
               return Response.json({ error: "Choose a file." }, { status: 400, headers });
             return Response.json(await audit.uploadDocument(user, file), { status: 201, headers });
@@ -41,7 +42,7 @@ export const Route = createFileRoute("/api/admin/civanta-audit")({
           assertAiQuota(`civanta-audit:${user.userId}`, 3);
           const report = await audit.runCheck(
             user,
-            await request.json(),
+            await readJson(request, 32_768),
             new URL(request.url).origin,
           );
           return Response.json(report, { status: 201, headers });

@@ -156,7 +156,7 @@ function updateAllocationPreview() {
  $('allocationEnergy').textContent = fmt(energy,0);
  const out = $('allocationPreview');
  if (legacy) {
-  out.textContent = 'Switch to detailed inputs to document gross emissions before applying allocation.';
+  out.textContent = 'Co-product allocation is unavailable for a legacy combined inventory.';
   return;
  }
  if (method === 'none') { out.textContent = 'No allocation applied.'; return; }

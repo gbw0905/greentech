@@ -1,13 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
+import { ownedDocumentPath } from "@/features/documents/server/document-storage.server";
 
 export const Route = createFileRoute("/api/document-history")({
   server: {
     handlers: {
       GET: async ({ request }) => {
         try {
-          const { userIdFromRequest } = await import(
-            "@/features/auth/server/user-from-request.server"
-          );
+          const { userIdFromRequest } =
+            await import("@/features/auth/server/user-from-request.server");
           const userId = await userIdFromRequest(request);
           if (!userId) {
             return Response.json({ error: "Sign in to view history." }, { status: 401 });
@@ -15,7 +16,7 @@ export const Route = createFileRoute("/api/document-history")({
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const { data, error } = await supabaseAdmin
             .from("document_analyses")
-            .select("id, file_name, file_type, keywords, created_at, file_path")
+            .select("id, file_name, file_type, keywords, created_at")
             .eq("user_id", userId)
             .order("created_at", { ascending: false })
             .limit(50);
@@ -28,17 +29,16 @@ export const Route = createFileRoute("/api/document-history")({
       },
       DELETE: async ({ request }) => {
         try {
-          const { userIdFromRequest } = await import(
-            "@/features/auth/server/user-from-request.server"
-          );
+          const { userIdFromRequest } =
+            await import("@/features/auth/server/user-from-request.server");
           const userId = await userIdFromRequest(request);
           if (!userId) {
             return Response.json({ error: "Sign in to manage history." }, { status: 401 });
           }
           const url = new URL(request.url);
           const id = url.searchParams.get("id");
-          if (!id) {
-            return Response.json({ error: "Missing analysis id." }, { status: 400 });
+          if (!id || !z.uuid().safeParse(id).success) {
+            return Response.json({ error: "Invalid analysis id." }, { status: 400 });
           }
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           // Fetch the file_path before deleting so we can remove the stored file
@@ -55,8 +55,10 @@ export const Route = createFileRoute("/api/document-history")({
             .eq("user_id", userId);
           if (error) throw error;
           // Clean up the stored file (best-effort)
-          if (row?.file_path) {
-            await supabaseAdmin.storage.from("doc").remove([row.file_path]).catch(() => {});
+          const path = ownedDocumentPath(row?.file_path, userId, id);
+          if (path) {
+            const { error: storageError } = await supabaseAdmin.storage.from("doc").remove([path]);
+            if (storageError) console.error("document storage cleanup failed", storageError);
           }
           return Response.json({ ok: true });
         } catch (error) {

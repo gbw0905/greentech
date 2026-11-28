@@ -1,3 +1,6 @@
+import { clientIp, takeRequestSlot } from "@/infrastructure/http/server/request-limit.server";
+import { readCredentials } from "@/features/auth/server/credentials.server";
+import { RequestBodyError } from "@/infrastructure/http/server/request-body.server";
 import { createFileRoute } from "@tanstack/react-router";
 import { createCookieClient } from "@/integrations/supabase/cookie-client.server";
 import { getPostHogClient } from "@/infrastructure/telemetry/posthog.server";
@@ -6,19 +9,25 @@ export const Route = createFileRoute("/api/auth/sign-in")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const { email, password } = (await request.json()) as {
-          email?: string;
-          password?: string;
-        };
-        if (!email || !password) {
-          return Response.json({ error: "Email and password are required" }, { status: 400 });
-        }
+        if (!takeRequestSlot(`auth:sign-in:${clientIp(request)}`, 20))
+          return Response.json(
+            { error: "Too many attempts. Try again later." },
+            { status: 429, headers: { "Retry-After": "60" } },
+          );
+        const credentials = await readCredentials(request).catch(
+          (error: RequestBodyError) => error,
+        );
+        if (credentials instanceof RequestBodyError)
+          return Response.json({ error: credentials.message }, { status: credentials.status });
+        const { email, password } = credentials;
 
         const { client, applyToResponse } = createCookieClient(request);
         const { data, error } = await client.auth.signInWithPassword({ email, password });
 
         if (error) {
-          return Response.json({ error: error.message }, { status: 401 });
+          if (error.status === 429)
+            return Response.json({ error: "Too many attempts. Try again later." }, { status: 429 });
+          return Response.json({ error: "Invalid email or password." }, { status: 401 });
         }
 
         const posthog = getPostHogClient();

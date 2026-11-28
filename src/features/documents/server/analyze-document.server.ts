@@ -336,8 +336,6 @@ ${evidenceText}`;
   await captureGeminiGeneration({
     spanName: "document_analysis",
     model,
-    input: prompt,
-    output: raw,
     response: responsePayload,
     startedAt,
     distinctId,

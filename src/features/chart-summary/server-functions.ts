@@ -35,6 +35,8 @@ export const emailChartSummaryFn = createServerFn({ method: "POST" })
     const { sourcesFor, REFERENCE_NOTE } = await import("@/shared/data/data-sources");
     const { sendTemplateEmail } = await import("@/infrastructure/email/send-email");
 
+    const { assertAiQuota } = await import("@/infrastructure/ai/quota.server");
+    assertAiQuota(`summary:${context.userId}`);
     const summary = await generateChartSummary(data.payload, context.userId);
     const result = await sendTemplateEmail("chart-summary", data.email, {
       templateData: {

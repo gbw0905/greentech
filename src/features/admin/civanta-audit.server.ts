@@ -1,3 +1,4 @@
+import { RequestBodyError } from "@/infrastructure/http/server/request-body.server";
 import { z } from "zod";
 import {
   extractDocument,
@@ -27,14 +28,19 @@ export class AuditHttpError extends Error {
 }
 
 export function auditErrorResponse(error: unknown, fallback: string) {
-  if (error instanceof AuditHttpError)
-    return Response.json({ error: error.message }, { status: error.status });
+  if (error instanceof AuditHttpError || error instanceof RequestBodyError) {
+    if (error.status >= 500) console.error(fallback, error);
+    return Response.json(
+      { error: error.status >= 500 ? fallback : error.message },
+      { status: error.status },
+    );
+  }
   if (error instanceof z.ZodError)
     return Response.json({ error: "Invalid request." }, { status: 400 });
   const message = error instanceof Error ? error.message : "";
   if (message.startsWith("Too many")) return Response.json({ error: message }, { status: 429 });
   console.error(fallback, error);
-  return Response.json({ error: message || fallback }, { status: 500 });
+  return Response.json({ error: fallback }, { status: 500 });
 }
 
 export async function listAudit() {
@@ -58,8 +64,8 @@ export async function listAudit() {
 }
 
 export async function uploadDocument(admin: Admin, file: File) {
-  const extracted = await extractDocument(file).catch((error: unknown) => {
-    throw new AuditHttpError(400, error instanceof Error ? error.message : "Unreadable file.");
+  const extracted = await extractDocument(file).catch(() => {
+    throw new AuditHttpError(400, "Could not read the document. Check its file type and size.");
   });
   const text = extracted.sections
     .map((section) => `[${section.source}]\n${section.text}`)
@@ -445,8 +451,6 @@ ${engine.source}`;
   await captureGeminiGeneration({
     spanName: "civanta_engine_audit",
     model,
-    input: prompt,
-    output: raw,
     response: payload,
     startedAt,
     distinctId: admin.userId,

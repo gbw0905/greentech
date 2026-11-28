@@ -62,8 +62,6 @@ export async function getOrCreateBrief(update: BriefSource): Promise<string> {
   await captureGeminiGeneration({
     spanName: "policy_brief",
     model: MODEL,
-    input,
-    output: text,
     response: json,
     startedAt,
   });

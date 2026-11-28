@@ -14,11 +14,9 @@ type GeminiUsagePayload = {
 type CaptureGeminiGenerationInput = {
   spanName: string;
   model: string;
-  input: string;
-  output: string;
   response: unknown;
   startedAt: number;
-  distinctId?: string;
+  distinctId?: string | undefined;
   sessionId?: string | null;
   maxTokens?: number;
   temperature?: number;
@@ -28,8 +26,6 @@ type CaptureGeminiGenerationInput = {
 export async function captureGeminiGeneration({
   spanName,
   model,
-  input,
-  output,
   response,
   startedAt,
   distinctId,
@@ -52,9 +48,7 @@ export async function captureGeminiGeneration({
         $ai_span_name: spanName,
         $ai_model: model,
         $ai_provider: "gemini",
-        $ai_input: [{ role: "user", content: input }],
         $ai_input_tokens: usage?.promptTokenCount,
-        $ai_output_choices: [{ role: "assistant", content: output }],
         $ai_output_tokens: usage?.candidatesTokenCount,
         $ai_latency: (Date.now() - startedAt) / 1000,
         $ai_max_tokens: maxTokens,

@@ -8,16 +8,12 @@ async function run({ request }: { request: Request }) {
   }
 
   try {
-    const { seedCountryProfiles } = await import(
-      "@/features/policy/server/seed-profiles.server"
-    );
+    const { seedCountryProfiles } = await import("@/features/policy/server/seed-profiles.server");
     const result = await seedCountryProfiles();
     return Response.json({ ok: true, ...result });
-  } catch (e) {
-    return Response.json(
-      { ok: false, error: e instanceof Error ? e.message : String(e) },
-      { status: 500 },
-    );
+  } catch (error) {
+    console.error("country seed failed", error);
+    return Response.json({ ok: false, error: "Could not seed country data." }, { status: 500 });
   }
 }
 

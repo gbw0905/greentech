@@ -6,7 +6,7 @@ import { SITE_URL } from "@/shared/data/data-sources";
 import { GOVERNMENT_SITES, MANDATES, mandatesForCountry } from "@/features/countries/mandates";
 import { SUPPLY_SEO } from "@/features/supply/seo";
 
-export const ASSISTANT_MODEL = "openai/gpt-6-astra";
+export const ASSISTANT_MODEL = "gemini-3.8-flash";
 
 export const SYSTEM_PROMPT = [
   "You are Watch Assistant, a senior bioenergy policy and market analyst working for Global Bioenergy Watch (globalbioenergywatch.org).",

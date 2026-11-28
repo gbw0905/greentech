@@ -4,8 +4,8 @@ let posthogClient: PostHog | null = null;
 
 export function getPostHogClient() {
   const token =
-    process.env.VITE_PUBLIC_POSTHOG_PROJECT_TOKEN ??
-    import.meta.env.VITE_PUBLIC_POSTHOG_PROJECT_TOKEN;
+    process.env["VITE_PUBLIC_POSTHOG_PROJECT_TOKEN"] ??
+    import.meta.env["VITE_PUBLIC_POSTHOG_PROJECT_TOKEN"];
 
   if (!token) {
     if (import.meta.env.DEV) {
@@ -18,7 +18,7 @@ export function getPostHogClient() {
 
   if (!posthogClient) {
     posthogClient = new PostHog(token, {
-      host: process.env.VITE_PUBLIC_POSTHOG_HOST ?? import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
+      host: process.env["VITE_PUBLIC_POSTHOG_HOST"] ?? import.meta.env["VITE_PUBLIC_POSTHOG_HOST"],
       enableExceptionAutocapture: true,
       flushAt: 1,
       flushInterval: 0,

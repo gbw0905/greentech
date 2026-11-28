@@ -45,8 +45,6 @@ async function askGemini(prompt: string): Promise<unknown> {
   await captureGeminiGeneration({
     spanName: "country_profile_enrichment",
     model: MODEL,
-    input: prompt,
-    output: raw,
     response: json,
     startedAt,
     maxTokens: 8192,

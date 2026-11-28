@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { countryBySlug } from "@/features/policy/taxonomy";
 
@@ -12,30 +13,40 @@ export const subscribeToAlerts = createServerFn({ method: "POST" })
   .validator((data: unknown) => subscribeSchema.parse(data))
   .handler(async ({ data }) => {
     const email = data.email.toLowerCase();
+    const { clientIp, takeRequestSlot } =
+      await import("@/infrastructure/http/server/request-limit.server");
+    const address = clientIp(getRequest());
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: row, error } = await supabaseAdmin
+    if (!takeRequestSlot(`alert-signup:${address}`, 8))
+      throw new Error("Too many requests. Please try again in a minute.");
+
+    const columns = "id, confirm_token, confirmed_at, fuels, countries";
+    const created = await supabaseAdmin
       .from("alert_subscribers")
       .upsert(
         { email, fuels: data.fuels, countries: data.countries, cadence: "daily" },
-        { onConflict: "email" },
+        { onConflict: "email", ignoreDuplicates: true },
       )
-      .select("id, confirm_token, confirmed_at")
-      .single();
-
-    if (error) throw new Error(error.message);
-
-    if (row.confirmed_at) {
-      return { status: "already_confirmed" as const };
+      .select(columns)
+      .maybeSingle();
+    const { data: row, error } =
+      created.error || created.data
+        ? created
+        : await supabaseAdmin.from("alert_subscribers").select(columns).eq("email", email).single();
+    if (error || !row) {
+      console.error("alert subscription lookup failed", error);
+      throw new Error("Could not process the subscription.");
     }
+    if (row.confirmed_at) return { status: "confirmation_sent" as const };
 
     const { sendTemplateEmail } = await import("@/infrastructure/email/send-email");
     const confirmUrl = `https://www.globalbioenergywatch.org/alerts/confirm?token=${row.confirm_token}`;
     const result = await sendTemplateEmail("alert-confirm", email, {
       templateData: {
         confirmUrl,
-        fuels: data.fuels,
-        countries: data.countries.map((s) => countryBySlug(s)?.name ?? s),
+        fuels: row.fuels,
+        countries: row.countries.map((s) => countryBySlug(s)?.name ?? s),
       },
       idempotencyKey: `alert-confirm-${row.id}-${row.confirm_token.slice(0, 8)}`,
     });
@@ -44,19 +55,24 @@ export const subscribeToAlerts = createServerFn({ method: "POST" })
     return { status: "confirmation_sent" as const };
   });
 
-export const confirmAlertSubscription = createServerFn({ method: "GET" })
-  .validator((data: unknown) => z.object({ token: z.string().min(10).max(120) }).parse(data))
+export const confirmAlertSubscription = createServerFn({ method: "POST" })
+  .validator((data: unknown) =>
+    z.object({ token: z.string().regex(/^[a-f0-9]{48}$/i) }).parse(data),
+  )
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: rows, error } = await supabaseAdmin
       .from("alert_subscribers")
       .update({ confirmed_at: new Date().toISOString() })
       .eq("confirm_token", data.token)
-      .select("email");
+      .select("id");
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      console.error("alert subscription update failed", error);
+      throw new Error("Could not update the subscription.");
+    }
     if (!rows || rows.length === 0) return { ok: false as const };
-    return { ok: true as const, email: rows[0]!.email };
+    return { ok: true as const };
   });
 
 const unsubscribeSchema = z.object({
@@ -86,7 +102,10 @@ export const unsubscribeFromAlerts = createServerFn({ method: "POST" })
       .select("id")
       .maybeSingle();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      console.error("alert subscription update failed", error);
+      throw new Error("Could not update the subscription.");
+    }
     return { ok: Boolean(row) };
   });
 
@@ -100,15 +119,25 @@ export const requestPolicyBrief = createServerFn({ method: "POST" })
   .validator((data: unknown) => briefSchema.parse(data))
   .handler(async ({ data }) => {
     const email = data.email.toLowerCase();
+    const { clientIp, takeRequestSlot } =
+      await import("@/infrastructure/http/server/request-limit.server");
+    const address = clientIp(getRequest());
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Rate limit: max 10 briefs per address per hour.
+    if (!takeRequestSlot(`policy-brief:${address}`, 6) || !takeRequestSlot("policy-brief:all", 40))
+      return { status: "rate_limited" as const };
+
+    // Rate limit: max 10 briefs per recipient per hour.
     const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-    const { count } = await supabaseAdmin
+    const { count, error: countError } = await supabaseAdmin
       .from("brief_sends")
       .select("id", { count: "exact", head: true })
       .eq("email", email)
       .gte("sent_at", hourAgo);
+    if (countError) {
+      console.error("policy brief quota lookup failed", countError);
+      throw new Error("Could not process the brief request.");
+    }
     if ((count ?? 0) >= 10) return { status: "rate_limited" as const };
 
     const { data: update, error: updErr } = await supabaseAdmin
@@ -118,7 +147,10 @@ export const requestPolicyBrief = createServerFn({ method: "POST" })
       )
       .eq("id", data.updateId)
       .maybeSingle();
-    if (updErr) throw new Error(updErr.message);
+    if (updErr) {
+      console.error("policy brief lookup failed", updErr);
+      throw new Error("Could not process the brief request.");
+    }
     if (!update) return { status: "not_found" as const };
 
     const { getOrCreateBrief } = await import("@/features/alerts/server/ai-brief.server");

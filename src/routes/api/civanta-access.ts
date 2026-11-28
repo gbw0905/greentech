@@ -12,7 +12,11 @@ export const Route = createFileRoute("/api/civanta-access")({
           const { data, error } = await client.auth.getUser();
           const access =
             !error && data.user
-              ? await premiumStatusForEmail(client, data.user.email, request)
+              ? await premiumStatusForEmail(
+                  client,
+                  data.user.email_confirmed_at ? data.user.email : undefined,
+                  request,
+                )
               : { premium: false };
           return applyToResponse(
             Response.json(

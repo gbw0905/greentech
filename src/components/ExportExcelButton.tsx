@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Download, Lock } from "lucide-react";
-import { usePostHog } from "@posthog/react";
+import { capture } from "@/features/analytics/client";
 import { downloadExcelWorkbook, type WorkbookExport } from "@/shared/export/excel-workbook";
 import { SignInPrompt } from "@/features/auth/components/SignInPrompt";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
@@ -16,7 +16,6 @@ export function ExportExcelButton({
   label?: string;
 }) {
   const { signedIn, loading } = useAuthSession();
-  const posthog = usePostHog();
   const [askSignIn, setAskSignIn] = useState(false);
   const [busy, setBusy] = useState(false);
 
@@ -32,7 +31,7 @@ export function ExportExcelButton({
           setBusy(true);
           try {
             await downloadExcelWorkbook(build());
-            posthog.capture("excel_export_downloaded");
+            capture("excel_export_downloaded");
           } finally {
             setBusy(false);
           }
