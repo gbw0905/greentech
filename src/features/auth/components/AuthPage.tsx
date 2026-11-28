@@ -191,7 +191,7 @@ export function AuthPage({
                   name="password"
                   type={showPassword ? "text" : "password"}
                   required
-                  minLength={8}
+                  minLength={mode === "signup" ? 8 : undefined}
                   autoComplete={mode === "signin" ? "current-password" : "new-password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

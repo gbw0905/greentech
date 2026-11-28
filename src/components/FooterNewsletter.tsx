@@ -19,12 +19,10 @@ export function FooterNewsletter() {
   const message = mutation.isError
     ? "Could not subscribe. Please try again."
     : status === "confirmation_sent"
-      ? "Check your inbox and confirm your subscription to start receiving the daily brief."
-      : status === "already_confirmed"
-        ? "You’re subscribed to the daily brief."
-        : status === "suppressed"
-          ? "This address cannot receive emails. Please try another address."
-          : null;
+      ? "If confirmation is needed, check your inbox for the link."
+      : status === "suppressed"
+        ? "This address cannot receive emails. Please try another address."
+        : null;
   return (
     <section className="footer-newsletter" id="brief" aria-labelledby="brief-title">
       <h2 id="brief-title">Get the daily brief</h2>

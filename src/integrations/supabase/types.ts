@@ -892,6 +892,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      replace_chat_transcript: {
+        Args: { p_thread_id: string; p_user_id: string; p_title: string; p_messages: Json }
+        Returns: undefined
+      }
       get_traffic_stats: { Args: never; Returns: Json }
       record_visit: {
         Args: {

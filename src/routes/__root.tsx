@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { type QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
   Link,
@@ -8,15 +8,34 @@ import {
   Scripts,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
+import { createIsomorphicFn } from "@tanstack/react-start";
+import { appendResponseHeader, getRequest } from "@tanstack/react-start/server";
 import { useEffect, useRef, type ReactNode } from "react";
-import { PostHogProvider, usePostHog } from "@posthog/react";
+import { getAnalytics } from "@/features/analytics/client";
 
 import appCss from "../styles.css?url";
 import { SiteLayout } from "@/components/SiteLayout";
-import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
+import { authSessionQueryKey, useAuthSession } from "@/features/auth/hooks/useAuthSession";
+import { sessionProfile } from "@/features/auth/server/session-profile.server";
+import { createCookieClient } from "@/integrations/supabase/cookie-client.server";
 
-const posthogToken = import.meta.env.VITE_PUBLIC_POSTHOG_PROJECT_TOKEN as string | undefined;
-const posthogHost = import.meta.env.VITE_PUBLIC_POSTHOG_HOST as string | undefined;
+const posthogToken = import.meta.env["VITE_PUBLIC_POSTHOG_PROJECT_TOKEN"] as string | undefined;
+
+const preloadAuthSession = createIsomorphicFn().server((queryClient: QueryClient) =>
+  queryClient.prefetchQuery({
+    queryKey: authSessionQueryKey,
+    retry: false,
+    queryFn: async () => {
+      const request = getRequest();
+      if (!request.headers.has("cookie")) return null;
+
+      const { client, getResponseCookies } = createCookieClient(request);
+      const { data, error } = await client.auth.getUser();
+      for (const cookie of getResponseCookies()) appendResponseHeader("set-cookie", cookie);
+      return error ? null : sessionProfile(data.user);
+    },
+  }),
+);
 
 function NotFoundComponent() {
   return (
@@ -43,11 +62,12 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
-  const posthog = usePostHog();
   useEffect(() => {
     console.error("Root error boundary caught:", error);
-    posthog.captureException(error);
-  }, [error, posthog]);
+    void getAnalytics()
+      ?.then((analytics) => analytics.captureException(error))
+      .catch(() => {});
+  }, [error]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -81,37 +101,29 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
 }
 
 function PostHogIdentity() {
-  const posthog = usePostHog();
   const { user } = useAuthSession();
   const identifiedUserId = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!user) {
-      if (identifiedUserId.current) {
-        posthog.reset();
-        identifiedUserId.current = null;
-      }
-      return;
-    }
-
-    if (identifiedUserId.current === user.id) return;
-
-    if (identifiedUserId.current) {
-      posthog.reset();
-    }
-
-    posthog.identify(user.id, {
-      ...(user.email ? { email: user.email } : {}),
-      ...(user.full_name ? { name: user.full_name } : {}),
-      ...(user.avatar_url ? { avatar_url: user.avatar_url } : {}),
-    });
-    identifiedUserId.current = user.id;
-  }, [posthog, user]);
+    const userId = user?.id ?? null;
+    const timeout = window.setTimeout(() => {
+      void getAnalytics()
+        ?.then((analytics) => {
+          if (userId === identifiedUserId.current) return;
+          if (identifiedUserId.current) analytics.reset();
+          if (userId) analytics.identify(userId);
+          identifiedUserId.current = userId;
+        })
+        .catch(() => {});
+    }, 1200);
+    return () => window.clearTimeout(timeout);
+  }, [user?.id]);
 
   return null;
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  loader: ({ context }) => preloadAuthSession(context.queryClient),
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -166,42 +178,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   const { queryClient } = Route.useRouteContext();
-  const app = (
-    <QueryClientProvider client={queryClient}>
-      {posthogToken ? <PostHogIdentity /> : null}
-      <SiteLayout>{children}</SiteLayout>
-    </QueryClientProvider>
-  );
-
-  if (!posthogToken && import.meta.env.DEV && typeof window !== "undefined") {
-    console.error(
-      "VITE_PUBLIC_POSTHOG_PROJECT_TOKEN variable required by PostHog is missing or un-configured, this causes events to be silently missed. This error stops appearing once VITE_PUBLIC_POSTHOG_PROJECT_TOKEN is configured",
-    );
-  }
-
   return (
     <html lang="en">
       <head>
         <HeadContent />
       </head>
       <body>
-        {posthogToken ? (
-          <PostHogProvider
-            apiKey={posthogToken}
-            options={{
-              api_host: posthogHost,
-              defaults: "2026-08-30",
-              capture_exceptions: true,
-              debug: import.meta.env.DEV,
-              tracing_headers:
-                typeof window !== "undefined" ? [window.location.hostname] : [],
-            }}
-          >
-            {app}
-          </PostHogProvider>
-        ) : (
-          app
-        )}
+        <QueryClientProvider client={queryClient}>
+          {posthogToken ? <PostHogIdentity /> : null}
+          <SiteLayout>{children}</SiteLayout>
+        </QueryClientProvider>
         <Scripts />
       </body>
     </html>

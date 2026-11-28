@@ -8,6 +8,11 @@ import {
   logSsrRequestFailed,
 } from "./infrastructure/telemetry/posthog-logs.server";
 import { renderErrorPage } from "@/shared/errors/error-page";
+import { randomBytes } from "node:crypto";
+import {
+  requestNonce,
+  secureResponse,
+} from "@/infrastructure/http/server/response-security.server";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -54,17 +59,22 @@ function isH3SwallowedErrorBody(body: string): boolean {
 
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
+    const nonce = randomBytes(18).toString("base64");
     try {
       const handler = await getServerEntry();
-      const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
+      const response = await requestNonce.run(nonce, () => handler.fetch(request, env, ctx));
+      return secureResponse(request, await normalizeCatastrophicSsrResponse(response), nonce);
     } catch (error) {
       console.error(error);
       logSsrRequestFailed();
-      return new Response(renderErrorPage(), {
-        status: 500,
-        headers: { "content-type": "text/html; charset=utf-8" },
-      });
+      return secureResponse(
+        request,
+        new Response(renderErrorPage(), {
+          status: 500,
+          headers: { "content-type": "text/html; charset=utf-8" },
+        }),
+        nonce,
+      );
     }
   },
 };

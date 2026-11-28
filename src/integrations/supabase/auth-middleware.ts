@@ -1,5 +1,5 @@
 import { createMiddleware } from "@tanstack/react-start";
-import { getRequest } from "@tanstack/react-start/server";
+import { appendResponseHeader, getRequest } from "@tanstack/react-start/server";
 import { createCookieClient } from "./cookie-client.server";
 
 export const requireSupabaseAuth = createMiddleware({ type: "function" }).server(
@@ -7,8 +7,9 @@ export const requireSupabaseAuth = createMiddleware({ type: "function" }).server
     const request = getRequest();
     if (!request) throw new Error("Unauthorized: No request available");
 
-    const { client } = createCookieClient(request);
+    const { client, getResponseCookies } = createCookieClient(request);
     const { data, error } = await client.auth.getUser();
+    for (const cookie of getResponseCookies()) appendResponseHeader("set-cookie", cookie);
 
     if (error || !data.user) {
       throw new Error("Unauthorized: Invalid or expired session");
@@ -18,7 +19,10 @@ export const requireSupabaseAuth = createMiddleware({ type: "function" }).server
       context: {
         supabase: client,
         userId: data.user.id,
-        claims: { sub: data.user.id, email: data.user.email },
+        claims: {
+          sub: data.user.id,
+          email: data.user.email_confirmed_at ? data.user.email : undefined,
+        },
       },
     });
   },

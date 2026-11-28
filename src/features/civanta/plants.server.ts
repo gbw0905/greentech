@@ -1,12 +1,13 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
+import { readJson, RequestBodyError } from "@/infrastructure/http/server/request-body.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { Json } from "@/integrations/supabase/types";
 
 // The workspace and profile call these through /api/civanta-* with the member's
 // cookie session. Every query is scoped to that member's user id.
 
-const MAX_BODY_CHARS = 400_000;
+const MAX_BODY_BYTES = 400_000;
 const PLANT_SUMMARY = "id,name,pathway_id,pathway_label,calculated,latest_ci,created_at,updated_at";
 const CALCULATION_SUMMARY =
   "id,plant_id,plant_name,pathway_id,pathway_label,ci,engine_version,created_at";
@@ -41,13 +42,11 @@ const calculationSchema = z.object({
 });
 
 export async function readJsonBody(request: Request): Promise<unknown> {
-  const text = await request.text();
-  if (text.length > MAX_BODY_CHARS)
-    throw new CivantaHttpError(413, "This plant is too large to save.");
   try {
-    return JSON.parse(text);
-  } catch {
-    throw new CivantaHttpError(400, "Invalid request body.");
+    return await readJson(request, MAX_BODY_BYTES);
+  } catch (error) {
+    if (error instanceof RequestBodyError) throw new CivantaHttpError(error.status, error.message);
+    throw error;
   }
 }
 

@@ -1,3 +1,4 @@
+import { readForm, RequestBodyError } from "@/infrastructure/http/server/request-body.server";
 import { assertAiQuota } from "@/infrastructure/ai/quota.server";
 
 export async function handleDocumentAnalysis(request: Request): Promise<Response> {
@@ -9,14 +10,14 @@ export async function handleDocumentAnalysis(request: Request): Promise<Response
     }
 
     assertAiQuota(`document:${userId}`, 4);
-    const form = await request.formData();
+    const form = await readForm(request, 15 * 1024 * 1024 + 64 * 1024);
     const file = form.get("file");
     const query = form.get("query");
 
     if (!(file instanceof File)) {
       return Response.json({ error: "Choose a document to analyze." }, { status: 400 });
     }
-    if (typeof query !== "string") {
+    if (typeof query !== "string" || query.length > 2000) {
       return Response.json({ error: "Enter keywords or a topic." }, { status: 400 });
     }
 
@@ -35,12 +36,12 @@ export async function handleDocumentAnalysis(request: Request): Promise<Response
       const { error: uploadError } = await supabaseAdmin.storage
         .from("doc")
         .upload(storagePath, fileBuffer, {
-          contentType: file.type || "application/octet-stream",
+          contentType: "application/octet-stream",
           upsert: false,
         });
       if (uploadError) console.error("failed to upload document file", uploadError);
 
-      await supabaseAdmin.from("document_analyses").insert({
+      const { error: insertError } = await supabaseAdmin.from("document_analyses").insert({
         id: analysisId,
         user_id: userId,
         file_name: result.fileName,
@@ -49,12 +50,18 @@ export async function handleDocumentAnalysis(request: Request): Promise<Response
         analysis: JSON.parse(JSON.stringify(result)),
         file_path: uploadError ? null : storagePath,
       });
+      if (insertError) {
+        if (!uploadError) await supabaseAdmin.storage.from("doc").remove([storagePath]);
+        throw insertError;
+      }
     } catch (saveError) {
       console.error("failed to save analysis history", saveError);
     }
 
     return Response.json(result);
   } catch (error) {
+    if (error instanceof RequestBodyError)
+      return Response.json({ error: error.message }, { status: error.status });
     const message = error instanceof Error ? error.message : "Document analysis failed.";
     const status = message.startsWith("Too many")
       ? 429
@@ -62,6 +69,13 @@ export async function handleDocumentAnalysis(request: Request): Promise<Response
         ? 502
         : 400;
     console.error("document analysis failed", error);
-    return Response.json({ error: message }, { status });
+    const clientMessage =
+      status === 429 ||
+      /^(Enter |Use no more|Keep each|Unsupported file|The selected file|The file is larger|Select some text)/.test(
+        message,
+      )
+        ? message
+        : "Could not process the document. Please try again.";
+    return Response.json({ error: clientMessage }, { status });
   }
 }

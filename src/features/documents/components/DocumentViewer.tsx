@@ -23,6 +23,9 @@ interface DocumentViewerProps {
   explainContext?: ExplainContext;
 }
 
+type PDFTask = { destroy(): Promise<void> };
+type PDFRenderTask = { promise: Promise<void>; cancel(): void };
+
 type PDFDoc = {
   numPages: number;
   getPage(num: number): Promise<PDFPage>;
@@ -37,7 +40,7 @@ type PDFPage = {
   render(opts: {
     canvasContext: CanvasRenderingContext2D;
     viewport: { width: number; height: number };
-  }): { promise: Promise<void> };
+  }): PDFRenderTask;
   getTextContent(): Promise<PDFTextContent>;
 };
 
@@ -96,14 +99,19 @@ function PdfViewer({
   // Load PDF document
   useEffect(() => {
     let cancelled = false;
+    let loadingTask: (PDFTask & { promise: Promise<unknown> }) | undefined;
     setLoading(true);
     setError("");
     setPdf(null);
+    setCurrentPage(1);
 
     (async () => {
       try {
-        const pdfjsLib = await import("pdfjs-dist");
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+        const [pdfjsLib, { default: workerUrl }] = await Promise.all([
+          import("pdfjs-dist"),
+          import("pdfjs-dist/build/pdf.worker.min.mjs?url"),
+        ]);
+        pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
 
         let data: ArrayBuffer | string;
         if (source instanceof File) {
@@ -112,9 +120,11 @@ function PdfViewer({
           data = source;
         }
 
-        const loadingTask = pdfjsLib.getDocument(
-          source instanceof File ? { data } : { url: data as string },
-        );
+        if (cancelled) return;
+        loadingTask = pdfjsLib.getDocument({
+          ...(typeof data === "string" ? { url: data } : { data }),
+          maxImageSize: 40_000_000,
+        });
         const doc = await loadingTask.promise;
         if (!cancelled) {
           setPdf(doc as unknown as PDFDoc);
@@ -129,6 +139,7 @@ function PdfViewer({
     })();
     return () => {
       cancelled = true;
+      void loadingTask?.destroy().catch(() => {});
     };
   }, [source]);
 
@@ -269,8 +280,9 @@ function PdfPageCanvas({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const textLayerRef = useRef<HTMLDivElement>(null);
+  const [nearViewport, setNearViewport] = useState(false);
+  const [pageSize, setPageSize] = useState({ width: 612, height: 792 });
   const [rendered, setRendered] = useState(false);
-  const renderIdRef = useRef(0);
 
   useEffect(() => {
     onMount(wrapperRef.current);
@@ -278,24 +290,44 @@ function PdfPageCanvas({
   }, [onMount]);
 
   useEffect(() => {
-    const id = ++renderIdRef.current;
-    let cancelled = false;
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setNearViewport(Boolean(entry?.isIntersecting)),
+      { root: wrapper.parentElement, rootMargin: "600px 0px" },
+    );
+    observer.observe(wrapper);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
     setRendered(false);
+    if (!nearViewport) return;
+    let cancelled = false;
+    let renderTask: PDFRenderTask | undefined;
+    let textTask: { cancel(): void } | undefined;
 
     (async () => {
       const page = await pdf.getPage(pageNumber);
-      if (cancelled || id !== renderIdRef.current) return;
+      if (cancelled) return;
       const viewport = page.getViewport({ scale });
+      const { width, height } = page.getViewport({ scale: 1 });
+      setPageSize({ width, height });
       const canvas = canvasRef.current;
       if (!canvas) return;
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
+      const resolution = Math.min(1, Math.sqrt(16_000_000 / (viewport.width * viewport.height)));
+      canvas.width = Math.max(1, Math.floor(viewport.width * resolution));
+      canvas.height = Math.max(1, Math.floor(viewport.height * resolution));
       canvas.style.width = `${viewport.width}px`;
       canvas.style.height = `${viewport.height}px`;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
-      await page.render({ canvasContext: ctx, viewport }).promise;
-      if (cancelled || id !== renderIdRef.current) return;
+      renderTask = page.render({
+        canvasContext: ctx,
+        viewport: page.getViewport({ scale: scale * resolution }),
+      });
+      await renderTask.promise;
+      if (cancelled) return;
       setRendered(true);
 
       // Invisible, selectable text over the canvas so passages can be
@@ -304,27 +336,32 @@ function PdfPageCanvas({
       if (!textLayer) return;
       const { TextLayer } = await import("pdfjs-dist");
       const textContent = await page.getTextContent();
-      if (cancelled || id !== renderIdRef.current) return;
+      if (cancelled) return;
       textLayer.replaceChildren();
-      await new TextLayer({
+      const layer = new TextLayer({
         textContentSource: textContent as never,
         container: textLayer,
         viewport: viewport as never,
-      }).render();
+      });
+      textTask = layer;
+      await layer.render();
     })().catch(() => {
       // A cancelled render or missing text layer only loses selection.
     });
 
     return () => {
       cancelled = true;
+      renderTask?.cancel();
+      textTask?.cancel();
     };
-  }, [pdf, pageNumber, scale]);
+  }, [pdf, pageNumber, scale, nearViewport]);
 
   // Text-based highlight overlay
   useEffect(() => {
-    if (!highlight || !rendered) return;
     const wrapper = wrapperRef.current;
     if (!wrapper) return;
+    wrapper.querySelectorAll(".doc-viewer-highlight").forEach((el) => el.remove());
+    if (!highlight || !rendered) return;
 
     let cancelled = false;
     (async () => {
@@ -333,9 +370,6 @@ function PdfPageCanvas({
       const viewport = page.getViewport({ scale });
       const textContent = await page.getTextContent();
       if (cancelled) return;
-
-      // Remove old highlights
-      wrapper.querySelectorAll(".doc-viewer-highlight").forEach((el) => el.remove());
 
       const excerptLower = highlight.toLowerCase().replace(/\s+/g, " ").trim();
       if (!excerptLower) return;
@@ -427,14 +461,21 @@ function PdfPageCanvas({
       data-explain-context={`Page ${pageNumber}`}
       style={
         {
+          width: pageSize.width * scale,
+          height: pageSize.height * scale,
+          flexShrink: 0,
           "--total-scale-factor": scale,
           "--scale-round-x": "1px",
           "--scale-round-y": "1px",
         } as CSSProperties
       }
     >
-      <canvas ref={canvasRef} />
-      <div ref={textLayerRef} className="textLayer" />
+      {nearViewport && (
+        <>
+          <canvas ref={canvasRef} />
+          <div ref={textLayerRef} className="textLayer" />
+        </>
+      )}
       <span className="doc-viewer-page-label" data-match-skip>
         Page {pageNumber}
       </span>
@@ -505,10 +546,20 @@ function DocxViewer({
     (async () => {
       try {
         const buffer = await readArrayBuffer(source);
-        const mammoth = await import("mammoth");
+        const [mammoth, { default: DOMPurify }] = await Promise.all([
+          import("mammoth"),
+          import("dompurify"),
+        ]);
         const result = await mammoth.convertToHtml({ arrayBuffer: buffer });
         if (!cancelled) {
-          setHtml(result.value);
+          setHtml(
+            DOMPurify.sanitize(result.value, {
+              USE_PROFILES: { html: true },
+              FORBID_TAGS: ["form", "input", "button", "style"],
+              FORBID_ATTR: ["style", "srcset"],
+              SANITIZE_NAMED_PROPS: true,
+            }),
+          );
           setLoading(false);
         }
       } catch (err) {

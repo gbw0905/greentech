@@ -21,15 +21,21 @@ function acceptedKeys(): string[] {
 }
 
 export function authorizeSupplyIngest(request: Request): Response | null {
-  const keys = acceptedKeys();
+  return authorizeJob(requestKey(request), acceptedKeys());
+}
+
+export function authorizeCron(request: Request): Response | null {
+  const secret = process.env["CRON_SECRET"];
+  const authorization = request.headers.get("authorization");
+  const provided = authorization?.match(/^Bearer (\S+)$/i)?.[1] ?? "";
+  return authorizeJob(provided, secret ? [secret] : []);
+}
+
+function authorizeJob(provided: string, keys: string[]): Response | null {
   if (keys.length === 0) {
-    return Response.json(
-      { ok: false, error: "SUPPLY_INGEST_ADMIN_KEY or CRON_SECRET is not configured." },
-      { status: 503 },
-    );
+    return Response.json({ ok: false, error: "Scheduled job unavailable." }, { status: 503 });
   }
 
-  const provided = requestKey(request);
   if (!provided || !keys.some((key) => constantTimeEquals(provided, key))) {
     return Response.json({ ok: false, error: "Unauthorized." }, { status: 401 });
   }

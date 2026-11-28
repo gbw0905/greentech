@@ -208,3 +208,15 @@ replacing these providers; it does not require reorganizing the feature code.
 - Feature-focused ESLint checks pass except for documented legacy warnings and
   explicit-`any` errors in existing email templates/shared chart code.
 - The repository currently has no automated test suite.
+
+## Security boundaries and deployment
+
+| Boundary | Entry points and assets | Controls |
+| --- | --- | --- |
+| Browser | Document previews, policy content, CIVanta workspace and audit iframe | React text rendering, DOCX HTML sanitization, nonce-based SSR CSP, same-origin workspace scripts, and locally bundled PDF worker |
+| HTTP | Auth and account writes, private responses, scheduled jobs and email links | Same-origin request checks on writes, secure HTTP-only session cookies, private responses with no storage, HTTPS/HSTS on Vercel, and bearer authentication for scheduled work |
+| Backend | Account records, original uploads, audit reports, and billed AI | Supabase Auth and RLS, server-side request limits, exact document ownership checks, verified email for admin and Pro access, and generic client errors |
+
+Set the same `CRON_SECRET` in Vercel and in Supabase Vault under `gbw_cron_secret` before rolling out the scheduled-job migration and application together. Manual calls to policy ingestion and email job routes use the cron bearer credential. Apply the document and chat migrations before deploying the application. The chat migration installs the service-role-only transcript writer.
+
+The application rate limits are per server instance. Supabase manages password hashing and the provider's auth rate limits. Verify email confirmation, MFA enrollment and enforcement for privileged accounts, and provider limits in the hosted project when releasing. The app does not collect payment card data.

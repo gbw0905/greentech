@@ -103,7 +103,10 @@ export const saveCiRunFn = createServerFn({ method: "POST" })
       .select("*")
       .single();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      console.error("Saved calculation request failed", error);
+      throw new Error("Saved calculation request failed. Please try again.");
+    }
     return toRun(row as unknown as Row);
   });
 
@@ -117,7 +120,10 @@ export const listCiRunsFn = createServerFn({ method: "GET" })
       .not("pathway_id", "like", "civanta/%")
       .order("created_at", { ascending: false })
       .limit(100);
-    if (error) throw new Error(error.message);
+    if (error) {
+      console.error("Saved calculation request failed", error);
+      throw new Error("Saved calculation request failed. Please try again.");
+    }
     return ((data ?? []) as unknown as Row[]).map(toRun);
   });
 
@@ -127,7 +133,10 @@ export const deleteCiRunFn = createServerFn({ method: "POST" })
   .validator((data: { id: string }) => data)
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.from("ci_runs").delete().eq("id", data.id);
-    if (error) throw new Error(error.message);
+    if (error) {
+      console.error("Saved calculation request failed", error);
+      throw new Error("Saved calculation request failed. Please try again.");
+    }
     return { ok: true };
   });
 
@@ -140,6 +149,9 @@ export const renameCiRunFn = createServerFn({ method: "POST" })
       .from("ci_runs")
       .update({ name: (data.name || "Untitled scenario").slice(0, 120) })
       .eq("id", data.id);
-    if (error) throw new Error(error.message);
+    if (error) {
+      console.error("Saved calculation request failed", error);
+      throw new Error("Saved calculation request failed. Please try again.");
+    }
     return { ok: true };
   });

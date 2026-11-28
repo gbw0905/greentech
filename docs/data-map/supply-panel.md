@@ -285,7 +285,7 @@ Chart: **"Global bio-methanol producers"** · file `BioMethanolPanel.tsx`
 - **The Terminals chart mixes two different kinds of number.** The EIA rows measure tank **storage size** (a one-time stock, March 2024, report discontinued). They are plotted on the same "Blending capacity (k m³/yr)" scale as the hand-written annual operator figures, and they include a "total" row that adds up the other four.
 - **The snapshot rows clutter the facts box.** On every panel, "Source-backed facts" lists rows like "U.S. Securities and Exchange Commission source snapshot — Approved source reachable — 1 — boolean". These are website-uptime checks, not supply facts.
 - **Some "source-backed" counts include snapshot rows.** On Biochar, "N source-backed directory rows" counts every Supabase row, including the 3 snapshot rows. On Bio-power and Pellets, the footnote switches to "Ember … rows are ingested" / "WPAC … listings are ingested" when **any** row exists, even if only snapshot rows are there.
-- **Two refresh functions have no secret check.** `refreshSupplyDatasetFn` and `refreshStaleSupplyDatasetFn` in `src/features/supply/server-functions.ts` start ingestion runs without the ingest secret that the `/api/public/*` routes require (`ingest-auth.server.ts`). Nothing on the site calls them, but they are still server functions in a module the pages load.
+- Supply writes run through the authenticated scheduled or manual ingestion endpoints. The page only calls the read-only dataset function.
 - **Some card counts on `/supply` are out of date:** Oil says "20 listed majors" but 47 are loaded; Hydrogen says 64 but 66 are listed (see `supply.md`).
 
 ---

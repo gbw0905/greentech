@@ -54,7 +54,10 @@ async function readFeed(): Promise<PolicyFeed> {
   // for data that may be older.
   const fetchedAt = collectedAt ?? "";
 
-  if (error) return { updates: [], fetchedAt, error: error.message };
+  if (error) {
+    console.error("policy feed lookup failed", error);
+    return { updates: [], fetchedAt, error: "Could not load policy updates." };
+  }
 
   return {
     updates: (data ?? []).map((r) => ({

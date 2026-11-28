@@ -616,7 +616,6 @@ body.embedded.plant-list-open { background: transparent; }
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
   align-items: start;
 }
-#productionFields { display: contents; }
 .inventory-section {
  border: 2px solid #a6bdca;
  border-radius: 12px;

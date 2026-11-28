@@ -7,7 +7,7 @@
   background-color: #0b2d34;
   background-image:
     linear-gradient(90deg, #082d31ec 0%, #082d31d9 45%, #0a3034ba 100%),
-    url("/civanta-landscape.jpg");
+    url("/civanta-workspace/assets/civanta-landscape.jpg");
   background-position:
     center,
     center 55%;
@@ -207,7 +207,8 @@
   .civanta-page {
     padding: 20px;
     background-image:
-      linear-gradient(90deg, #082d31f2 0%, #082d31dd 100%), url("/civanta-landscape.jpg");
+      linear-gradient(90deg, #082d31f2 0%, #082d31dd 100%),
+      url("/civanta-workspace/assets/civanta-landscape.jpg");
   }
   .civanta-intro {
     align-items: flex-start;

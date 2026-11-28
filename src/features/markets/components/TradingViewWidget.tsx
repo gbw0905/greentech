@@ -27,14 +27,14 @@ export function TradingViewWidget({
     // script that is still loading, or the embed throws on a null parent.
     if (!node || node.dataset["config"] === configJson) return;
     node.dataset["config"] = configJson;
-    node.innerHTML = "";
+    node.replaceChildren();
     // The embed script replaces itself with a 100%-height frame, so the host
     // element carries the fixed height.
     const script = document.createElement("script");
     script.src = `https://s3.tradingview.com/external-embedding/embed-widget-${widget}.js`;
     script.type = "text/javascript";
     script.async = true;
-    script.innerHTML = configJson;
+    script.textContent = configJson;
     node.appendChild(script);
   }, [widget, configJson]);
 

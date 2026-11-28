@@ -23,7 +23,10 @@ export const listThreadsFn = createServerFn({ method: "GET" })
       .select("id,title,updated_at")
       .order("updated_at", { ascending: false })
       .limit(50);
-    if (error) throw new Error(error.message);
+    if (error) {
+      console.error("Chat database request failed", error);
+      throw new Error("Chat database request failed. Please try again.");
+    }
     return (data ?? []).map((t) => ({ id: t.id, title: t.title, updatedAt: t.updated_at }));
   });
 
@@ -35,7 +38,10 @@ export const createThreadFn = createServerFn({ method: "POST" })
       .insert({ user_id: context.userId, title: "New conversation" })
       .select("id")
       .single();
-    if (error) throw new Error(error.message);
+    if (error) {
+      console.error("Chat database request failed", error);
+      throw new Error("Chat database request failed. Please try again.");
+    }
     return { id: data.id };
   });
 
@@ -44,7 +50,10 @@ export const deleteThreadFn = createServerFn({ method: "POST" })
   .validator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ context, data }) => {
     const { error } = await context.supabase.from("chat_threads").delete().eq("id", data.id);
-    if (error) throw new Error(error.message);
+    if (error) {
+      console.error("Chat database request failed", error);
+      throw new Error("Chat database request failed. Please try again.");
+    }
     return { ok: true };
   });
 
@@ -57,7 +66,10 @@ export const getThreadMessagesFn = createServerFn({ method: "GET" })
       .select("id,role,parts")
       .eq("thread_id", data.id)
       .order("created_at", { ascending: true });
-    if (error) throw new Error(error.message);
+    if (error) {
+      console.error("Chat database request failed", error);
+      throw new Error("Chat database request failed. Please try again.");
+    }
     return (rows ?? []).map((r) => ({
       id: r.id,
       role: r.role as StoredMessage["role"],

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { usePostHog } from "@posthog/react";
+import { capture } from "@/features/analytics/client";
 import { BellRing, Check, Loader2, MapPin, Fuel, ChevronDown, X } from "lucide-react";
 import {
   COUNTRIES,
@@ -112,7 +112,6 @@ export function MultiSelectDropdown({
 
 export function AlertSignup({ appearance = "default" }: { appearance?: "default" | "footer" }) {
   const subscribe = useServerFn(subscribeToAlerts);
-  const posthog = usePostHog();
   const [email, setEmail] = useState("");
   const [fuels, setFuels] = useState<FuelType[]>([]);
   const [countries, setCountries] = useState<string[]>([]);
@@ -121,7 +120,7 @@ export function AlertSignup({ appearance = "default" }: { appearance?: "default"
     mutationFn: (input: { email: string; fuels: string[]; countries: string[] }) =>
       subscribe({ data: input }),
     onSuccess: (result, input) => {
-      posthog.capture("alert_subscription_requested", {
+      capture("alert_subscription_requested", {
         subscription_status: result.status,
         country_count: input.countries.length,
         fuel_count: input.fuels.length,
@@ -292,13 +291,7 @@ export function AlertSignup({ appearance = "default" }: { appearance?: "default"
 
       {status === "confirmation_sent" && (
         <p className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary">
-          <Check className="size-4" /> Check your inbox — confirm the link to activate your daily
-          briefs.
-        </p>
-      )}
-      {status === "already_confirmed" && (
-        <p className="mt-4 text-sm font-medium text-primary">
-          You're already subscribed — your coverage preferences have been updated.
+          <Check className="size-4" /> If confirmation is needed, check your inbox for the link.
         </p>
       )}
       {status === "suppressed" && (

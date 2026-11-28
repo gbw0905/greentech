@@ -88,8 +88,6 @@ export const marketOutlookFn = createServerFn({ method: "POST" })
     await captureGeminiGeneration({
       spanName: "market_outlook",
       model,
-      input: userPrompt,
-      output: text,
       response: json,
       startedAt,
       distinctId: context.userId,

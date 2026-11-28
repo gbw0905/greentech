@@ -19,7 +19,8 @@ export const Route = createFileRoute("/api/public/flyer-image")({
           .maybeSingle();
 
         if (error) {
-          return new Response(`Database error: ${error.message}`, { status: 500 });
+          console.error("flyer lookup failed", error);
+          return new Response("Could not load flyer", { status: 500 });
         }
         if (!data?.image_base64) {
           return new Response("Flyer not found", { status: 404 });

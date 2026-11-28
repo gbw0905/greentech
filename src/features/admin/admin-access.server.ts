@@ -18,7 +18,7 @@ export async function adminFromRequest(request: Request): Promise<Admin | null> 
     const { client } = createCookieClient(request);
     const { data, error } = await client.auth.getUser();
     const email = data.user?.email?.toLowerCase();
-    if (error || !data.user || !email || !adminEmails().has(email)) return null;
+    if (error || !data.user?.email_confirmed_at || !email || !adminEmails().has(email)) return null;
     return { userId: data.user.id, email };
   } catch {
     return null;

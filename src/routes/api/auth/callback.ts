@@ -24,7 +24,7 @@ export const Route = createFileRoute("/api/auth/callback")({
           return applyToResponse(
             new Response(null, {
               status: 302,
-              headers: { location: `${origin}/auth?error=${encodeURIComponent(error.message)}` },
+              headers: { location: `${origin}/auth?error=Sign-in%20could%20not%20be%20completed` },
             }),
           );
         }

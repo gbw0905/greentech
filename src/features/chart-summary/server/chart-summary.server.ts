@@ -83,8 +83,6 @@ export async function generateChartSummary(
   await captureGeminiGeneration({
     spanName: "chart_summary",
     model: MODEL,
-    input,
-    output: text,
     response: json,
     startedAt,
     distinctId,
